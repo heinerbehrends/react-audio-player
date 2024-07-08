@@ -12,14 +12,15 @@ export const audioPlayerMachine = setup({
       | { type: "LOADED"; ref: HTMLAudioElement | null }
       | { type: "TOGGLE_PLAY" }
       | { type: "UPDATE_POSITION" }
-      | { type: "SEEK"; time: number },
+      | { type: "SEEK"; time: number }
+      | { type: "END_OF_TRACK" },
   },
   actors: {
     updatePosition: fromCallback(({ sendBack }) => {
       sendBack({ type: "UPDATE_POSITION" });
       const interval = setInterval(() => {
         sendBack({ type: "UPDATE_POSITION" });
-      }, 1000);
+      }, 50);
       return () => clearInterval(interval);
     }),
     dragMachine,
@@ -64,6 +65,12 @@ export const audioPlayerMachine = setup({
             position: ({ context }) => context.ref?.currentTime ?? 0,
           }),
         },
+        END_OF_TRACK: {
+          target: "paused",
+          actions: assign({
+            position: 0,
+          }),
+        },
         SEEK: {
           actions: [
             assign({
@@ -73,7 +80,6 @@ export const audioPlayerMachine = setup({
               if (!context.ref) {
                 return;
               }
-              console.log("seeking to", event.time);
               context.ref.currentTime = event.time;
             },
           ],

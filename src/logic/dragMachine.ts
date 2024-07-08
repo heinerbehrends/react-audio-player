@@ -34,6 +34,7 @@ export const dragMachine = setup({
           target: "dragging",
           actions: assign({
             dragXOrigin: ({ event }) => event.x,
+            dragXOffset: ({ event }) => event.x,
             timelineLeft: ({ event }) => event.timelineLeft,
             timelineWidth: ({ event }) => event.timelineWidth,
           }),

@@ -11,6 +11,9 @@ export function AudioElement() {
       onCanPlay={() => {
         send({ type: "LOADED", ref: audioRef.current });
       }}
+      onEnded={() => {
+        send({ type: "END_OF_TRACK" });
+      }}
     />
   );
 }

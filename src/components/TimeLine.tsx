@@ -40,7 +40,10 @@ export function TimeLine() {
         >
           <div
             style={{
-              width: `${elapsedPercentage}%`,
+              width:
+                dragMachineState === "dragging"
+                  ? `${dragXOffset}px`
+                  : `${elapsedPercentage}%`,
               height: "100%",
               backgroundColor: "blue",
             }}
@@ -56,7 +59,6 @@ export function TimeLine() {
               : `${elapsedPercentage}%`,
           transform: "translateX(-50%)",
           top: "7.5px",
-          right: "10px",
           appearance: "none",
           border: "none",
           backgroundColor: "hotpink",
