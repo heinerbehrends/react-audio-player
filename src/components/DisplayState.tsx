@@ -12,7 +12,7 @@ export function DisplayState() {
     <>
       <p>{state.valueOf().toString()}</p>
       <p>{String(audioElement)}</p>
-      <p>{dragMachineState}</p>
+      <p>{JSON.stringify(dragMachineState, null, 2)}</p>
       <p>{dragXOffset}</p>
     </>
   );

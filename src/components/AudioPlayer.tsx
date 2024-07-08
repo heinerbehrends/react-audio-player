@@ -21,7 +21,7 @@ export function AudioPlayer() {
 
     function onMouseUp() {
       const time =
-        (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth ?? 1)) *
+        (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth || 1)) *
         (duration ?? 1);
       sendToDrag && sendToDrag({ type: "DRAG_END", time });
     }

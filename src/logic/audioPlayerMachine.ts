@@ -25,7 +25,6 @@ export const audioPlayerMachine = setup({
     }),
     dragMachine,
   },
-
   actions: {
     togglePlay: ({ context }) => {
       if (!context.ref) {
