@@ -1,4 +1,4 @@
-import { AudioPlayerContext } from "./ActorContext";
+import { AudioPlayerContext } from "./AudioPlayerContext";
 
 export function PlayButton({ children }: { children: React.ReactNode }) {
   const { send } = AudioPlayerContext.useActorRef();

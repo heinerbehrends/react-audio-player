@@ -1,10 +1,10 @@
-import { ActorContextProvider } from "./components/ActorContext";
+import { AudioPlayerProvider } from "./components/AudioPlayerContext";
 import { AudioPlayer } from "./components/AudioPlayer";
 
 export default function App() {
   return (
-    <ActorContextProvider>
+    <AudioPlayerProvider>
       <AudioPlayer />
-    </ActorContextProvider>
+    </AudioPlayerProvider>
   );
 }

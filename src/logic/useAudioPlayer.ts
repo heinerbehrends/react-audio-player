@@ -1,4 +1,4 @@
-import { AudioPlayerContext } from "../components/ActorContext";
+import { AudioPlayerContext } from "../components/AudioPlayerContext";
 
 export function useAudioPlayer() {
   const duration = AudioPlayerContext.useSelector(

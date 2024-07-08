@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { AudioPlayerContext } from "./ActorContext";
+import { AudioPlayerContext } from "./AudioPlayerContext";
 
 export function AudioElement() {
   const { send } = AudioPlayerContext.useActorRef();

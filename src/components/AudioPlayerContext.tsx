@@ -4,6 +4,6 @@ import { createActorContext } from "@xstate/react";
 
 export const AudioPlayerContext = createActorContext(audioPlayerMachine);
 
-export function ActorContextProvider({ children }: { children: ReactNode }) {
+export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   return <AudioPlayerContext.Provider>{children}</AudioPlayerContext.Provider>;
 }

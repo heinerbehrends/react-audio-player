@@ -1,5 +1,5 @@
 import { useAudioPlayer } from "../logic/useAudioPlayer";
-import { AudioPlayerContext } from "./ActorContext";
+import { AudioPlayerContext } from "./AudioPlayerContext";
 
 export function DisplayState() {
   const state = AudioPlayerContext.useSelector((state) => state.value);
