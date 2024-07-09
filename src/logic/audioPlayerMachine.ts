@@ -11,6 +11,7 @@ export const audioPlayerMachine = setup({
       dragXOffset: number;
       timelineLeft: number | undefined;
       timelineWidth: number | undefined;
+      loop: "on" | "off";
     },
     events: {} as
       | { type: "LOADED"; ref: HTMLAudioElement | null }
@@ -25,7 +26,8 @@ export const audioPlayerMachine = setup({
           timelineWidth: number | undefined;
         }
       | { type: "DRAG"; x: number }
-      | { type: "DRAG_END"; time: number },
+      | { type: "DRAG_END"; time: number }
+      | { type: "TOGGLE_LOOP" },
   },
   actors: {
     updatePosition: fromCallback(({ sendBack }) => {
@@ -59,6 +61,7 @@ export const audioPlayerMachine = setup({
     dragXOrigin: 0,
     timelineLeft: 0,
     timelineWidth: 0,
+    loop: "off",
   },
   type: "parallel",
   states: {
@@ -84,6 +87,18 @@ export const audioPlayerMachine = setup({
               }),
             },
             END_OF_TRACK: {
+              guard: ({ context }) => {
+                if (!context.ref) {
+                  return false;
+                }
+                if (context.loop === "on") {
+                  context.ref.currentTime = 0;
+                  context.ref.play();
+                  return false;
+                }
+                return true;
+              },
+
               target: "paused",
               actions: assign({
                 position: 0,
@@ -157,6 +172,31 @@ export const audioPlayerMachine = setup({
                   dragXOrigin: 0,
                 }),
               ],
+            },
+          },
+        },
+      },
+    },
+    loop: {
+      initial: "off",
+      states: {
+        off: {
+          on: {
+            TOGGLE_LOOP: {
+              actions: assign({
+                loop: "on",
+              }),
+              target: "on",
+            },
+          },
+        },
+        on: {
+          on: {
+            TOGGLE_LOOP: {
+              actions: assign({
+                loop: "off",
+              }),
+              target: "off",
             },
           },
         },

@@ -1,13 +1,47 @@
-import { useRef } from "react";
-import { useAudioPlayer } from "../logic/useAudioPlayer";
+import { useEffect, useRef } from "react";
 import { AudioPlayerContext } from "./AudioPlayerContext";
+import { useDrag } from "../logic/useDrag";
 
 export function TimeLine() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rect = buttonRef.current?.getBoundingClientRect();
-  const { elapsedPercentage, duration, dragState, dragXOffset } =
-    useAudioPlayer();
+  const duration = AudioPlayerContext.useSelector(
+    (state) => state.context?.ref?.duration
+  );
+  const {
+    elapsedPercentage,
+    dragState,
+    dragXOffset,
+    timelineLeft,
+    timelineWidth,
+  } = useDrag();
   const { send } = AudioPlayerContext.useActorRef();
+
+  useEffect(() => {
+    const body = document.querySelector("body");
+
+    function onMouseUp() {
+      const time =
+        (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth || 1)) *
+        (duration ?? 1);
+      send({ type: "DRAG_END", time });
+    }
+
+    function onMouseMove(event: MouseEvent) {
+      send({ type: "DRAG", x: event.clientX });
+    }
+
+    if (!body) return;
+
+    body.style.height = "100vh";
+    body.addEventListener("mouseup", onMouseUp);
+    body.addEventListener("mousemove", onMouseMove);
+
+    return () => {
+      body.removeEventListener("mouseup", onMouseUp);
+      body.removeEventListener("mousemove", onMouseMove);
+    };
+  }, [send, dragXOffset, timelineWidth, timelineLeft, duration]);
 
   return (
     <div>
