@@ -7,13 +7,25 @@ export const audioPlayerMachine = setup({
       audioClip: string;
       position: number;
       ref: null | HTMLAudioElement;
+      dragXOrigin: number;
+      dragXOffset: number;
+      timelineLeft: number | undefined;
+      timelineWidth: number | undefined;
     },
     events: {} as
       | { type: "LOADED"; ref: HTMLAudioElement | null }
       | { type: "TOGGLE_PLAY" }
       | { type: "UPDATE_POSITION" }
       | { type: "SEEK"; time: number }
-      | { type: "END_OF_TRACK" },
+      | { type: "END_OF_TRACK" }
+      | {
+          type: "DRAG_START";
+          x: number;
+          timelineLeft: number | undefined;
+          timelineWidth: number | undefined;
+        }
+      | { type: "DRAG"; x: number }
+      | { type: "DRAG_END"; time: number },
   },
   actors: {
     updatePosition: fromCallback(({ sendBack }) => {
@@ -39,65 +51,115 @@ export const audioPlayerMachine = setup({
   },
 }).createMachine({
   id: "audioPlayer",
-  initial: "loading",
   context: {
     audioClip: "The-Race.mp3",
     position: 0,
     ref: null,
+    dragXOffset: 0,
+    dragXOrigin: 0,
+    timelineLeft: 0,
+    timelineWidth: 0,
   },
+  type: "parallel",
   states: {
-    loading: {
-      on: {
-        LOADED: {
-          actions: assign({
-            ref: ({ event }) => event.ref,
-          }),
-          target: "paused",
+    track: {
+      initial: "loading",
+      states: {
+        loading: {
+          on: {
+            LOADED: {
+              actions: assign({
+                ref: ({ event }) => event.ref,
+              }),
+              target: "paused",
+            },
+          },
         },
-      },
-    },
-    playing: {
-      on: {
-        TOGGLE_PLAY: { actions: { type: "togglePlay" }, target: "paused" },
-        UPDATE_POSITION: {
-          actions: assign({
-            position: ({ context }) => context.ref?.currentTime ?? 0,
-          }),
-        },
-        END_OF_TRACK: {
-          target: "paused",
-          actions: assign({
-            position: 0,
-          }),
-        },
-        SEEK: {
-          actions: [
-            assign({
-              position: ({ event }) => event.time,
-            }),
-            ({ context, event }) => {
-              if (!context.ref) {
-                return;
-              }
-              context.ref.currentTime = event.time;
+        playing: {
+          on: {
+            TOGGLE_PLAY: { actions: { type: "togglePlay" }, target: "paused" },
+            UPDATE_POSITION: {
+              actions: assign({
+                position: ({ context }) => context.ref?.currentTime ?? 0,
+              }),
+            },
+            END_OF_TRACK: {
+              target: "paused",
+              actions: assign({
+                position: 0,
+              }),
+            },
+            SEEK: {
+              actions: [
+                assign({
+                  position: ({ event }) => event.time,
+                }),
+                ({ context, event }) => {
+                  if (!context.ref) {
+                    return;
+                  }
+                  context.ref.currentTime = event.time;
+                },
+              ],
+            },
+          },
+          invoke: [
+            {
+              src: "updatePosition",
+              id: "updatePosition",
+            },
+            {
+              src: "dragMachine",
+              id: "dragMachine",
             },
           ],
         },
+        paused: {
+          on: {
+            TOGGLE_PLAY: { actions: { type: "togglePlay" }, target: "playing" },
+          },
+        },
       },
-      invoke: [
-        {
-          src: "updatePosition",
-          id: "updatePosition",
-        },
-        {
-          src: "dragMachine",
-          id: "dragMachine",
-        },
-      ],
     },
-    paused: {
-      on: {
-        TOGGLE_PLAY: { actions: { type: "togglePlay" }, target: "playing" },
+    drag: {
+      initial: "idle",
+      states: {
+        idle: {
+          on: {
+            DRAG_START: {
+              target: "dragging",
+              actions: assign({
+                dragXOrigin: ({ event }) => event.x,
+                dragXOffset: ({ event }) => event.x,
+                timelineLeft: ({ event }) => event.timelineLeft,
+                timelineWidth: ({ event }) => event.timelineWidth,
+              }),
+            },
+          },
+        },
+        dragging: {
+          on: {
+            DRAG: {
+              actions: assign({
+                dragXOffset: ({ event }) => event.x,
+              }),
+            },
+            DRAG_END: {
+              target: "idle",
+              actions: [
+                ({ context, event }) => {
+                  if (!context.ref) return;
+                  context.ref.currentTime = event.time;
+                },
+                assign({
+                  position: ({ event }) => event.time,
+                  dragXOffset: 0,
+                  dragXOrigin: 0,
+                }),
+              ],
+            },
+          },
+        },
       },
     },
   },

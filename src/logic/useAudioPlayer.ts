@@ -7,45 +7,60 @@ export function useAudioPlayer() {
   const currentTime = AudioPlayerContext.useSelector(
     (state) => state.context?.position
   );
-  const isPlaying = AudioPlayerContext.useSelector((state) =>
-    state.matches("playing")
+  const isPlaying = AudioPlayerContext.useSelector(
+    (state) => state.value.track === "playing"
   );
   const elapsedPercentage = (currentTime / (duration ?? 1)) * 100;
-
-  const dragMachine = AudioPlayerContext.useSelector(
-    (state) => state?.children?.dragMachine
+  const dragState = AudioPlayerContext.useSelector((state) => state.value.drag);
+  const dragXOffset = AudioPlayerContext.useSelector(
+    (state) => state.context.dragXOffset
   );
-  const sendToDrag = dragMachine?.send;
-  const dragXOffset = (
-    dragMachine?.getSnapshot() as {
-      context: { dragXOffset: number | undefined };
-    }
-  )?.context.dragXOffset;
-  const timelineLeft = (
-    dragMachine?.getSnapshot() as {
-      context: { timelineLeft: number | undefined };
-    }
-  )?.context.timelineLeft;
-  const timelineWidth = (
-    dragMachine?.getSnapshot() as {
-      context: { timelineWidth: number | undefined };
-    }
-  )?.context.timelineWidth;
-  const dragMachineState = AudioPlayerContext.useSelector(
-    // @ts-expect-error - todo fix the type of the dragMachine
-    (state) => state.children.dragMachine?.getSnapshot()?.value
+  const timelineLeft = AudioPlayerContext.useSelector(
+    (state) => state.context.timelineLeft
   );
+  const timelineWidth = AudioPlayerContext.useSelector(
+    (state) => state.context.timelineWidth
+  );
+  const { send } = AudioPlayerContext.useActorRef();
+  // const dragMachine = AudioPlayerContext.useSelector(
+  //   (state) => state?.children?.dragMachine
+  // );
+  // const sendToDrag = dragMachine?.send;
+  // const dragXOffset = (
+  //   dragMachine?.getSnapshot() as {
+  //     context: { dragXOffset: number | undefined };
+  //   }
+  // )?.context.dragXOffset;
+  // const timelineLeft = (
+  //   dragMachine?.getSnapshot() as {
+  //     context: { timelineLeft: number | undefined };
+  //   }
+  // )?.context.timelineLeft;
+  // const timelineWidth = (
+  //   dragMachine?.getSnapshot() as {
+  //     context: { timelineWidth: number | undefined };
+  //   }
+  // )?.context.timelineWidth;
+  // const dragMachineState = AudioPlayerContext.useSelector(
+  //   // @ts-expect-error - todo fix the type of the dragMachine
+  //   (state) => state.children.dragMachine?.getSnapshot()?.value
+  // );
   return {
+    send,
     duration,
     remainingTime: formatTime((duration ?? 0) - currentTime),
     currentTime: formatTime(currentTime),
     isPlaying,
     elapsedPercentage,
-    sendToDrag,
+    dragState,
     dragXOffset,
-    dragMachineState,
     timelineLeft,
     timelineWidth,
+    // sendToDrag,
+    // dragXOffset,
+    // dragMachineState,
+    // timelineLeft,
+    // timelineWidth,
   };
 }
 

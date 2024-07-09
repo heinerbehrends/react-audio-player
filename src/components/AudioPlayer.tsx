@@ -8,8 +8,8 @@ import { TimeLine } from "./TimeLine";
 
 export function AudioPlayer() {
   const {
+    send,
     isPlaying,
-    sendToDrag,
     timelineLeft,
     timelineWidth,
     dragXOffset,
@@ -23,11 +23,11 @@ export function AudioPlayer() {
       const time =
         (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth || 1)) *
         (duration ?? 1);
-      sendToDrag && sendToDrag({ type: "DRAG_END", time });
+      send({ type: "DRAG_END", time });
     }
 
     function onMouseMove(event: MouseEvent) {
-      sendToDrag && sendToDrag({ type: "DRAG", x: event.clientX });
+      send({ type: "DRAG", x: event.clientX });
     }
 
     if (!body) return;
@@ -40,7 +40,7 @@ export function AudioPlayer() {
       body.removeEventListener("mouseup", onMouseUp);
       body.removeEventListener("mousemove", onMouseMove);
     };
-  }, [sendToDrag, dragXOffset, timelineWidth, timelineLeft, duration]);
+  }, [send, dragXOffset, timelineWidth, timelineLeft, duration]);
   return (
     <>
       <AudioElement />

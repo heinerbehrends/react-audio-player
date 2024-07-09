@@ -5,13 +5,8 @@ import { AudioPlayerContext } from "./AudioPlayerContext";
 export function TimeLine() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rect = buttonRef.current?.getBoundingClientRect();
-  const {
-    elapsedPercentage,
-    duration,
-    sendToDrag,
-    dragXOffset,
-    dragMachineState,
-  } = useAudioPlayer();
+  const { elapsedPercentage, duration, dragState, dragXOffset } =
+    useAudioPlayer();
   const { send } = AudioPlayerContext.useActorRef();
 
   return (
@@ -41,7 +36,7 @@ export function TimeLine() {
           <div
             style={{
               width:
-                dragMachineState === "dragging"
+                dragState === "dragging"
                   ? `${dragXOffset}px`
                   : `${elapsedPercentage}%`,
               height: "100%",
@@ -54,7 +49,7 @@ export function TimeLine() {
         style={{
           position: "absolute",
           left:
-            dragMachineState === "dragging"
+            dragState === "dragging"
               ? `${dragXOffset}px`
               : `${elapsedPercentage}%`,
           transform: "translateX(-50%)",
@@ -68,8 +63,7 @@ export function TimeLine() {
         }}
         onMouseDown={(event) => {
           const x = event.clientX;
-          console.log("x", x);
-          sendToDrag?.({
+          send?.({
             type: "DRAG_START",
             x,
             timelineLeft: rect?.left,
