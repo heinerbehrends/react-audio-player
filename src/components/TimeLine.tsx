@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { AudioPlayerContext } from "./AudioPlayerContext";
-import { useDrag } from "../logic/useDrag";
 
 export function TimeLine() {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -8,13 +7,22 @@ export function TimeLine() {
   const duration = AudioPlayerContext.useSelector(
     (state) => state.context?.ref?.duration
   );
-  const {
-    elapsedPercentage,
-    dragState,
-    dragXOffset,
-    timelineLeft,
-    timelineWidth,
-  } = useDrag();
+  const dragState = AudioPlayerContext.useSelector((state) => state.value.drag);
+
+  const dragXOffset = AudioPlayerContext.useSelector(
+    (state) => state.context.dragXOffset
+  );
+  const timelineLeft = AudioPlayerContext.useSelector(
+    (state) => state.context.timelineLeft
+  );
+  const timelineWidth = AudioPlayerContext.useSelector(
+    (state) => state.context.timelineWidth
+  );
+  const currentTime = AudioPlayerContext.useSelector(
+    (state) => state.context?.position
+  );
+  const elapsedPercentage = (currentTime / (duration ?? 1)) * 100;
+
   const { send } = AudioPlayerContext.useActorRef();
 
   useEffect(() => {
