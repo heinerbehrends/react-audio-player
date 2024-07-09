@@ -1,17 +1,17 @@
 import { setup, assign, fromCallback } from "xstate";
-import { dragMachine } from "./dragMachine";
-
+type DragElement = "loopStart" | "loopEnd" | "timeline";
 export const audioPlayerMachine = setup({
   types: {
     context: {} as {
       audioClip: string;
       position: number;
       ref: null | HTMLAudioElement;
-      dragXOrigin: number;
       dragXOffset: number;
       timelineLeft: number | undefined;
       timelineWidth: number | undefined;
       loop: "on" | "off";
+      loopMarkerStart: number;
+      loopMarkerEnd: number;
     },
     events: {} as
       | { type: "LOADED"; ref: HTMLAudioElement | null }
@@ -24,9 +24,18 @@ export const audioPlayerMachine = setup({
           x: number;
           timelineLeft: number | undefined;
           timelineWidth: number | undefined;
+          element: DragElement;
         }
-      | { type: "DRAG"; x: number }
-      | { type: "DRAG_END"; time: number }
+      | {
+          type: "DRAG";
+          x: number;
+          element: DragElement;
+        }
+      | {
+          type: "DRAG_END";
+          time: number;
+          element: DragElement;
+        }
       | { type: "TOGGLE_LOOP" },
   },
   actors: {
@@ -37,7 +46,6 @@ export const audioPlayerMachine = setup({
       }, 50);
       return () => clearInterval(interval);
     }),
-    dragMachine,
   },
   actions: {
     togglePlay: ({ context }) => {
@@ -58,10 +66,11 @@ export const audioPlayerMachine = setup({
     position: 0,
     ref: null,
     dragXOffset: 0,
-    dragXOrigin: 0,
     timelineLeft: 0,
     timelineWidth: 0,
     loop: "off",
+    loopMarkerStart: 0,
+    loopMarkerEnd: 0,
   },
   type: "parallel",
   states: {
@@ -123,10 +132,6 @@ export const audioPlayerMachine = setup({
               src: "updatePosition",
               id: "updatePosition",
             },
-            {
-              src: "dragMachine",
-              id: "dragMachine",
-            },
           ],
         },
         paused: {
@@ -136,15 +141,17 @@ export const audioPlayerMachine = setup({
         },
       },
     },
-    drag: {
+    dragTimeline: {
       initial: "idle",
       states: {
         idle: {
           on: {
             DRAG_START: {
+              guard: ({ event }) => {
+                return event.element === "timeline";
+              },
               target: "dragging",
               actions: assign({
-                dragXOrigin: ({ event }) => event.x,
                 dragXOffset: ({ event }) => event.x,
                 timelineLeft: ({ event }) => event.timelineLeft,
                 timelineWidth: ({ event }) => event.timelineWidth,
@@ -169,9 +176,76 @@ export const audioPlayerMachine = setup({
                 assign({
                   position: ({ event }) => event.time,
                   dragXOffset: 0,
-                  dragXOrigin: 0,
                 }),
               ],
+            },
+          },
+        },
+      },
+    },
+    dragLoopStart: {
+      initial: "idle",
+      states: {
+        idle: {
+          on: {
+            DRAG_START: {
+              guard: ({ event }) => {
+                return event.element === "loopStart";
+              },
+              target: "dragging",
+              actions: assign({
+                dragXOffset: ({ context }) => context.loopMarkerStart,
+              }),
+            },
+          },
+        },
+        dragging: {
+          on: {
+            DRAG: {
+              actions: assign({
+                dragXOffset: ({ event, context }) =>
+                  context.loopMarkerEnd - event.x,
+              }),
+            },
+            DRAG_END: {
+              target: "idle",
+              actions: assign({
+                loopMarkerStart: ({ context }) => context.loopMarkerEnd,
+              }),
+            },
+          },
+        },
+      },
+    },
+    dragLoopEnd: {
+      initial: "idle",
+      states: {
+        idle: {
+          on: {
+            DRAG_START: {
+              guard: ({ event }) => {
+                return event.element === "loopEnd";
+              },
+              target: "dragging",
+              actions: assign({
+                dragXOffset: ({ context }) => context.loopMarkerEnd,
+              }),
+            },
+          },
+        },
+        dragging: {
+          on: {
+            DRAG: {
+              actions: assign({
+                dragXOffset: ({ event, context }) =>
+                  context.loopMarkerStart - event.x,
+              }),
+            },
+            DRAG_END: {
+              target: "idle",
+              actions: assign({
+                loopMarkerEnd: ({ context }) => context.loopMarkerStart,
+              }),
             },
           },
         },

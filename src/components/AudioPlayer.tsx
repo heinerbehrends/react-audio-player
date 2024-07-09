@@ -1,18 +1,15 @@
 import { AudioElement } from "./AudioElement";
-import { DisplayState } from "./DisplayState";
 import { ElapsedRemaining } from "./ElapsedRemaining";
 import { PlayButton } from "./PlayButton";
 import { TimeLine } from "./TimeLine";
 import { LoopButton } from "./LoopButton";
 import { AudioPlayerContext } from "./AudioPlayerContext";
 
+const { useSelector } = AudioPlayerContext;
+
 export function AudioPlayer() {
-  const isPlaying = AudioPlayerContext.useSelector(
-    (state) => state.value.track === "playing"
-  );
-  const isLooping = AudioPlayerContext.useSelector(
-    (state) => state.value.loop === "on"
-  );
+  const isPlaying = useSelector((state) => state.value.track === "playing");
+  const isLooping = useSelector((state) => state.context.loop === "on");
   return (
     <>
       <AudioElement />
@@ -26,7 +23,6 @@ export function AudioPlayer() {
           "Loop"
         )}
       </LoopButton>
-      <DisplayState />
     </>
   );
 }

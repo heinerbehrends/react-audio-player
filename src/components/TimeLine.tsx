@@ -1,29 +1,20 @@
 import { useEffect, useRef } from "react";
 import { AudioPlayerContext } from "./AudioPlayerContext";
 
+const { useSelector, useActorRef } = AudioPlayerContext;
+
 export function TimeLine() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rect = buttonRef.current?.getBoundingClientRect();
-  const duration = AudioPlayerContext.useSelector(
-    (state) => state.context?.ref?.duration
-  );
-  const dragState = AudioPlayerContext.useSelector((state) => state.value.drag);
-
-  const dragXOffset = AudioPlayerContext.useSelector(
-    (state) => state.context.dragXOffset
-  );
-  const timelineLeft = AudioPlayerContext.useSelector(
-    (state) => state.context.timelineLeft
-  );
-  const timelineWidth = AudioPlayerContext.useSelector(
-    (state) => state.context.timelineWidth
-  );
-  const currentTime = AudioPlayerContext.useSelector(
-    (state) => state.context?.position
-  );
+  const duration = useSelector((state) => state.context?.ref?.duration);
+  const dragState = useSelector((state) => state.value.dragTimeline);
+  const dragXOffset = useSelector((state) => state.context.dragXOffset);
+  const timelineLeft = useSelector((state) => state.context.timelineLeft);
+  const timelineWidth = useSelector((state) => state.context.timelineWidth);
+  const currentTime = useSelector((state) => state.context?.position);
   const elapsedPercentage = (currentTime / (duration ?? 1)) * 100;
 
-  const { send } = AudioPlayerContext.useActorRef();
+  const { send } = useActorRef();
 
   useEffect(() => {
     const body = document.querySelector("body");
@@ -32,11 +23,11 @@ export function TimeLine() {
       const time =
         (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth || 1)) *
         (duration ?? 1);
-      send({ type: "DRAG_END", time });
+      send({ type: "DRAG_END", time, element: "timeline" });
     }
 
     function onMouseMove(event: MouseEvent) {
-      send({ type: "DRAG", x: event.clientX });
+      send({ type: "DRAG", x: event.clientX, element: "timeline" });
     }
 
     if (!body) return;
@@ -110,6 +101,7 @@ export function TimeLine() {
             x,
             timelineLeft: rect?.left,
             timelineWidth: rect?.width,
+            element: "timeline",
           });
         }}
       />
