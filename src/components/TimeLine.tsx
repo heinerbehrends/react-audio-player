@@ -1,17 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AudioPlayerContext } from "./AudioPlayerContext";
+import { LoopMarkers } from "./LoopMarkers";
 
 const { useSelector, useActorRef } = AudioPlayerContext;
 
 export function TimeLine() {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const rect = buttonRef.current?.getBoundingClientRect();
-  const duration = useSelector((state) => state.context?.ref?.duration);
-  const dragState = useSelector((state) => state.value.dragTimeline);
-  const dragXOffset = useSelector((state) => state.context.dragXOffset);
-  const timelineLeft = useSelector((state) => state.context.timelineLeft);
-  const timelineWidth = useSelector((state) => state.context.timelineWidth);
-  const currentTime = useSelector((state) => state.context?.position);
+  const timelineRef = useRef<HTMLButtonElement>(null);
+  const [rect, setRect] = useState<DOMRect | undefined>(undefined);
+  const {
+    duration,
+    dragStateTimeline,
+    dragStateStart,
+    dragStateEnd,
+    dragXOffset,
+    timelineLeft,
+    timelineWidth,
+    currentTime,
+  } = useSelector((state) => ({
+    duration: state.context?.ref?.duration,
+    dragStateTimeline: state.value.dragTimeline,
+    dragStateStart: state.value.dragLoopStart,
+    dragStateEnd: state.value.dragLoopEnd,
+    dragXOffset: state.context.dragXOffset,
+    timelineLeft: state.context.timelineLeft,
+    timelineWidth: state.context.timelineWidth,
+    currentTime: state.context?.position,
+  }));
+
   const elapsedPercentage = (currentTime / (duration ?? 1)) * 100;
 
   const { send } = useActorRef();
@@ -20,14 +35,21 @@ export function TimeLine() {
     const body = document.querySelector("body");
 
     function onMouseUp() {
+      if (dragStateStart === "dragging" || dragStateEnd === "dragging") {
+        console.log("send drag end", dragXOffset);
+        const relativeTime = 
+          (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth || 1)) *
+          (duration ?? 1);
+        send({ type: "DRAG_END", time: relativeTime });
+      }
       const time =
         (((dragXOffset ?? 0) - (timelineLeft ?? 0)) / (timelineWidth || 1)) *
         (duration ?? 1);
-      send({ type: "DRAG_END", time, element: "timeline" });
+      send({ type: "DRAG_END", time });
     }
 
     function onMouseMove(event: MouseEvent) {
-      send({ type: "DRAG", x: event.clientX, element: "timeline" });
+      send({ type: "DRAG", x: event.clientX });
     }
 
     if (!body) return;
@@ -40,7 +62,25 @@ export function TimeLine() {
       body.removeEventListener("mouseup", onMouseUp);
       body.removeEventListener("mousemove", onMouseMove);
     };
-  }, [send, dragXOffset, timelineWidth, timelineLeft, duration]);
+  }, [
+    send,
+    dragXOffset,
+    timelineWidth,
+    timelineLeft,
+    duration,
+    dragStateEnd,
+    dragStateStart,
+  ]);
+
+  useEffect(() => {
+    const rect = timelineRef.current?.getBoundingClientRect();
+    setRect(rect);
+    send({
+      type: "TIMELINE_LOADED",
+      timelineLeft: rect?.left ?? 0,
+      timelineWidth: rect?.width ?? 1,
+    });
+  }, []);
 
   return (
     <div>
@@ -51,7 +91,7 @@ export function TimeLine() {
           border: "none",
           padding: 0,
         }}
-        ref={buttonRef}
+        ref={timelineRef}
         onClick={(event) => {
           const x = event.clientX - (rect?.left ?? 0);
           const percentage = (x / (rect?.width ?? 1)) * 100;
@@ -69,7 +109,7 @@ export function TimeLine() {
           <div
             style={{
               width:
-                dragState === "dragging"
+                dragStateTimeline === "dragging"
                   ? `${dragXOffset}px`
                   : `${elapsedPercentage}%`,
               height: "100%",
@@ -81,15 +121,16 @@ export function TimeLine() {
       <button
         style={{
           position: "absolute",
+          display: "hidden",
+
           left:
-            dragState === "dragging"
+            dragStateTimeline === "dragging"
               ? `${dragXOffset}px`
               : `${elapsedPercentage}%`,
-          transform: "translateX(-50%)",
           top: "7.5px",
           appearance: "none",
           border: "none",
-          backgroundColor: "hotpink",
+          backgroundColor: "transparent",
           height: "20px",
           width: "20px",
           borderRadius: "50%",
@@ -99,12 +140,11 @@ export function TimeLine() {
           send?.({
             type: "DRAG_START",
             x,
-            timelineLeft: rect?.left,
-            timelineWidth: rect?.width,
             element: "timeline",
           });
         }}
       />
+      <LoopMarkers />
     </div>
   );
 }
