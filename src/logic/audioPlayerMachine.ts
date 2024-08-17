@@ -38,7 +38,45 @@ export const audioPlayerMachine = setup({
         }
       | { type: "TOGGLE_LOOP" }
       | { type: "SET_LOOP_START" }
-      | { type: "SET_LOOP_END" },
+      | { type: "SET_LOOP_END" }
+      | { type: "RESET_LOOP" },
+  },
+  guards: {
+    endOfTrack: ({ context }) => {
+      if (!context.ref) {
+        return false;
+      }
+      if (context.loop === "on") {
+        context.ref.currentTime = 0;
+        context.ref.play();
+        return false;
+      }
+      return true;
+    },
+    isTimeline: ({ event }) => {
+      if (event.type !== "DRAG_START") {
+        return false;
+      }
+      return event.element === "timeline";
+    },
+    isLoopStart: ({ event }) => {
+      if (event.type !== "DRAG_START") {
+        return false;
+      }
+      return event.element === "loopStart";
+    },
+    isLoopEnd: ({ event }) => {
+      if (event.type !== "DRAG_START") {
+        return false;
+      }
+      return event.element === "loopEnd";
+    },
+    shouldLoop: ({ context: { loopMarkerEnd, ref } }: { context: Context }) => {
+      if (!ref) {
+        return false;
+      }
+      return ref.currentTime >= loopMarkerEnd;
+    },
   },
   actors: {
     updatePosition: fromCallback(({ sendBack }) => {
@@ -50,6 +88,16 @@ export const audioPlayerMachine = setup({
     }),
   },
   actions: {
+    assignRef: assign({
+      ref: ({ event }) => {
+        if (event.type !== "LOADED") return null;
+        return event.ref;
+      },
+      loopMarkerEnd: ({ event }) => {
+        if (event.type !== "LOADED") return 0;
+        return event.ref?.duration ?? 0;
+      },
+    }),
     togglePlay: ({ context }) => {
       if (!context.ref) {
         return;
@@ -84,10 +132,7 @@ export const audioPlayerMachine = setup({
         loading: {
           on: {
             LOADED: {
-              actions: assign({
-                ref: ({ event }) => event.ref,
-                loopMarkerEnd: ({ event }) => event.ref?.duration ?? 0,
-              }),
+              actions: "assignRef",
               target: "paused",
             },
           },
@@ -101,17 +146,7 @@ export const audioPlayerMachine = setup({
               }),
             },
             END_OF_TRACK: {
-              guard: ({ context }) => {
-                if (!context.ref) {
-                  return false;
-                }
-                if (context.loop === "on") {
-                  context.ref.currentTime = 0;
-                  context.ref.play();
-                  return false;
-                }
-                return true;
-              },
+              guard: "endOfTrack",
 
               target: "paused",
               actions: assign({
@@ -159,9 +194,7 @@ export const audioPlayerMachine = setup({
               }),
             },
             DRAG_START: {
-              guard: ({ event }) => {
-                return event.element === "timeline";
-              },
+              guard: "isTimeline",
               target: "dragging",
               actions: assign({
                 dragXOffset: ({ event }) => event.x,
@@ -174,14 +207,9 @@ export const audioPlayerMachine = setup({
             DRAG: {
               actions: assign({
                 dragXOffset: ({ event, context }) => {
-                  console.log('dragging', event.x);
-                  if (context.timelineWidth === undefined) {
-                    console.error("timelineWidth is undefined");
-                    return 0;
-                  }
-                  if (event.x < (context.timelineLeft ?? 0)) {
-                    console.log(event.x);
-                    return context.timelineLeft ?? 0;
+                  const timelineLeft = context.timelineLeft ?? 0;
+                  if (event.x < timelineLeft) {
+                    return timelineLeft;
                   }
                   return event.x;
                 },
@@ -191,13 +219,12 @@ export const audioPlayerMachine = setup({
               target: "idle",
               actions: [
                 ({ context, event }) => {
-                  console.log('drag end', event.time);
+                  console.log("drag end", event.time);
                   if (!context.ref) return;
                   context.ref.currentTime = event.time;
                 },
                 assign({
                   position: ({ event }) => event.time,
-                  dragXOffset: ({context}) => context.timelineLeft ?? 0,
                 }),
               ],
             },
@@ -211,9 +238,7 @@ export const audioPlayerMachine = setup({
         idle: {
           on: {
             DRAG_START: {
-              guard: ({ event }) => {
-                return event.element === "loopStart";
-              },
+              guard: "isLoopStart",
               target: "dragging",
               actions: assign({
                 dragElement: "loopStart",
@@ -233,13 +258,25 @@ export const audioPlayerMachine = setup({
                 },
               }),
             },
+            RESET_LOOP: {
+              actions: assign({
+                loopMarkerStart: 0,
+                loopMarkerEnd: ({ context }) => context?.ref?.duration ?? 0,
+              }),
+            },
           },
         },
         dragging: {
           on: {
             DRAG: {
               actions: assign({
-                dragXOffset: ({ event }) => event.x,
+                dragXOffset: ({ event, context }) => {
+                  const timelineLeft = context.timelineLeft ?? 0;
+                  if (event.x < timelineLeft) {
+                    return timelineLeft;
+                  }
+                  return event.x;
+                },
                 dragElement: "loopEnd",
               }),
             },
@@ -259,9 +296,7 @@ export const audioPlayerMachine = setup({
         idle: {
           on: {
             DRAG_START: {
-              guard: ({ event }) => {
-                return event.element === "loopEnd";
-              },
+              guard: "isLoopEnd",
               target: "dragging",
               actions: assign({
                 dragXOffset: ({ event }) => event.x,
@@ -273,7 +308,15 @@ export const audioPlayerMachine = setup({
           on: {
             DRAG: {
               actions: assign({
-                dragXOffset: ({ event }) => event.x,
+                dragXOffset: ({ event, context }) => {
+                  const timelineWidth = context.timelineWidth ?? 0;
+                  const timelineLeft = context.timelineLeft ?? 0;
+                  const timelineEnd = timelineWidth + timelineLeft;
+                  if (event.x > timelineEnd) {
+                    return timelineEnd;
+                  }
+                  return event.x;
+                },
               }),
             },
             DRAG_END: {
@@ -302,35 +345,16 @@ export const audioPlayerMachine = setup({
         on: {
           always: {
             target: "on",
-            guard: ({
-              context: { loopMarkerEnd, timelineWidth = 1, ref },
-            }: {
-              context: Context;
-            }) => {
-              if (!ref) {
-                return false;
-              }
-              const relativeTimeEnd = getRelativeTime({
-                loopMarkerPosition: loopMarkerEnd,
-                timelineWidth,
-                duration: ref.duration,
-              });
-              return ref.currentTime >= relativeTimeEnd;
-            },
+            guard: "shouldLoop",
             actions: ({
-              context: { loopMarkerStart = 0, ref, timelineWidth = 1 },
+              context: { loopMarkerStart = 0, ref },
             }: {
               context: Context;
             }) => {
               if (!ref) {
                 return;
               }
-              const relativeTimeStart = getRelativeTime({
-                loopMarkerPosition: loopMarkerStart,
-                timelineWidth,
-                duration: ref.duration,
-              });
-              ref.currentTime = relativeTimeStart;
+              ref.currentTime = loopMarkerStart;
             },
           },
           on: {
@@ -346,18 +370,3 @@ export const audioPlayerMachine = setup({
     },
   },
 });
-
-type GetRelativeTimeArgs = {
-  loopMarkerPosition: number;
-  timelineWidth: number | undefined;
-  duration: number;
-};
-
-function getRelativeTime({
-  loopMarkerPosition,
-  timelineWidth = 1,
-  duration,
-}: GetRelativeTimeArgs) {
-  const relativePosition = loopMarkerPosition / timelineWidth;
-  return relativePosition * duration;
-}

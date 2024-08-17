@@ -2,9 +2,10 @@ import { useState } from "react";
 import { AudioPlayerContext } from "./AudioPlayerContext";
 
 export function SetLoopRegionButton() {
-  const [buttonState, setButtonState] = useState<"setStart" | "setEnd">(
-    "setStart"
-  );
+  const [buttonState, setButtonState] = useState<
+    "setStart" | "setEnd" | "reset"
+  >("setStart");
+  console.log("buttonState", buttonState);
   const send = AudioPlayerContext.useActorRef().send;
   if (buttonState === "setStart") {
     return (
@@ -18,14 +19,26 @@ export function SetLoopRegionButton() {
       </button>
     );
   }
+  if (buttonState === "setEnd") {
+    return (
+      <button
+        onClick={() => {
+          setButtonState("reset");
+          send({ type: "SET_LOOP_END" });
+        }}
+      >
+        Set Loop End
+      </button>
+    );
+  }
   return (
     <button
       onClick={() => {
         setButtonState("setStart");
-        send({ type: "SET_LOOP_END" });
+        send({ type: "RESET_LOOP" });
       }}
     >
-      Set Loop End
+      Reset Loop
     </button>
   );
 }
