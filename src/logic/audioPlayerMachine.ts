@@ -208,8 +208,13 @@ export const audioPlayerMachine = setup({
               actions: assign({
                 dragXOffset: ({ event, context }) => {
                   const timelineLeft = context.timelineLeft ?? 0;
+                  const timelineWidth = context.timelineWidth ?? 0;
+                  const timelineEnd = timelineLeft + timelineWidth;
                   if (event.x < timelineLeft) {
                     return timelineLeft;
+                  }
+                  if (event.x > timelineEnd) {
+                    return timelineEnd;
                   }
                   return event.x;
                 },
@@ -219,7 +224,6 @@ export const audioPlayerMachine = setup({
               target: "idle",
               actions: [
                 ({ context, event }) => {
-                  console.log("drag end", event.time);
                   if (!context.ref) return;
                   context.ref.currentTime = event.time;
                 },
