@@ -108,6 +108,74 @@ export const audioPlayerMachine = setup({
       }
       context.ref.pause();
     },
+    updatePosition: assign({
+      position: ({ context }) => context.ref?.currentTime ?? 0,
+    }),
+    resetPosition: assign({
+      position: 0,
+    }),
+    seekToNewPosition: assign({
+      position: ({ event, context }) => {
+        if (event.type !== "SEEK") {
+          return context.position;
+        }
+        return event.time;
+      },
+    }),
+    seekToNewTime: ({ context, event }) => {
+      if (event.type !== "SEEK") {
+        return context.position;
+      }
+      if (!context.ref) {
+        return;
+      }
+      context.ref.currentTime = event.time;
+    },
+    initializeTimelineValues: assign({
+      timelineLeft: ({ event, context }) => {
+        if (event.type !== "TIMELINE_LOADED") {
+          return context.timelineLeft;
+        }
+        return event.timelineLeft;
+      },
+      dragXOffset: ({ event, context }) => {
+        if (event.type !== "TIMELINE_LOADED") {
+          return context.dragXOffset;
+        }
+        return event.timelineLeft;
+      },
+      timelineWidth: ({ event, context }) => {
+        if (event.type !== "TIMELINE_LOADED") {
+          return context.timelineWidth;
+        }
+        return event.timelineWidth;
+      },
+    }),
+    setDragXOffset: assign({
+      dragXOffset: ({ event, context }) => {
+        if (event.type !== "DRAG") {
+          return context.dragXOffset;
+        }
+        return event.x;
+      },
+    }),
+    setConstrainedDragXOffset: assign({
+      dragXOffset: ({ event, context }) => {
+        if (event.type !== "DRAG") {
+          return context.dragXOffset;
+        }
+        const timelineLeft = context.timelineLeft ?? 0;
+        const timelineWidth = context.timelineWidth ?? 0;
+        const timelineEnd = timelineLeft + timelineWidth;
+        if (event.x < timelineLeft) {
+          return timelineLeft;
+        }
+        if (event.x > timelineEnd) {
+          return timelineEnd;
+        }
+        return event.x;
+      },
+    }),
   },
 }).createMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5QEMCuECWB7ACgG2QE8wAnAOgBcTkBjAazLy2UwDsoBiAGQHkBBACIBRAQG0ADAF1EoAA5ZYGCtlYyQAD0QAWcQA4yARgCc4gKwAmAOzGdWgMymANCELat+o5YBsxr34NaWqaBAL4hzmiYuATE5FS0DLIxGOwcACo8AOKZXEIA+jhcfACaEtJIIPKKyliqFZoIOvrGZlY24vZOLohelkZkduIO3kFGRjoGYRHo2PhEpJTU9GRJRCmcAKo4Anxp+Tg8AMoAkmnHPAByZWpVSipqDQZ2XgN2RnYGXua6uj6Wes5XAgvKZxGQTFpLLohroDKZTD8piBIrMYgt4stVoR1hwhBcBHkeAAxPJpABKfAAwgBpa4VW41OqgBpNQwmCzWcYdByAxCWSx2Mi6Iw-cT83QWcR+JEo6LzOJLRLJVKHIRCWlSG4KO61B6IAy6QXmcxfAJaXpwwK8hCmQZkcTmOywuzuKUBSbhZEzOWxRYJFZoWCQdJZHL7IqlTX07WMvWNCVCuxJgUgrTfax2a0IrRkf6GoJPc0Cywy71zX0QahQNIYAC2YDwKTAZAwEDwYHSxwAskIuMcLvleIIRHS5DH7vU+QZwWNZ3PZ5ZrQZxE8yKDTONBuZxB1LFpS1FywtK8hq3WG02W22OwIKZk8oc0nwyWlR5Vx7rJwgrGCfCYjF4BZGBYRhLuIIpkF4zxGNue7-FKugHqi8pkCeZ71o2rDNmhUA4refCZG+DITsyiCgpYhhQoBHRmgY3xgeYOZ6O8QwwVCTpIT6x5VjWGGXjheF3nkeJiFGY7VCRGiIA4gq6OYASeNYkJeA6XjWopubwsBTrmlK8mcUe5BoVwWBYLIhwUMgJAUFe7YcPh96Ps+r5ie+EmfqRCAGAK4IWDowyeNuXi6NajGmIYLSgipZgmCuBlokZVYmWZFlWTZAmpA5REfkyUmNMua4GDYljBPJ0KLt0Xn-GuSlPE6nh0Qa8UocZpnmZZ1moVWuGZUJInZe5uUNOYpgUZa0LuGmFjQl0QJwmCFhOsYVi2o6FjNRWSVtUIrAQLZN5CU5L4DTqQ36j5wGMUMo2BQhS5vBRzHmCKdV0UYG3caeyWyDte0ZZwWWucRHl5VoBWmEV4wlWmBpivdxprmDfjgcaI1FR9iVfdtu1daePUA31+InbGX4jWNwQTboU3fGY90OmQWhcn45W-CNGOMG1ZBYAAZtzIbZLkeS8DwODE5JjwXX5119JYQUhZVnzAYjnwlRDMEQ+zTBmVzrD82GQs8CLYsgxLgqXf5N2y3dCvReC5qBGD7wikEYSeqwWAQHAaiyoZWqDXGAC0jH2juodh6HmaVUHTHh7HO4lp6PsJX69B+6dcbPdazzTkp3zLQiphQQn0yHsnGIMEwLDrGnJOed84UQn0jNWOmugVUCkLTotsJFb0wRJuz5crMqUA1+LfLt3yoJrqHRX-MFI12IPioBqgQYQGPJs9L0iYuo15q9CK1peGMM+NZKkKwohidlsnaG8ReWGb2d35m-O7+eNawpgoz-lGEVu4Pjs3vueTCzZWztmfnGOi5hd4ukAtnT4BglxFUFMuOe9gggfH3DfUuLUeKgP4t1au0Z-ZfkZv0EUsIoIQwdGxLQKDHSQSpraCwtplwu1wchTaWMUodQoFA0mDDKpQTICaFoWDPAugPsArafC0r7UEZ5WWoUNxrkNIMR2PwGqyN4e1BR-0lGgyGAMeSkIpROilGYSOQIfyGD8IBTujMqI4JLtwz6UBvq-SMcNYRc15LhUdAE2CxoBSmF0Z47Ge0IFgB8XycwS4wZd1YRDAUARngRK8TjQxpD07kJMXYMx89LEqVtIkhGTxgowUYiVbyXhNZtTid+Px+oIaCmCkEZ6QRDTAVcV6PBvotayC5rzJpKibbPXtPyOwUI5KBGCPUrhXFyBDJ1k0l0-Q5IBELvJKwvQhhLigl3fkOgVKFh3DgsIQA */
@@ -141,30 +209,16 @@ export const audioPlayerMachine = setup({
           on: {
             TOGGLE_PLAY: { actions: { type: "togglePlay" }, target: "paused" },
             UPDATE_POSITION: {
-              actions: assign({
-                position: ({ context }) => context.ref?.currentTime ?? 0,
-              }),
+              actions: "updatePosition",
             },
             END_OF_TRACK: {
               guard: "endOfTrack",
 
               target: "paused",
-              actions: assign({
-                position: 0,
-              }),
+              actions: "resetPosition",
             },
             SEEK: {
-              actions: [
-                assign({
-                  position: ({ event }) => event.time,
-                }),
-                ({ context, event }) => {
-                  if (!context.ref) {
-                    return;
-                  }
-                  context.ref.currentTime = event.time;
-                },
-              ],
+              actions: ["seekToNewPosition", "seekToNewTime"],
             },
           },
           invoke: [
@@ -187,38 +241,19 @@ export const audioPlayerMachine = setup({
         idle: {
           on: {
             TIMELINE_LOADED: {
-              actions: assign({
-                timelineLeft: ({ event }) => event.timelineLeft,
-                dragXOffset: ({ event }) => event.timelineLeft,
-                timelineWidth: ({ event }) => event.timelineWidth,
-              }),
+              actions: "initializeTimelineValues",
             },
             DRAG_START: {
               guard: "isTimeline",
               target: "dragging",
-              actions: assign({
-                dragXOffset: ({ event }) => event.x,
-              }),
+              actions: "setDragXOffset",
             },
           },
         },
         dragging: {
           on: {
             DRAG: {
-              actions: assign({
-                dragXOffset: ({ event, context }) => {
-                  const timelineLeft = context.timelineLeft ?? 0;
-                  const timelineWidth = context.timelineWidth ?? 0;
-                  const timelineEnd = timelineLeft + timelineWidth;
-                  if (event.x < timelineLeft) {
-                    return timelineLeft;
-                  }
-                  if (event.x > timelineEnd) {
-                    return timelineEnd;
-                  }
-                  return event.x;
-                },
-              }),
+              actions: "setConstrainedDragXOffset",
             },
             DRAG_END: {
               target: "idle",
