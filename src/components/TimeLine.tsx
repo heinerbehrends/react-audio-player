@@ -37,7 +37,7 @@ export function TimeLine() {
             dragStateTimeline === "dragging"
               ? `${dragXOffset - timelineLeft}px`
               : `${elapsedPercentage}%`,
-          top: "21px",
+          top: "20px",
           marginLeft: "-10px",
           appearance: "none",
           border: "none",
