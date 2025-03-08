@@ -1,20 +1,37 @@
 import { useContext } from "react";
 import { PlayerContext } from "./Player/PlayerContext";
 import { TimelineContext } from "./Timeline/TimelineContext";
+import { VolumeContext } from "./Volume/VolumeContext";
 
-function Debug() {
+const mapContext = {
+  timeline: TimelineContext,
+  volume: VolumeContext,
+};
+
+function Debug({ type }: { type: "timeline" | "volume" }) {
   const { player: state, element } = useContext(PlayerContext);
-  const { time, timelineLeft, timelineWidth, dragState, xOffset } =
-    useContext(TimelineContext);
+  const context = useContext(mapContext[type]);
+
   return (
-    <div>
+    <div
+      style={{
+        textAlign: "left",
+        padding: "1rem",
+        backgroundColor: "#f5f5f5",
+        borderRadius: "4px",
+        margin: "1rem",
+      }}
+    >
+      <h3>Player</h3>
       <p>State: {state}</p>
       <p>Element: {element?.src}</p>
-      <p>Time: {time}</p>
-      <p>Timeline Left: {timelineLeft}</p>
-      <p>Timeline Width: {timelineWidth}</p>
-      <p>Drag State: {dragState}</p>
-      <p>X Offset: {xOffset}</p>
+
+      <h3> {type}</h3>
+      <p>Time: {context.time.toFixed(2)}</p>
+      <p>Left: {context.timelineLeft}</p>
+      <p>Width: {context.timelineWidth}</p>
+      <p>Drag State: {context.dragState}</p>
+      <p>X Offset: {context.xOffset}</p>
     </div>
   );
 }

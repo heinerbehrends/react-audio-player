@@ -1,4 +1,5 @@
-import { useReducer } from "react";
+import { useReducer, useContext } from "react";
+import { PlayerContext } from "../Player/PlayerContext";
 import {
   TimelineContext,
   TimelineContextType,
@@ -9,16 +10,13 @@ import { timelineReducer } from "./timelineReducer";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
-  playerElement: HTMLAudioElement | null;
 };
 
-export function TimelineProvider({
-  children,
-  playerElement,
-}: TimelineProviderProps) {
+export function TimelineProvider({ children }: TimelineProviderProps) {
+  const { element } = useContext(PlayerContext);
   const [state, dispatch] = useReducer(
     (state: TimelineContextType, action: TimelineContextAction) =>
-      timelineReducer(state, action, playerElement),
+      timelineReducer(state, action, element),
     initialState
   );
 

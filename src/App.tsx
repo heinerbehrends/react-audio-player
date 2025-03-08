@@ -1,47 +1,59 @@
 import "./App.css";
 import { PlayerContextProvider } from "./Player/PlayerProvider";
 import { TimelineProvider } from "./Timeline/TimelineProvider";
+import { VolumeProvider } from "./Volume/VolumeProvider";
 import { AudioElement } from "./Player/AudioElement";
-import Debug from "./Debug";
 import PlayButton from "./Player/PlayButton";
 import Timeline from "./Timeline/Timeline";
-import { useContext } from "react";
-import { PlayerContext } from "./Player/PlayerContext";
-
-function TimelineSection() {
-  const { element } = useContext(PlayerContext);
-
-  return (
-    <TimelineProvider playerElement={element}>
-      <Timeline style={{ height: "40px", backgroundColor: "lightgray" }}>
-        <Timeline.SeekButton>
-          <Timeline.Background />
-          <Timeline.Progress style={{ backgroundColor: "gray" }} />
-        </Timeline.SeekButton>
-        <Timeline.DragButton
-          style={{
-            backgroundColor: "hotpink",
-            height: "40px",
-            width: "40px",
-            borderRadius: "50%",
-            border: "none",
-          }}
-        />
-      </Timeline>
-      <Debug />
-    </TimelineProvider>
-  );
-}
+import MuteButton from "./Volume/MuteButton";
+import Volume from "./Volume/Volume";
 
 function App() {
   return (
-    <PlayerContextProvider>
-      <AudioElement audioFile="The-Race.mp3" />
+    <PlayerContextProvider audioFiles={["The-Race.mp3"]}>
+      <AudioElement>
+        <AudioElement.Track kind="captions" src="captions.vtt" />
+      </AudioElement>
+      <TimelineProvider>
+        <Timeline style={{ height: "40px", backgroundColor: "lightgray" }}>
+          <Timeline.SeekButton>
+            <Timeline.Progress style={{ backgroundColor: "darkgray" }} />
+          </Timeline.SeekButton>
+          <Timeline.DragButton
+            style={{
+              backgroundColor: "hotpink",
+              height: "40px",
+              width: "40px",
+              borderRadius: "50%",
+              border: "none",
+            }}
+          />
+        </Timeline>
+      </TimelineProvider>
       <PlayButton>
-        <PlayButton.Playing>Playing</PlayButton.Playing>
-        <PlayButton.Paused>Paused</PlayButton.Paused>
+        <PlayButton.Playing>Pause</PlayButton.Playing>
+        <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
-      <TimelineSection />
+      <VolumeProvider>
+        <Volume style={{ height: "40px", backgroundColor: "lightgray" }}>
+          <Volume.SeekButton>
+            <Volume.Progress style={{ backgroundColor: "darkgray" }} />
+          </Volume.SeekButton>
+          <Volume.DragButton
+            style={{
+              backgroundColor: "yellow",
+              height: "40px",
+              width: "40px",
+              borderRadius: "50%",
+              border: "none",
+            }}
+          />
+        </Volume>
+        <MuteButton>
+          <MuteButton.NotMuted>Mute</MuteButton.NotMuted>
+          <MuteButton.Muted>Unmute</MuteButton.Muted>
+        </MuteButton>
+      </VolumeProvider>
     </PlayerContextProvider>
   );
 }

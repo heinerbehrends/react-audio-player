@@ -1,13 +1,29 @@
-import { useContext, useRef } from "react";
+import { ComponentProps, useContext, useRef, isValidElement } from "react";
 import { PlayerContext } from "./PlayerContext";
 
-type AudioElementProps = {
-  audioFile: string;
+type TrackProps = ComponentProps<"track"> & {
+  kind: "captions" | "chapters" | "descriptions" | "metadata" | "subtitles";
 };
 
-export function AudioElement({ audioFile }: AudioElementProps) {
+function Track(props: TrackProps) {
+  return <track {...props} />;
+}
+
+type AudioElementProps = {
+  children: React.ReactElement<TrackProps> & {
+    type: typeof Track;
+  };
+};
+
+export function AudioElement({ children }: AudioElementProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { dispatch } = useContext(PlayerContext);
+  const { dispatch, audioFiles, isMuted } = useContext(PlayerContext);
+  if (!isValidElement(children) || children.type.name !== "Track") {
+    throw new Error(
+      "AudioElement only accepts an AudioElement.Track component as its child"
+    );
+  }
+
   return (
     <audio
       aria-label="loop player"
@@ -15,11 +31,16 @@ export function AudioElement({ audioFile }: AudioElementProps) {
       onCanPlay={() => {
         dispatch({ type: "AUDIO_FILE_LOADED", element: audioRef.current });
       }}
-      src={audioFile}
+      onEnded={() => {
+        console.log("onEnded");
+        dispatch({ type: "AUDIO_FILE_ENDED" });
+      }}
+      src={audioFiles[0]}
+      muted={isMuted}
     >
-      <track kind="captions">
-        {/* TODO: add captions with metadata from the audio file */}
-      </track>
+      {children}
     </audio>
   );
 }
+
+AudioElement.Track = Track;

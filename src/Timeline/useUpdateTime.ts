@@ -9,9 +9,6 @@ export function useUpdateTime() {
 
   useEffect(() => {
     if (player !== "playing" || !element) {
-      console.log(
-        "[useTimeUpdate] Stopping updates - not playing or no element"
-      );
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
       }
@@ -19,6 +16,7 @@ export function useUpdateTime() {
     }
 
     const updateTime = () => {
+      console.log("useUpdateTime");
       const currentTime = element.currentTime;
       dispatch({ type: "UPDATE_TIME", time: currentTime });
       frameRef.current = requestAnimationFrame(updateTime);

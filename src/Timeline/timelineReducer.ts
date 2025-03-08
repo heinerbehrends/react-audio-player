@@ -28,6 +28,12 @@ export function timelineReducer(
       if (state.dragState !== "dragging") {
         return state;
       }
+      if (action.clientX < state.timelineLeft) {
+        return state;
+      }
+      if (action.clientX > state.timelineLeft + state.timelineWidth) {
+        return state;
+      }
       return { ...state, xOffset: action.clientX - state.timelineLeft };
     }
     case "DRAG_END": {

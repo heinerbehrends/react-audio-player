@@ -6,12 +6,19 @@ import {
   initialState,
 } from "./PlayerContext";
 
+type PlayerContextProviderProps = {
+  children: React.ReactNode;
+  audioFiles: string[];
+};
+
 export function PlayerContextProvider({
   children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [state, dispatch] = useReducer(playerReducer, initialState);
+  audioFiles,
+}: PlayerContextProviderProps) {
+  const [state, dispatch] = useReducer(playerReducer, {
+    ...initialState,
+    audioFiles,
+  });
 
   return (
     <PlayerContext.Provider value={{ ...state, dispatch }}>
@@ -37,5 +44,13 @@ function playerReducer(state: PlayerContextType, action: PlayerContextAction) {
         return { ...state, player: "playing" as const };
       }
       return state;
+    case "TOGGLE_MUTE":
+      return { ...state, isMuted: !state.isMuted };
+    case "AUDIO_FILE_ENDED":
+      if (!state.element) {
+        return state;
+      }
+      state.element.currentTime = 0;
+      return { ...state, player: "paused" as const, time: 0 };
   }
 }

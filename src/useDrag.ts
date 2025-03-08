@@ -1,8 +1,14 @@
 import { useContext, useEffect } from "react";
 import { TimelineContext } from "./Timeline/TimelineContext";
+import { VolumeContext } from "./Volume/VolumeContext";
 
-export function useDrag() {
-  const { dragState, dispatch } = useContext(TimelineContext);
+const mapContext = {
+  timeline: TimelineContext,
+  volume: VolumeContext,
+};
+
+export function useDrag(type: "timeline" | "volume") {
+  const { dragState, dispatch } = useContext(mapContext[type]);
   useEffect(() => {
     if (dragState !== "dragging") return;
 
