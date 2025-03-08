@@ -16,7 +16,6 @@ export function useUpdateTime() {
     }
 
     const updateTime = () => {
-      console.log("useUpdateTime");
       const currentTime = element.currentTime;
       dispatch({ type: "UPDATE_TIME", time: currentTime });
       frameRef.current = requestAnimationFrame(updateTime);

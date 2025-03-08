@@ -40,7 +40,6 @@ function getOffset({
 }
 
 export function DragButton({ type, ...props }: DragButtonProps) {
-  console.log("DragButton mounted with type:", type, "props:", props);
   const { xOffset, dragState, timelineWidth, time, dispatch } = useContext(
     switchContext[type]
   );

@@ -32,7 +32,6 @@ export function AudioElement({ children }: AudioElementProps) {
         dispatch({ type: "AUDIO_FILE_LOADED", element: audioRef.current });
       }}
       onEnded={() => {
-        console.log("onEnded");
         dispatch({ type: "AUDIO_FILE_ENDED" });
       }}
       src={audioFiles[0]}
