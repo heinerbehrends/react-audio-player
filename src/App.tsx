@@ -7,6 +7,7 @@ import PlayButton from "./Player/PlayButton";
 import Timeline from "./Timeline/Timeline";
 import MuteButton from "./Volume/MuteButton";
 import Volume from "./Volume/Volume";
+import ElapsedRemaining from "./Player/ElapsedRemaing";
 
 function App() {
   return (
@@ -34,6 +35,10 @@ function App() {
         <PlayButton.Playing>Pause</PlayButton.Playing>
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
+      <ElapsedRemaining.Toggle>
+        <ElapsedRemaining.Elapsed />
+        <ElapsedRemaining.Remaining />
+      </ElapsedRemaining.Toggle>
       <VolumeProvider>
         <Volume style={{ height: "40px", backgroundColor: "lightgray" }}>
           <Volume.SeekButton>
