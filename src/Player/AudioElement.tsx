@@ -1,4 +1,4 @@
-import { ComponentProps, useContext, useRef, isValidElement } from "react";
+import { ComponentProps, useContext, useRef, memo } from "react";
 import { PlayerContext } from "./PlayerContext";
 
 type TrackProps = ComponentProps<"track"> & {
@@ -15,13 +15,17 @@ type AudioElementProps = {
   };
 };
 
-export function AudioElement({ children }: AudioElementProps) {
+type AudioElementComponent = React.FC<AudioElementProps> & {
+  Track: typeof Track;
+};
+
+const AudioElementComponent = memo(function AudioElement({
+  children,
+}: AudioElementProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { dispatch, audioFiles, isMuted } = useContext(PlayerContext);
-  if (!isValidElement(children) || children.type.name !== "Track") {
-    throw new Error(
-      "AudioElement only accepts an AudioElement.Track component as its child"
-    );
+  if (children.type.name !== "Track") {
+    console.error("AudioElement only accepts a track element as its child");
   }
 
   return (
@@ -40,6 +44,10 @@ export function AudioElement({ children }: AudioElementProps) {
       {children}
     </audio>
   );
-}
+}) as React.NamedExoticComponent<AudioElementProps>;
 
-AudioElement.Track = Track;
+const AudioElement = Object.assign(AudioElementComponent, {
+  Track,
+}) as AudioElementComponent;
+
+export { AudioElement };

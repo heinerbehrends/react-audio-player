@@ -13,6 +13,10 @@ export type ToggleMuteAction = {
   type: "TOGGLE_MUTE";
 };
 
+export type ToggleTimeDisplayAction = {
+  type: "TOGGLE_TIME_DISPLAY";
+};
+
 export type AudioFileEndedAction = {
   type: "AUDIO_FILE_ENDED";
 };
@@ -21,6 +25,7 @@ export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
   | ToggleMuteAction
+  | ToggleTimeDisplayAction
   | AudioFileEndedAction;
 
 export type PlayerContextType = {
@@ -28,6 +33,7 @@ export type PlayerContextType = {
   dispatch: (action: PlayerContextAction) => void;
   player: "loading" | "playing" | "paused";
   isMuted: boolean;
+  timeDisplay: "elapsed" | "remaining";
   audioFiles: string[];
 };
 
@@ -36,6 +42,7 @@ export const initialState: PlayerContextType = {
   dispatch: () => {},
   player: "loading",
   isMuted: false,
+  timeDisplay: "elapsed",
   audioFiles: [],
 };
 

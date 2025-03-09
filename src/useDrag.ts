@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useCallback } from "react";
 import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
 
@@ -9,18 +9,26 @@ const mapContext = {
 
 export function useDrag(type: "timeline" | "volume") {
   const { dragState, dispatch } = useContext(mapContext[type]);
-  useEffect(() => {
-    if (dragState !== "dragging") return;
 
-    function onPointerUp({ clientX }: PointerEvent) {
+  const onPointerUp = useCallback(
+    ({ clientX }: PointerEvent) => {
       dispatch({
         type: "DRAG_END",
         clientX,
       });
-    }
-    function onPointerMove({ clientX }: PointerEvent) {
+    },
+    [dispatch]
+  );
+
+  const onPointerMove = useCallback(
+    ({ clientX }: PointerEvent) => {
       dispatch({ type: "DRAG", clientX });
-    }
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
+    if (dragState !== "dragging") return;
 
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointermove", onPointerMove);
@@ -28,5 +36,7 @@ export function useDrag(type: "timeline" | "volume") {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointermove", onPointerMove);
     };
-  }, [dragState, dispatch]);
+  }, [dragState, onPointerUp, onPointerMove]);
+
+  return { dragState, dispatch };
 }

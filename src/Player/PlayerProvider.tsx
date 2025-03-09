@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useMemo, useReducer, memo, useCallback } from "react";
 import {
   PlayerContext,
   PlayerContextType,
@@ -11,21 +11,27 @@ type PlayerContextProviderProps = {
   audioFiles: string[];
 };
 
-export function PlayerContextProvider({
+export const PlayerContextProvider = memo(function PlayerContextProvider({
   children,
   audioFiles,
 }: PlayerContextProviderProps) {
-  const [state, dispatch] = useReducer(playerReducer, {
+  const reducer = useCallback(
+    (state: PlayerContextType, action: PlayerContextAction) =>
+      playerReducer(state, action),
+    []
+  );
+
+  const [state, dispatch] = useReducer(reducer, {
     ...initialState,
     audioFiles,
   });
 
+  const value = useMemo(() => ({ ...state, dispatch }), [state]);
+
   return (
-    <PlayerContext.Provider value={{ ...state, dispatch }}>
-      {children}
-    </PlayerContext.Provider>
+    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
   );
-}
+});
 
 function playerReducer(state: PlayerContextType, action: PlayerContextAction) {
   switch (action.type) {
@@ -52,5 +58,13 @@ function playerReducer(state: PlayerContextType, action: PlayerContextAction) {
       }
       state.element.currentTime = 0;
       return { ...state, player: "paused" as const, time: 0 };
+    case "TOGGLE_TIME_DISPLAY":
+      return {
+        ...state,
+        timeDisplay:
+          state.timeDisplay === "elapsed"
+            ? ("remaining" as const)
+            : ("elapsed" as const),
+      };
   }
 }

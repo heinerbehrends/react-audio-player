@@ -1,4 +1,4 @@
-import { useContext, type HTMLAttributes } from "react";
+import { useContext, type HTMLAttributes, memo, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
@@ -13,35 +13,48 @@ const switchContext = {
   volume: VolumeContext,
 };
 
-export function Indicator({ type, ...props }: TimelineProgressProps) {
+export const Indicator = memo(function Indicator({
+  type,
+  ...props
+}: TimelineProgressProps) {
   const { dragState, xOffset, time, timelineWidth } = useContext(
     switchContext[type]
   );
   const { element } = useContext(PlayerContext);
   const duration = element?.duration ?? 1;
-  const progress = getProgress({
-    type,
-    dragState,
-    xOffset,
-    time,
-    duration,
-    timelineWidth,
-  });
+
+  const progress = useMemo(
+    () =>
+      getProgress({
+        type,
+        dragState,
+        xOffset,
+        time,
+        duration,
+        timelineWidth,
+      }),
+    [type, dragState, xOffset, time, duration, timelineWidth]
+  );
+
+  const style = useMemo(
+    () => ({
+      transform: `scaleX(${progress})`,
+      width: "100%",
+      height: "100%",
+      transformOrigin: "left",
+      gridColumn: "1 / 1",
+      gridRow: "1 / 1",
+      ...props.style,
+    }),
+    [progress, props.style]
+  );
 
   useUpdateTime();
 
   return (
     <div
       {...props}
-      style={{
-        transform: `scaleX(${progress})`,
-        width: "100%",
-        height: "100%",
-        transformOrigin: "left",
-        gridColumn: "1 / 1",
-        gridRow: "1 / 1",
-        ...props.style,
-      }}
+      style={style}
       role="progressbar"
       aria-valuenow={time}
       aria-valuemin={0}
@@ -49,7 +62,7 @@ export function Indicator({ type, ...props }: TimelineProgressProps) {
       aria-label="audio progress"
     />
   );
-}
+});
 
 type getProgressProps = {
   type: "timeline" | "volume";

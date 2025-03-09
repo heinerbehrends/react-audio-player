@@ -1,4 +1,4 @@
-import { useContext, useReducer } from "react";
+import { useContext, useMemo, useReducer, memo, useCallback } from "react";
 import { VolumeContext, initialState } from "./VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { volumeReducer } from "./volumeReducer";
@@ -7,17 +7,24 @@ import type {
   TimelineContextType,
 } from "../Timeline/TimelineContext";
 
-export function VolumeProvider({ children }: { children: React.ReactNode }) {
+export const VolumeProvider = memo(function VolumeProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { element: playerElement } = useContext(PlayerContext);
-  const [state, dispatch] = useReducer(
+
+  const reducer = useCallback(
     (state: TimelineContextType, action: TimelineContextAction) =>
       volumeReducer(state, action, playerElement),
-    initialState
+    [playerElement]
   );
 
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const value = useMemo(() => ({ ...state, dispatch }), [state]);
+
   return (
-    <VolumeContext.Provider value={{ ...state, dispatch }}>
-      {children}
-    </VolumeContext.Provider>
+    <VolumeContext.Provider value={value}>{children}</VolumeContext.Provider>
   );
-}
+});

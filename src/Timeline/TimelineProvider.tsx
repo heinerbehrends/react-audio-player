@@ -1,4 +1,4 @@
-import { useReducer, useContext } from "react";
+import { useReducer, useContext, useMemo, useCallback } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import {
   TimelineContext,
@@ -14,14 +14,19 @@ type TimelineProviderProps = {
 
 export function TimelineProvider({ children }: TimelineProviderProps) {
   const { element } = useContext(PlayerContext);
-  const [state, dispatch] = useReducer(
+
+  const reducer = useCallback(
     (state: TimelineContextType, action: TimelineContextAction) =>
       timelineReducer(state, action, element),
-    initialState
+    [element]
   );
 
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const value = useMemo(() => ({ ...state, dispatch }), [state]);
+
   return (
-    <TimelineContext.Provider value={{ ...state, dispatch }}>
+    <TimelineContext.Provider value={value}>
       {children}
     </TimelineContext.Provider>
   );

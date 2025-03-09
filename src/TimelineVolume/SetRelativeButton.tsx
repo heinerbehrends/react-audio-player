@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { TimelineContextAction } from "../Timeline/TimelineContext";
-import { useContext, useRef } from "react";
+import { useContext, useRef, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { handleTimelineKeys } from "./handleKeys";
@@ -25,44 +25,62 @@ export function SetRelativeButton({
   const { element, dispatch: dispatchPlayer } = useContext(PlayerContext);
   const duration = element?.duration ?? 0;
   const hasSetDimensions = useRef(false);
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) =>
+      handleTimelineKeys({
+        event,
+        currentTime: time,
+        duration,
+        dispatch,
+        dispatchPlayer,
+        type,
+      }),
+    [time, duration, dispatch, dispatchPlayer, type]
+  );
+
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) =>
+      dispatch({
+        type: "SEEK",
+        clientX: event.clientX,
+      }),
+    [dispatch]
+  );
+
+  const handleRef = useCallback(
+    (element: HTMLButtonElement | null) =>
+      sendTimelineLoaded({
+        element,
+        dispatch,
+        hasSentDimensions: hasSetDimensions,
+      }),
+    [dispatch]
+  );
+
+  const style = useMemo(
+    () => ({
+      width: "100%",
+      height: "100%",
+      gridColumn: "1 / 1",
+      gridRow: "1 / 1",
+      padding: 0,
+      margin: 0,
+      border: "none",
+      background: "none",
+      ...props.style,
+    }),
+    [props.style]
+  );
+
   return (
     <button
       {...props}
-      style={{
-        width: "100%",
-        height: "100%",
-        gridColumn: "1 / 1",
-        gridRow: "1 / 1",
-        padding: 0,
-        margin: 0,
-        border: "none",
-        background: "none",
-        ...props.style,
-      }}
-      ref={(element) =>
-        sendTimelineLoaded({
-          element,
-          dispatch,
-          hasSentDimensions: hasSetDimensions,
-        })
-      }
+      style={style}
+      ref={handleRef}
       data-testid="timeline"
-      onKeyDown={(event) =>
-        handleTimelineKeys({
-          event,
-          currentTime: time,
-          duration,
-          dispatch,
-          dispatchPlayer,
-          type,
-        })
-      }
-      onPointerDown={(event) =>
-        dispatch({
-          type: "SEEK",
-          clientX: event.clientX,
-        })
-      }
+      onKeyDown={handleKeyDown}
+      onPointerDown={handlePointerDown}
     >
       {children}
     </button>
