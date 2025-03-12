@@ -1,38 +1,6 @@
-import { useContext, useEffect, useState, memo, useCallback } from "react";
+import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
-
-function useTimeDisplay() {
-  const { element } = useContext(PlayerContext);
-  const [displayTime, setDisplayTime] = useState({
-    elapsed: 0,
-    remaining: 0,
-  });
-
-  const updateTime = useCallback(() => {
-    setDisplayTime({
-      elapsed: Math.floor(element?.currentTime ?? 0),
-      remaining: Math.floor(
-        (element?.duration ?? 0) - (element?.currentTime ?? 0)
-      ),
-    });
-  }, [element]);
-
-  useEffect(() => {
-    if (!element) return;
-    element.addEventListener("timeupdate", updateTime);
-    return () => element.removeEventListener("timeupdate", updateTime);
-  }, [element, updateTime]);
-
-  useEffect(() => {
-    if (!element) return;
-    if (element.paused) return;
-    const interval = setInterval(updateTime, 1000);
-
-    return () => clearInterval(interval);
-  }, [element, element?.paused, updateTime]);
-
-  return displayTime;
-}
+import { useTimeDisplay } from "./useTimeDisplay";
 
 function formatTime(time: number) {
   const minutes = Math.floor(time / 60);
