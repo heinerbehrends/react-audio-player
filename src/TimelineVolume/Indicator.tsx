@@ -4,13 +4,13 @@ import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useUpdateTime } from "../Timeline/useUpdateTime";
 
-type TimelineProgressProps = HTMLAttributes<HTMLDivElement> & {
-  type: "timeline" | "volume";
-};
-
 const switchContext = {
   timeline: TimelineContext,
   volume: VolumeContext,
+};
+
+type TimelineProgressProps = HTMLAttributes<HTMLDivElement> & {
+  type: "timeline" | "volume";
 };
 
 export const Indicator = memo(function Indicator({
@@ -21,7 +21,7 @@ export const Indicator = memo(function Indicator({
     switchContext[type]
   );
   const { element } = useContext(PlayerContext);
-  const duration = element?.duration ?? 1;
+  const duration = type === "timeline" ? element?.duration ?? 1 : 1;
 
   const progress = useMemo(
     () =>
@@ -58,11 +58,15 @@ export const Indicator = memo(function Indicator({
       {...props}
       style={style}
       role="progressbar"
-      aria-valuetext={`Elapsed: ${minutes} minutes and ${seconds} seconds`}
+      aria-valuetext={`${
+        type === "timeline"
+          ? `${minutes} minutes and ${seconds} seconds`
+          : undefined
+      }`}
       aria-valuenow={time}
       aria-valuemin={0}
       aria-valuemax={duration}
-      aria-label="audio progress"
+      aria-label={type === "timeline" ? "audio progress" : "volume level"}
     />
   );
 });
