@@ -51,11 +51,14 @@ export const Indicator = memo(function Indicator({
 
   useUpdateTime();
 
+  const { minutes, seconds } = minutesAndSeconds(time);
+
   return (
     <div
       {...props}
       style={style}
       role="progressbar"
+      aria-valuetext={`Elapsed: ${minutes} minutes and ${seconds} seconds`}
       aria-valuenow={time}
       aria-valuemin={0}
       aria-valuemax={duration}
@@ -88,4 +91,10 @@ function getProgress({
     return dragState === "dragging" ? xOffset / timelineWidth : time;
   }
   return time;
+}
+
+function minutesAndSeconds(time: number) {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return { minutes, seconds };
 }
