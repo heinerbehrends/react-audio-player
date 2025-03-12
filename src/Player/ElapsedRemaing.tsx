@@ -3,17 +3,33 @@ import { PlayerContext } from "./PlayerContext";
 
 function useTimeDisplay() {
   const { element } = useContext(PlayerContext);
-  const [displayTime, setDisplayTime] = useState(0);
+  const [displayTime, setDisplayTime] = useState({
+    elapsed: 0,
+    remaining: 0,
+  });
+
+  const updateTime = useCallback(() => {
+    setDisplayTime({
+      elapsed: Math.floor(element?.currentTime ?? 0),
+      remaining: Math.floor(
+        (element?.duration ?? 0) - (element?.currentTime ?? 0)
+      ),
+    });
+  }, [element]);
 
   useEffect(() => {
     if (!element) return;
+    element.addEventListener("timeupdate", updateTime);
+    return () => element.removeEventListener("timeupdate", updateTime);
+  }, [element, updateTime]);
 
-    const interval = setInterval(() => {
-      setDisplayTime(Math.floor(element.currentTime));
-    }, 1000);
+  useEffect(() => {
+    if (!element) return;
+    if (element.paused) return;
+    const interval = setInterval(updateTime, 1000);
 
     return () => clearInterval(interval);
-  }, [element]);
+  }, [element, element?.paused, updateTime]);
 
   return displayTime;
 }
@@ -36,7 +52,7 @@ export const Toggle = memo(function Toggle({
 
   return (
     <button
-      aria-label="Toggle between elapsed and remaining time"
+      aria-label="Toggle elapsed and remaining time"
       aria-pressed={timeDisplay === "remaining"}
       onClick={handleClick}
     >
@@ -47,7 +63,7 @@ export const Toggle = memo(function Toggle({
 
 export const Elapsed = memo(function Elapsed() {
   const { player, timeDisplay } = useContext(PlayerContext);
-  const displayTime = useTimeDisplay();
+  const { elapsed } = useTimeDisplay();
 
   if (player === "loading") {
     return <time aria-label="elapsed">0:00</time>;
@@ -55,33 +71,32 @@ export const Elapsed = memo(function Elapsed() {
   if (timeDisplay === "remaining") {
     return null;
   }
-  return <time aria-label="elapsed">{formatTime(displayTime)}</time>;
+  return <time aria-label="elapsed">{formatTime(elapsed)}</time>;
 });
 
 export const Remaining = memo(function Remaining() {
   const { player, element, timeDisplay } = useContext(PlayerContext);
-  const displayTime = useTimeDisplay();
+  const { remaining } = useTimeDisplay();
   if (!element || player === "loading") {
     return <time aria-label="remaining">0:00</time>;
   }
   if (timeDisplay === "elapsed") {
     return null;
   }
-  const remaining = Math.floor(element.duration - displayTime);
   return <time aria-label="remaining">{formatTime(remaining)}</time>;
 });
 
-type ElapsedRemainingComponent = React.NamedExoticComponent<{
+type ElapsedRemaining = React.NamedExoticComponent<{
   children: React.ReactNode;
 }> & {
   Elapsed: React.NamedExoticComponent<{ children: React.ReactNode }>;
   Remaining: React.NamedExoticComponent<{ children: React.ReactNode }>;
 };
 
-const ElapsedRemainingComponent = Object.assign({
+const ElapsedRemaining = Object.assign({
   Elapsed,
   Remaining,
   Toggle,
 });
 
-export default ElapsedRemainingComponent;
+export default ElapsedRemaining;
