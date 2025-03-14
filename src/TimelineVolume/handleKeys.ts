@@ -1,5 +1,6 @@
 import { TimelineContextAction } from "../Timeline/TimelineContext";
 import { PlayerContextAction } from "../Player/PlayerContext";
+import { SideEffectAction } from "../AudioElement/AudioContext";
 
 type getArrowKeyValueProps = {
   type: "timeline" | "volume";
@@ -26,10 +27,14 @@ function getArrowKeyValue({
   }
   if (type === "volume") {
     if (event.key === "ArrowDown") {
-      return event.shiftKey ? Math.max(0, time - 0.1) : Math.max(0, time - 0.1);
+      return event.shiftKey
+        ? Math.max(0, time - 0.05)
+        : Math.max(0, time - 0.1);
     }
     if (event.key === "ArrowUp") {
-      return event.shiftKey ? Math.min(1, time + 0.1) : Math.min(1, time + 0.1);
+      return event.shiftKey
+        ? Math.min(1, time + 0.05)
+        : Math.min(1, time + 0.1);
     }
   }
   return;
@@ -41,6 +46,11 @@ type HandleKeyDownProps = {
   duration: number;
   dispatch: (event: TimelineContextAction) => void;
   dispatchPlayer: (event: PlayerContextAction) => void;
+  handleSideEffect: (
+    event: SideEffectAction,
+    audioElement: HTMLAudioElement | null
+  ) => void;
+  audioElement: HTMLAudioElement | null;
   type: "timeline" | "volume";
 };
 
@@ -50,29 +60,54 @@ export function handleTimelineKeys({
   duration,
   dispatch,
   dispatchPlayer,
+  handleSideEffect,
+  audioElement,
   type,
 }: HandleKeyDownProps) {
+  if (
+    handleMediaKeys({ event, dispatchPlayer, handleSideEffect, audioElement })
+  ) {
+    return;
+  }
   if (event.key in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]) {
     const time = getNumericKeyValue({ type, duration, key: event.key });
+    handleSideEffect(
+      { type: "SEEK_TO_TIME", time, component: type },
+      audioElement
+    );
     dispatch({
       type: "SEEK_TO_TIME",
+      component: type,
       time,
     });
+    event.preventDefault();
+    return true;
   }
   if (event.key.startsWith("Arrow")) {
     const time = getArrowKeyValue({ type, duration, time: currentTime, event });
     if (!time) return;
+    handleSideEffect(
+      { type: "SEEK_TO_TIME", time, component: type },
+      audioElement
+    );
     dispatch({
       type: "SEEK_TO_TIME",
+      component: type,
       time,
     });
+    event.preventDefault();
+    return true;
   }
 
   if (["Enter", " "].includes(event.key)) {
+    handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
     dispatchPlayer({
       type: "TOGGLE_PLAY",
     });
+    event.preventDefault();
+    return true;
   }
+  return false;
 }
 
 type getNumericKeyValueProps = {
@@ -107,4 +142,37 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
     },
   };
   return keyToTimeMap[type][key as keyof (typeof keyToTimeMap)[typeof type]];
+}
+
+export function handleMediaKeys({
+  event,
+  dispatchPlayer,
+  handleSideEffect,
+  audioElement,
+}: Omit<HandleKeyDownProps, "currentTime" | "duration" | "dispatch" | "type">) {
+  if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
+    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
+    dispatchPlayer({
+      type: "TOGGLE_MUTE",
+    });
+    event.preventDefault();
+    return true;
+  }
+  if (["p", "MediaPlayPause"].includes(event.key.toLowerCase())) {
+    handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
+    dispatchPlayer({
+      type: "TOGGLE_PLAY",
+    });
+    event.preventDefault();
+    return true;
+  }
+  if (["s", "MediaStop"].includes(event.key.toLowerCase())) {
+    handleSideEffect(
+      { type: "SEEK_TO_TIME", time: 0, component: "timeline" },
+      audioElement
+    );
+    event.preventDefault();
+    return true;
+  }
+  return false;
 }

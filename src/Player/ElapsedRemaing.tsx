@@ -29,29 +29,45 @@ export const Toggle = memo(function Toggle({
   );
 });
 
-export const Elapsed = memo(function Elapsed() {
+export const Elapsed = memo(function Elapsed({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
   const { player, timeDisplay } = useContext(PlayerContext);
   const { elapsed } = useTimeDisplay();
 
-  if (player === "loading") {
-    return <time aria-label="elapsed">0:00</time>;
-  }
   if (timeDisplay === "remaining") {
     return null;
   }
-  return <time aria-label="elapsed">{formatTime(elapsed)}</time>;
+  if (player === "loading") {
+    return <time aria-label="elapsed">0:00</time>;
+  }
+  return (
+    <time aria-label="elapsed">
+      {children} {formatTime(elapsed)}
+    </time>
+  );
 });
 
-export const Remaining = memo(function Remaining() {
-  const { player, element, timeDisplay } = useContext(PlayerContext);
+export const Remaining = memo(function Remaining({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
+  const { player, timeDisplay } = useContext(PlayerContext);
   const { remaining } = useTimeDisplay();
-  if (!element || player === "loading") {
-    return <time aria-label="remaining">0:00</time>;
-  }
   if (timeDisplay === "elapsed") {
     return null;
   }
-  return <time aria-label="remaining">{formatTime(remaining)}</time>;
+  if (player === "loading") {
+    return <time aria-label="remaining">0:00</time>;
+  }
+  return (
+    <time aria-label="remaining">
+      {children} -{formatTime(remaining)}
+    </time>
+  );
 });
 
 type ElapsedRemaining = React.NamedExoticComponent<{

@@ -9,6 +9,7 @@ import {
 import { useDrag } from "../useDrag";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { PlayerContext } from "../Player/PlayerContext";
+import { AudioContext } from "../AudioElement/AudioContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 
 type DragButtonProps = HTMLAttributes<HTMLButtonElement> & {
@@ -49,19 +50,20 @@ export function DragButton({ type, ...props }: DragButtonProps) {
   const { xOffset, dragState, timelineWidth, time, dispatch } = useContext(
     switchContext[type]
   );
-  const { element, dispatch: dispatchPlayer } = useContext(PlayerContext);
+  const { dispatch: dispatchPlayer } = useContext(PlayerContext);
+  const { audioElement, handleSideEffect } = useContext(AudioContext);
 
   const offset = useMemo(
     () =>
       getOffset({
         type,
         time,
-        duration: element?.duration,
+        duration: audioElement?.duration,
         timelineWidth,
         dragState,
         xOffset,
       }),
-    [type, time, element?.duration, timelineWidth, dragState, xOffset]
+    [type, time, audioElement?.duration, timelineWidth, dragState, xOffset]
   );
 
   const handlePointerDown = useCallback(() => {
@@ -76,12 +78,14 @@ export function DragButton({ type, ...props }: DragButtonProps) {
       handleTimelineKeys({
         event,
         currentTime: time,
-        duration: element?.duration ?? 0,
+        duration: audioElement?.duration ?? 0,
         dispatch,
         dispatchPlayer,
         type,
+        handleSideEffect,
+        audioElement,
       }),
-    [time, element?.duration, dispatch, dispatchPlayer, type]
+    [time, dispatch, dispatchPlayer, type, handleSideEffect, audioElement]
   );
 
   const style: CSSProperties = useMemo(

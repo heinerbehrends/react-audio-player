@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState, useCallback } from "react";
-import { PlayerContext } from "./PlayerContext";
+import { AudioContext } from "../AudioElement/AudioContext";
 
 export function useTimeDisplay() {
-  const { element } = useContext(PlayerContext);
+  const { audioElement } = useContext(AudioContext);
   const [displayTime, setDisplayTime] = useState({
     elapsed: 0,
     remaining: 0,
@@ -10,26 +10,26 @@ export function useTimeDisplay() {
 
   const updateTime = useCallback(() => {
     setDisplayTime({
-      elapsed: Math.floor(element?.currentTime ?? 0),
+      elapsed: Math.floor(audioElement?.currentTime ?? 0),
       remaining: Math.floor(
-        (element?.duration ?? 0) - (element?.currentTime ?? 0)
+        (audioElement?.duration ?? 0) - (audioElement?.currentTime ?? 0)
       ),
     });
-  }, [element]);
+  }, [audioElement]);
 
   useEffect(() => {
-    if (!element) return;
-    element.addEventListener("timeupdate", updateTime);
-    return () => element.removeEventListener("timeupdate", updateTime);
-  }, [element, updateTime]);
+    if (!audioElement) return;
+    audioElement.addEventListener("timeupdate", updateTime);
+    return () => audioElement.removeEventListener("timeupdate", updateTime);
+  }, [audioElement, updateTime]);
 
   useEffect(() => {
-    if (!element) return;
-    if (element.paused) return;
+    if (!audioElement) return;
+    if (audioElement.paused) return;
     const interval = setInterval(updateTime, 1000);
 
     return () => clearInterval(interval);
-  }, [element, element?.paused, updateTime]);
+  }, [audioElement, audioElement?.paused, updateTime]);
 
   return displayTime;
 }

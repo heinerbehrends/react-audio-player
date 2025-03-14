@@ -1,14 +1,15 @@
 import { useEffect, useContext, useRef } from "react";
 import { TimelineContext } from "./TimelineContext";
 import { PlayerContext } from "../Player/PlayerContext";
-
+import { AudioContext } from "../AudioElement/AudioContext";
 export function useUpdateTime() {
   const { dispatch } = useContext(TimelineContext);
-  const { element, player } = useContext(PlayerContext);
+  const { player } = useContext(PlayerContext);
+  const { audioElement } = useContext(AudioContext);
   const frameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    if (player !== "playing" || !element) {
+    if (player !== "playing" || !audioElement) {
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
       }
@@ -16,7 +17,7 @@ export function useUpdateTime() {
     }
 
     const updateTime = () => {
-      const currentTime = element.currentTime;
+      const currentTime = audioElement.currentTime;
       dispatch({ type: "UPDATE_TIME", time: currentTime });
       frameRef.current = requestAnimationFrame(updateTime);
     };
@@ -29,5 +30,5 @@ export function useUpdateTime() {
         frameRef.current = undefined;
       }
     };
-  }, [player, element, dispatch]);
+  }, [player, audioElement, dispatch]);
 }

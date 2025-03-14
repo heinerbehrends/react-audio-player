@@ -2,14 +2,15 @@ import { useContext } from "react";
 import { PlayerContext } from "./Player/PlayerContext";
 import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
-
+import { AudioContext } from "./AudioElement/AudioContext";
 const mapContext = {
   timeline: TimelineContext,
   volume: VolumeContext,
 };
 
 function Debug({ type }: { type: "timeline" | "volume" }) {
-  const { player: state, element } = useContext(PlayerContext);
+  const { player: state, cues } = useContext(PlayerContext);
+  const { audioElement } = useContext(AudioContext);
   const context = useContext(mapContext[type]);
 
   return (
@@ -24,8 +25,8 @@ function Debug({ type }: { type: "timeline" | "volume" }) {
     >
       <h3>Player</h3>
       <p>State: {state}</p>
-      <p>Element: {element?.src}</p>
-
+      <p>Element: {audioElement?.src}</p>
+      <p>Cue Text: {cues[0]?.text}</p>
       <h3> {type}</h3>
       <p>Time: {context.time.toFixed(2)}</p>
       <p>Left: {context.timelineLeft}</p>

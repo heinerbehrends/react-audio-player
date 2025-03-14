@@ -2,7 +2,6 @@ import { createContext } from "react";
 
 export type AudioFileLoadedAction = {
   type: "AUDIO_FILE_LOADED";
-  element: HTMLAudioElement | null;
 };
 
 export type TogglePlayAction = {
@@ -21,29 +20,41 @@ export type AudioFileEndedAction = {
   type: "AUDIO_FILE_ENDED";
 };
 
+export type AudioFileErrorAction = {
+  type: "AUDIO_FILE_ERROR";
+  error: Error;
+};
+
+export type CaptionCueChangeAction = {
+  type: "CAPTION_CUE_CHANGE";
+  cues: TextTrackCue[];
+};
+
 export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
   | ToggleMuteAction
   | ToggleTimeDisplayAction
-  | AudioFileEndedAction;
+  | AudioFileEndedAction
+  | AudioFileErrorAction
+  | CaptionCueChangeAction;
 
 export type PlayerContextType = {
-  element: HTMLAudioElement | null;
   dispatch: (action: PlayerContextAction) => void;
-  player: "loading" | "playing" | "paused";
+  player: "loading" | "playing" | "paused" | "error";
   isMuted: boolean;
   timeDisplay: "elapsed" | "remaining";
-  audioFiles: string[];
+  audioFiles: { src: string; captionSrc?: string }[];
+  cues: VTTCue[];
 };
 
 export const initialState: PlayerContextType = {
-  element: null,
   dispatch: () => {},
   player: "loading",
   isMuted: false,
   timeDisplay: "elapsed",
   audioFiles: [],
+  cues: [],
 };
 
 export const PlayerContext = createContext<PlayerContextType>(initialState);

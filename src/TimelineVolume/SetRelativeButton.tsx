@@ -5,6 +5,8 @@ import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { handleTimelineKeys } from "./handleKeys";
 import { PlayerContext } from "../Player/PlayerContext";
+import { AudioContext } from "../AudioElement/AudioContext";
+import { calculateTime, calculateVolume } from "../functionsLib";
 
 const switchContext = {
   timeline: TimelineContext,
@@ -21,9 +23,12 @@ export function SetRelativeButton({
   type,
   ...props
 }: SetRelativeButtonProps) {
-  const { dispatch, time } = useContext(switchContext[type]);
-  const { element, dispatch: dispatchPlayer } = useContext(PlayerContext);
-  const duration = element?.duration ?? 0;
+  const { dispatch, time, timelineLeft, timelineWidth } = useContext(
+    switchContext[type]
+  );
+  const { dispatch: dispatchPlayer } = useContext(PlayerContext);
+  const { audioElement, handleSideEffect } = useContext(AudioContext);
+  const duration = audioElement?.duration ?? 0;
   const hasSetDimensions = useRef(false);
 
   const handleKeyDown = useCallback(
@@ -35,17 +40,57 @@ export function SetRelativeButton({
         dispatch,
         dispatchPlayer,
         type,
+        handleSideEffect,
+        audioElement,
       }),
-    [time, duration, dispatch, dispatchPlayer, type]
+    [
+      time,
+      duration,
+      dispatch,
+      dispatchPlayer,
+      type,
+      handleSideEffect,
+      audioElement,
+    ]
   );
 
   const handlePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLButtonElement>) =>
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      const xOffset = event.clientX - timelineLeft;
+      const time =
+        type === "timeline"
+          ? calculateTime({
+              xOffset,
+              timelineWidth,
+              duration,
+            })
+          : calculateVolume({
+              xOffset,
+              timelineWidth,
+            });
+      handleSideEffect(
+        {
+          type: "SEEK_TO_TIME",
+          time: time,
+          component: type,
+        },
+        audioElement
+      );
       dispatch({
-        type: "SEEK",
-        clientX: event.clientX,
-      }),
-    [dispatch]
+        type: "SEEK_TO_TIME",
+        time: time,
+        component: type,
+      });
+    },
+    [
+      dispatch,
+      type,
+      timelineLeft,
+      timelineWidth,
+      duration,
+      audioElement,
+      handleSideEffect,
+    ]
   );
 
   const handleRef = useCallback(

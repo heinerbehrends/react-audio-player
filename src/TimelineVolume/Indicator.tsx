@@ -1,7 +1,7 @@
 import { useContext, type HTMLAttributes, memo, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
-import { PlayerContext } from "../Player/PlayerContext";
+import { AudioContext } from "../AudioElement/AudioContext";
 import { useUpdateTime } from "../Timeline/useUpdateTime";
 
 const switchContext = {
@@ -20,8 +20,8 @@ export const Indicator = memo(function Indicator({
   const { dragState, xOffset, time, timelineWidth } = useContext(
     switchContext[type]
   );
-  const { element } = useContext(PlayerContext);
-  const duration = type === "timeline" ? element?.duration ?? 1 : 1;
+  const { audioElement } = useContext(AudioContext);
+  const duration = type === "timeline" ? audioElement?.duration ?? 1 : 1;
 
   const progress = useMemo(
     () =>

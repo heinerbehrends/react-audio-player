@@ -8,13 +8,14 @@ import Timeline from "./Timeline/Timeline";
 import MuteButton from "./Volume/MuteButton";
 import Volume from "./Volume/Volume";
 import ElapsedRemaining from "./Player/ElapsedRemaing";
+import Debug from "./Debug";
 
 function App() {
   return (
-    <PlayerContextProvider audioFiles={["The-Race.mp3"]}>
-      <AudioElement>
-        <AudioElement.Track kind="captions" src="captions.vtt" />
-      </AudioElement>
+    <PlayerContextProvider
+      audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
+    >
+      <AudioElement />
       <TimelineProvider>
         <Timeline style={{ height: "40px", backgroundColor: "lightgray" }}>
           <Timeline.SeekButton>
@@ -30,6 +31,7 @@ function App() {
             }}
           />
         </Timeline>
+        <Debug type="timeline" />
       </TimelineProvider>
       <PlayButton>
         <PlayButton.Playing>Pause</PlayButton.Playing>
@@ -58,6 +60,7 @@ function App() {
           <MuteButton.NotMuted>Mute</MuteButton.NotMuted>
           <MuteButton.Muted>Unmute</MuteButton.Muted>
         </MuteButton>
+        <Debug type="volume" />
       </VolumeProvider>
     </PlayerContextProvider>
   );

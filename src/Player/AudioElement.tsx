@@ -1,53 +1,75 @@
-import { ComponentProps, useContext, useRef, memo } from "react";
+import { useContext, useRef, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
+import { AudioContext } from "../AudioElement/AudioContext";
 
-type TrackProps = ComponentProps<"track"> & {
-  kind: "captions" | "chapters" | "descriptions" | "metadata" | "subtitles";
-};
-
-function Track(props: TrackProps) {
-  return <track {...props} />;
+function isTextTrack(target: EventTarget): target is TextTrack {
+  return "activeCues" in target;
 }
 
-type AudioElementProps = {
-  children: React.ReactElement<TrackProps> & {
-    type: typeof Track;
-  };
-};
-
-type AudioElementComponent = React.FC<AudioElementProps> & {
-  Track: typeof Track;
-};
-
-const AudioElementComponent = memo(function AudioElement({
-  children,
-}: AudioElementProps) {
+const AudioElement = memo(function AudioElement() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { dispatch, audioFiles, isMuted } = useContext(PlayerContext);
-  if (children.type.name !== "Track") {
-    console.error("AudioElement only accepts a track element as its child");
-  }
+  const { setAudioElement, handleSideEffect } = useContext(AudioContext);
+
+  const handleCueChange = useCallback(
+    (event: Event) => {
+      console.log("cuechange event", event.currentTarget);
+      if (event.currentTarget && isTextTrack(event.currentTarget)) {
+        const track = event.currentTarget;
+        const cuesArray = Array.from(track.activeCues || []);
+        dispatch({ type: "CAPTION_CUE_CHANGE", cues: cuesArray });
+        console.log(track.activeCues);
+      } else {
+        console.error("Current target is not a TextTrack or is null");
+      }
+    },
+    [dispatch]
+  );
 
   return (
     <audio
       aria-label="loop player"
       ref={audioRef}
-      onCanPlay={() => {
-        dispatch({ type: "AUDIO_FILE_LOADED", element: audioRef.current });
-      }}
       onEnded={() => {
+        handleSideEffect({ type: "AUDIO_FILE_ENDED" }, audioRef.current);
         dispatch({ type: "AUDIO_FILE_ENDED" });
       }}
-      src={audioFiles[0]}
+      onError={(event) => {
+        dispatch({
+          type: "AUDIO_FILE_ERROR",
+          error: new Error(event.toString()),
+        });
+      }}
+      onLoadedMetadata={() => {
+        setAudioElement(audioRef.current);
+        dispatch({ type: "AUDIO_FILE_LOADED" });
+      }}
+      src={audioFiles?.[0]?.src}
       muted={isMuted}
     >
-      {children}
+      {audioFiles?.[0]?.captionSrc ? (
+        <track
+          ref={(element) => {
+            if (!element) {
+              return;
+            }
+
+            element.track.mode = "showing";
+
+            console.log("adding cuechange listener", element.track);
+            element.track.addEventListener("cuechange", handleCueChange);
+
+            return () => {
+              element.track.removeEventListener("cuechange", handleCueChange);
+            };
+          }}
+          kind="captions"
+          src="captions.vtt"
+          default
+        />
+      ) : null}
     </audio>
   );
-}) as React.NamedExoticComponent<AudioElementProps>;
-
-const AudioElement = Object.assign(AudioElementComponent, {
-  Track,
-}) as AudioElementComponent;
+});
 
 export { AudioElement };

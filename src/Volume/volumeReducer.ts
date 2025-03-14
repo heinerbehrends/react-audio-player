@@ -5,8 +5,7 @@ import type {
 
 export function volumeReducer(
   state: TimelineContextType,
-  action: TimelineContextAction,
-  playerElement: HTMLAudioElement | null
+  action: TimelineContextAction
 ): TimelineContextType {
   switch (action.type) {
     case "TIMELINE_LOADED": {
@@ -27,7 +26,7 @@ export function volumeReducer(
       };
     }
     case "DRAG": {
-      if (state.dragState !== "dragging" || !playerElement) {
+      if (state.dragState !== "dragging") {
         return state;
       }
       const xOffset = action.clientX - state.timelineLeft;
@@ -38,7 +37,6 @@ export function volumeReducer(
         return state;
       }
       const volume = xOffset / state.timelineWidth;
-      playerElement.volume = volume;
       return {
         ...state,
         xOffset,
@@ -49,18 +47,7 @@ export function volumeReducer(
       if (state.dragState !== "dragging") return state;
       return { ...state, dragState: "idle" as const };
     }
-    case "SEEK": {
-      if (!playerElement) return state;
-      const volume = Math.max(
-        0,
-        Math.min(1, (action.clientX - state.timelineLeft) / state.timelineWidth)
-      );
-      playerElement.volume = volume;
-      return { ...state, time: volume };
-    }
     case "SEEK_TO_TIME": {
-      if (!playerElement) return state;
-      playerElement.volume = action.time;
       return { ...state, time: action.time };
     }
     default: {

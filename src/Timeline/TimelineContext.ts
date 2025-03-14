@@ -31,10 +31,12 @@ export type DragStartAction = {
 export type DragAction = {
   type: "DRAG";
   clientX: number;
+  time: number;
 };
 export type DragEndAction = {
   type: "DRAG_END";
-  clientX: number;
+  time: number;
+  component: "timeline" | "volume";
 };
 
 export type UpdateTimeAction = {
@@ -42,20 +44,15 @@ export type UpdateTimeAction = {
   time: number;
 };
 
-export type SeekAction = {
-  type: "SEEK";
-  clientX: number;
-};
-
 export type SeekToTimeAction = {
   type: "SEEK_TO_TIME";
+  component: "timeline" | "volume";
   time: number;
 };
 
 export type TimelineContextAction =
   | TimelineLoadedAction
   | UpdateTimeAction
-  | SeekAction
   | SeekToTimeAction
   | DragAction
   | DragStartAction
