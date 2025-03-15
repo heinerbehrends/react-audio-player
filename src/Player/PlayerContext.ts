@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import { PlayerProviderAction } from "./PlayerProvider";
 
 export type AudioFileLoadedAction = {
   type: "AUDIO_FILE_LOADED";
@@ -40,7 +41,7 @@ export type PlayerContextAction =
   | CaptionCueChangeAction;
 
 export type PlayerContextType = {
-  dispatch: (action: PlayerContextAction) => void;
+  handlePlayerAction: (action: PlayerProviderAction) => void;
   player: "loading" | "playing" | "paused" | "error";
   isMuted: boolean;
   timeDisplay: "elapsed" | "remaining";
@@ -49,7 +50,7 @@ export type PlayerContextType = {
 };
 
 export const initialState: PlayerContextType = {
-  dispatch: () => {},
+  handlePlayerAction: () => {},
   player: "loading",
   isMuted: false,
   timeDisplay: "elapsed",

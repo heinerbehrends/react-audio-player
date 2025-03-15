@@ -3,7 +3,7 @@ import { TimelineContext } from "./TimelineContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 export function useUpdateTime() {
-  const { dispatch } = useContext(TimelineContext);
+  const { handleTimelineAction } = useContext(TimelineContext);
   const { player } = useContext(PlayerContext);
   const { audioElement } = useContext(AudioContext);
   const frameRef = useRef<number | undefined>(undefined);
@@ -18,7 +18,7 @@ export function useUpdateTime() {
 
     const updateTime = () => {
       const currentTime = audioElement.currentTime;
-      dispatch({ type: "UPDATE_TIME", time: currentTime });
+      handleTimelineAction({ type: "UPDATE_TIME", time: currentTime });
       frameRef.current = requestAnimationFrame(updateTime);
     };
 
@@ -30,5 +30,5 @@ export function useUpdateTime() {
         frameRef.current = undefined;
       }
     };
-  }, [player, audioElement, dispatch]);
+  }, [player, audioElement, handleTimelineAction]);
 }

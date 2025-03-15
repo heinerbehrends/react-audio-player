@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { AudioContext, handleSideEffect } from "./AudioContext";
-
+import { useState, useMemo } from "react";
+import { AudioContext } from "./AudioContext";
+import { handleSideEffect } from "./handleSideEffect";
 export function AudioContextProvider({
   children,
 }: {
@@ -9,14 +9,18 @@ export function AudioContextProvider({
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
     null
   );
+
+  const contextValue = useMemo(
+    () => ({
+      audioElement,
+      setAudioElement,
+      handleSideEffect,
+    }),
+    [audioElement]
+  );
+
   return (
-    <AudioContext.Provider
-      value={{
-        audioElement,
-        setAudioElement,
-        handleSideEffect,
-      }}
-    >
+    <AudioContext.Provider value={contextValue}>
       {children}
     </AudioContext.Provider>
   );

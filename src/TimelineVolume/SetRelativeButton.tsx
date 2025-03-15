@@ -23,11 +23,10 @@ export function SetRelativeButton({
   type,
   ...props
 }: SetRelativeButtonProps) {
-  const { dispatch, time, timelineLeft, timelineWidth } = useContext(
-    switchContext[type]
-  );
-  const { dispatch: dispatchPlayer } = useContext(PlayerContext);
-  const { audioElement, handleSideEffect } = useContext(AudioContext);
+  const { handleTimelineAction, time, timelineLeft, timelineWidth } =
+    useContext(switchContext[type]);
+  const { handlePlayerAction } = useContext(PlayerContext);
+  const { audioElement } = useContext(AudioContext);
   const duration = audioElement?.duration ?? 0;
   const hasSetDimensions = useRef(false);
 
@@ -37,21 +36,11 @@ export function SetRelativeButton({
         event,
         currentTime: time,
         duration,
-        dispatch,
-        dispatchPlayer,
+        handleTimelineAction,
+        handlePlayerAction,
         type,
-        handleSideEffect,
-        audioElement,
       }),
-    [
-      time,
-      duration,
-      dispatch,
-      dispatchPlayer,
-      type,
-      handleSideEffect,
-      audioElement,
-    ]
+    [time, duration, handleTimelineAction, handlePlayerAction, type]
   );
 
   const handlePointerDown = useCallback(
@@ -68,39 +57,24 @@ export function SetRelativeButton({
               xOffset,
               timelineWidth,
             });
-      handleSideEffect(
-        {
-          type: "SEEK_TO_TIME",
-          time: time,
-          component: type,
-        },
-        audioElement
-      );
-      dispatch({
+      handleTimelineAction({
         type: "SEEK_TO_TIME",
-        time: time,
+        time,
         component: type,
       });
     },
-    [
-      dispatch,
-      type,
-      timelineLeft,
-      timelineWidth,
-      duration,
-      audioElement,
-      handleSideEffect,
-    ]
+    [type, timelineLeft, timelineWidth, duration, handleTimelineAction]
   );
 
   const handleRef = useCallback(
     (element: HTMLButtonElement | null) =>
       sendTimelineLoaded({
         element,
-        dispatch,
+        type,
+        handleTimelineAction,
         hasSentDimensions: hasSetDimensions,
       }),
-    [dispatch]
+    [handleTimelineAction, type]
   );
 
   const style = useMemo(
@@ -134,7 +108,8 @@ export function SetRelativeButton({
 
 function sendTimelineLoaded({
   element,
-  dispatch,
+  type,
+  handleTimelineAction,
   hasSentDimensions,
 }: SendTimelineLoadedProps) {
   if (!element) {
@@ -144,8 +119,9 @@ function sendTimelineLoaded({
     return;
   }
   const rect = element.getBoundingClientRect();
-  dispatch({
+  handleTimelineAction({
     type: "TIMELINE_LOADED",
+    component: type,
     timelineLeft: rect.left,
     timelineWidth: rect.width,
   });
@@ -154,6 +130,7 @@ function sendTimelineLoaded({
 
 type SendTimelineLoadedProps = {
   element: HTMLButtonElement | null;
-  dispatch: (action: TimelineContextAction) => void;
+  handleTimelineAction: (action: TimelineContextAction) => void;
   hasSentDimensions: React.RefObject<boolean>;
+  type: "timeline" | "volume";
 };

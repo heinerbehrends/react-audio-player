@@ -1,6 +1,7 @@
 import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
+import { handleMediaKeys } from "../TimelineVolume/handleKeys";
 
 function formatTime(time: number) {
   const minutes = Math.floor(time / 60);
@@ -13,15 +14,21 @@ export const Toggle = memo(function Toggle({
 }: {
   children: React.ReactNode;
 }) {
-  const { dispatch, timeDisplay } = useContext(PlayerContext);
+  const { handlePlayerAction, timeDisplay } = useContext(PlayerContext);
   const handleClick = useCallback(() => {
-    dispatch({ type: "TOGGLE_TIME_DISPLAY" });
-  }, [dispatch]);
+    handlePlayerAction({ type: "TOGGLE_TIME_DISPLAY" });
+  }, [handlePlayerAction]);
 
   return (
     <button
       aria-label="Toggle elapsed and remaining time"
       aria-pressed={timeDisplay === "remaining"}
+      onKeyDown={(event) => {
+        handleMediaKeys({
+          event,
+          handlePlayerAction,
+        });
+      }}
       onClick={handleClick}
     >
       {children}

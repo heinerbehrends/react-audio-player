@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { handleMediaKeys } from "../TimelineVolume/handleKeys";
+
 type PlayButtonProps = {
   children: React.ReactNode;
 } & React.HTMLAttributes<HTMLButtonElement>;
@@ -14,21 +14,17 @@ const ariaLabel = {
 };
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  const { dispatch, player: state } = useContext(PlayerContext);
-  const { handleSideEffect, audioElement } = useContext(AudioContext);
+  const { handlePlayerAction, player: state } = useContext(PlayerContext);
   const isPlaying = state === "playing";
   return (
     <button
       onClick={() => {
-        handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
-        dispatch({ type: "TOGGLE_PLAY" });
+        handlePlayerAction({ type: "TOGGLE_PLAY" });
       }}
       onKeyDown={(event) => {
         handleMediaKeys({
           event,
-          handleSideEffect,
-          audioElement,
-          dispatchPlayer: dispatch,
+          handlePlayerAction,
         });
       }}
       disabled={state === "loading"}

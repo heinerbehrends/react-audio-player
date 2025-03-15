@@ -1,6 +1,5 @@
-import { TimelineContextAction } from "../Timeline/TimelineContext";
-import { PlayerContextAction } from "../Player/PlayerContext";
-import { SideEffectAction } from "../AudioElement/AudioContext";
+import { TimelineProviderAction } from "../Timeline/TimelineProvider";
+import { PlayerProviderAction } from "../Player/PlayerProvider";
 
 type getArrowKeyValueProps = {
   type: "timeline" | "volume";
@@ -40,17 +39,15 @@ function getArrowKeyValue({
   return;
 }
 
+// Generic action handler type with proper typing
+type ActionHandler<T> = (action: T) => void;
+
 type HandleKeyDownProps = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   currentTime: number;
   duration: number;
-  dispatch: (event: TimelineContextAction) => void;
-  dispatchPlayer: (event: PlayerContextAction) => void;
-  handleSideEffect: (
-    event: SideEffectAction,
-    audioElement: HTMLAudioElement | null
-  ) => void;
-  audioElement: HTMLAudioElement | null;
+  handleTimelineAction: ActionHandler<TimelineProviderAction>;
+  handlePlayerAction: ActionHandler<PlayerProviderAction>;
   type: "timeline" | "volume";
 };
 
@@ -58,52 +55,29 @@ export function handleTimelineKeys({
   event,
   currentTime,
   duration,
-  dispatch,
-  dispatchPlayer,
-  handleSideEffect,
-  audioElement,
+  handleTimelineAction,
+  handlePlayerAction,
   type,
 }: HandleKeyDownProps) {
-  if (
-    handleMediaKeys({ event, dispatchPlayer, handleSideEffect, audioElement })
-  ) {
+  if (handleMediaKeys({ event, handlePlayerAction })) {
     return;
   }
   if (event.key in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]) {
     const time = getNumericKeyValue({ type, duration, key: event.key });
-    handleSideEffect(
-      { type: "SEEK_TO_TIME", time, component: type },
-      audioElement
-    );
-    dispatch({
-      type: "SEEK_TO_TIME",
-      component: type,
-      time,
-    });
+    handleTimelineAction({ type: "SEEK_TO_TIME", time, component: type });
     event.preventDefault();
     return true;
   }
   if (event.key.startsWith("Arrow")) {
     const time = getArrowKeyValue({ type, duration, time: currentTime, event });
     if (!time) return;
-    handleSideEffect(
-      { type: "SEEK_TO_TIME", time, component: type },
-      audioElement
-    );
-    dispatch({
-      type: "SEEK_TO_TIME",
-      component: type,
-      time,
-    });
+    handleTimelineAction({ type: "SEEK_TO_TIME", time, component: type });
     event.preventDefault();
     return true;
   }
 
   if (["Enter", " "].includes(event.key)) {
-    handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
-    dispatchPlayer({
-      type: "TOGGLE_PLAY",
-    });
+    handlePlayerAction({ type: "TOGGLE_PLAY" });
     event.preventDefault();
     return true;
   }
@@ -121,6 +95,8 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
     timeline: {
       "0": 0,
       "1": duration * 0.1,
+      "2": duration * 0.2,
+      "3": duration * 0.3,
       "4": duration * 0.4,
       "5": duration * 0.5,
       "6": duration * 0.6,
@@ -146,31 +122,27 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
 
 export function handleMediaKeys({
   event,
-  dispatchPlayer,
-  handleSideEffect,
-  audioElement,
-}: Omit<HandleKeyDownProps, "currentTime" | "duration" | "dispatch" | "type">) {
+  handlePlayerAction,
+}: Omit<
+  HandleKeyDownProps,
+  "currentTime" | "duration" | "handleTimelineAction" | "type"
+>) {
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
-    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
-    dispatchPlayer({
-      type: "TOGGLE_MUTE",
-    });
+    handlePlayerAction({ type: "TOGGLE_MUTE" });
     event.preventDefault();
     return true;
   }
   if (["p", "MediaPlayPause"].includes(event.key.toLowerCase())) {
-    handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
-    dispatchPlayer({
-      type: "TOGGLE_PLAY",
-    });
+    handlePlayerAction({ type: "TOGGLE_PLAY" });
     event.preventDefault();
     return true;
   }
   if (["s", "MediaStop"].includes(event.key.toLowerCase())) {
-    handleSideEffect(
-      { type: "SEEK_TO_TIME", time: 0, component: "timeline" },
-      audioElement
-    );
+    handlePlayerAction({
+      type: "SEEK_TO_TIME",
+      time: 0,
+      component: "timeline",
+    });
     event.preventDefault();
     return true;
   }

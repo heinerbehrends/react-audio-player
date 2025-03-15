@@ -10,10 +10,9 @@ const mapContext = {
 };
 
 export function useDrag(type: "timeline" | "volume") {
-  const { dragState, dispatch, timelineLeft, timelineWidth } = useContext(
-    mapContext[type]
-  );
-  const { audioElement, handleSideEffect } = useContext(AudioContext);
+  const { dragState, handleTimelineAction, timelineLeft, timelineWidth } =
+    useContext(mapContext[type]);
+  const { audioElement } = useContext(AudioContext);
   const onPointerUp = useCallback(
     ({ clientX }: PointerEvent) => {
       const time =
@@ -28,28 +27,13 @@ export function useDrag(type: "timeline" | "volume") {
               xOffset: clientX,
               timelineWidth,
             });
-      handleSideEffect(
-        {
-          type: "DRAG_END",
-          time,
-          component: type,
-        },
-        audioElement
-      );
-      dispatch({
+      handleTimelineAction({
         type: "DRAG_END",
         time,
         component: type,
       });
     },
-    [
-      dispatch,
-      handleSideEffect,
-      type,
-      timelineLeft,
-      timelineWidth,
-      audioElement,
-    ]
+    [handleTimelineAction, type, timelineLeft, timelineWidth, audioElement]
   );
 
   const onPointerMove = useCallback(
@@ -66,24 +50,14 @@ export function useDrag(type: "timeline" | "volume") {
               xOffset: event.clientX,
               timelineWidth,
             });
-      dispatch({ type: "DRAG", time, clientX: event.clientX });
-      if (type === "timeline") {
-        return;
-      }
-      console.log("dragging volume", handleSideEffect);
-      handleSideEffect(
-        { type: "DRAG", time, clientX: event.clientX },
-        audioElement
-      );
+      handleTimelineAction({
+        type: "DRAG",
+        time,
+        clientX: event.clientX,
+        component: type,
+      });
     },
-    [
-      dispatch,
-      type,
-      timelineLeft,
-      timelineWidth,
-      handleSideEffect,
-      audioElement,
-    ]
+    [handleTimelineAction, type, timelineLeft, timelineWidth, audioElement]
   );
 
   useEffect(() => {
@@ -99,9 +73,7 @@ export function useDrag(type: "timeline" | "volume") {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointermove", onPointerMove);
     };
-  }, [dragState, onPointerUp, onPointerMove, handleSideEffect, audioElement]);
-
-  return { dragState, dispatch };
+  }, [dragState, onPointerUp, onPointerMove, audioElement]);
 }
 
 type CalculateTimeArgs = {

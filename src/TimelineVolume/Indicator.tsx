@@ -52,7 +52,6 @@ export const Indicator = memo(function Indicator({
   useUpdateTime();
 
   const { minutes, seconds } = minutesAndSeconds(time);
-
   return (
     <div
       {...props}
@@ -60,8 +59,8 @@ export const Indicator = memo(function Indicator({
       role="progressbar"
       aria-valuetext={`${
         type === "timeline"
-          ? `${minutes} minutes and ${seconds} seconds`
-          : undefined
+          ? `${minutes} minutes ${seconds} seconds`
+          : `${Math.round(time * 100)}%`
       }`}
       aria-valuenow={time}
       aria-valuemin={0}

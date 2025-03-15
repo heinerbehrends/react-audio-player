@@ -47,11 +47,10 @@ function getOffset({
 }
 
 export function DragButton({ type, ...props }: DragButtonProps) {
-  const { xOffset, dragState, timelineWidth, time, dispatch } = useContext(
-    switchContext[type]
-  );
-  const { dispatch: dispatchPlayer } = useContext(PlayerContext);
-  const { audioElement, handleSideEffect } = useContext(AudioContext);
+  const { xOffset, dragState, timelineWidth, time, handleTimelineAction } =
+    useContext(switchContext[type]);
+  const { handlePlayerAction } = useContext(PlayerContext);
+  const { audioElement } = useContext(AudioContext);
 
   const offset = useMemo(
     () =>
@@ -67,11 +66,11 @@ export function DragButton({ type, ...props }: DragButtonProps) {
   );
 
   const handlePointerDown = useCallback(() => {
-    dispatch({
+    handleTimelineAction({
       type: "DRAG_START",
       clientX: offset,
     });
-  }, [dispatch, offset]);
+  }, [handleTimelineAction, offset]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) =>
@@ -79,13 +78,11 @@ export function DragButton({ type, ...props }: DragButtonProps) {
         event,
         currentTime: time,
         duration: audioElement?.duration ?? 0,
-        dispatch,
-        dispatchPlayer,
+        handleTimelineAction,
+        handlePlayerAction,
         type,
-        handleSideEffect,
-        audioElement,
       }),
-    [time, dispatch, dispatchPlayer, type, handleSideEffect, audioElement]
+    [time, handleTimelineAction, handlePlayerAction, type, audioElement]
   );
 
   const style: CSSProperties = useMemo(

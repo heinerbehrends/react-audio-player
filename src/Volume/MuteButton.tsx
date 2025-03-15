@@ -6,12 +6,12 @@ type MuteButtonComponentProps = {
 };
 
 export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
-  const { dispatch, isMuted } = useContext(PlayerContext);
+  const { handlePlayerAction, isMuted } = useContext(PlayerContext);
   return (
     <button
       aria-label="Mute"
       aria-pressed={isMuted}
-      onClick={() => dispatch({ type: "TOGGLE_MUTE" })}
+      onClick={() => handlePlayerAction({ type: "TOGGLE_MUTE" })}
     >
       {children}
     </button>

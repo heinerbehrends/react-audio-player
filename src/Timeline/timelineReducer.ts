@@ -7,6 +7,7 @@ export function timelineReducer(
 ) {
   switch (action.type) {
     case "TIMELINE_LOADED": {
+      console.log("timelineLoaded", action);
       return {
         ...state,
         timelineLeft: action.timelineLeft,

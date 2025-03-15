@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import { TimelineProviderAction } from "./TimelineProvider";
 
 export const TimelineContext = createContext<TimelineContextType>({
   timelineLeft: 0,
@@ -6,7 +7,7 @@ export const TimelineContext = createContext<TimelineContextType>({
   time: 0,
   xOffset: 0,
   dragState: "idle",
-  dispatch: () => {},
+  handleTimelineAction: () => {},
 });
 
 export type TimelineContextType = {
@@ -15,11 +16,12 @@ export type TimelineContextType = {
   time: number;
   xOffset: number;
   dragState: "idle" | "dragging";
-  dispatch: (action: TimelineContextAction) => void;
+  handleTimelineAction: (action: TimelineProviderAction) => void;
 };
 
 export type TimelineLoadedAction = {
   type: "TIMELINE_LOADED";
+  component: "timeline" | "volume";
   timelineLeft: number;
   timelineWidth: number;
 };
@@ -31,6 +33,7 @@ export type DragStartAction = {
 export type DragAction = {
   type: "DRAG";
   clientX: number;
+  component: "timeline" | "volume";
   time: number;
 };
 export type DragEndAction = {
@@ -64,5 +67,5 @@ export const initialState: TimelineContextType = {
   time: 0,
   xOffset: 0,
   dragState: "idle",
-  dispatch: () => {},
+  handleTimelineAction: () => {},
 };

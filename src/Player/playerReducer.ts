@@ -6,7 +6,6 @@ export function playerReducer(
 ) {
   switch (action.type) {
     case "AUDIO_FILE_LOADED": {
-      console.log("playerReducer AUDIO_FILE_LOADED", state.player);
       if (state.player === "loading") {
         return { ...state, player: "paused" as const };
       }
@@ -40,6 +39,7 @@ export function playerReducer(
       return { ...state, player: "error" as const };
     }
     case "CAPTION_CUE_CHANGE": {
+      console.log("playerReducer CAPTION_CUE_CHANGE", action);
       if (action.cues[0] && isVTTCue(action.cues[0])) {
         return { ...state, cues: action.cues as VTTCue[] };
       }
