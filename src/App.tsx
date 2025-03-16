@@ -3,13 +3,14 @@ import { PlayerContextProvider } from "./Player/PlayerProvider";
 import { TimelineProvider } from "./Timeline/TimelineProvider";
 import { VolumeProvider } from "./Volume/VolumeProvider";
 import { AudioElement } from "./Player/AudioElement";
-import PlayButton from "./Player/PlayButton";
-import Timeline from "./Timeline/Timeline";
-import MuteButton from "./Volume/MuteButton";
-import Volume from "./Volume/Volume";
-import ElapsedRemaining from "./Player/ElapsedRemaing";
-import Debug from "./Debug";
+import { PlayButton } from "./Player/PlayButton";
+import { Timeline } from "./Timeline/Timeline";
+import { MuteButton } from "./Volume/MuteButton";
+import { Volume } from "./Volume/Volume";
+import { ElapsedRemaining } from "./Player/ElapsedRemaing";
+// import { Debug } from "./Debug";
 import { AudioContextProvider } from "./AudioElement/AudioContextProvider";
+import { Captions } from "./Player/Captions";
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
               }}
             />
           </Timeline>
-          <Debug type="timeline" />
+          {/* <Debug type="timeline" /> */}
         </TimelineProvider>
         <PlayButton>
           <PlayButton.Playing>Pause</PlayButton.Playing>
@@ -62,8 +63,9 @@ function App() {
             <MuteButton.NotMuted>Mute</MuteButton.NotMuted>
             <MuteButton.Muted>Unmute</MuteButton.Muted>
           </MuteButton>
-          <Debug type="volume" />
+          {/* <Debug type="volume" /> */}
         </VolumeProvider>
+        <Captions />
       </PlayerContextProvider>
     </AudioContextProvider>
   );

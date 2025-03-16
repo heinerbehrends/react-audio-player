@@ -63,4 +63,4 @@ PlayButtonComponent.Playing = Playing;
 PlayButtonComponent.Paused = Paused;
 PlayButtonComponent.PlayButton = PlayButtonComponent;
 
-export default PlayButtonComponent;
+export const PlayButton = PlayButtonComponent;

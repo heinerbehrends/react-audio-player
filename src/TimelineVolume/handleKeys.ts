@@ -1,5 +1,5 @@
-import { TimelineProviderAction } from "../Timeline/TimelineProvider";
 import { PlayerProviderAction } from "../Player/PlayerProvider";
+import { TimelineProviderAction } from "../Timeline/TimelineVolumeContext";
 
 type getArrowKeyValueProps = {
   type: "timeline" | "volume";

@@ -1,4 +1,4 @@
-import { SideEffectAction } from "./AudioContext";
+import type { SideEffectAction } from "./AudioContext";
 
 export function handleSideEffect(
   action: SideEffectAction,
@@ -14,16 +14,26 @@ export function handleSideEffect(
       }
       break;
     }
+    case "STOP_AUDIO": {
+      audioElement.currentTime = 0;
+      audioElement.pause();
+      break;
+    }
     case "TOGGLE_MUTE": {
       audioElement.muted = !audioElement.muted;
       break;
     }
-    case "SEEK_TO_TIME": {
-      audioElement.currentTime = action.time;
-      break;
-    }
     case "AUDIO_FILE_ENDED": {
       audioElement.currentTime = 0;
+      break;
+    }
+    case "SEEK_TO_TIME": {
+      if (action.component === "timeline") {
+        audioElement.currentTime = action.time;
+      }
+      if (action.component === "volume") {
+        audioElement.volume = action.time;
+      }
       break;
     }
     case "DRAG": {

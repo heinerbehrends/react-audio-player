@@ -1,13 +1,15 @@
-import { TimelineContextType } from "./TimelineContext";
-import { TimelineContextAction } from "./TimelineContext";
+import { TimelineContextType } from "./TimelineVolumeContext";
+import { TimelineContextAction } from "./TimelineVolumeContext";
 
 export function timelineReducer(
   state: TimelineContextType,
   action: TimelineContextAction
 ) {
   switch (action.type) {
+    case "UPDATE_TIME": {
+      return { ...state, time: action.time };
+    }
     case "TIMELINE_LOADED": {
-      console.log("timelineLoaded", action);
       return {
         ...state,
         timelineLeft: action.timelineLeft,
@@ -44,11 +46,12 @@ export function timelineReducer(
         time: action.time,
       };
     }
-    case "UPDATE_TIME": {
-      return { ...state, time: action.time };
-    }
     case "SEEK_TO_TIME": {
-      return { ...state, time: action.time };
+      console.log("SEEK_TO_TIME", action.component);
+      if (action.component === "timeline") {
+        return { ...state, time: action.time };
+      }
+      return state;
     }
     default: {
       return state;

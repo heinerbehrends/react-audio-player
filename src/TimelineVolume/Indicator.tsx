@@ -1,5 +1,5 @@
 import { useContext, type HTMLAttributes, memo, useMemo } from "react";
-import { TimelineContext } from "../Timeline/TimelineContext";
+import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { useUpdateTime } from "../Timeline/useUpdateTime";

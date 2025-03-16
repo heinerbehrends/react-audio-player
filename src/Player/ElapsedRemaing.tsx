@@ -84,10 +84,8 @@ type ElapsedRemaining = React.NamedExoticComponent<{
   Remaining: React.NamedExoticComponent<{ children: React.ReactNode }>;
 };
 
-const ElapsedRemaining = Object.assign({
+export const ElapsedRemaining = Object.assign({
   Elapsed,
   Remaining,
   Toggle,
 });
-
-export default ElapsedRemaining;

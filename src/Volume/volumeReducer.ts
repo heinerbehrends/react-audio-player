@@ -1,7 +1,7 @@
 import type {
   TimelineContextType,
   TimelineContextAction,
-} from "../Timeline/TimelineContext";
+} from "../Timeline/TimelineVolumeContext";
 
 export function volumeReducer(
   state: TimelineContextType,

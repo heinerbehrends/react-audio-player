@@ -35,7 +35,7 @@ type TimelineComponent = React.FC<
   DragButton: typeof TimelineDragButton;
 };
 
-const Timeline = Object.assign(
+export const Timeline = Object.assign(
   ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <Container {...props} data-type="timeline">
       {children}
@@ -48,4 +48,4 @@ const Timeline = Object.assign(
   }
 ) as TimelineComponent;
 
-export default Timeline;
+// export default Timeline;

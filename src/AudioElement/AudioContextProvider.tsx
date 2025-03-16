@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { AudioContext } from "./AudioContext";
 import { handleSideEffect } from "./handleSideEffect";
+
 export function AudioContextProvider({
   children,
 }: {

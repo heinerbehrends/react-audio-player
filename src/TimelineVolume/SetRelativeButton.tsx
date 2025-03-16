@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from "react";
-import { TimelineContextAction } from "../Timeline/TimelineContext";
+import { TimelineContextAction } from "../Timeline/TimelineVolumeContext";
 import { useContext, useRef, useCallback, useMemo } from "react";
-import { TimelineContext } from "../Timeline/TimelineContext";
+import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { handleTimelineKeys } from "./handleKeys";
 import { PlayerContext } from "../Player/PlayerContext";

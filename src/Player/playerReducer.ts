@@ -39,7 +39,6 @@ export function playerReducer(
       return { ...state, player: "error" as const };
     }
     case "CAPTION_CUE_CHANGE": {
-      console.log("playerReducer CAPTION_CUE_CHANGE", action);
       if (action.cues[0] && isVTTCue(action.cues[0])) {
         return { ...state, cues: action.cues as VTTCue[] };
       }

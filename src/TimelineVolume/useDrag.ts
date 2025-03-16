@@ -1,8 +1,8 @@
 import { useContext, useEffect, useCallback } from "react";
-import { TimelineContext } from "./Timeline/TimelineContext";
-import { VolumeContext } from "./Volume/VolumeContext";
-import { AudioContext } from "./AudioElement/AudioContext";
-import { calculateVolume } from "./functionsLib";
+import { TimelineContext } from "../Timeline/TimelineVolumeContext";
+import { VolumeContext } from "../Volume/VolumeContext";
+import { AudioContext } from "../AudioElement/AudioContext";
+import { calculateTime, calculateVolume } from "../functionsLib";
 
 const mapContext = {
   timeline: TimelineContext,
@@ -74,21 +74,4 @@ export function useDrag(type: "timeline" | "volume") {
       window.removeEventListener("pointermove", onPointerMove);
     };
   }, [dragState, onPointerUp, onPointerMove, audioElement]);
-}
-
-type CalculateTimeArgs = {
-  xOffset: number;
-  timelineWidth: number;
-  timelineLeft: number;
-  duration: number;
-};
-
-export function calculateTime({
-  xOffset,
-  timelineWidth,
-  timelineLeft,
-  duration,
-}: CalculateTimeArgs): number {
-  const progress = (xOffset - timelineLeft) / timelineWidth;
-  return progress * duration;
 }

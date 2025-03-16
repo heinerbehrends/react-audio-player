@@ -1,22 +1,28 @@
+type CalculateTimeArgs = {
+  xOffset: number;
+  timelineWidth: number;
+  timelineLeft: number;
+  duration: number;
+};
+
 export function calculateTime({
   xOffset,
   timelineWidth,
+  timelineLeft,
   duration,
-}: {
-  xOffset: number;
-  timelineWidth: number;
-  duration: number;
-}): number {
-  const progress = xOffset / timelineWidth;
+}: CalculateTimeArgs): number {
+  const progress = (xOffset - timelineLeft) / timelineWidth;
   return progress * duration;
 }
+
+type CalculateVolumeArgs = {
+  xOffset: number;
+  timelineWidth: number;
+};
 
 export function calculateVolume({
   xOffset,
   timelineWidth,
-}: {
-  xOffset: number;
-  timelineWidth: number;
-}): number {
+}: CalculateVolumeArgs): number {
   return Math.max(0, Math.min(1, xOffset / timelineWidth));
 }

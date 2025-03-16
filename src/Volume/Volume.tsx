@@ -35,10 +35,8 @@ type VolumeComponent = React.FC<
   DragButton: typeof VolumeDragButton;
 };
 
-const Volume = Container as VolumeComponent;
-
-Volume.Progress = VolumeProgress;
-Volume.SeekButton = VolumeSeekButton;
-Volume.DragButton = VolumeDragButton;
-
-export default Volume;
+export const Volume = Object.assign(Container as VolumeComponent, {
+  Progress: VolumeProgress,
+  SeekButton: VolumeSeekButton,
+  DragButton: VolumeDragButton,
+});

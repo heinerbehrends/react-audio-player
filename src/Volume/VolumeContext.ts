@@ -1,17 +1,12 @@
 import { createContext } from "react";
 import {
   type TimelineContextType,
-  type TimelineContextAction,
   initialState as timelineInitialState,
-} from "../Timeline/TimelineContext";
+} from "../Timeline/TimelineVolumeContext";
 
-// Reuse the base Timeline types
-export type VolumeContextType = TimelineContextType;
-export type VolumeContextAction = TimelineContextAction;
-
-export const initialState: VolumeContextType = {
+export const initialState: TimelineContextType = {
   ...timelineInitialState,
   time: 1,
 };
 
-export const VolumeContext = createContext<VolumeContextType>(initialState);
+export const VolumeContext = createContext<TimelineContextType>(initialState);

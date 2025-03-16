@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
+import { handleMediaKeys } from "../TimelineVolume/handleKeys";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
     <button
       aria-label="Mute"
       aria-pressed={isMuted}
+      onKeyDown={(event) => handleMediaKeys({ event, handlePlayerAction })}
       onClick={() => handlePlayerAction({ type: "TOGGLE_MUTE" })}
     >
       {children}
@@ -43,9 +45,7 @@ type MuteButtonComponent = React.FC<MuteButtonComponentProps> & {
   NotMuted: React.FC<NotMutedProps>;
 };
 
-const MuteButton = MuteButtonComponent as MuteButtonComponent;
+MuteButtonComponent.Muted = Muted;
+MuteButtonComponent.NotMuted = NotMuted;
 
-MuteButton.Muted = Muted;
-MuteButton.NotMuted = NotMuted;
-
-export default MuteButton;
+export const MuteButton = MuteButtonComponent;

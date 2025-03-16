@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { TimelineProviderAction } from "./TimelineProvider";
+import { SideEffectAction } from "../AudioElement/AudioContext";
 
 export const TimelineContext = createContext<TimelineContextType>({
   timelineLeft: 0,
@@ -60,6 +60,44 @@ export type TimelineContextAction =
   | DragAction
   | DragStartAction
   | DragEndAction;
+
+export type TimelineProviderAction = SideEffectAction | TimelineContextAction;
+
+// Extract action types for better type safety
+type SideEffectActionType = SideEffectAction["type"];
+type TimelineActionType = TimelineContextAction["type"];
+
+// Define actions that need side effects
+const TIMELINE_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
+  DRAG: true,
+  DRAG_END: true,
+  SEEK_TO_TIME: true,
+  TOGGLE_PLAY: true,
+  TOGGLE_MUTE: true,
+  AUDIO_FILE_ENDED: true,
+  STOP_AUDIO: true,
+};
+
+const TIMELINE_DISPATCH_MAP: Record<TimelineActionType, true> = {
+  TIMELINE_LOADED: true,
+  DRAG_START: true,
+  DRAG: true,
+  DRAG_END: true,
+  UPDATE_TIME: true,
+  SEEK_TO_TIME: true,
+};
+
+export function isTimelineSideEffect(
+  action: TimelineProviderAction
+): action is SideEffectAction {
+  return TIMELINE_SIDE_EFFECT_MAP[action.type as SideEffectActionType] === true;
+}
+
+export function isTimelineAction(
+  action: TimelineProviderAction
+): action is TimelineContextAction {
+  return TIMELINE_DISPATCH_MAP[action.type as TimelineActionType] === true;
+}
 
 export const initialState: TimelineContextType = {
   timelineLeft: 0,

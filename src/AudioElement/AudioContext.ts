@@ -1,15 +1,19 @@
 import { createContext } from "react";
-import {
+import { handleSideEffect } from "./handleSideEffect";
+import type {
   AudioFileEndedAction,
   ToggleMuteAction,
   TogglePlayAction,
 } from "../Player/PlayerContext";
-import {
+import type {
   SeekToTimeAction,
   DragEndAction,
   DragAction,
-} from "../Timeline/TimelineContext";
-import { handleSideEffect } from "./handleSideEffect";
+} from "../Timeline/TimelineVolumeContext";
+
+export type StopAudioAction = {
+  type: "STOP_AUDIO";
+};
 
 export type SideEffectAction =
   | TogglePlayAction
@@ -17,7 +21,8 @@ export type SideEffectAction =
   | SeekToTimeAction
   | DragAction
   | DragEndAction
-  | AudioFileEndedAction;
+  | AudioFileEndedAction
+  | StopAudioAction;
 
 export type AudioContextType = {
   audioElement: HTMLAudioElement | null;

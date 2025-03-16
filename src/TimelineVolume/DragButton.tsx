@@ -6,8 +6,8 @@ import {
   useMemo,
   CSSProperties,
 } from "react";
-import { useDrag } from "../useDrag";
-import { TimelineContext } from "../Timeline/TimelineContext";
+import { useDrag } from "./useDrag";
+import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { VolumeContext } from "../Volume/VolumeContext";
@@ -20,31 +20,6 @@ const switchContext = {
   timeline: TimelineContext,
   volume: VolumeContext,
 };
-
-function getOffset({
-  type,
-  time,
-  duration,
-  timelineWidth,
-  dragState,
-  xOffset,
-}: {
-  type: "timeline" | "volume";
-  time: number;
-  duration: number | undefined;
-  timelineWidth: number;
-  dragState: "dragging" | "idle";
-  xOffset: number;
-}): number {
-  if (type === "timeline") {
-    const progress = time / (duration ?? 1);
-    return dragState === "dragging" ? xOffset : progress * timelineWidth;
-  }
-  if (type === "volume") {
-    return dragState === "dragging" ? xOffset : timelineWidth * time;
-  }
-  return 0;
-}
 
 export function DragButton({ type, ...props }: DragButtonProps) {
   const { xOffset, dragState, timelineWidth, time, handleTimelineAction } =
@@ -110,4 +85,29 @@ export function DragButton({ type, ...props }: DragButtonProps) {
       onKeyDown={handleKeyDown}
     />
   );
+}
+
+function getOffset({
+  type,
+  time,
+  duration,
+  timelineWidth,
+  dragState,
+  xOffset,
+}: {
+  type: "timeline" | "volume";
+  time: number;
+  duration: number | undefined;
+  timelineWidth: number;
+  dragState: "dragging" | "idle";
+  xOffset: number;
+}): number {
+  if (type === "timeline") {
+    const progress = time / (duration ?? 1);
+    return dragState === "dragging" ? xOffset : progress * timelineWidth;
+  }
+  if (type === "volume") {
+    return dragState === "dragging" ? xOffset : timelineWidth * time;
+  }
+  return 0;
 }
