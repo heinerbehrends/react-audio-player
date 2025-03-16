@@ -139,9 +139,7 @@ export function handleMediaKeys({
   }
   if (["s", "MediaStop"].includes(event.key.toLowerCase())) {
     handlePlayerAction({
-      type: "SEEK_TO_TIME",
-      time: 0,
-      component: "timeline",
+      type: "STOP_AUDIO",
     });
     event.preventDefault();
     return true;

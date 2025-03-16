@@ -24,6 +24,7 @@ const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   AUDIO_FILE_ENDED: true,
   DRAG: true,
   DRAG_END: true,
+  STOP_AUDIO: true,
 };
 
 const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {
@@ -59,11 +60,9 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
   });
   const { audioElement, handleSideEffect } = useContext(AudioContext);
 
-  console.log("handleSideEffect", handleSideEffect);
   const handlePlayerAction = useCallback(
     (action: PlayerProviderAction) => {
       if (isSideEffectAction(action)) {
-        console.log("handlePlayerAction action", action);
         handleSideEffect(action, audioElement);
       }
       if (isPlayerContextAction(action)) {

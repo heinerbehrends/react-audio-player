@@ -8,10 +8,10 @@ import { Timeline } from "./Timeline/Timeline";
 import { MuteButton } from "./Volume/MuteButton";
 import { Volume } from "./Volume/Volume";
 import { ElapsedRemaining } from "./Player/ElapsedRemaing";
-// import { Debug } from "./Debug";
 import { AudioContextProvider } from "./AudioElement/AudioContextProvider";
 import { Captions } from "./Player/Captions";
 import { SeekButton } from "./Player/SeekButton";
+import { Error } from "./Player/Error";
 
 function App() {
   return (
@@ -70,6 +70,7 @@ function App() {
           {/* <Debug type="volume" /> */}
         </VolumeProvider>
         <Captions />
+        <Error>There was an error loading the audio file.</Error>
       </PlayerContextProvider>
     </AudioContextProvider>
   );

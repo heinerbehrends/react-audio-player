@@ -23,7 +23,6 @@ export type AudioFileEndedAction = {
 
 export type AudioFileErrorAction = {
   type: "AUDIO_FILE_ERROR";
-  error: Error;
 };
 
 export type CaptionCueChangeAction = {

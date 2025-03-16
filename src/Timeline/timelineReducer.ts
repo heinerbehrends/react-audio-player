@@ -47,7 +47,6 @@ export function timelineReducer(
       };
     }
     case "SEEK_TO_TIME": {
-      console.log("SEEK_TO_TIME", action.component);
       if (action.component === "timeline") {
         return { ...state, time: action.time };
       }

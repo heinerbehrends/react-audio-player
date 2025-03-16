@@ -25,9 +25,9 @@ const AudioElement = memo(function AudioElement() {
         handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
       }}
       onError={(event) => {
+        console.log("onError", event);
         handlePlayerAction({
           type: "AUDIO_FILE_ERROR",
-          error: new Error(event.toString()),
         });
       }}
       onLoadedMetadata={() => {

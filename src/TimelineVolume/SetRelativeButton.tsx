@@ -32,12 +32,6 @@ export function SetRelativeButton({
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      console.log("handleKeyDown", event);
-      console.log("time", time);
-      console.log("duration", duration);
-      console.log("handleTimelineAction", handleTimelineAction);
-      console.log("handlePlayerAction", handlePlayerAction);
-      console.log("type", type);
       handleTimelineKeys({
         event,
         currentTime: time,

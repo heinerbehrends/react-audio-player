@@ -4,7 +4,6 @@ export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null
 ) {
-  console.log("handleSideEffect action", action);
   if (!audioElement) return;
   switch (action.type) {
     case "TOGGLE_PLAY": {
@@ -16,6 +15,7 @@ export function handleSideEffect(
       break;
     }
     case "STOP_AUDIO": {
+      console.log("STOP_AUDIO");
       audioElement.currentTime = 0;
       audioElement.pause();
       break;

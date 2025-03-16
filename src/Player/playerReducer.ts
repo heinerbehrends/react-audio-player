@@ -4,7 +4,6 @@ export function playerReducer(
   state: PlayerContextType,
   action: PlayerContextAction
 ) {
-  console.log("playerReducer action", action);
   switch (action.type) {
     case "AUDIO_FILE_LOADED": {
       if (state.player === "loading") {

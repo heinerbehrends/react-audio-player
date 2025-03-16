@@ -15,21 +15,11 @@ export function AudioContextProvider({
   const [timelineProviderRef, setTimelineProviderRef] =
     useState<React.RefObject<TimelineProviderRef> | null>(null);
 
-  // Function to register timeline provider
   const registerTimelineProvider = useCallback(
     (timelineRef: React.RefObject<TimelineProviderRef>) => {
-      console.log("TimelineProvider registered with AudioContextProvider");
       setTimelineProviderRef(timelineRef);
-
-      // You can also trigger additional logic here when TimelineProvider registers
     },
     []
-  );
-
-  console.log(
-    "AudioContext render, updateTime:",
-    "timelineProviderRef:",
-    timelineProviderRef
   );
 
   return (
