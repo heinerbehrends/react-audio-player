@@ -1,4 +1,12 @@
-import { useReducer, useMemo, useCallback, useContext, memo } from "react";
+import {
+  useReducer,
+  useMemo,
+  useCallback,
+  useContext,
+  memo,
+  useRef,
+  useEffect,
+} from "react";
 import {
   TimelineContext,
   initialState,
@@ -8,7 +16,11 @@ import {
   isTimelineAction,
 } from "./TimelineVolumeContext";
 import { timelineReducer } from "./timelineReducer";
-import { AudioContext, SideEffectAction } from "../AudioElement/AudioContext";
+import {
+  AudioContext,
+  SideEffectAction,
+  TimelineProviderRef,
+} from "../AudioElement/AudioContext";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
@@ -17,7 +29,13 @@ export const TimelineProvider = memo(function TimelineProvider({
   children,
 }: TimelineProviderProps) {
   const [state, dispatch] = useReducer(timelineReducer, initialState);
-  const { audioElement, handleSideEffect } = useContext(AudioContext);
+  const { audioElement, handleSideEffect, setTimelineProviderRef } =
+    useContext(AudioContext);
+
+  // Create a ref for the timeline provider
+  const providerRef = useRef<TimelineProviderRef>({
+    handleTimelineAction: null, // Temporary placeholder
+  });
 
   const handleTimelineAction = useCallback(
     (action: TimelineProviderAction) => {
@@ -30,6 +48,20 @@ export const TimelineProvider = memo(function TimelineProvider({
     },
     [audioElement, handleSideEffect]
   );
+
+  // Keep the ref updated with latest state and handler
+  useEffect(() => {
+    providerRef.current.handleTimelineAction = handleTimelineAction;
+  }, [handleTimelineAction]);
+
+  // Create a dummy ref for unregistering
+  const nullRef = useRef<TimelineProviderRef>(null!);
+
+  // Register with AudioContextProvider
+  useEffect(() => {
+    setTimelineProviderRef(providerRef);
+    return () => setTimelineProviderRef(nullRef);
+  }, [setTimelineProviderRef]);
 
   // Create value with explicit property listing, no object spread,
   // ensuring TypeScript will error if properties are missing or extra

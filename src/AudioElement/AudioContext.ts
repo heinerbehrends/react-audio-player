@@ -9,7 +9,12 @@ import type {
   SeekToTimeAction,
   DragEndAction,
   DragAction,
+  TimelineContextAction,
 } from "../Timeline/TimelineVolumeContext";
+
+export type TimelineProviderRef = {
+  handleTimelineAction: ((action: TimelineContextAction) => void) | null;
+};
 
 export type StopAudioAction = {
   type: "STOP_AUDIO";
@@ -31,10 +36,17 @@ export type AudioContextType = {
     action: SideEffectAction,
     audioElement: HTMLAudioElement | null
   ) => void;
+  // New properties for timeline provider registration
+  timelineProviderRef: React.RefObject<TimelineProviderRef> | null;
+  setTimelineProviderRef: (
+    timelineRef: React.RefObject<TimelineProviderRef>
+  ) => void;
 };
 
 export const AudioContext = createContext<AudioContextType>({
   audioElement: null,
   setAudioElement: () => {},
   handleSideEffect,
+  setTimelineProviderRef: () => {},
+  timelineProviderRef: null,
 });

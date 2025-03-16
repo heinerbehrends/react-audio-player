@@ -4,6 +4,7 @@ export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null
 ) {
+  console.log("handleSideEffect action", action);
   if (!audioElement) return;
   switch (action.type) {
     case "TOGGLE_PLAY": {

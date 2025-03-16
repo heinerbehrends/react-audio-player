@@ -7,13 +7,20 @@ import { useCueChange } from "./useCueChange";
 const AudioElement = memo(function AudioElement() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);
-  const { setAudioElement } = useContext(AudioContext);
+  const { setAudioElement, timelineProviderRef } = useContext(AudioContext);
   const { src, captionSrc } = audioFiles?.[0] || {};
 
   return (
     <audio
       aria-label="loop player"
       ref={audioRef}
+      onSeeked={() => {
+        if (!timelineProviderRef?.current?.handleTimelineAction) return;
+        timelineProviderRef.current.handleTimelineAction({
+          type: "UPDATE_TIME",
+          time: audioRef.current?.currentTime || 0,
+        });
+      }}
       onEnded={() => {
         handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
       }}

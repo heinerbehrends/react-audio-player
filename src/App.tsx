@@ -11,6 +11,7 @@ import { ElapsedRemaining } from "./Player/ElapsedRemaing";
 // import { Debug } from "./Debug";
 import { AudioContextProvider } from "./AudioElement/AudioContextProvider";
 import { Captions } from "./Player/Captions";
+import { SeekButton } from "./Player/SeekButton";
 
 function App() {
   return (
@@ -36,10 +37,12 @@ function App() {
           </Timeline>
           {/* <Debug type="timeline" /> */}
         </TimelineProvider>
+        <SeekButton.Backward>Backward</SeekButton.Backward>
         <PlayButton>
           <PlayButton.Playing>Pause</PlayButton.Playing>
           <PlayButton.Paused>Play</PlayButton.Paused>
         </PlayButton>
+        <SeekButton.Forward>Forward</SeekButton.Forward>
         <ElapsedRemaining.Toggle>
           <ElapsedRemaining.Elapsed />
           <ElapsedRemaining.Remaining />
@@ -60,7 +63,8 @@ function App() {
             />
           </Volume>
           <MuteButton>
-            <MuteButton.NotMuted>Mute</MuteButton.NotMuted>
+            <MuteButton.LowVolume>Mute</MuteButton.LowVolume>
+            <MuteButton.HighVolume>Mute</MuteButton.HighVolume>
             <MuteButton.Muted>Unmute</MuteButton.Muted>
           </MuteButton>
           {/* <Debug type="volume" /> */}

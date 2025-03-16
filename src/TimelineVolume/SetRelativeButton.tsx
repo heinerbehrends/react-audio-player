@@ -31,7 +31,13 @@ export function SetRelativeButton({
   const hasSetDimensions = useRef(false);
 
   const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) =>
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      console.log("handleKeyDown", event);
+      console.log("time", time);
+      console.log("duration", duration);
+      console.log("handleTimelineAction", handleTimelineAction);
+      console.log("handlePlayerAction", handlePlayerAction);
+      console.log("type", type);
       handleTimelineKeys({
         event,
         currentTime: time,
@@ -39,7 +45,8 @@ export function SetRelativeButton({
         handleTimelineAction,
         handlePlayerAction,
         type,
-      }),
+      });
+    },
     [time, duration, handleTimelineAction, handlePlayerAction, type]
   );
 
@@ -50,6 +57,7 @@ export function SetRelativeButton({
         type === "timeline"
           ? calculateTime({
               xOffset,
+              timelineLeft: 0,
               timelineWidth,
               duration,
             })
