@@ -20,7 +20,9 @@ export const Indicator = memo(function Indicator({
   const { dragState, xOffset, time, timelineWidth } = useContext(
     switchContext[type]
   );
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   const duration = type === "timeline" ? audioElement?.duration ?? 1 : 1;
 
   const progress = useMemo(

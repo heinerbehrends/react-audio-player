@@ -12,7 +12,9 @@ const mapContext = {
 export function useDrag(type: "timeline" | "volume") {
   const { dragState, handleTimelineAction, timelineLeft, timelineWidth } =
     useContext(mapContext[type]);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   const onPointerUp = useCallback(
     ({ clientX }: PointerEvent) => {
       const time =

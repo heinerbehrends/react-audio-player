@@ -16,6 +16,10 @@ export type TimelineProviderRef = {
   handleTimelineAction: ((action: TimelineContextAction) => void) | null;
 };
 
+export type VolumeProviderRef = {
+  handleVolumeAction: ((action: TimelineContextAction) => void) | null;
+};
+
 export type StopAudioAction = {
   type: "STOP_AUDIO";
 };
@@ -30,23 +34,18 @@ export type SideEffectAction =
   | StopAudioAction;
 
 export type AudioContextType = {
-  audioElement: HTMLAudioElement | null;
-  setAudioElement: (audioElement: HTMLAudioElement | null) => void;
+  audioElementRef: React.RefObject<HTMLAudioElement | null>;
   handleSideEffect: (
     action: SideEffectAction,
     audioElement: HTMLAudioElement | null
   ) => void;
-  // New properties for timeline provider registration
-  timelineProviderRef: React.RefObject<TimelineProviderRef> | null;
-  setTimelineProviderRef: (
-    timelineRef: React.RefObject<TimelineProviderRef>
-  ) => void;
+  timelineCallbackRef: React.RefObject<TimelineProviderRef>;
+  volumeCallbackRef: React.RefObject<VolumeProviderRef>;
 };
 
 export const AudioContext = createContext<AudioContextType>({
-  audioElement: null,
-  setAudioElement: () => {},
+  audioElementRef: { current: null },
   handleSideEffect,
-  setTimelineProviderRef: () => {},
-  timelineProviderRef: null,
+  timelineCallbackRef: { current: { handleTimelineAction: null } },
+  volumeCallbackRef: { current: { handleVolumeAction: null } },
 });

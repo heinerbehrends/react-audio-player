@@ -1,11 +1,11 @@
 import type { HTMLAttributes } from "react";
-import { TimelineContextAction } from "../Timeline/TimelineVolumeContext";
+import type { TimelineContextAction } from "../Timeline/TimelineVolumeContext";
 import { useContext, useRef, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
-import { handleTimelineKeys } from "./handleKeys";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
+import { handleTimelineKeys } from "../handleKeys";
 import { calculateTime, calculateVolume } from "../functionsLib";
 
 const switchContext = {
@@ -26,7 +26,9 @@ export function SetRelativeButton({
   const { handleTimelineAction, time, timelineLeft, timelineWidth } =
     useContext(switchContext[type]);
   const { handlePlayerAction } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   const duration = audioElement?.duration ?? 0;
   const hasSetDimensions = useRef(false);
 

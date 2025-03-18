@@ -1,37 +1,46 @@
 import { useContext, useRef, memo } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { PlayerProviderAction } from "./PlayerProvider";
+import { PlayerProviderAction } from "./PlayerContext";
 import { useCueChange } from "./useCueChange";
 
 const AudioElement = memo(function AudioElement() {
-  const audioRef = useRef<HTMLAudioElement>(null);
   const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);
-  const { setAudioElement, timelineProviderRef } = useContext(AudioContext);
+  const { audioElementRef, timelineCallbackRef, volumeCallbackRef } =
+    useContext(AudioContext);
   const { src, captionSrc } = audioFiles?.[0] || {};
 
   return (
     <audio
-      aria-label="loop player"
-      ref={audioRef}
+      aria-label="audio player"
+      ref={audioElementRef}
       onSeeked={() => {
-        if (!timelineProviderRef?.current?.handleTimelineAction) return;
-        timelineProviderRef.current.handleTimelineAction({
+        if (!timelineCallbackRef?.current?.handleTimelineAction) {
+          return;
+        }
+        timelineCallbackRef.current.handleTimelineAction({
           type: "UPDATE_TIME",
-          time: audioRef.current?.currentTime || 0,
+          time: audioElementRef.current?.currentTime || 0,
+        });
+      }}
+      onVolumeChange={() => {
+        if (!volumeCallbackRef?.current?.handleVolumeAction) {
+          return;
+        }
+        volumeCallbackRef.current.handleVolumeAction({
+          type: "UPDATE_TIME",
+          time: audioElementRef.current?.volume || 0,
         });
       }}
       onEnded={() => {
         handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
       }}
-      onError={(event) => {
-        console.log("onError", event);
+      onError={() => {
         handlePlayerAction({
           type: "AUDIO_FILE_ERROR",
         });
       }}
       onLoadedMetadata={() => {
-        setAudioElement(audioRef.current);
         handlePlayerAction({ type: "AUDIO_FILE_LOADED" });
       }}
       src={src}

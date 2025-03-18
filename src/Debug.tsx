@@ -10,7 +10,9 @@ const mapContext = {
 
 export function Debug({ type }: { type: "timeline" | "volume" }) {
   const { player: state, cues } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   const context = useContext(mapContext[type]);
 
   return (

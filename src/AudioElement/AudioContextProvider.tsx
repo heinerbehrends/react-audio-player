@@ -1,35 +1,32 @@
-import { useState, useCallback } from "react";
-import { AudioContext, TimelineProviderRef } from "./AudioContext";
+import { useRef } from "react";
+import {
+  AudioContext,
+  VolumeProviderRef,
+  type TimelineProviderRef,
+} from "./AudioContext";
 import { handleSideEffect } from "./handleSideEffect";
 
-export function AudioContextProvider({
-  children,
-}: {
+type TimelineProviderProps = {
   children: React.ReactNode;
-}) {
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
-    null
-  );
+};
 
-  // Store reference to timeline provider with proper typing
-  const [timelineProviderRef, setTimelineProviderRef] =
-    useState<React.RefObject<TimelineProviderRef> | null>(null);
+export function AudioContextProvider({ children }: TimelineProviderProps) {
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
-  const registerTimelineProvider = useCallback(
-    (timelineRef: React.RefObject<TimelineProviderRef>) => {
-      setTimelineProviderRef(timelineRef);
-    },
-    []
-  );
+  const timelineCallbackRef = useRef<TimelineProviderRef>({
+    handleTimelineAction: null,
+  });
+  const volumeCallbackRef = useRef<VolumeProviderRef>({
+    handleVolumeAction: null,
+  });
 
   return (
     <AudioContext.Provider
       value={{
-        audioElement,
-        setAudioElement,
+        audioElementRef,
         handleSideEffect,
-        setTimelineProviderRef: registerTimelineProvider,
-        timelineProviderRef,
+        timelineCallbackRef,
+        volumeCallbackRef,
       }}
     >
       {children}

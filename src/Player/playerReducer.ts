@@ -1,4 +1,4 @@
-import { PlayerContextAction, PlayerContextType } from "./PlayerContext";
+import type { PlayerContextAction, PlayerContextType } from "./PlayerContext";
 
 export function playerReducer(
   state: PlayerContextType,

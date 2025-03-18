@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { handleMediaKeys } from "../TimelineVolume/handleKeys";
+import { handleMediaKeys } from "../handleKeys";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;
@@ -37,7 +37,9 @@ type LowVolumeProps = {
 
 function LowVolume({ children }: LowVolumeProps) {
   const { isMuted } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   if (isMuted) return null;
   if (!audioElement) return null;
   if (audioElement.volume < 0.5) return children;
@@ -50,7 +52,9 @@ type HighVolumeProps = {
 
 function HighVolume({ children }: HighVolumeProps) {
   const { isMuted } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   if (isMuted) return null;
   if (!audioElement) return null;
   if (audioElement.volume >= 0.5) return children;

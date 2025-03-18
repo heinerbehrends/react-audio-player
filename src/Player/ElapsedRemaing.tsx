@@ -1,7 +1,7 @@
 import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
-import { handleMediaKeys } from "../TimelineVolume/handleKeys";
+import { handleMediaKeys } from "../handleKeys";
 
 function formatTime(time: number) {
   const minutes = Math.floor(time / 60);

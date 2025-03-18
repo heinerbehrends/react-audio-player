@@ -1,45 +1,6 @@
-import { PlayerProviderAction } from "../Player/PlayerProvider";
-import { TimelineProviderAction } from "../Timeline/TimelineVolumeContext";
+import type { PlayerProviderAction } from "./Player/PlayerContext";
+import type { TimelineProviderAction } from "./Timeline/TimelineVolumeContext";
 
-type getArrowKeyValueProps = {
-  type: "timeline" | "volume";
-  duration: number;
-  time: number;
-  event: React.KeyboardEvent<HTMLButtonElement>;
-};
-
-function getArrowKeyValue({
-  type,
-  duration,
-  time,
-  event,
-}: getArrowKeyValueProps) {
-  if (type === "timeline") {
-    if (event.key === "ArrowLeft") {
-      return event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
-    }
-    if (event.key === "ArrowRight") {
-      return event.shiftKey
-        ? Math.min(duration, time + 2)
-        : Math.min(duration, time + 10);
-    }
-  }
-  if (type === "volume") {
-    if (event.key === "ArrowDown") {
-      return event.shiftKey
-        ? Math.max(0, time - 0.05)
-        : Math.max(0, time - 0.1);
-    }
-    if (event.key === "ArrowUp") {
-      return event.shiftKey
-        ? Math.min(1, time + 0.05)
-        : Math.min(1, time + 0.1);
-    }
-  }
-  return;
-}
-
-// Generic action handler type with proper typing
 type ActionHandler<T> = (action: T) => void;
 
 type HandleKeyDownProps = {
@@ -62,8 +23,12 @@ export function handleTimelineKeys({
   if (handleMediaKeys({ event, handlePlayerAction })) {
     return;
   }
-  if (event.key in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]) {
-    const time = getNumericKeyValue({ type, duration, key: event.key });
+  if (isNumericKey(event.key)) {
+    const time = getNumericKeyValue({
+      type,
+      duration,
+      key: event.key,
+    });
     handleTimelineAction({ type: "SEEK_TO_TIME", time, component: type });
     event.preventDefault();
     return true;
@@ -84,10 +49,16 @@ export function handleTimelineKeys({
   return false;
 }
 
+function isNumericKey(key: string): key is NumericKey {
+  return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
+}
+
+type NumericKey = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
 type getNumericKeyValueProps = {
   type: "timeline" | "volume";
   duration: number;
-  key: string;
+  key: NumericKey;
 };
 
 function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
@@ -117,7 +88,7 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
       "9": 0.9,
     },
   };
-  return keyToTimeMap[type][key as keyof (typeof keyToTimeMap)[typeof type]];
+  return keyToTimeMap[type][key];
 }
 
 export function handleMediaKeys({
@@ -145,4 +116,42 @@ export function handleMediaKeys({
     return true;
   }
   return false;
+}
+
+type getArrowKeyValueProps = {
+  type: "timeline" | "volume";
+  duration: number;
+  time: number;
+  event: React.KeyboardEvent<HTMLButtonElement>;
+};
+
+function getArrowKeyValue({
+  type,
+  duration,
+  time,
+  event,
+}: getArrowKeyValueProps) {
+  if (type === "timeline") {
+    if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
+      return event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
+    }
+    if (["ArrowRight", "ArrowUp"].includes(event.key)) {
+      return event.shiftKey
+        ? Math.min(duration, time + 2)
+        : Math.min(duration, time + 10);
+    }
+  }
+  if (type === "volume") {
+    if (["ArrowDown", "ArrowLeft"].includes(event.key)) {
+      return event.shiftKey
+        ? Math.max(0, time - 0.05)
+        : Math.max(0, time - 0.1);
+    }
+    if (["ArrowUp", "ArrowRight"].includes(event.key)) {
+      return event.shiftKey
+        ? Math.min(1, time + 0.05)
+        : Math.min(1, time + 0.1);
+    }
+  }
+  return;
 }

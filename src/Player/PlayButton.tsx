@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { handleMediaKeys } from "../TimelineVolume/handleKeys";
+import { handleMediaKeys } from "../handleKeys";
 
 type PlayButtonProps = {
   children: React.ReactNode;

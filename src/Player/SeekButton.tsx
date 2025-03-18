@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { handleMediaKeys } from "../TimelineVolume/handleKeys";
+import { handleMediaKeys } from "../handleKeys";
 type SeekButtonComponentProps = {
   children: React.ReactNode;
   direction: "forward" | "backward";
@@ -12,7 +12,9 @@ function SeekButtonComponent({
   direction,
 }: SeekButtonComponentProps) {
   const { handlePlayerAction } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   const handleClick = useCallback(() => {
     handlePlayerAction({
       type: "SEEK_TO_TIME",

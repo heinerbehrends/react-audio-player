@@ -5,7 +5,9 @@ import { AudioContext } from "../AudioElement/AudioContext";
 export function useUpdateTime() {
   const { handleTimelineAction } = useContext(TimelineContext);
   const { player } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   const frameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {

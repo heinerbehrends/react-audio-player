@@ -3,7 +3,8 @@ import { VolumeContext, initialState } from "./VolumeContext";
 import {
   isTimelineAction,
   isTimelineSideEffect,
-  TimelineProviderAction,
+  TimelineContextType,
+  type TimelineProviderAction,
 } from "../Timeline/TimelineVolumeContext";
 import { volumeReducer } from "./volumeReducer";
 import { AudioContext } from "../AudioElement/AudioContext";
@@ -16,7 +17,10 @@ export const VolumeProvider = memo(function VolumeProvider({
   children,
 }: VolumeProviderProps) {
   const [state, dispatch] = useReducer(volumeReducer, initialState);
-  const { audioElement, handleSideEffect } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+    handleSideEffect,
+  } = useContext(AudioContext);
 
   const handleTimelineAction = useCallback(
     (action: TimelineProviderAction) => {
@@ -30,10 +34,17 @@ export const VolumeProvider = memo(function VolumeProvider({
     [audioElement, handleSideEffect]
   );
 
-  const value = useMemo(
-    () => ({ ...state, handleTimelineAction }),
-    [state, handleTimelineAction]
-  );
+  const value = useMemo(() => {
+    const result: TimelineContextType = {
+      timelineLeft: state.timelineLeft,
+      timelineWidth: state.timelineWidth,
+      time: state.time,
+      xOffset: state.xOffset,
+      dragState: state.dragState,
+      handleTimelineAction,
+    };
+    return result;
+  }, [state, handleTimelineAction]);
 
   return (
     <VolumeContext.Provider value={value}>{children}</VolumeContext.Provider>

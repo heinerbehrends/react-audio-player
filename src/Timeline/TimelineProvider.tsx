@@ -4,22 +4,20 @@ import {
   useCallback,
   useContext,
   memo,
-  useRef,
   useEffect,
 } from "react";
 import {
   TimelineContext,
   initialState,
-  TimelineContextType,
-  TimelineProviderAction,
   isTimelineSideEffect,
   isTimelineAction,
+  type TimelineContextType,
+  type TimelineProviderAction,
 } from "./TimelineVolumeContext";
 import { timelineReducer } from "./timelineReducer";
 import {
   AudioContext,
-  SideEffectAction,
-  TimelineProviderRef,
+  type SideEffectAction,
 } from "../AudioElement/AudioContext";
 
 type TimelineProviderProps = {
@@ -29,13 +27,11 @@ export const TimelineProvider = memo(function TimelineProvider({
   children,
 }: TimelineProviderProps) {
   const [state, dispatch] = useReducer(timelineReducer, initialState);
-  const { audioElement, handleSideEffect, setTimelineProviderRef } =
-    useContext(AudioContext);
-
-  // Create a ref for the timeline provider
-  const providerRef = useRef<TimelineProviderRef>({
-    handleTimelineAction: null, // Temporary placeholder
-  });
+  const {
+    audioElementRef: { current: audioElement },
+    handleSideEffect,
+    timelineCallbackRef,
+  } = useContext(AudioContext);
 
   const handleTimelineAction = useCallback(
     (action: TimelineProviderAction) => {
@@ -49,22 +45,14 @@ export const TimelineProvider = memo(function TimelineProvider({
     [audioElement, handleSideEffect]
   );
 
-  // Keep the ref updated with latest state and handler
   useEffect(() => {
-    providerRef.current.handleTimelineAction = handleTimelineAction;
-  }, [handleTimelineAction]);
+    console.log("timelineCallbackRef", timelineCallbackRef.current);
+    if (!timelineCallbackRef.current) {
+      return;
+    }
+    timelineCallbackRef.current.handleTimelineAction = handleTimelineAction;
+  }, [handleTimelineAction, timelineCallbackRef]);
 
-  // Create a dummy ref for unregistering
-  const nullRef = useRef<TimelineProviderRef>(null!);
-
-  // Register with AudioContextProvider
-  useEffect(() => {
-    setTimelineProviderRef(providerRef);
-    return () => setTimelineProviderRef(nullRef);
-  }, [setTimelineProviderRef]);
-
-  // Create value with explicit property listing, no object spread,
-  // ensuring TypeScript will error if properties are missing or extra
   const value: TimelineContextType = useMemo(() => {
     const result: TimelineContextType = {
       timelineLeft: state.timelineLeft,

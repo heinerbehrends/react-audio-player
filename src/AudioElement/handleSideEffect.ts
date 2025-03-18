@@ -26,6 +26,7 @@ export function handleSideEffect(
     }
     case "AUDIO_FILE_ENDED": {
       audioElement.currentTime = 0;
+      audioElement.pause();
       break;
     }
     case "SEEK_TO_TIME": {

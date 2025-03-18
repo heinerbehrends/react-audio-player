@@ -1,4 +1,4 @@
-import { handleTimelineKeys } from "./handleKeys";
+import { handleTimelineKeys } from "../handleKeys";
 import {
   useContext,
   type HTMLAttributes,
@@ -25,7 +25,9 @@ export function DragButton({ type, ...props }: DragButtonProps) {
   const { xOffset, dragState, timelineWidth, time, handleTimelineAction } =
     useContext(switchContext[type]);
   const { handlePlayerAction } = useContext(PlayerContext);
-  const { audioElement } = useContext(AudioContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
 
   const offset = useMemo(
     () =>
