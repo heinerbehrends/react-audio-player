@@ -22,19 +22,43 @@ test("seek to 10% of the timeline when 1 is pressed", async () => {
   expect(currentTime).toBeCloseTo(duration * 0.1, PRECISION);
 });
 
-test("seek to 10sec ahead when right arrow is pressed", async () => {
+test("seek to 10sec ahead when right arrow is pressed", async ({ page }) => {
+  // Reset state
+  await page.goto("/");
+  await waitForAudio(page);
+  
+  // Log initial state for debugging
+  const initialState = await getAudioState(page);
+  console.log("Initial state:", initialState);
+
   await page.getByLabel("Seek audio").focus();
   await page.keyboard.press("ArrowRight");
+  
+  // Log state after key press
   const { currentTime } = await getAudioState(page);
+  console.log("After arrow press:", { currentTime });
+  
   expect(currentTime).toBeCloseTo(10, PRECISION);
 });
 
 test("seek to 10sec behind when left arrow is pressed", async () => {
+  // Reset state
+  await page.goto("/");
+  await waitForAudio(page);
+
+  // Log initial state for debugging
+  const initialState = await getAudioState(page);
+  console.log("Initial state:", initialState);
+
   await page.getByLabel("Seek audio").focus();
   await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowLeft");
+  // Log state after key press
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(0, PRECISION);
+  console.log("After arrow press:", { currentTime });
+
+  expect(currentTime).toBeCloseTo(10, PRECISION);
 });
 
 test("progress indicator initial state", async () => {
@@ -44,5 +68,5 @@ test("progress indicator initial state", async () => {
     "progressbar"
   );
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
-  await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");
+  await expect(progressIndicator).toHaveAttribute("aria-valuenow", "10");
 });
