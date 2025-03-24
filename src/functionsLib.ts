@@ -18,11 +18,21 @@ export function calculateTime({
 type CalculateVolumeArgs = {
   xOffset: number;
   timelineWidth: number;
+  timelineLeft: number;
 };
+
+export function calculateVolumeDragEnd({
+  xOffset,
+  timelineWidth,
+  timelineLeft,
+}: CalculateVolumeArgs): number {
+  return (xOffset - timelineLeft) / timelineWidth;
+}
 
 export function calculateVolume({
   xOffset,
   timelineWidth,
-}: CalculateVolumeArgs): number {
-  return Math.max(0, Math.min(1, xOffset / timelineWidth));
+}: Omit<CalculateVolumeArgs, "timelineLeft">): number {
+  const progress = (xOffset / timelineWidth);
+  return Math.max(0, Math.min(1, progress));
 }

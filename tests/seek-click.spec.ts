@@ -17,7 +17,7 @@ test.afterAll(async () => {
 });
 
 test("jumps to correct position when paused", async () => {
-  await page.getByLabel("Audio timeline").click({
+  await page.getByLabel("Seek audio").click({
     position: { x: CLICK_OFFSET, y: 0 },
   });
   const { timelineWidth, duration } = await getTimelineState(page);
@@ -29,7 +29,7 @@ test("jumps to correct position when paused", async () => {
 
 test("jumps to correct position when playing", async () => {
   await page.getByRole("button", { name: "Play" }).click();
-  await page.getByLabel("Audio timeline").click({
+  await page.getByLabel("Seek audio").click({
     position: { x: CLICK_OFFSET, y: 0 },
   });
   await page.getByRole("button", { name: "Pause" }).click();

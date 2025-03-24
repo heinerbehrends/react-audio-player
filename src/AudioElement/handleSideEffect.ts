@@ -14,6 +14,7 @@ export function handleSideEffect(
       }
       break;
     }
+    case "AUDIO_FILE_ENDED": 
     case "STOP_AUDIO": {
       audioElement.currentTime = 0;
       audioElement.pause();
@@ -23,11 +24,7 @@ export function handleSideEffect(
       audioElement.muted = !audioElement.muted;
       break;
     }
-    case "AUDIO_FILE_ENDED": {
-      audioElement.currentTime = 0;
-      audioElement.pause();
-      break;
-    }
+    case "DRAG_END":
     case "SEEK_TO_TIME": {
       if (action.component === "timeline") {
         audioElement.currentTime = action.time;
@@ -42,12 +39,6 @@ export function handleSideEffect(
         return;
       }
       audioElement.volume = action.time;
-      break;
-    }
-    case "DRAG_END": {
-      if (action.component === "timeline") {
-        audioElement.currentTime = action.time;
-      }
       break;
     }
   }

@@ -30,6 +30,11 @@ export function SetRelativeButton({
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
+  const duration = audioElement?.duration ?? 0;
+  const time =
+    type === "timeline"
+      ? audioElement?.currentTime ?? 0
+      : audioElement?.volume ?? 0;
   const hasSetDimensions = useRef(false);
 
   const handleKeyDown = useCallback(
@@ -60,6 +65,7 @@ export function SetRelativeButton({
               xOffset,
               timelineWidth,
             });
+      console.log("SetRelativeButton: time", time);
       handleTimelineAction({
         type: "SEEK_TO_TIME",
         time,
@@ -100,9 +106,19 @@ export function SetRelativeButton({
       {...props}
       style={style}
       ref={handleRef}
-      data-testid="timeline"
+      data-testid={type === "timeline" ? "timeline" : "volume"}
       onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
+      role="slider"
+      aria-label={type === "timeline" ? "Seek audio" : "Adjust volume"}
+      aria-valuemin={0}
+      aria-valuemax={type === "timeline" ? duration : 100}
+      aria-valuenow={type === "timeline" ? time : time * 100}
+      aria-valuetext={
+        type === "timeline"
+          ? `${Math.round(time)} seconds of ${Math.round(duration)} seconds`
+          : `Volume ${Math.round(time * 100)}%`
+      }
     >
       {children}
     </button>

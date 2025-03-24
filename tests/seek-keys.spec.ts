@@ -16,21 +16,21 @@ test.afterAll(async () => {
 });
 
 test("seek to 10% of the timeline when 1 is pressed", async () => {
-  await page.getByLabel("Audio timeline").focus();
+  await page.getByLabel("Seek audio").focus();
   await page.keyboard.press("1");
   const { currentTime, duration } = await getAudioState(page);
   expect(currentTime).toBeCloseTo(duration * 0.1, PRECISION);
 });
 
 test("seek to 10sec ahead when right arrow is pressed", async () => {
-  await page.getByLabel("Audio timeline").focus();
+  await page.getByLabel("Seek audio").focus();
   await page.keyboard.press("ArrowRight");
   const { currentTime } = await getAudioState(page);
   expect(currentTime).toBeCloseTo(10, PRECISION);
 });
 
 test("seek to 10sec behind when left arrow is pressed", async () => {
-  await page.getByLabel("Audio timeline").focus();
+  await page.getByLabel("Seek audio").focus();
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowLeft");
   const { currentTime } = await getAudioState(page);
@@ -38,11 +38,10 @@ test("seek to 10sec behind when left arrow is pressed", async () => {
 });
 
 test("progress indicator initial state", async () => {
-  const progressIndicator = page.getByRole("progressbar");
-  await expect(progressIndicator).toBeEnabled();
+  const progressIndicator = page.getByLabel("Audio progress");
   await expect(progressIndicator).toHaveAttribute(
-    "aria-label",
-    /audio progress/
+    "role",
+    "progressbar"
   );
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
   await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");

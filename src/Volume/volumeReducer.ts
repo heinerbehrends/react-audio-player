@@ -30,12 +30,6 @@ export function volumeReducer(
         return state;
       }
       const xOffset = action.clientX - state.timelineLeft;
-      if (xOffset < 0) {
-        return state;
-      }
-      if (xOffset > state.timelineWidth) {
-        return state;
-      }
       const volume = xOffset / state.timelineWidth;
       return {
         ...state,
@@ -45,7 +39,7 @@ export function volumeReducer(
     }
     case "DRAG_END": {
       if (state.dragState !== "dragging") return state;
-      return { ...state, dragState: "idle" as const };
+      return { ...state, dragState: "idle" as const, xOffset: 0, time: action.time };
     }
     case "UPDATE_TIME": {
       return { ...state, time: action.time };

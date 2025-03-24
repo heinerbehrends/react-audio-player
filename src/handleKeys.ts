@@ -36,8 +36,10 @@ export function handleTimelineKeys({
     return true;
   }
   if (event.key.startsWith("Arrow")) {
+    console.log("event.key", event.key);
     const time = getArrowKeyValue({ type, audioElement, event });
-    if (!time) return;
+    if (time === undefined) return;
+    console.log("time", time);
     if (type === "timeline") {
       handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
     }
@@ -117,7 +119,9 @@ function getArrowKeyValue({
   const duration = audioElement?.duration ?? 0;
   if (type === "timeline") {
     if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
-      return event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
+      const newTime = event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
+      console.log("newTime", newTime);
+      return newTime;
     }
     if (["ArrowRight", "ArrowUp"].includes(event.key)) {
       return event.shiftKey

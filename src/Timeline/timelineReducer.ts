@@ -1,5 +1,4 @@
-import { TimelineContextType } from "./TimelineVolumeContext";
-import { TimelineContextAction } from "./TimelineVolumeContext";
+import { TimelineContextType, TimelineContextAction } from "./TimelineVolumeContext";
 
 export function timelineReducer(
   state: TimelineContextType,
@@ -28,12 +27,6 @@ export function timelineReducer(
     }
     case "DRAG": {
       if (state.dragState !== "dragging") {
-        return state;
-      }
-      if (action.clientX < state.timelineLeft) {
-        return state;
-      }
-      if (action.clientX > state.timelineLeft + state.timelineWidth) {
         return state;
       }
       return { ...state, xOffset: action.clientX - state.timelineLeft };

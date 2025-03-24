@@ -15,10 +15,7 @@ import {
   type TimelineProviderAction,
 } from "./TimelineVolumeContext";
 import { timelineReducer } from "./timelineReducer";
-import {
-  AudioContext,
-  type SideEffectAction,
-} from "../AudioElement/AudioContext";
+import { AudioContext } from "../AudioElement/AudioContext";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
@@ -36,7 +33,7 @@ export const TimelineProvider = memo(function TimelineProvider({
   const handleTimelineAction = useCallback(
     (action: TimelineProviderAction) => {
       if (isTimelineSideEffect(action)) {
-        handleSideEffect(action as unknown as SideEffectAction, audioElement);
+        handleSideEffect(action, audioElement);
       }
       if (isTimelineAction(action)) {
         dispatch(action);

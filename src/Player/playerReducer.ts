@@ -24,6 +24,7 @@ export function playerReducer(
       return { ...state, isMuted: !state.isMuted };
     }
     case "AUDIO_FILE_ENDED": {
+      console.log("playerReducer: AUDIO_FILE_ENDED");
       return { ...state, player: "paused" as const, time: 0 };
     }
     case "TOGGLE_TIME_DISPLAY": {

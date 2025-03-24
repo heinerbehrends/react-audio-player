@@ -23,7 +23,7 @@ export async function waitForAudio(page: Page) {
 // Common pattern: Getting timeline dimensions and audio state
 export async function getTimelineState(page: Page) {
   return page.evaluate(() => {
-    const timeline = document.querySelector("[aria-label='Audio timeline']");
+    const timeline = document.querySelector("[aria-label='Seek audio']");
     const audio = document.querySelector("audio");
     const rect = timeline?.getBoundingClientRect();
     return {

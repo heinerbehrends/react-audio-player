@@ -1,7 +1,6 @@
 import { useContext, useRef, memo, useCallback } from "react";
-import { PlayerContext } from "./PlayerContext";
+import { PlayerContext, type PlayerProviderAction } from "./PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { PlayerProviderAction } from "./PlayerContext";
 import { useCueChange } from "./useCueChange";
 
 const AudioElement = memo(function AudioElement() {
@@ -13,7 +12,7 @@ const AudioElement = memo(function AudioElement() {
     if (timelineCallbackRef?.current?.handleTimelineAction) {
       timelineCallbackRef.current.handleTimelineAction({
         type: "UPDATE_TIME",
-        time: audioElementRef.current?.currentTime || 0,
+        time: audioElementRef.current?.currentTime ?? 0,
       });
     }
   }, [timelineCallbackRef, audioElementRef]);
@@ -22,7 +21,7 @@ const AudioElement = memo(function AudioElement() {
     if (volumeCallbackRef?.current?.handleVolumeAction) {
       volumeCallbackRef.current.handleVolumeAction({
         type: "UPDATE_TIME",
-        time: audioElementRef.current?.volume || 0,
+        time: audioElementRef.current?.volume ?? 0,
       });
     }
   }, [volumeCallbackRef, audioElementRef]);
@@ -40,9 +39,9 @@ const AudioElement = memo(function AudioElement() {
       onPlay={() => {
         console.log("onPlay");
       }}
-      onTimeUpdate={(event) => {
-        console.log(event.currentTarget.currentTime);
-      }}
+      // onTimeUpdate={(event) => {
+      //   console.log(event.currentTarget.currentTime);
+      // }}
       onRateChange={(event) => {
         console.log(event.currentTarget.playbackRate);
       }}

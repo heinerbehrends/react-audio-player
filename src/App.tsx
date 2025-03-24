@@ -12,6 +12,7 @@ import { AudioContextProvider } from "./AudioElement/AudioContextProvider";
 import { Captions } from "./Player/Captions";
 import { SeekButton } from "./Player/SeekButton";
 import { Error } from "./Player/Error";
+import { Debug } from "./Debug";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
           <ElapsedRemaining.Remaining />
         </ElapsedRemaining.Toggle>
         <VolumeProvider>
+          <Debug type="volume" />
           <Volume style={{ height: "40px", backgroundColor: "lightgray" }}>
             <Volume.SeekButton>
               <Volume.Progress style={{ backgroundColor: "darkgray" }} />
