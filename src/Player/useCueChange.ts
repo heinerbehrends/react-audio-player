@@ -13,16 +13,16 @@ export function useCueChange({
   const handleCueChange = useCallback(
     (event: Event) => {
       const trackElement = event.currentTarget as HTMLTrackElement;
-      if (trackElement && isTextTrack(trackElement.track)) {
-        const track = trackElement.track;
-        const cuesArray = Array.from(track.activeCues || []);
-        handlePlayerAction({
-          type: "CAPTION_CUE_CHANGE",
-          cues: cuesArray as TextTrackCue[],
-        });
-      } else {
+      if (!trackElement || !isTextTrack(trackElement.track)) {
         console.error("Current target is not a TextTrack or is null");
+        return;
       }
+      const track = trackElement.track;
+      const cuesArray = Array.from(track.activeCues || []);
+      handlePlayerAction({
+        type: "CAPTION_CUE_CHANGE",
+        cues: cuesArray as TextTrackCue[],
+      });
     },
     [handlePlayerAction]
   );

@@ -1,26 +1,28 @@
 import type { PlayerProviderAction } from "./Player/PlayerContext";
-import type { TimelineProviderAction } from "./Timeline/TimelineVolumeContext";
 
 type ActionHandler<T> = (action: T) => void;
 
 type HandleKeyDownProps = {
   event: React.KeyboardEvent<HTMLButtonElement>;
-  currentTime: number;
-  duration: number;
-  handleTimelineAction: ActionHandler<TimelineProviderAction>;
   handlePlayerAction: ActionHandler<PlayerProviderAction>;
   type: "timeline" | "volume";
+  audioElement: HTMLAudioElement | null;
 };
 
 export function handleTimelineKeys({
   event,
-  currentTime,
-  duration,
-  handleTimelineAction,
   handlePlayerAction,
   type,
+  audioElement,
 }: HandleKeyDownProps) {
-  if (handleMediaKeys({ event, handlePlayerAction })) {
+  const duration = audioElement?.duration ?? 0;
+  if (
+    handleMediaKeys({
+      event,
+      handlePlayerAction,
+      audioElement,
+    })
+  ) {
     return;
   }
   if (isNumericKey(event.key)) {
@@ -29,14 +31,24 @@ export function handleTimelineKeys({
       duration,
       key: event.key,
     });
-    handleTimelineAction({ type: "SEEK_TO_TIME", time, component: type });
+    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
     event.preventDefault();
     return true;
   }
   if (event.key.startsWith("Arrow")) {
-    const time = getArrowKeyValue({ type, duration, time: currentTime, event });
+    const time = getArrowKeyValue({ type, audioElement, event });
     if (!time) return;
-    handleTimelineAction({ type: "SEEK_TO_TIME", time, component: type });
+    if (type === "timeline") {
+      handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
+    }
+    if (type === "volume") {
+      handlePlayerAction({
+        type: "SEEK_TO_TIME",
+        time: Math.min(1, Math.max(0, time)),
+        component: type,
+      });
+    }
+
     event.preventDefault();
     return true;
   }
@@ -47,6 +59,83 @@ export function handleTimelineKeys({
     return true;
   }
   return false;
+}
+
+export function handleMediaKeys({
+  event,
+  handlePlayerAction,
+  audioElement,
+}: Omit<HandleKeyDownProps, "handleTimelineAction" | "type">) {
+  const currentTime = audioElement?.currentTime ?? 0;
+  const duration = audioElement?.duration ?? 0;
+  if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
+    handlePlayerAction({ type: "TOGGLE_MUTE" });
+    event.preventDefault();
+    return true;
+  }
+  if (["p", "k", "MediaPlayPause"].includes(event.key.toLowerCase())) {
+    handlePlayerAction({ type: "TOGGLE_PLAY" });
+    event.preventDefault();
+    return true;
+  }
+  if (event.key.toLowerCase() === "l") {
+    if (!audioElement) return;
+    const time = Math.min(duration, currentTime + 10);
+    audioElement.currentTime = time;
+    event.preventDefault();
+    return true;
+  }
+  if (event.key.toLowerCase() === "j") {
+    if (!audioElement) return;
+    const time = Math.max(0, currentTime - 10);
+    audioElement.currentTime = time;
+    event.preventDefault();
+    return true;
+  }
+  if (["s", "MediaStop"].includes(event.key.toLowerCase())) {
+    handlePlayerAction({
+      type: "STOP_AUDIO",
+    });
+    event.preventDefault();
+    return true;
+  }
+  return false;
+}
+
+type GetArrowKeyValueProps = {
+  type: "timeline" | "volume";
+  audioElement: HTMLAudioElement | null;
+  event: React.KeyboardEvent<HTMLButtonElement>;
+};
+
+function getArrowKeyValue({
+  type,
+  event,
+  audioElement,
+}: GetArrowKeyValueProps) {
+  const time = audioElement?.currentTime ?? 0;
+  const duration = audioElement?.duration ?? 0;
+  if (type === "timeline") {
+    if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
+      return event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
+    }
+    if (["ArrowRight", "ArrowUp"].includes(event.key)) {
+      return event.shiftKey
+        ? Math.min(duration, time + 2)
+        : Math.min(duration, time + 10);
+    }
+  }
+  if (type === "volume") {
+    if (["ArrowDown", "ArrowLeft"].includes(event.key)) {
+      const volume = audioElement?.volume ?? 0;
+      return event.shiftKey ? volume - 0.05 : volume - 0.1;
+    }
+    if (["ArrowUp", "ArrowRight"].includes(event.key)) {
+      const volume = audioElement?.volume ?? 0;
+      return event.shiftKey ? volume + 0.05 : volume + 0.1;
+    }
+  }
+  return;
 }
 
 function isNumericKey(key: string): key is NumericKey {
@@ -89,69 +178,4 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
     },
   };
   return keyToTimeMap[type][key];
-}
-
-export function handleMediaKeys({
-  event,
-  handlePlayerAction,
-}: Omit<
-  HandleKeyDownProps,
-  "currentTime" | "duration" | "handleTimelineAction" | "type"
->) {
-  if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
-    handlePlayerAction({ type: "TOGGLE_MUTE" });
-    event.preventDefault();
-    return true;
-  }
-  if (["p", "MediaPlayPause"].includes(event.key.toLowerCase())) {
-    handlePlayerAction({ type: "TOGGLE_PLAY" });
-    event.preventDefault();
-    return true;
-  }
-  if (["s", "MediaStop"].includes(event.key.toLowerCase())) {
-    handlePlayerAction({
-      type: "STOP_AUDIO",
-    });
-    event.preventDefault();
-    return true;
-  }
-  return false;
-}
-
-type getArrowKeyValueProps = {
-  type: "timeline" | "volume";
-  duration: number;
-  time: number;
-  event: React.KeyboardEvent<HTMLButtonElement>;
-};
-
-function getArrowKeyValue({
-  type,
-  duration,
-  time,
-  event,
-}: getArrowKeyValueProps) {
-  if (type === "timeline") {
-    if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
-      return event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
-    }
-    if (["ArrowRight", "ArrowUp"].includes(event.key)) {
-      return event.shiftKey
-        ? Math.min(duration, time + 2)
-        : Math.min(duration, time + 10);
-    }
-  }
-  if (type === "volume") {
-    if (["ArrowDown", "ArrowLeft"].includes(event.key)) {
-      return event.shiftKey
-        ? Math.max(0, time - 0.05)
-        : Math.max(0, time - 0.1);
-    }
-    if (["ArrowUp", "ArrowRight"].includes(event.key)) {
-      return event.shiftKey
-        ? Math.min(1, time + 0.05)
-        : Math.min(1, time + 0.1);
-    }
-  }
-  return;
 }

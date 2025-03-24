@@ -1,4 +1,11 @@
-import { useMemo, useReducer, memo, useCallback, useContext } from "react";
+import {
+  useMemo,
+  useReducer,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+} from "react";
 import { VolumeContext, initialState } from "./VolumeContext";
 import {
   isTimelineAction,
@@ -20,6 +27,7 @@ export const VolumeProvider = memo(function VolumeProvider({
   const {
     audioElementRef: { current: audioElement },
     handleSideEffect,
+    volumeCallbackRef,
   } = useContext(AudioContext);
 
   const handleTimelineAction = useCallback(
@@ -33,6 +41,13 @@ export const VolumeProvider = memo(function VolumeProvider({
     },
     [audioElement, handleSideEffect]
   );
+
+  useEffect(() => {
+    if (!volumeCallbackRef.current) {
+      return;
+    }
+    volumeCallbackRef.current.handleVolumeAction = handleTimelineAction;
+  }, [handleTimelineAction, volumeCallbackRef]);
 
   const value = useMemo(() => {
     const result: TimelineContextType = {

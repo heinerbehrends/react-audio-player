@@ -9,11 +9,16 @@ type MuteButtonComponentProps = {
 
 export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
   const { handlePlayerAction, isMuted } = useContext(PlayerContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
   return (
     <button
       aria-label="Mute"
       aria-pressed={isMuted}
-      onKeyDown={(event) => handleMediaKeys({ event, handlePlayerAction })}
+      onKeyDown={(event) =>
+        handleMediaKeys({ event, handlePlayerAction, audioElement })
+      }
       onClick={() => handlePlayerAction({ type: "TOGGLE_MUTE" })}
     >
       {children}

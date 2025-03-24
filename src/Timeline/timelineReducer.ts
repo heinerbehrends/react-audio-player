@@ -46,12 +46,6 @@ export function timelineReducer(
         time: action.time,
       };
     }
-    case "SEEK_TO_TIME": {
-      if (action.component === "timeline") {
-        return { ...state, time: action.time };
-      }
-      return state;
-    }
     default: {
       return state;
     }

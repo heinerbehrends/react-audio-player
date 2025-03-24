@@ -26,7 +26,9 @@ function SeekButtonComponent({
   return (
     <button
       aria-label={`Seek ${direction}`}
-      onKeyDown={(event) => handleMediaKeys({ event, handlePlayerAction })}
+      onKeyDown={(event) =>
+        handleMediaKeys({ event, handlePlayerAction, audioElement })
+      }
       onClick={handleClick}
     >
       {children}

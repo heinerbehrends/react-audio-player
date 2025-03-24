@@ -53,7 +53,6 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
   );
 });
 
-// Type-safe version of the check functions
 function isSideEffectAction(
   action: PlayerProviderAction
 ): action is SideEffectAction {

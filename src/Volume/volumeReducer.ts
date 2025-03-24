@@ -47,7 +47,7 @@ export function volumeReducer(
       if (state.dragState !== "dragging") return state;
       return { ...state, dragState: "idle" as const };
     }
-    case "SEEK_TO_TIME": {
+    case "UPDATE_TIME": {
       return { ...state, time: action.time };
     }
     default: {

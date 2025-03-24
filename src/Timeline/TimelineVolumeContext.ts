@@ -47,16 +47,10 @@ export type UpdateTimeAction = {
   time: number;
 };
 
-export type SeekToTimeAction = {
-  type: "SEEK_TO_TIME";
-  component: "timeline" | "volume";
-  time: number;
-};
-
 export type TimelineContextAction =
   | TimelineLoadedAction
   | UpdateTimeAction
-  | SeekToTimeAction
+  // | SeekToTimeAction
   | DragAction
   | DragStartAction
   | DragEndAction;
@@ -84,7 +78,6 @@ const TIMELINE_DISPATCH_MAP: Record<TimelineActionType, true> = {
   DRAG: true,
   DRAG_END: true,
   UPDATE_TIME: true,
-  SEEK_TO_TIME: true,
 };
 
 export function isTimelineSideEffect(

@@ -15,7 +15,6 @@ export function handleSideEffect(
       break;
     }
     case "STOP_AUDIO": {
-      console.log("STOP_AUDIO");
       audioElement.currentTime = 0;
       audioElement.pause();
       break;

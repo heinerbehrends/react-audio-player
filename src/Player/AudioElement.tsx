@@ -1,4 +1,4 @@
-import { useContext, useRef, memo } from "react";
+import { useContext, useRef, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { PlayerProviderAction } from "./PlayerContext";
@@ -9,28 +9,42 @@ const AudioElement = memo(function AudioElement() {
   const { audioElementRef, timelineCallbackRef, volumeCallbackRef } =
     useContext(AudioContext);
   const { src, captionSrc } = audioFiles?.[0] || {};
-
+  const handleSeeked = useCallback(() => {
+    if (timelineCallbackRef?.current?.handleTimelineAction) {
+      timelineCallbackRef.current.handleTimelineAction({
+        type: "UPDATE_TIME",
+        time: audioElementRef.current?.currentTime || 0,
+      });
+    }
+  }, [timelineCallbackRef, audioElementRef]);
+  const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
+  const handleVolumeChange = useCallback(() => {
+    if (volumeCallbackRef?.current?.handleVolumeAction) {
+      volumeCallbackRef.current.handleVolumeAction({
+        type: "UPDATE_TIME",
+        time: audioElementRef.current?.volume || 0,
+      });
+    }
+  }, [volumeCallbackRef, audioElementRef]);
+  const hasTimelineCallback =
+    !!timelineCallbackRef?.current?.handleTimelineAction;
   return (
     <audio
       aria-label="audio player"
       ref={audioElementRef}
-      onSeeked={() => {
-        if (!timelineCallbackRef?.current?.handleTimelineAction) {
-          return;
-        }
-        timelineCallbackRef.current.handleTimelineAction({
-          type: "UPDATE_TIME",
-          time: audioElementRef.current?.currentTime || 0,
-        });
+      onSeeked={hasTimelineCallback ? handleSeeked : undefined}
+      onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
+      onPause={() => {
+        console.log("onPause");
       }}
-      onVolumeChange={() => {
-        if (!volumeCallbackRef?.current?.handleVolumeAction) {
-          return;
-        }
-        volumeCallbackRef.current.handleVolumeAction({
-          type: "UPDATE_TIME",
-          time: audioElementRef.current?.volume || 0,
-        });
+      onPlay={() => {
+        console.log("onPlay");
+      }}
+      onTimeUpdate={(event) => {
+        console.log(event.currentTarget.currentTime);
+      }}
+      onRateChange={(event) => {
+        console.log(event.currentTarget.playbackRate);
       }}
       onEnded={() => {
         handlePlayerAction({ type: "AUDIO_FILE_ENDED" });

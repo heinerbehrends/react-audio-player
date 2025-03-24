@@ -46,7 +46,6 @@ export const TimelineProvider = memo(function TimelineProvider({
   );
 
   useEffect(() => {
-    console.log("timelineCallbackRef", timelineCallbackRef.current);
     if (!timelineCallbackRef.current) {
       return;
     }

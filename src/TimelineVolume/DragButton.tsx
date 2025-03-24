@@ -1,10 +1,10 @@
 import { handleTimelineKeys } from "../handleKeys";
 import {
   useContext,
-  type HTMLAttributes,
   useCallback,
   useMemo,
   CSSProperties,
+  type HTMLAttributes,
 } from "react";
 import { useDrag } from "./useDrag";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
@@ -53,13 +53,11 @@ export function DragButton({ type, ...props }: DragButtonProps) {
     (event: React.KeyboardEvent<HTMLButtonElement>) =>
       handleTimelineKeys({
         event,
-        currentTime: time,
-        duration: audioElement?.duration ?? 0,
-        handleTimelineAction,
         handlePlayerAction,
         type,
+        audioElement,
       }),
-    [time, handleTimelineAction, handlePlayerAction, type, audioElement]
+    [handlePlayerAction, type, audioElement]
   );
 
   const style: CSSProperties = useMemo(

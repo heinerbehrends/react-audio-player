@@ -23,31 +23,30 @@ export function SetRelativeButton({
   type,
   ...props
 }: SetRelativeButtonProps) {
-  const { handleTimelineAction, time, timelineLeft, timelineWidth } =
-    useContext(switchContext[type]);
+  const { handleTimelineAction, timelineLeft, timelineWidth } = useContext(
+    switchContext[type]
+  );
   const { handlePlayerAction } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
-  const duration = audioElement?.duration ?? 0;
   const hasSetDimensions = useRef(false);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       handleTimelineKeys({
         event,
-        currentTime: time,
-        duration,
-        handleTimelineAction,
+        audioElement,
         handlePlayerAction,
         type,
       });
     },
-    [time, duration, handleTimelineAction, handlePlayerAction, type]
+    [handlePlayerAction, type, audioElement]
   );
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
+      const duration = audioElement?.duration ?? 0;
       const xOffset = event.clientX - timelineLeft;
       const time =
         type === "timeline"
@@ -67,7 +66,7 @@ export function SetRelativeButton({
         component: type,
       });
     },
-    [type, timelineLeft, timelineWidth, duration, handleTimelineAction]
+    [type, timelineLeft, timelineWidth, handleTimelineAction, audioElement]
   );
 
   const handleRef = useCallback(
@@ -116,10 +115,7 @@ function sendTimelineLoaded({
   handleTimelineAction,
   hasSentDimensions,
 }: SendTimelineLoadedProps) {
-  if (!element) {
-    return;
-  }
-  if (hasSentDimensions.current) {
+  if (!element || hasSentDimensions.current) {
     return;
   }
   const rect = element.getBoundingClientRect();

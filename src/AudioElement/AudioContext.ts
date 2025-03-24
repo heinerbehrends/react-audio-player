@@ -6,7 +6,6 @@ import type {
   TogglePlayAction,
 } from "../Player/PlayerContext";
 import type {
-  SeekToTimeAction,
   DragEndAction,
   DragAction,
   TimelineContextAction,
@@ -22,6 +21,12 @@ export type VolumeProviderRef = {
 
 export type StopAudioAction = {
   type: "STOP_AUDIO";
+};
+
+export type SeekToTimeAction = {
+  type: "SEEK_TO_TIME";
+  component: "timeline" | "volume";
+  time: number;
 };
 
 export type SideEffectAction =
