@@ -37,10 +37,9 @@ export async function getTimelineState(page: Page) {
 
 // Common pattern: Getting button position
 export async function getButtonPosition(page: Page) {
-  return page.evaluate(() => {
-    const button = document.querySelector("[aria-label='Drag to seek']");
-    return button?.getBoundingClientRect().left ?? 0;
-  });
+  const button = page.getByLabel('Drag to seek');
+  const boundingBox = await button.boundingBox();
+  return boundingBox?.x ?? 0;
 }
 
 // Common pattern: Getting audio state
