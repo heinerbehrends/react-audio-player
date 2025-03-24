@@ -1,11 +1,9 @@
 import { HTMLAttributes } from "react";
-import { useUpdateTime } from "./useUpdateTime";
 
 export function Container({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }) {
-  useUpdateTime();
   return (
     <div
       {...props}

@@ -2,7 +2,6 @@ import { useContext, type HTMLAttributes, memo, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { useUpdateTime } from "../Timeline/useUpdateTime";
 
 const switchContext = {
   timeline: TimelineContext,
@@ -50,8 +49,6 @@ export const Indicator = memo(function Indicator({
     }),
     [progress, props.style]
   );
-
-  useUpdateTime();
 
   const { minutes, seconds } = minutesAndSeconds(time);
   return (

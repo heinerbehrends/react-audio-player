@@ -8,7 +8,7 @@ const AudioElement = memo(function AudioElement() {
   const { audioElementRef, timelineCallbackRef, volumeCallbackRef } =
     useContext(AudioContext);
   const { src, captionSrc } = audioFiles?.[0] || {};
-  const handleSeeked = useCallback(() => {
+  const handleTimeUpdate = useCallback(() => {
     if (timelineCallbackRef?.current?.handleTimelineAction) {
       timelineCallbackRef.current.handleTimelineAction({
         type: "UPDATE_TIME",
@@ -31,7 +31,7 @@ const AudioElement = memo(function AudioElement() {
     <audio
       aria-label="audio player"
       ref={audioElementRef}
-      onSeeked={hasTimelineCallback ? handleSeeked : undefined}
+      onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
       onPause={() => {
         console.log("onPause");
@@ -39,9 +39,7 @@ const AudioElement = memo(function AudioElement() {
       onPlay={() => {
         console.log("onPlay");
       }}
-      // onTimeUpdate={(event) => {
-      //   console.log(event.currentTarget.currentTime);
-      // }}
+      onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
       onRateChange={(event) => {
         console.log(event.currentTarget.playbackRate);
       }}
