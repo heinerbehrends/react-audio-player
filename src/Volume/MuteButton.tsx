@@ -23,16 +23,10 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
       onClick={() => {
         handlePlayerAction({ type: "TOGGLE_MUTE" });
         if (!volumeCallback?.handleVolumeAction) return;
-        if (isMuted) {
-          volumeCallback.handleVolumeAction({
-            type: "UPDATE_TIME",
-            time: audioElement?.volume ?? 0,
-          });
-          return;
-        }
+        const nextVolume = isMuted ? 0 : audioElement?.volume ?? 0;
         volumeCallback.handleVolumeAction({
           type: "UPDATE_TIME",
-          time: 0,
+          time: nextVolume,
         });
       }}
     >
