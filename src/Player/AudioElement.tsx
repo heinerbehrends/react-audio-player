@@ -8,6 +8,7 @@ const AudioElement = memo(function AudioElement() {
   const { audioElementRef, timelineCallbackRef, volumeCallbackRef } =
     useContext(AudioContext);
   const { src, captionSrc } = audioFiles?.[0] || {};
+
   const handleTimeUpdate = useCallback(() => {
     if (timelineCallbackRef?.current?.handleTimelineAction) {
       timelineCallbackRef.current.handleTimelineAction({
@@ -16,29 +17,27 @@ const AudioElement = memo(function AudioElement() {
       });
     }
   }, [timelineCallbackRef, audioElementRef]);
-  const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
+
   const handleVolumeChange = useCallback(() => {
+    if (isMuted) return;
     if (volumeCallbackRef?.current?.handleVolumeAction) {
       volumeCallbackRef.current.handleVolumeAction({
         type: "UPDATE_TIME",
         time: audioElementRef.current?.volume ?? 0,
       });
     }
-  }, [volumeCallbackRef, audioElementRef]);
+  }, [volumeCallbackRef, audioElementRef, isMuted]);
+
   const hasTimelineCallback =
     !!timelineCallbackRef?.current?.handleTimelineAction;
+  const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
+
   return (
     <audio
       aria-label="audio player"
       ref={audioElementRef}
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
-      onPause={() => {
-        console.log("onPause");
-      }}
-      onPlay={() => {
-        console.log("onPlay");
-      }}
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
       onRateChange={(event) => {
         console.log(event.currentTarget.playbackRate);

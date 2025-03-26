@@ -65,7 +65,7 @@ export function SetRelativeButton({
               xOffset,
               timelineWidth,
             });
-      console.log("SetRelativeButton: time", time);
+
       handleTimelineAction({
         type: "SEEK_TO_TIME",
         time,

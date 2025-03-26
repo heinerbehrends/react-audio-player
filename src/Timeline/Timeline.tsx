@@ -3,6 +3,7 @@ import { SetRelativeButton } from "../TimelineVolume/SetRelativeButton";
 import { DragButton } from "../TimelineVolume/DragButton";
 import { Indicator } from "../TimelineVolume/Indicator";
 import { Container } from "../TimelineVolume/Container";
+import { TimelineProvider } from "./TimelineProvider";
 
 type ProgressProps = Omit<HTMLAttributes<HTMLDivElement>, "type">;
 type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, "type"> & {
@@ -37,9 +38,11 @@ type TimelineComponent = React.FC<
 
 export const Timeline = Object.assign(
   ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => (
-    <Container {...props} data-type="timeline">
-      {children}
-    </Container>
+    <TimelineProvider>
+      <Container {...props} data-type="timeline">
+        {children}
+      </Container>
+    </TimelineProvider>
   ),
   {
     Progress: TimelineProgress,

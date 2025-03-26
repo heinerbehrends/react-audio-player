@@ -39,7 +39,12 @@ export function volumeReducer(
     }
     case "DRAG_END": {
       if (state.dragState !== "dragging") return state;
-      return { ...state, dragState: "idle" as const, xOffset: 0, time: action.time };
+      return {
+        ...state,
+        dragState: "idle" as const,
+        xOffset: 0,
+        time: action.time,
+      };
     }
     case "UPDATE_TIME": {
       return { ...state, time: action.time };

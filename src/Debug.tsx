@@ -22,7 +22,9 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
         padding: "1rem",
         backgroundColor: "#f5f5f5",
         borderRadius: "4px",
-        margin: "1rem",
+        position: "absolute",
+        top: 60,
+        left: 0,
       }}
     >
       <h3>Player</h3>

@@ -11,6 +11,7 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
   const { handlePlayerAction, isMuted } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
+    volumeCallbackRef: { current: volumeCallback },
   } = useContext(AudioContext);
   return (
     <button
@@ -19,7 +20,21 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
       onKeyDown={(event) =>
         handleMediaKeys({ event, handlePlayerAction, audioElement })
       }
-      onClick={() => handlePlayerAction({ type: "TOGGLE_MUTE" })}
+      onClick={() => {
+        handlePlayerAction({ type: "TOGGLE_MUTE" });
+        if (!volumeCallback?.handleVolumeAction) return;
+        if (isMuted) {
+          volumeCallback.handleVolumeAction({
+            type: "UPDATE_TIME",
+            time: audioElement?.volume ?? 0,
+          });
+          return;
+        }
+        volumeCallback.handleVolumeAction({
+          type: "UPDATE_TIME",
+          time: 0,
+        });
+      }}
     >
       {children}
     </button>

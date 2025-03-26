@@ -3,11 +3,26 @@ import { SetRelativeButton } from "../TimelineVolume/SetRelativeButton";
 import { DragButton } from "../TimelineVolume/DragButton";
 import { Indicator } from "../TimelineVolume/Indicator";
 import { Container } from "../TimelineVolume/Container";
+import { VolumeProvider } from "./VolumeProvider";
 
 type ProgressProps = Omit<HTMLAttributes<HTMLDivElement>, "type">;
 type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, "type"> & {
   children: React.ReactNode;
 };
+
+type VolumeContainerProps = HTMLAttributes<HTMLDivElement> & {
+  children: React.ReactNode;
+};
+
+function VolumeContainer({ children, ...props }: VolumeContainerProps) {
+  return (
+    <VolumeProvider>
+      <Container {...props} data-type="volume">
+        {children}
+      </Container>
+    </VolumeProvider>
+  );
+}
 
 function VolumeProgress(props: ProgressProps) {
   return <Indicator {...props} type="volume" />;
@@ -35,7 +50,7 @@ type VolumeComponent = React.FC<
   DragButton: typeof VolumeDragButton;
 };
 
-export const Volume = Object.assign(Container as VolumeComponent, {
+export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
   Progress: VolumeProgress,
   SeekButton: VolumeSeekButton,
   DragButton: VolumeDragButton,

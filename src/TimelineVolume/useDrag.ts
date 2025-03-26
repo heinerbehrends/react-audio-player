@@ -2,7 +2,11 @@ import { useContext, useEffect, useCallback } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { calculateTime, calculateVolume, calculateVolumeDragEnd } from "../functionsLib";
+import {
+  calculateTime,
+  calculateVolume,
+  calculateVolumeDragEnd,
+} from "../functionsLib";
 
 const mapContext = {
   timeline: TimelineContext,
@@ -26,7 +30,7 @@ export function useDrag(type: "timeline" | "volume") {
       });
       const duration = audioElement?.duration ?? 0;
       const restrictedTime = Math.min(Math.max(time, 0), duration);
-      
+
       handleTimelineAction({
         type: "DRAG_END",
         time: restrictedTime,
@@ -43,9 +47,8 @@ export function useDrag(type: "timeline" | "volume") {
         timelineWidth,
         timelineLeft,
       });
-      console.log("onPointerUpVolume: time", time);
       const restrictedTime = Math.min(Math.max(time, 0), 1);
-      console.log("onPointerUpVolume: restrictedTime", restrictedTime);
+
       handleTimelineAction({
         type: "DRAG_END",
         time: restrictedTime,
@@ -59,9 +62,8 @@ export function useDrag(type: "timeline" | "volume") {
     ({ clientX }: PointerEvent) => {
       if (type === "timeline") {
         onPointerUpTimeline(clientX);
-      } 
+      }
       if (type === "volume") {
-        console.log("onPointerUp: volume");
         onPointerUpVolume(clientX);
       }
     },
@@ -88,8 +90,9 @@ export function useDrag(type: "timeline" | "volume") {
           : Math.min(Math.max(time, 0), 1);
 
       const restrictedClientX = Math.min(
-        Math.max(event.clientX, timelineLeft), timelineLeft + timelineWidth
-      );  
+        Math.max(event.clientX, timelineLeft),
+        timelineLeft + timelineWidth
+      );
       handleTimelineAction({
         type: "DRAG",
         time: restrictedTime,
@@ -100,6 +103,17 @@ export function useDrag(type: "timeline" | "volume") {
     [handleTimelineAction, type, timelineLeft, timelineWidth, audioElement]
   );
 
+  const onPointerCancel = useCallback(() => {
+    handleTimelineAction({
+      type: "DRAG_END",
+      time:
+        type === "timeline"
+          ? audioElement?.currentTime ?? 0
+          : audioElement?.volume ?? 0,
+      component: type,
+    });
+  }, [handleTimelineAction, type, audioElement]);
+
   useEffect(() => {
     if (dragState !== "dragging") {
       window.removeEventListener("pointermove", onPointerMove);
@@ -108,10 +122,12 @@ export function useDrag(type: "timeline" | "volume") {
 
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointercancel", onPointerCancel);
 
     return () => {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointercancel", onPointerCancel);
     };
-  }, [dragState, onPointerUp, onPointerMove, audioElement]);
+  }, [dragState, onPointerUp, onPointerMove, onPointerCancel, audioElement]);
 }

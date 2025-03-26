@@ -15,7 +15,12 @@ import {
 
 type PlayerContextProviderProps = {
   children: React.ReactNode;
-  audioFiles: { src: string; captionSrc?: string }[];
+  audioFiles: AudioFile[];
+};
+
+export type AudioFile = {
+  src: string;
+  captionSrc?: string;
 };
 
 export const PlayerContextProvider = memo(function PlayerContextProvider({
