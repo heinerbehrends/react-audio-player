@@ -71,17 +71,18 @@ export function useDrag(type: "timeline" | "volume") {
   );
 
   const onPointerMove = useCallback(
-    (event: PointerEvent) => {
+    (event: PointerEvent | TouchEvent) => {
+      const clientX = getClientX(event);
       const time =
         type === "timeline"
           ? calculateTime({
-              xOffset: event.clientX,
+              xOffset: clientX,
               timelineWidth,
               timelineLeft,
               duration: audioElement?.duration ?? 0,
             })
           : calculateVolume({
-              xOffset: event.clientX,
+              xOffset: clientX,
               timelineWidth,
             });
       const restrictedTime =
@@ -90,7 +91,7 @@ export function useDrag(type: "timeline" | "volume") {
           : Math.min(Math.max(time, 0), 1);
 
       const restrictedClientX = Math.min(
-        Math.max(event.clientX, timelineLeft),
+        Math.max(clientX, timelineLeft),
         timelineLeft + timelineWidth
       );
       handleTimelineAction({
@@ -117,17 +118,33 @@ export function useDrag(type: "timeline" | "volume") {
   useEffect(() => {
     if (dragState !== "dragging") {
       window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("touchmove", onPointerMove);
       return;
     }
 
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("touchmove", onPointerMove);
+    window.addEventListener("touchcancel", onPointerCancel);
 
     return () => {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchcancel", onPointerCancel);
     };
   }, [dragState, onPointerUp, onPointerMove, onPointerCancel, audioElement]);
+}
+
+function isTouchEvent(event: PointerEvent | TouchEvent): event is TouchEvent {
+  return "touches" in event;
+}
+
+export function getClientX(event: PointerEvent | TouchEvent): number {
+  if (isTouchEvent(event)) {
+    return event.touches[0]?.clientX ?? 0;
+  }
+  return event.clientX;
 }

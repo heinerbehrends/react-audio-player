@@ -3,7 +3,7 @@ import {
   useContext,
   useCallback,
   useMemo,
-  CSSProperties,
+  type CSSProperties,
   type HTMLAttributes,
 } from "react";
 import { useDrag } from "./useDrag";
@@ -49,6 +49,13 @@ export function DragButton({ type, ...props }: DragButtonProps) {
     });
   }, [handleTimelineAction, offset]);
 
+  const handleTouchStart = useCallback(() => {
+    handleTimelineAction({
+      type: "DRAG_START",
+      clientX: offset,
+    });
+  }, [handleTimelineAction, offset]);
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) =>
       handleTimelineKeys({
@@ -67,6 +74,7 @@ export function DragButton({ type, ...props }: DragButtonProps) {
       gridRow: "1 / 1",
       cursor: "grab",
       transform: `translate(calc(${offset}px - 20px), 0)`,
+      touchAction: "none",
       ...props.style,
     }),
     [offset, props.style]
@@ -82,6 +90,7 @@ export function DragButton({ type, ...props }: DragButtonProps) {
         type === "timeline" ? "Drag to seek" : "Drag to adjust volume"
       }
       onPointerDown={handlePointerDown}
+      onTouchStart={handleTouchStart}
       onKeyDown={handleKeyDown}
     />
   );
