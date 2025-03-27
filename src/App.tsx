@@ -8,8 +8,7 @@ import { Captions } from "./Player/Captions";
 import { SeekButton } from "./Player/SeekButton";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
-import { SetPlaybackRate } from "./PlaybackRate/SetPlaybackRate";
-import { ChangePlaybackRate } from "./PlaybackRate/ChangePlaybackRate";
+import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 
 function App() {
   return (
@@ -32,9 +31,9 @@ function App() {
         {/* <Debug type="timeline" /> */}
       </Timeline>
       <MuteButton>
-        <MuteButton.LowVolume>Mute</MuteButton.LowVolume>
-        <MuteButton.HighVolume>Mute</MuteButton.HighVolume>
-        <MuteButton.Muted>Unmute</MuteButton.Muted>
+        <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
+        <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
+        <MuteButton.Muted>Muted</MuteButton.Muted>
       </MuteButton>
       <SeekButton.Backward>Backward</SeekButton.Backward>
       <PlayButton>
@@ -60,20 +59,20 @@ function App() {
           }}
         />
       </Volume>
-      <SetPlaybackRate playbackRate={0.5} currentIndicator="*">
+      <PlaybackRate.Set playbackRate={0.5} currentIndicator="*">
         0.5x
-      </SetPlaybackRate>
-      <SetPlaybackRate playbackRate={1} currentIndicator="*">
+      </PlaybackRate.Set>
+      <PlaybackRate.Set playbackRate={1} currentIndicator="*">
         1x
-      </SetPlaybackRate>
-      <SetPlaybackRate playbackRate={1.5} currentIndicator="*">
+      </PlaybackRate.Set>
+      <PlaybackRate.Set playbackRate={1.5} currentIndicator="*">
         1.5x
-      </SetPlaybackRate>
-      <SetPlaybackRate playbackRate={2} currentIndicator="*">
+      </PlaybackRate.Set>
+      <PlaybackRate.Set playbackRate={2} currentIndicator="*">
         2x
-      </SetPlaybackRate>
-      <ChangePlaybackRate amount={-0.1}>-0.1x</ChangePlaybackRate>
-      <ChangePlaybackRate amount={0.1}>+0.1x</ChangePlaybackRate>
+      </PlaybackRate.Set>
+      <PlaybackRate.Change amount={-0.1}>-0.1x</PlaybackRate.Change>
+      <PlaybackRate.Change amount={0.1}>+0.1x</PlaybackRate.Change>
       <Captions />
       <Error>There was an error loading the audio file.</Error>
     </AudioPlayer>
