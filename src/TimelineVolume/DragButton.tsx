@@ -43,11 +43,16 @@ export function DragButton({ type, ...props }: DragButtonProps) {
   );
 
   const handlePointerDown = useCallback(() => {
+    if (type === "volume") {
+      handlePlayerAction({
+        type: "UNMUTE",
+      });
+    }
     handleTimelineAction({
       type: "DRAG_START",
       clientX: offset,
     });
-  }, [handleTimelineAction, offset]);
+  }, [handleTimelineAction, offset, handlePlayerAction, type]);
 
   const handleTouchStart = useCallback(() => {
     handleTimelineAction({

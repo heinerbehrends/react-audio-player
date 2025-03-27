@@ -21,7 +21,12 @@ export function handleSideEffect(
       break;
     }
     case "TOGGLE_MUTE": {
+      console.log("TOGGLE_MUTE", audioElement.muted);
       audioElement.muted = !audioElement.muted;
+      break;
+    }
+    case "UNMUTE": {
+      audioElement.muted = false;
       break;
     }
     case "DRAG_END":

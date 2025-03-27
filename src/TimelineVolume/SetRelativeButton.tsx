@@ -4,6 +4,7 @@ import { useContext, useRef, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
+import { PlayerContext } from "../Player/PlayerContext";
 import { calculateTime, calculateVolume } from "../functionsLib";
 
 const switchContext = {
@@ -27,6 +28,7 @@ export function SetRelativeButton({
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
+  const { handlePlayerAction } = useContext(PlayerContext);
   const duration = audioElement?.duration ?? 0;
   const time =
     type === "timeline"
@@ -50,7 +52,11 @@ export function SetRelativeButton({
               xOffset,
               sliderLength,
             });
-
+      if (type === "volume") {
+        handlePlayerAction({
+          type: "UNMUTE",
+        });
+      }
       handleTimelineAction({
         type: "SEEK_TO_TIME",
         time,

@@ -24,6 +24,7 @@ const AudioElement = memo(function AudioElement() {
       type: "SET_PLAYER_VOLUME",
       volume: audioElementRef.current?.volume ?? 0,
     });
+
     if (volumeCallbackRef?.current?.handleVolumeAction) {
       volumeCallbackRef.current.handleVolumeAction({
         type: "UPDATE_TIME",

@@ -49,5 +49,9 @@ export function playerReducer(
     case "SET_PLAYER_VOLUME": {
       return { ...state, volume: action.volume };
     }
+    case "UNMUTE": {
+      if (!state.isMuted) return state;
+      return { ...state, isMuted: false };
+    }
   }
 }

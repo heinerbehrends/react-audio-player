@@ -48,7 +48,7 @@ function Muted({ children }: MutedProps) {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
   const volume = audioElement?.volume ?? 0;
-  if (playerIsMuted || volume !== 0) return null;
+  if (!playerIsMuted && volume !== 0) return null;
   return children;
 }
 

@@ -40,6 +40,10 @@ export type SetPlayerVolumeAction = {
   volume: number;
 };
 
+export type UnmuteAction = {
+  type: "UNMUTE";
+};
+
 export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
@@ -49,7 +53,8 @@ export type PlayerContextAction =
   | AudioFileErrorAction
   | CaptionCueChangeAction
   | SetPlaybackRateAction
-  | SetPlayerVolumeAction;
+  | SetPlayerVolumeAction
+  | UnmuteAction;
 
 type SideEffectActionType = SideEffectAction["type"];
 type PlayerContextActionType = PlayerContextAction["type"];
@@ -65,6 +70,7 @@ export const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   DRAG_END: true,
   STOP_AUDIO: true,
   SET_PLAYBACK_RATE: true,
+  UNMUTE: true,
 };
 
 export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {
@@ -77,6 +83,7 @@ export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {
   CAPTION_CUE_CHANGE: true,
   SET_PLAYBACK_RATE: true,
   SET_PLAYER_VOLUME: true,
+  UNMUTE: true,
 };
 
 export type PlayerContextType = {

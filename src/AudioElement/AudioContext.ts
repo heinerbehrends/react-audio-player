@@ -5,6 +5,7 @@ import type {
   SetPlaybackRateAction,
   ToggleMuteAction,
   TogglePlayAction,
+  UnmuteAction,
 } from "../Player/PlayerContext";
 import type {
   DragEndAction,
@@ -38,7 +39,8 @@ export type SideEffectAction =
   | DragEndAction
   | AudioFileEndedAction
   | StopAudioAction
-  | SetPlaybackRateAction;
+  | SetPlaybackRateAction
+  | UnmuteAction;
 
 export type AudioContextType = {
   audioElementRef: React.RefObject<HTMLAudioElement | null>;
