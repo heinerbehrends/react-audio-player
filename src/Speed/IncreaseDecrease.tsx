@@ -24,8 +24,8 @@ export function IncreaseDecrease({
     <button
       aria-label={
         amount > 0
-          ? `Increase speed by ${amount}`
-          : `Decrease speed by ${amount}`
+          ? `Increase playback rate by ${Math.abs(amount)}x`
+          : `Decrease playback rate by ${Math.abs(amount)}x`
       }
       onClick={handleClick}
       {...props}
