@@ -5,7 +5,7 @@ import { MuteButton } from "./Volume/MuteButton";
 import { Volume } from "./Volume/Volume";
 import { ElapsedRemaining } from "./Player/ElapsedRemaing";
 import { Captions } from "./Player/Captions";
-import { SeekButton } from "./Player/SeekButton";
+import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
@@ -35,12 +35,12 @@ function App() {
         <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
         <MuteButton.Muted>Muted</MuteButton.Muted>
       </MuteButton>
-      <SeekButton.Backward>Backward</SeekButton.Backward>
+      <Seek amount={-10}>Backward</Seek>
       <PlayButton>
         <PlayButton.Playing>Pause</PlayButton.Playing>
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
-      <SeekButton.Forward>Forward</SeekButton.Forward>
+      <Seek amount={10}>Forward</Seek>
       <ElapsedRemaining.Toggle>
         <ElapsedRemaining.Elapsed />
         <ElapsedRemaining.Remaining />
