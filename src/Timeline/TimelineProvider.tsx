@@ -15,7 +15,7 @@ import {
   type TimelineProviderAction,
 } from "./TimelineVolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { dragReducer } from "../TimelineVolume/dragReducer";
+import { timelineReducer } from "./timelineReducer";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
@@ -23,7 +23,7 @@ type TimelineProviderProps = {
 export const TimelineProvider = memo(function TimelineProvider({
   children,
 }: TimelineProviderProps) {
-  const [state, dispatch] = useReducer(dragReducer("timeline"), initialState);
+  const [state, dispatch] = useReducer(timelineReducer, initialState);
   const {
     audioElementRef: { current: audioElement },
     handleSideEffect,

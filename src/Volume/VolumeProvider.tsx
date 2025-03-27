@@ -13,7 +13,7 @@ import {
   TimelineContextType,
   type TimelineProviderAction,
 } from "../Timeline/TimelineVolumeContext";
-import { dragReducer } from "../TimelineVolume/dragReducer";
+import { volumeReducer } from "./volumeReducer";
 import { AudioContext } from "../AudioElement/AudioContext";
 
 type VolumeProviderProps = {
@@ -23,7 +23,7 @@ type VolumeProviderProps = {
 export const VolumeProvider = memo(function VolumeProvider({
   children,
 }: VolumeProviderProps) {
-  const [state, dispatch] = useReducer(dragReducer("volume"), initialState);
+  const [state, dispatch] = useReducer(volumeReducer, initialState);
   const {
     audioElementRef: { current: audioElement },
     handleSideEffect,
