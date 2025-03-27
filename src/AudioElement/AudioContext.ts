@@ -2,6 +2,7 @@ import { createContext } from "react";
 import { handleSideEffect } from "./handleSideEffect";
 import type {
   AudioFileEndedAction,
+  SetPlaybackRateAction,
   ToggleMuteAction,
   TogglePlayAction,
 } from "../Player/PlayerContext";
@@ -36,7 +37,8 @@ export type SideEffectAction =
   | DragAction
   | DragEndAction
   | AudioFileEndedAction
-  | StopAudioAction;
+  | StopAudioAction
+  | SetPlaybackRateAction;
 
 export type AudioContextType = {
   audioElementRef: React.RefObject<HTMLAudioElement | null>;

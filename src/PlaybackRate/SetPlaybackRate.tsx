@@ -12,7 +12,7 @@ type SetSpeedProps = {
   currentIndicator?: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function SetSpeed({
+export function SetPlaybackRate({
   playbackRate,
   children,
   currentIndicator,
@@ -26,7 +26,10 @@ export function SetSpeed({
   function handleClick() {
     if (!audioElement) return;
     const limitedRate = Math.min(Math.max(playbackRate, 0.5), 4);
-    audioElement.playbackRate = limitedRate;
+    handlePlayerAction({
+      type: "SET_PLAYBACK_RATE",
+      playbackRate: limitedRate,
+    });
   }
   const isCurrent = areNumbersClose(playbackRate, currentPlaybackRate);
   if (currentIndicator) {
@@ -39,7 +42,18 @@ export function SetSpeed({
       );
     }
     return (
-      <button onClick={handleClick} {...props}>
+      <button
+        onClick={handleClick}
+        {...props}
+        onKeyDown={(event) => {
+          console.log("onKeyDown", event);
+          handleMediaKeys({
+            event,
+            handlePlayerAction,
+            audioElement,
+          });
+        }}
+      >
         <span style={{ visibility: "hidden" }}>{currentIndicator}</span>
         {children}
       </button>

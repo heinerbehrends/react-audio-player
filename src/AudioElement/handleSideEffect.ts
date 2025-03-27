@@ -14,7 +14,7 @@ export function handleSideEffect(
       }
       break;
     }
-    case "AUDIO_FILE_ENDED": 
+    case "AUDIO_FILE_ENDED":
     case "STOP_AUDIO": {
       audioElement.currentTime = 0;
       audioElement.pause();
@@ -39,6 +39,11 @@ export function handleSideEffect(
         return;
       }
       audioElement.volume = action.time;
+      break;
+    }
+    case "SET_PLAYBACK_RATE": {
+      console.log("SET_PLAYBACK_RATE", action);
+      audioElement.playbackRate = action.playbackRate;
       break;
     }
   }

@@ -30,7 +30,7 @@ type CaptionCueChangeAction = {
   cues: TextTrackCue[];
 };
 
-type SetPlaybackRateAction = {
+export type SetPlaybackRateAction = {
   type: "SET_PLAYBACK_RATE";
   playbackRate: number;
 };
@@ -58,6 +58,7 @@ export const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   DRAG: true,
   DRAG_END: true,
   STOP_AUDIO: true,
+  SET_PLAYBACK_RATE: true,
 };
 
 export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {

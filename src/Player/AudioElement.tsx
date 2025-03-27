@@ -28,16 +28,6 @@ const AudioElement = memo(function AudioElement() {
     }
   }, [volumeCallbackRef, audioElementRef, isMuted]);
 
-  const handleRateChange = useCallback(
-    (event: React.SyntheticEvent<HTMLAudioElement>) => {
-      handlePlayerAction({
-        type: "SET_PLAYBACK_RATE",
-        playbackRate: event.currentTarget.playbackRate,
-      });
-    },
-    [handlePlayerAction]
-  );
-
   const handleEnded = useCallback(() => {
     handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
   }, [handlePlayerAction]);
@@ -61,7 +51,7 @@ const AudioElement = memo(function AudioElement() {
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
-      onRateChange={handleRateChange}
+      // onRateChange={handleRateChange}
       onEnded={handleEnded}
       onError={handleError}
       onLoadedMetadata={handleLoadedMetadata}

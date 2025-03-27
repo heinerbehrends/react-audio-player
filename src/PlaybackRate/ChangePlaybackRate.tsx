@@ -7,7 +7,7 @@ type IncreaseDecreaseProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function IncreaseDecrease({
+export function ChangePlaybackRate({
   amount,
   children,
   ...props
@@ -22,21 +22,25 @@ export function IncreaseDecrease({
       if (!audioElement) return;
       const newRate = audioElement.playbackRate + amount;
       const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
-      audioElement.playbackRate = limitedRate;
+      handlePlayerAction({
+        type: "SET_PLAYBACK_RATE",
+        playbackRate: limitedRate,
+      });
     },
-    [amount, audioElement]
+    [amount, audioElement, handlePlayerAction]
   );
 
   return (
     <button
       onClick={handleClick}
-      onKeyDown={(event) =>
+      onKeyDown={(event) => {
+        console.log("onKeyDown", event);
         handleMediaKeys({
           event,
           handlePlayerAction,
           audioElement,
-        })
-      }
+        });
+      }}
       aria-label={
         amount > 0
           ? `Increase playback rate by ${Math.abs(amount)}x`

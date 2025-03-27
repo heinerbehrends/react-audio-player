@@ -8,8 +8,8 @@ import { Captions } from "./Player/Captions";
 import { SeekButton } from "./Player/SeekButton";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
-import { SetSpeed } from "./Speed/SetSpeed";
-import { IncreaseDecrease } from "./Speed/IncreaseDecrease";
+import { SetPlaybackRate } from "./PlaybackRate/SetPlaybackRate";
+import { ChangePlaybackRate } from "./PlaybackRate/ChangePlaybackRate";
 
 function App() {
   return (
@@ -60,20 +60,20 @@ function App() {
           }}
         />
       </Volume>
-      <SetSpeed playbackRate={0.5} currentIndicator="*">
+      <SetPlaybackRate playbackRate={0.5} currentIndicator="*">
         0.5x
-      </SetSpeed>
-      <SetSpeed playbackRate={1} currentIndicator="*">
+      </SetPlaybackRate>
+      <SetPlaybackRate playbackRate={1} currentIndicator="*">
         1x
-      </SetSpeed>
-      <SetSpeed playbackRate={1.5} currentIndicator="*">
+      </SetPlaybackRate>
+      <SetPlaybackRate playbackRate={1.5} currentIndicator="*">
         1.5x
-      </SetSpeed>
-      <SetSpeed playbackRate={2} currentIndicator="*">
+      </SetPlaybackRate>
+      <SetPlaybackRate playbackRate={2} currentIndicator="*">
         2x
-      </SetSpeed>
-      <IncreaseDecrease amount={-0.1}>-0.1x</IncreaseDecrease>
-      <IncreaseDecrease amount={0.1}>+0.1x</IncreaseDecrease>
+      </SetPlaybackRate>
+      <ChangePlaybackRate amount={-0.1}>-0.1x</ChangePlaybackRate>
+      <ChangePlaybackRate amount={0.1}>+0.1x</ChangePlaybackRate>
       <Captions />
       <Error>There was an error loading the audio file.</Error>
     </AudioPlayer>

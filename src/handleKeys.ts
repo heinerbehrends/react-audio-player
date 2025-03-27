@@ -115,7 +115,29 @@ export function handleMediaKeys({
     event.preventDefault();
     return true;
   }
-
+  if (event.key === ">") {
+    console.log("audioElement?.playbackRate", audioElement?.playbackRate);
+    const newRate = (audioElement?.playbackRate ?? 1) + 0.25;
+    const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
+    handlePlayerAction({
+      type: "SET_PLAYBACK_RATE",
+      playbackRate: limitedRate,
+    });
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "<") {
+    const newRate = (audioElement?.playbackRate ?? 1) - 0.25;
+    const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
+    console.log("newRate", newRate);
+    console.log("limitedRate", limitedRate);
+    handlePlayerAction({
+      type: "SET_PLAYBACK_RATE",
+      playbackRate: limitedRate,
+    });
+    event.preventDefault();
+    return true;
+  }
   return false;
 }
 
