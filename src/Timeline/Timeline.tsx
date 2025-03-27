@@ -32,8 +32,8 @@ type TimelineComponent = React.FC<
   HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }
 > & {
   Progress: typeof TimelineProgress;
-  SeekButton: typeof TimelineSeekButton;
-  DragButton: typeof TimelineDragButton;
+  Seek: typeof TimelineSeekButton;
+  Drag: typeof TimelineDragButton;
 };
 
 export const Timeline = Object.assign(
@@ -46,8 +46,8 @@ export const Timeline = Object.assign(
   ),
   {
     Progress: TimelineProgress,
-    SeekButton: TimelineSeekButton,
-    DragButton: TimelineDragButton,
+    Seek: TimelineSeekButton,
+    Drag: TimelineDragButton,
   }
 ) as TimelineComponent;
 

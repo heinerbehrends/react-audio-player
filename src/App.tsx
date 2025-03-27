@@ -16,10 +16,10 @@ function App() {
       audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
     >
       <Timeline style={{ height: "40px", backgroundColor: "lightgray" }}>
-        <Timeline.SeekButton>
+        <Timeline.Seek>
           <Timeline.Progress style={{ backgroundColor: "darkgray" }} />
-        </Timeline.SeekButton>
-        <Timeline.DragButton
+        </Timeline.Seek>
+        <Timeline.Drag
           style={{
             backgroundColor: "hotpink",
             height: "40px",
