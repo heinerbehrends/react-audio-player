@@ -50,35 +50,7 @@ export const Indicator = memo(function Indicator({
     [progress, props.style]
   );
 
-  const ariaValueText = useMemo(() => {
-    const { minutes, seconds } = minutesAndSeconds(time);
-    if (type === "timeline") {
-      return `${minutes} minutes ${seconds} seconds`;
-    }
-    if (type === "volume") {
-      return `${Math.round(time * 100)}%`;
-    }
-  }, [type, time]);
-
-  const ariaLabel = useMemo(() => {
-    if (type === "timeline") {
-      return "audio progress";
-    }
-    return "volume level";
-  }, [type]);
-
-  return (
-    <div
-      {...props}
-      style={style}
-      role="progressbar"
-      aria-valuetext={ariaValueText}
-      aria-valuenow={time}
-      aria-valuemin={0}
-      aria-valuemax={duration}
-      aria-label={ariaLabel}
-    />
-  );
+  return <div {...props} style={style} />;
 });
 
 type getProgressProps = {
@@ -105,10 +77,4 @@ function getProgress({
     return dragState === "dragging" ? xOffset / sliderLength : time;
   }
   return time;
-}
-
-function minutesAndSeconds(time: number) {
-  const minutes = Math.floor(time / 60);
-  const seconds = Math.floor(time % 60);
-  return { minutes, seconds };
 }
