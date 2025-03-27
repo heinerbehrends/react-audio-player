@@ -115,7 +115,7 @@ export function handleMediaKeys({
     event.preventDefault();
     return true;
   }
-  if (event.key === ">") {
+  if ([">", "]"].includes(event.key)) {
     const newRate = (audioElement?.playbackRate ?? 1) + 0.25;
     const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
@@ -125,13 +125,18 @@ export function handleMediaKeys({
     event.preventDefault();
     return true;
   }
-  if (event.key === "<") {
+  if (["<", "["].includes(event.key)) {
     const newRate = (audioElement?.playbackRate ?? 1) - 0.25;
     const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
       playbackRate: limitedRate,
     });
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "Backspace") {
+    handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: 1 });
     event.preventDefault();
     return true;
   }
