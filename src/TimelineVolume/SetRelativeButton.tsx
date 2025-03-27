@@ -3,9 +3,7 @@ import type { TimelineContextAction } from "../Timeline/TimelineVolumeContext";
 import { useContext, useRef, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
-import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { handleTimelineKeys } from "../handleKeys";
 import { calculateTime, calculateVolume } from "../functionsLib";
 
 const switchContext = {
@@ -26,7 +24,6 @@ export function SetRelativeButton({
   const { handleTimelineAction, sliderStart, sliderLength } = useContext(
     switchContext[type]
   );
-  const { handlePlayerAction } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
@@ -36,18 +33,6 @@ export function SetRelativeButton({
       ? audioElement?.currentTime ?? 0
       : audioElement?.volume ?? 0;
   const hasSetDimensions = useRef(false);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      handleTimelineKeys({
-        event,
-        audioElement,
-        handlePlayerAction,
-        type,
-      });
-    },
-    [handlePlayerAction, type, audioElement]
-  );
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -107,9 +92,9 @@ export function SetRelativeButton({
       style={style}
       ref={handleRef}
       data-testid={type === "timeline" ? "timeline" : "volume"}
-      onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
       role="slider"
+      tabIndex={-1}
       aria-label={type === "timeline" ? "Seek audio" : "Adjust volume"}
       aria-valuemin={0}
       aria-valuemax={type === "timeline" ? duration : 100}
