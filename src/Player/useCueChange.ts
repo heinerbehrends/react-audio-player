@@ -24,7 +24,7 @@ export function useCueChange({
       console.log("cuesArray", cuesArray);
       handlePlayerAction({
         type: "CAPTION_CUE_CHANGE",
-        cues: cuesArray as TextTrackCue[],
+        cues: cuesArray as VTTCue[],
       });
     },
     [handlePlayerAction]

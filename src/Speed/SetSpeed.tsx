@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { PlayerContext } from "../Player/PlayerContext";
-
+import { handleMediaKeys } from "../handleKeys";
 function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.05;
 }
@@ -21,7 +21,8 @@ export function SetSpeed({
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
-  const { playbackRate: currentPlaybackRate } = useContext(PlayerContext);
+  const { playbackRate: currentPlaybackRate, handlePlayerAction } =
+    useContext(PlayerContext);
   function handleClick() {
     if (!audioElement) return;
     const limitedRate = Math.min(Math.max(playbackRate, 0.5), 4);
@@ -47,6 +48,13 @@ export function SetSpeed({
   return (
     <button
       onClick={handleClick}
+      onKeyDown={(event) =>
+        handleMediaKeys({
+          event,
+          handlePlayerAction,
+          audioElement,
+        })
+      }
       aria-label={`Set playback rate to ${playbackRate}x`}
       {...props}
     >

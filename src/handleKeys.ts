@@ -21,6 +21,7 @@ export function handleTimelineKeys({
       event,
       handlePlayerAction,
       audioElement,
+      isVolume: type === "volume",
     })
   ) {
     return;
@@ -67,7 +68,10 @@ export function handleMediaKeys({
   event,
   handlePlayerAction,
   audioElement,
-}: Omit<HandleKeyDownProps, "handleTimelineAction" | "type">) {
+  isVolume = false,
+}: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
+  isVolume?: boolean;
+}) {
   const currentTime = audioElement?.currentTime ?? 0;
   const duration = audioElement?.duration ?? 0;
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
@@ -101,6 +105,17 @@ export function handleMediaKeys({
     event.preventDefault();
     return true;
   }
+  if (isNumericKey(event.key) && !isVolume) {
+    const time = getNumericKeyValue({
+      type: "timeline",
+      duration,
+      key: event.key,
+    });
+    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    event.preventDefault();
+    return true;
+  }
+
   return false;
 }
 
@@ -119,7 +134,9 @@ function getArrowKeyValue({
   const duration = audioElement?.duration ?? 0;
   if (type === "timeline") {
     if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
-      const newTime = event.shiftKey ? Math.max(0, time - 2) : Math.max(0, time - 10);
+      const newTime = event.shiftKey
+        ? Math.max(0, time - 2)
+        : Math.max(0, time - 10);
       console.log("newTime", newTime);
       return newTime;
     }

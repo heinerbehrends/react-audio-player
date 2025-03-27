@@ -44,7 +44,7 @@ export function playerReducer(
       return { ...state, player: "error" as const };
     }
     case "CAPTION_CUE_CHANGE": {
-      return { ...state, cues: action.cues };
+      return { ...state, cues: action.cues as VTTCue[] };
     }
   }
 }
