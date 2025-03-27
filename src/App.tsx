@@ -7,7 +7,6 @@ import { ElapsedRemaining } from "./Player/ElapsedRemaing";
 import { Captions } from "./Player/Captions";
 import { SeekButton } from "./Player/SeekButton";
 import { Error } from "./Player/Error";
-import { Debug } from "./Debug";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { SetSpeed } from "./Speed/SetSpeed";
 import { IncreaseDecrease } from "./Speed/IncreaseDecrease";
@@ -60,7 +59,6 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="volume" />
       </Volume>
       <SetSpeed playbackRate={0.5} currentIndicator="*">
         0.5x
