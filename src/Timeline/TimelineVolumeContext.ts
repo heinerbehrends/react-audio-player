@@ -70,6 +70,7 @@ const TIMELINE_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   TOGGLE_MUTE: true,
   AUDIO_FILE_ENDED: true,
   STOP_AUDIO: true,
+  SET_PLAYBACK_RATE: true,
 };
 
 const TIMELINE_DISPATCH_MAP: Record<TimelineActionType, true> = {

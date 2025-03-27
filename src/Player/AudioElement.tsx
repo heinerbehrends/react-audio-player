@@ -20,13 +20,17 @@ const AudioElement = memo(function AudioElement() {
 
   const handleVolumeChange = useCallback(() => {
     if (isMuted) return;
+    handlePlayerAction({
+      type: "SET_PLAYER_VOLUME",
+      volume: audioElementRef.current?.volume ?? 0,
+    });
     if (volumeCallbackRef?.current?.handleVolumeAction) {
       volumeCallbackRef.current.handleVolumeAction({
         type: "UPDATE_TIME",
         time: audioElementRef.current?.volume ?? 0,
       });
     }
-  }, [volumeCallbackRef, audioElementRef, isMuted]);
+  }, [volumeCallbackRef, audioElementRef, isMuted, handlePlayerAction]);
 
   const handleEnded = useCallback(() => {
     handlePlayerAction({ type: "AUDIO_FILE_ENDED" });

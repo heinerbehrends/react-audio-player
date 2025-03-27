@@ -46,5 +46,8 @@ export function playerReducer(
     case "CAPTION_CUE_CHANGE": {
       return { ...state, cues: action.cues as VTTCue[] };
     }
+    case "SET_PLAYER_VOLUME": {
+      return { ...state, volume: action.volume };
+    }
   }
 }

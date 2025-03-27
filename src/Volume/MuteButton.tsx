@@ -43,8 +43,12 @@ type MutedProps = {
 };
 
 function Muted({ children }: MutedProps) {
-  const { isMuted } = useContext(PlayerContext);
-  if (!isMuted) return null;
+  const { isMuted: playerIsMuted } = useContext(PlayerContext);
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
+  const volume = audioElement?.volume ?? 0;
+  if (playerIsMuted || volume !== 0) return null;
   return children;
 }
 
@@ -53,13 +57,13 @@ type LowVolumeProps = {
 };
 
 function LowVolume({ children }: LowVolumeProps) {
-  const { isMuted } = useContext(PlayerContext);
+  const { isMuted: playerIsMuted } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
-  if (isMuted) return null;
-  if (!audioElement) return null;
-  if (audioElement.volume < 0.5) return children;
+  const volume = audioElement?.volume ?? 0;
+  if (playerIsMuted || volume === 0) return null;
+  if (volume < 0.5) return children;
   return null;
 }
 
@@ -68,13 +72,13 @@ type HighVolumeProps = {
 };
 
 function HighVolume({ children }: HighVolumeProps) {
-  const { isMuted } = useContext(PlayerContext);
+  const { isMuted: playerIsMuted } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
-  if (isMuted) return null;
-  if (!audioElement) return null;
-  if (audioElement.volume >= 0.5) return children;
+  const volume = audioElement?.volume ?? 0;
+  if (playerIsMuted || volume === 0) return null;
+  if (volume >= 0.5) return children;
   return null;
 }
 

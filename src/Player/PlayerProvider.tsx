@@ -38,9 +38,7 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
 
   const handlePlayerAction = useCallback(
     (action: PlayerProviderAction) => {
-      console.log("handlePlayerAction", action);
       if (isSideEffectAction(action)) {
-        console.log("handleSideEffect", action);
         handleSideEffect(action, audioElement);
       }
       if (isPlayerContextAction(action)) {
