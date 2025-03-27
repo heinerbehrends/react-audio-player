@@ -21,7 +21,8 @@ export function playerReducer(
       return state;
     }
     case "TOGGLE_MUTE": {
-      return { ...state, isMuted: !state.isMuted };
+      const newVolumeState = state.isMuted ? state.volumeState : "muted";
+      return { ...state, isMuted: !state.isMuted, volumeState: newVolumeState };
     }
     case "SET_PLAYBACK_RATE": {
       console.log("playerReducer: SET_PLAYBACK_RATE", action.playbackRate);
@@ -46,8 +47,8 @@ export function playerReducer(
     case "CAPTION_CUE_CHANGE": {
       return { ...state, cues: action.cues as VTTCue[] };
     }
-    case "SET_PLAYER_VOLUME": {
-      return { ...state, volume: action.volume };
+    case "SET_VOLUME_STATE": {
+      return { ...state, volumeState: action.volumeState };
     }
     case "UNMUTE": {
       if (!state.isMuted) return state;

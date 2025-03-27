@@ -35,9 +35,9 @@ export type SetPlaybackRateAction = {
   playbackRate: number;
 };
 
-export type SetPlayerVolumeAction = {
-  type: "SET_PLAYER_VOLUME";
-  volume: number;
+export type SetVolumeStateAction = {
+  type: "SET_VOLUME_STATE";
+  volumeState: "muted" | "low" | "high";
 };
 
 export type UnmuteAction = {
@@ -53,7 +53,7 @@ export type PlayerContextAction =
   | AudioFileErrorAction
   | CaptionCueChangeAction
   | SetPlaybackRateAction
-  | SetPlayerVolumeAction
+  | SetVolumeStateAction
   | UnmuteAction;
 
 type SideEffectActionType = SideEffectAction["type"];
@@ -82,7 +82,7 @@ export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {
   AUDIO_FILE_ERROR: true,
   CAPTION_CUE_CHANGE: true,
   SET_PLAYBACK_RATE: true,
-  SET_PLAYER_VOLUME: true,
+  SET_VOLUME_STATE: true,
   UNMUTE: true,
 };
 
@@ -92,6 +92,7 @@ export type PlayerContextType = {
   isMuted: boolean;
   playbackRate: number;
   volume: number;
+  volumeState: "muted" | "low" | "high";
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
   cues: VTTCue[];
@@ -103,6 +104,7 @@ export const initialState: PlayerContextType = {
   isMuted: false,
   playbackRate: 1,
   volume: 1,
+  volumeState: "high",
   timeDisplay: "elapsed",
   audioFiles: [],
   cues: [],

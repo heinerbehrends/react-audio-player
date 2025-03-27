@@ -36,3 +36,7 @@ export function calculateVolume({
   const progress = xOffset / sliderLength;
   return Math.max(0, Math.min(1, progress));
 }
+
+export function areNumbersClose(a: number, b: number): boolean {
+  return Math.abs(a - b) < 0.05;
+}

@@ -2,6 +2,7 @@ import { useContext, useRef, memo, useCallback } from "react";
 import { PlayerContext, type PlayerProviderAction } from "./PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { useCueChange } from "./useCueChange";
+import { areNumbersClose } from "../functionsLib";
 
 const AudioElement = memo(function AudioElement() {
   const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);
@@ -20,9 +21,15 @@ const AudioElement = memo(function AudioElement() {
 
   const handleVolumeChange = useCallback(() => {
     if (isMuted) return;
+    const volume = audioElementRef.current?.volume ?? 0;
+    const volumeState = areNumbersClose(volume, 0)
+      ? "muted"
+      : volume < 0.5
+      ? "low"
+      : "high";
     handlePlayerAction({
-      type: "SET_PLAYER_VOLUME",
-      volume: audioElementRef.current?.volume ?? 0,
+      type: "SET_VOLUME_STATE",
+      volumeState,
     });
 
     if (volumeCallbackRef?.current?.handleVolumeAction) {
@@ -56,7 +63,6 @@ const AudioElement = memo(function AudioElement() {
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
-      // onRateChange={handleRateChange}
       onEnded={handleEnded}
       onError={handleError}
       onLoadedMetadata={handleLoadedMetadata}

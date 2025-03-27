@@ -2,10 +2,7 @@ import { useContext } from "react";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { handleMediaKeys } from "../handleKeys";
-function areNumbersClose(a: number, b: number): boolean {
-  return Math.abs(a - b) < 0.05;
-}
-
+import { areNumbersClose } from "../functionsLib";
 type SetSpeedProps = {
   playbackRate: number;
   children: React.ReactNode;

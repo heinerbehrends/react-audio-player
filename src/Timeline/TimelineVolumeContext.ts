@@ -50,19 +50,18 @@ export type UpdateTimeAction = {
 export type TimelineContextAction =
   | TimelineLoadedAction
   | UpdateTimeAction
-  // | SeekToTimeAction
   | DragAction
   | DragStartAction
   | DragEndAction;
 
 export type TimelineProviderAction = SideEffectAction | TimelineContextAction;
 
-// Extract action types for better type safety
 type SideEffectActionType = SideEffectAction["type"];
 type TimelineActionType = TimelineContextAction["type"];
 
 // Define actions that need side effects
-const TIMELINE_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
+type TimelineSideEffectAction = Exclude<SideEffectActionType, "UNMUTE">;
+const TIMELINE_SIDE_EFFECT_MAP: Record<TimelineSideEffectAction, boolean> = {
   DRAG: true,
   DRAG_END: true,
   SEEK_TO_TIME: true,
@@ -84,7 +83,9 @@ const TIMELINE_DISPATCH_MAP: Record<TimelineActionType, true> = {
 export function isTimelineSideEffect(
   action: TimelineProviderAction
 ): action is SideEffectAction {
-  return TIMELINE_SIDE_EFFECT_MAP[action.type as SideEffectActionType] === true;
+  return (
+    TIMELINE_SIDE_EFFECT_MAP[action.type as TimelineSideEffectAction] === true
+  );
 }
 
 export function isTimelineAction(

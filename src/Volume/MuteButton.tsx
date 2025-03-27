@@ -25,8 +25,6 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
         if (!volumeCallback?.handleVolumeAction) return;
         // toggle mute is async, so isMuted has the old value
         const nextVolume = isMuted ? audioElement?.volume ?? 0 : 0;
-        console.log("isMuted", isMuted);
-        console.log("nextVolume", nextVolume);
         volumeCallback.handleVolumeAction({
           type: "UPDATE_TIME",
           time: nextVolume,
@@ -43,12 +41,8 @@ type MutedProps = {
 };
 
 function Muted({ children }: MutedProps) {
-  const { isMuted: playerIsMuted } = useContext(PlayerContext);
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const volume = audioElement?.volume ?? 0;
-  if (!playerIsMuted && volume !== 0) return null;
+  const { volumeState } = useContext(PlayerContext);
+  if (volumeState !== "muted") return null;
   return children;
 }
 
@@ -57,14 +51,9 @@ type LowVolumeProps = {
 };
 
 function LowVolume({ children }: LowVolumeProps) {
-  const { isMuted: playerIsMuted } = useContext(PlayerContext);
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const volume = audioElement?.volume ?? 0;
-  if (playerIsMuted || volume === 0) return null;
-  if (volume < 0.5) return children;
-  return null;
+  const { volumeState } = useContext(PlayerContext);
+  if (volumeState !== "low") return null;
+  return children;
 }
 
 type HighVolumeProps = {
@@ -72,14 +61,9 @@ type HighVolumeProps = {
 };
 
 function HighVolume({ children }: HighVolumeProps) {
-  const { isMuted: playerIsMuted } = useContext(PlayerContext);
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const volume = audioElement?.volume ?? 0;
-  if (playerIsMuted || volume === 0) return null;
-  if (volume >= 0.5) return children;
-  return null;
+  const { volumeState } = useContext(PlayerContext);
+  if (volumeState !== "high") return null;
+  return children;
 }
 
 type MuteButtonComponent = React.FC<MuteButtonComponentProps> & {
