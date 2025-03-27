@@ -23,7 +23,10 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
       onClick={() => {
         handlePlayerAction({ type: "TOGGLE_MUTE" });
         if (!volumeCallback?.handleVolumeAction) return;
-        const nextVolume = isMuted ? 0 : audioElement?.volume ?? 0;
+        // toggle mute is async, so isMuted has the old value
+        const nextVolume = isMuted ? audioElement?.volume ?? 0 : 0;
+        console.log("isMuted", isMuted);
+        console.log("nextVolume", nextVolume);
         volumeCallback.handleVolumeAction({
           type: "UPDATE_TIME",
           time: nextVolume,

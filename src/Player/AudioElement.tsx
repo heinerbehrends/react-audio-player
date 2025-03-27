@@ -28,6 +28,28 @@ const AudioElement = memo(function AudioElement() {
     }
   }, [volumeCallbackRef, audioElementRef, isMuted]);
 
+  const handleRateChange = useCallback(
+    (event: React.SyntheticEvent<HTMLAudioElement>) => {
+      handlePlayerAction({
+        type: "SET_PLAYBACK_RATE",
+        playbackRate: event.currentTarget.playbackRate,
+      });
+    },
+    [handlePlayerAction]
+  );
+
+  const handleEnded = useCallback(() => {
+    handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
+  }, [handlePlayerAction]);
+
+  const handleError = useCallback(() => {
+    handlePlayerAction({ type: "AUDIO_FILE_ERROR" });
+  }, [handlePlayerAction]);
+
+  const handleLoadedMetadata = useCallback(() => {
+    handlePlayerAction({ type: "AUDIO_FILE_LOADED" });
+  }, [handlePlayerAction]);
+
   const hasTimelineCallback =
     !!timelineCallbackRef?.current?.handleTimelineAction;
   const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
@@ -39,20 +61,10 @@ const AudioElement = memo(function AudioElement() {
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
-      onRateChange={(event) => {
-        console.log(event.currentTarget.playbackRate);
-      }}
-      onEnded={() => {
-        handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
-      }}
-      onError={() => {
-        handlePlayerAction({
-          type: "AUDIO_FILE_ERROR",
-        });
-      }}
-      onLoadedMetadata={() => {
-        handlePlayerAction({ type: "AUDIO_FILE_LOADED" });
-      }}
+      onRateChange={handleRateChange}
+      onEnded={handleEnded}
+      onError={handleError}
+      onLoadedMetadata={handleLoadedMetadata}
       src={src}
       muted={isMuted}
     >

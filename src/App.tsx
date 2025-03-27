@@ -9,6 +9,8 @@ import { SeekButton } from "./Player/SeekButton";
 import { Error } from "./Player/Error";
 import { Debug } from "./Debug";
 import { AudioPlayer } from "./Player/AudioPlayer";
+import { SetSpeed } from "./Speed/SetSpeed";
+import { IncreaseDecrease } from "./Speed/IncreaseDecrease";
 
 function App() {
   return (
@@ -30,6 +32,11 @@ function App() {
         />
         {/* <Debug type="timeline" /> */}
       </Timeline>
+      <MuteButton>
+        <MuteButton.LowVolume>Mute</MuteButton.LowVolume>
+        <MuteButton.HighVolume>Mute</MuteButton.HighVolume>
+        <MuteButton.Muted>Unmute</MuteButton.Muted>
+      </MuteButton>
       <SeekButton.Backward>Backward</SeekButton.Backward>
       <PlayButton>
         <PlayButton.Playing>Pause</PlayButton.Playing>
@@ -55,11 +62,20 @@ function App() {
         />
         <Debug type="volume" />
       </Volume>
-      <MuteButton>
-        <MuteButton.LowVolume>Mute</MuteButton.LowVolume>
-        <MuteButton.HighVolume>Mute</MuteButton.HighVolume>
-        <MuteButton.Muted>Unmute</MuteButton.Muted>
-      </MuteButton>
+      <SetSpeed playbackRate={0.5} currentIndicator="*">
+        0.5x
+      </SetSpeed>
+      <SetSpeed playbackRate={1} currentIndicator="*">
+        1x
+      </SetSpeed>
+      <SetSpeed playbackRate={1.5} currentIndicator="*">
+        1.5x
+      </SetSpeed>
+      <SetSpeed playbackRate={2} currentIndicator="*">
+        2x
+      </SetSpeed>
+      <IncreaseDecrease amount={-0.1}>-0.1x</IncreaseDecrease>
+      <IncreaseDecrease amount={0.1}>+0.1x</IncreaseDecrease>
       <Captions />
       <Error>There was an error loading the audio file.</Error>
     </AudioPlayer>
