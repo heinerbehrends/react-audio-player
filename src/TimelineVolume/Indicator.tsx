@@ -16,7 +16,7 @@ export const Indicator = memo(function Indicator({
   type,
   ...props
 }: TimelineProgressProps) {
-  const { dragState, xOffset, time, timelineWidth } = useContext(
+  const { dragState, xOffset, time, sliderLength } = useContext(
     switchContext[type]
   );
   const {
@@ -32,9 +32,9 @@ export const Indicator = memo(function Indicator({
         xOffset,
         time,
         duration,
-        timelineWidth,
+        sliderLength,
       }),
-    [type, dragState, xOffset, time, duration, timelineWidth]
+    [type, dragState, xOffset, time, duration, sliderLength]
   );
 
   const style = useMemo(
@@ -50,21 +50,33 @@ export const Indicator = memo(function Indicator({
     [progress, props.style]
   );
 
-  const { minutes, seconds } = minutesAndSeconds(time);
+  const ariaValueText = useMemo(() => {
+    const { minutes, seconds } = minutesAndSeconds(time);
+    if (type === "timeline") {
+      return `${minutes} minutes ${seconds} seconds`;
+    }
+    if (type === "volume") {
+      return `${Math.round(time * 100)}%`;
+    }
+  }, [type, time]);
+
+  const ariaLabel = useMemo(() => {
+    if (type === "timeline") {
+      return "audio progress";
+    }
+    return "volume level";
+  }, [type]);
+
   return (
     <div
       {...props}
       style={style}
       role="progressbar"
-      aria-valuetext={`${
-        type === "timeline"
-          ? `${minutes} minutes ${seconds} seconds`
-          : `${Math.round(time * 100)}%`
-      }`}
+      aria-valuetext={ariaValueText}
       aria-valuenow={time}
       aria-valuemin={0}
       aria-valuemax={duration}
-      aria-label={type === "timeline" ? "audio progress" : "volume level"}
+      aria-label={ariaLabel}
     />
   );
 });
@@ -75,7 +87,7 @@ type getProgressProps = {
   xOffset: number;
   time: number;
   duration: number;
-  timelineWidth: number;
+  sliderLength: number;
 };
 
 function getProgress({
@@ -84,13 +96,13 @@ function getProgress({
   xOffset,
   time,
   duration,
-  timelineWidth,
+  sliderLength,
 }: getProgressProps) {
   if (type === "timeline") {
-    return dragState === "dragging" ? xOffset / timelineWidth : time / duration;
+    return dragState === "dragging" ? xOffset / sliderLength : time / duration;
   }
   if (type === "volume") {
-    return dragState === "dragging" ? xOffset / timelineWidth : time;
+    return dragState === "dragging" ? xOffset / sliderLength : time;
   }
   return time;
 }

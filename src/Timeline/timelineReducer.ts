@@ -14,8 +14,8 @@ export function timelineReducer(
     case "TIMELINE_LOADED": {
       return {
         ...state,
-        timelineLeft: action.timelineLeft,
-        timelineWidth: action.timelineWidth,
+        sliderStart: action.sliderStart,
+        sliderLength: action.sliderLength,
       };
     }
     case "DRAG_START": {
@@ -32,7 +32,7 @@ export function timelineReducer(
       if (state.dragState !== "dragging") {
         return state;
       }
-      return { ...state, xOffset: action.clientX - state.timelineLeft };
+      return { ...state, xOffset: action.clientX - state.sliderStart };
     }
     case "DRAG_END": {
       return {

@@ -51,8 +51,8 @@ export const TimelineProvider = memo(function TimelineProvider({
 
   const value: TimelineContextType = useMemo(() => {
     const result: TimelineContextType = {
-      timelineLeft: state.timelineLeft,
-      timelineWidth: state.timelineWidth,
+      sliderStart: state.sliderStart,
+      sliderLength: state.sliderLength,
       time: state.time,
       xOffset: state.xOffset,
       dragState: state.dragState,
@@ -60,8 +60,8 @@ export const TimelineProvider = memo(function TimelineProvider({
     };
     return result;
   }, [
-    state.timelineLeft,
-    state.timelineWidth,
+    state.sliderStart,
+    state.sliderLength,
     state.time,
     state.xOffset,
     state.dragState,

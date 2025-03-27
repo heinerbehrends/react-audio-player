@@ -51,8 +51,8 @@ export const VolumeProvider = memo(function VolumeProvider({
 
   const value = useMemo(() => {
     const result: TimelineContextType = {
-      timelineLeft: state.timelineLeft,
-      timelineWidth: state.timelineWidth,
+      sliderStart: state.sliderStart,
+      sliderLength: state.sliderLength,
       time: state.time,
       xOffset: state.xOffset,
       dragState: state.dragState,

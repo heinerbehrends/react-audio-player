@@ -11,8 +11,8 @@ export function volumeReducer(
     case "TIMELINE_LOADED": {
       return {
         ...state,
-        timelineLeft: action.timelineLeft,
-        timelineWidth: action.timelineWidth,
+        sliderStart: action.sliderStart,
+        sliderLength: action.sliderLength,
       };
     }
     case "DRAG_START": {
@@ -29,8 +29,8 @@ export function volumeReducer(
       if (state.dragState !== "dragging") {
         return state;
       }
-      const xOffset = action.clientX - state.timelineLeft;
-      const volume = xOffset / state.timelineWidth;
+      const xOffset = action.clientX - state.sliderStart;
+      const volume = xOffset / state.sliderLength;
       return {
         ...state,
         xOffset,

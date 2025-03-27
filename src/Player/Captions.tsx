@@ -3,6 +3,7 @@ import { PlayerContext } from "../Player/PlayerContext";
 
 export const Captions = (props: React.HTMLAttributes<HTMLElement>) => {
   const { cues } = useContext(PlayerContext);
+  console.log("cues", cues);
   return (
     <section
       aria-label="Transcript"

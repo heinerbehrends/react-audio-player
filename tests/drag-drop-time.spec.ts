@@ -1,9 +1,5 @@
 import { test, expect } from "@playwright/test";
-import {
-  waitForAudio,
-  getTimelineState,
-  getAudioState,
-} from "./test-utils";
+import { waitForAudio, getTimelineState, getAudioState } from "./test-utils";
 
 const PRECISION = 0.25;
 
@@ -14,15 +10,15 @@ test("drag timeline button to seek when paused", async ({ page }) => {
   const dragButton = await page.getByLabel("Drag to seek");
 
   // Get the timeline width and audio duration
-  const { timelineWidth, duration } = await getTimelineState(page);
+  const { sliderLength, duration } = await getTimelineState(page);
 
   // Click anywhere on the button and drag
   await dragButton.hover();
   await page.mouse.down();
 
   // Move halfway across the timeline
-  const { timelineLeft } = await getTimelineState(page);
-  await page.mouse.move(timelineLeft + timelineWidth / 2, 0);
+  const { sliderStart } = await getTimelineState(page);
+  await page.mouse.move(sliderStart + sliderLength / 2, 0);
   await page.mouse.up();
 
   // Verify the audio time was updated
@@ -41,12 +37,12 @@ test("drag timeline button to seek while playing", async ({ page }) => {
   await page.getByRole("button", { name: "Play audio" }).click();
 
   // Get the timeline state
-  const { timelineWidth, duration, timelineLeft, currentTime } =
+  const { sliderLength, duration, sliderStart, currentTime } =
     await getTimelineState(page);
 
   // Calculate where the button should be
-  const currentOffset = (currentTime / duration) * timelineWidth;
-  const buttonX = timelineLeft + currentOffset;
+  const currentOffset = (currentTime / duration) * sliderLength;
+  const buttonX = sliderStart + currentOffset;
   const buttonY = await page.evaluate(() => {
     const button = document.querySelector("[aria-label='Drag to seek']");
     return button?.getBoundingClientRect().top ?? 0;
@@ -67,14 +63,17 @@ test("drag timeline button to seek while playing", async ({ page }) => {
   expect(isPlaying).toBe(true);
 });
 
-test("drag button cannot move beyond timeline bounds", async ({ page, browserName }) => {
+test("drag button cannot move beyond timeline bounds", async ({
+  page,
+  browserName,
+}) => {
   const BUTTON_OFFSET = 20;
   await page.goto("/");
   await waitForAudio(page);
 
   // Get the timeline dimensions
-  const { timelineLeft, timelineWidth } = await getTimelineState(page);
-  console.log("Timeline:", { timelineLeft, timelineWidth });
+  const { sliderStart, sliderLength } = await getTimelineState(page);
+  console.log("Timeline:", { sliderStart, sliderLength });
 
   const dragButton = page.getByLabel("Drag to seek");
   const initialBox = await dragButton.boundingBox();
@@ -83,21 +82,24 @@ test("drag button cannot move beyond timeline bounds", async ({ page, browserNam
   // Try to drag before the start of timeline
   await dragButton.hover();
   await page.mouse.down();
-  await page.mouse.move(timelineLeft - 100, initialBox?.y ?? 0);
+  await page.mouse.move(sliderStart - 100, initialBox?.y ?? 0);
 
   // Get button position, should be at start
   let buttonBox = await dragButton.boundingBox();
   console.log("Button at start:", buttonBox);
-  expect(buttonBox?.x).toBeCloseTo(timelineLeft - BUTTON_OFFSET, 1);
-  
+  expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
+
   // Try to drag past end of timeline
-  await page.mouse.move(timelineLeft + timelineWidth + 100, initialBox?.y ?? 0);
+  await page.mouse.move(sliderStart + sliderLength + 100, initialBox?.y ?? 0);
   // Get button position, should be at end
   buttonBox = await dragButton.boundingBox();
   // Firefox triggers onEnded, which resets the time to 0
-  if (browserName === 'firefox') {
-    expect(buttonBox?.x).toBeCloseTo(timelineLeft - BUTTON_OFFSET, 1);
+  if (browserName === "firefox") {
+    expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
   } else {
-    expect(buttonBox?.x).toBeCloseTo(timelineLeft + timelineWidth - BUTTON_OFFSET, 1);
+    expect(buttonBox?.x).toBeCloseTo(
+      sliderStart + sliderLength - BUTTON_OFFSET,
+      1
+    );
   }
 });

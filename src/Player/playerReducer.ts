@@ -44,13 +44,7 @@ export function playerReducer(
       return { ...state, player: "error" as const };
     }
     case "CAPTION_CUE_CHANGE": {
-      if (action.cues[0] && isVTTCue(action.cues[0])) {
-        return { ...state, cues: action.cues as VTTCue[] };
-      }
-      return state;
+      return { ...state, cues: action.cues };
     }
   }
-}
-function isVTTCue(cue: TextTrackCue): cue is VTTCue {
-  return "text" in cue;
 }

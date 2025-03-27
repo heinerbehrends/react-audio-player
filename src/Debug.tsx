@@ -33,8 +33,8 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
       <p>Cue Text: {cues[0]?.text}</p>
       <h3> {type}</h3>
       <p>Time: {context.time.toFixed(2)}</p>
-      <p>Left: {context.timelineLeft}</p>
-      <p>Width: {context.timelineWidth}</p>
+      <p>Left: {context.sliderStart}</p>
+      <p>Width: {context.sliderLength}</p>
       <p>Drag State: {context.dragState}</p>
       <p>X Offset: {context.xOffset}</p>
     </div>

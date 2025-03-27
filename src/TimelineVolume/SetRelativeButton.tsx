@@ -23,7 +23,7 @@ export function SetRelativeButton({
   type,
   ...props
 }: SetRelativeButtonProps) {
-  const { handleTimelineAction, timelineLeft, timelineWidth } = useContext(
+  const { handleTimelineAction, sliderStart, sliderLength } = useContext(
     switchContext[type]
   );
   const { handlePlayerAction } = useContext(PlayerContext);
@@ -52,18 +52,18 @@ export function SetRelativeButton({
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const duration = audioElement?.duration ?? 0;
-      const xOffset = event.clientX - timelineLeft;
+      const xOffset = event.clientX - sliderStart;
       const time =
         type === "timeline"
           ? calculateTime({
               xOffset,
-              timelineLeft: 0,
-              timelineWidth,
+              sliderStart: 0,
+              sliderLength,
               duration,
             })
           : calculateVolume({
               xOffset,
-              timelineWidth,
+              sliderLength,
             });
 
       handleTimelineAction({
@@ -72,7 +72,7 @@ export function SetRelativeButton({
         component: type,
       });
     },
-    [type, timelineLeft, timelineWidth, handleTimelineAction, audioElement]
+    [type, sliderStart, sliderLength, handleTimelineAction, audioElement]
   );
 
   const handleRef = useCallback(
@@ -138,8 +138,8 @@ function sendTimelineLoaded({
   handleTimelineAction({
     type: "TIMELINE_LOADED",
     component: type,
-    timelineLeft: rect.left,
-    timelineWidth: rect.width,
+    sliderStart: rect.left,
+    sliderLength: rect.width,
   });
   hasSentDimensions.current = true;
 }

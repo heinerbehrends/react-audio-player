@@ -12,13 +12,16 @@ export function useCueChange({
 }: UseCueChangeArgs) {
   const handleCueChange = useCallback(
     (event: Event) => {
+      console.log("cuechange", event);
       const trackElement = event.currentTarget as HTMLTrackElement;
+      console.log("trackElement.track", trackElement.track.activeCues);
       if (!trackElement || !isTextTrack(trackElement.track)) {
         console.error("Current target is not a TextTrack or is null");
         return;
       }
       const track = trackElement.track;
       const cuesArray = Array.from(track.activeCues || []);
+      console.log("cuesArray", cuesArray);
       handlePlayerAction({
         type: "CAPTION_CUE_CHANGE",
         cues: cuesArray as TextTrackCue[],

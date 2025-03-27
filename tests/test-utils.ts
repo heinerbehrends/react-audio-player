@@ -27,8 +27,8 @@ export async function getTimelineState(page: Page) {
     const audio = document.querySelector("audio");
     const rect = timeline?.getBoundingClientRect();
     return {
-      timelineLeft: rect?.left ?? 0,
-      timelineWidth: rect?.width ?? 0,
+      sliderStart: rect?.left ?? 0,
+      sliderLength: rect?.width ?? 0,
       currentTime: audio?.currentTime ?? 0,
       duration: audio?.duration ?? 0,
     };
@@ -37,7 +37,7 @@ export async function getTimelineState(page: Page) {
 
 // Common pattern: Getting button position
 export async function getButtonPosition(page: Page) {
-  const button = page.getByLabel('Drag to seek');
+  const button = page.getByLabel("Drag to seek");
   const boundingBox = await button.boundingBox();
   return boundingBox?.x ?? 0;
 }

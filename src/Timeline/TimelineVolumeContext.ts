@@ -2,8 +2,8 @@ import { createContext } from "react";
 import { SideEffectAction } from "../AudioElement/AudioContext";
 
 export const TimelineContext = createContext<TimelineContextType>({
-  timelineLeft: 0,
-  timelineWidth: 0,
+  sliderStart: 0,
+  sliderLength: 0,
   time: 0,
   xOffset: 0,
   dragState: "idle",
@@ -11,8 +11,8 @@ export const TimelineContext = createContext<TimelineContextType>({
 });
 
 export type TimelineContextType = {
-  timelineLeft: number;
-  timelineWidth: number;
+  sliderStart: number;
+  sliderLength: number;
   time: number;
   xOffset: number;
   dragState: "idle" | "dragging";
@@ -22,8 +22,8 @@ export type TimelineContextType = {
 export type TimelineLoadedAction = {
   type: "TIMELINE_LOADED";
   component: "timeline" | "volume";
-  timelineLeft: number;
-  timelineWidth: number;
+  sliderStart: number;
+  sliderLength: number;
 };
 
 export type DragStartAction = {
@@ -93,8 +93,8 @@ export function isTimelineAction(
 }
 
 export const initialState: TimelineContextType = {
-  timelineLeft: 0,
-  timelineWidth: 0,
+  sliderStart: 0,
+  sliderLength: 0,
   time: 0,
   xOffset: 0,
   dragState: "idle",

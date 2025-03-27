@@ -1,38 +1,38 @@
 type CalculateTimeArgs = {
   xOffset: number;
-  timelineWidth: number;
-  timelineLeft: number;
+  sliderLength: number;
+  sliderStart: number;
   duration: number;
 };
 
 export function calculateTime({
   xOffset,
-  timelineWidth,
-  timelineLeft,
+  sliderLength,
+  sliderStart,
   duration,
 }: CalculateTimeArgs): number {
-  const progress = (xOffset - timelineLeft) / timelineWidth;
+  const progress = (xOffset - sliderStart) / sliderLength;
   return progress * duration;
 }
 
 type CalculateVolumeArgs = {
   xOffset: number;
-  timelineWidth: number;
-  timelineLeft: number;
+  sliderLength: number;
+  sliderStart: number;
 };
 
 export function calculateVolumeDragEnd({
   xOffset,
-  timelineWidth,
-  timelineLeft,
+  sliderLength,
+  sliderStart,
 }: CalculateVolumeArgs): number {
-  return (xOffset - timelineLeft) / timelineWidth;
+  return (xOffset - sliderStart) / sliderLength;
 }
 
 export function calculateVolume({
   xOffset,
-  timelineWidth,
-}: Omit<CalculateVolumeArgs, "timelineLeft">): number {
-  const progress = (xOffset / timelineWidth);
+  sliderLength,
+}: Omit<CalculateVolumeArgs, "sliderStart">): number {
+  const progress = xOffset / sliderLength;
   return Math.max(0, Math.min(1, progress));
 }
