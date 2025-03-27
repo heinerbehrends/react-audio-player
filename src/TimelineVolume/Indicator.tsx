@@ -2,6 +2,7 @@ import { useContext, type HTMLAttributes, memo, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
+import { PlayerContext } from "../Player/PlayerContext";
 
 const switchContext = {
   timeline: TimelineContext,
@@ -22,6 +23,7 @@ export const Indicator = memo(function Indicator({
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
+  const { volumeState } = useContext(PlayerContext);
   const duration = type === "timeline" ? audioElement?.duration ?? 1 : 1;
 
   const progress = useMemo(
@@ -33,8 +35,9 @@ export const Indicator = memo(function Indicator({
         time,
         duration,
         sliderLength,
+        volumeState,
       }),
-    [type, dragState, xOffset, time, duration, sliderLength]
+    [type, dragState, xOffset, time, duration, sliderLength, volumeState]
   );
 
   const style = useMemo(
@@ -60,6 +63,7 @@ type getProgressProps = {
   time: number;
   duration: number;
   sliderLength: number;
+  volumeState: "muted" | "low" | "high";
 };
 
 function getProgress({
@@ -69,7 +73,11 @@ function getProgress({
   time,
   duration,
   sliderLength,
+  volumeState,
 }: getProgressProps) {
+  if (type === "volume" && volumeState === "muted") {
+    return 0;
+  }
   if (type === "timeline") {
     return dragState === "dragging" ? xOffset / sliderLength : time / duration;
   }

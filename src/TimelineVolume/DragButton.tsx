@@ -24,7 +24,7 @@ const switchContext = {
 export function DragButton({ type, ...props }: DragButtonProps) {
   const { xOffset, dragState, sliderLength, time, handleTimelineAction } =
     useContext(switchContext[type]);
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const { handlePlayerAction, volumeState } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
@@ -38,8 +38,17 @@ export function DragButton({ type, ...props }: DragButtonProps) {
         sliderLength,
         dragState,
         xOffset,
+        volumeState,
       }),
-    [type, time, audioElement?.duration, sliderLength, dragState, xOffset]
+    [
+      type,
+      time,
+      audioElement?.duration,
+      sliderLength,
+      dragState,
+      xOffset,
+      volumeState,
+    ]
   );
 
   const handlePointerDown = useCallback(() => {
@@ -101,6 +110,16 @@ export function DragButton({ type, ...props }: DragButtonProps) {
   );
 }
 
+type GetOffsetArgs = {
+  type: "timeline" | "volume";
+  time: number;
+  duration: number | undefined;
+  sliderLength: number;
+  dragState: "dragging" | "idle";
+  xOffset: number;
+  volumeState: "muted" | "low" | "high";
+};
+
 function getOffset({
   type,
   time,
@@ -108,14 +127,11 @@ function getOffset({
   sliderLength,
   dragState,
   xOffset,
-}: {
-  type: "timeline" | "volume";
-  time: number;
-  duration: number | undefined;
-  sliderLength: number;
-  dragState: "dragging" | "idle";
-  xOffset: number;
-}): number {
+  volumeState,
+}: GetOffsetArgs): number {
+  if (type === "volume" && volumeState === "muted") {
+    return 0;
+  }
   if (type === "timeline") {
     const progress = time / (duration ?? 1);
     return dragState === "dragging" ? xOffset : progress * sliderLength;
