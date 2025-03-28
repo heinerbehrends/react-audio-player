@@ -91,7 +91,6 @@ export type PlayerContextType = {
   player: "loading" | "playing" | "paused" | "error";
   isMuted: boolean;
   playbackRate: number;
-  volume: number;
   volumeState: "muted" | "low" | "high";
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
@@ -103,7 +102,6 @@ export const initialState: PlayerContextType = {
   player: "loading",
   isMuted: false,
   playbackRate: 1,
-  volume: 1,
   volumeState: "high",
   timeDisplay: "elapsed",
   audioFiles: [],
