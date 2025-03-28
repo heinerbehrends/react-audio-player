@@ -3,8 +3,8 @@ import { PlayButton } from "./Player/PlayButton";
 import { Timeline } from "./Timeline/Timeline";
 import { MuteButton } from "./Volume/MuteButton";
 import { Volume } from "./Volume/Volume";
-import { ElapsedRemaining } from "./Player/ElapsedRemaing";
-import { Captions } from "./Player/Captions";
+import { Time } from "./Player/Time";
+import { Captions } from "./Captions/Captions";
 import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
@@ -21,14 +21,12 @@ function App() {
         </Timeline.Seek>
         <Timeline.Drag
           style={{
-            backgroundColor: "hotpink",
             height: "40px",
             width: "40px",
             borderRadius: "50%",
             border: "none",
           }}
         />
-        {/* <Debug type="timeline" /> */}
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -41,17 +39,16 @@ function App() {
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
       <Seek amount={10}>Forward</Seek>
-      <ElapsedRemaining.Toggle>
-        <ElapsedRemaining.Elapsed />
-        <ElapsedRemaining.Remaining />
-      </ElapsedRemaining.Toggle>
+      <Time.Toggle>
+        <Time.Elapsed />
+        <Time.Remaining />
+      </Time.Toggle>
       <Volume style={{ height: "40px", backgroundColor: "lightgray" }}>
-        <Volume.SeekButton>
+        <Volume.Set>
           <Volume.Progress style={{ backgroundColor: "darkgray" }} />
-        </Volume.SeekButton>
-        <Volume.DragButton
+        </Volume.Set>
+        <Volume.Drag
           style={{
-            backgroundColor: "yellow",
             height: "40px",
             width: "40px",
             borderRadius: "50%",

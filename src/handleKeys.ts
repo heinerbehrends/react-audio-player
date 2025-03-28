@@ -85,8 +85,24 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key.toLowerCase() === "l") {
-    if (!audioElement) return;
+    if (!audioElement) return false;
     const time = Math.min(duration, currentTime + 10);
+    audioElement.currentTime = time;
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "ArrowRight") {
+    if (!audioElement) return false;
+    if (isVolume) return false;
+    const time = Math.min(duration, currentTime + 5);
+    audioElement.currentTime = time;
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "ArrowLeft") {
+    if (!audioElement) return false;
+    if (isVolume) return false;
+    const time = Math.max(0, currentTime - 5);
     audioElement.currentTime = time;
     event.preventDefault();
     return true;
