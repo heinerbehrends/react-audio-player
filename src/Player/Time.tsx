@@ -76,14 +76,14 @@ const Remaining = memo(function Remaining({ children }: ChildrenProps) {
   );
 });
 
-type ElapsedRemaining = React.NamedExoticComponent<{
+type Time = React.NamedExoticComponent<{
   children: React.ReactNode;
 }> & {
   Elapsed: React.NamedExoticComponent<{ children: React.ReactNode }>;
   Remaining: React.NamedExoticComponent<{ children: React.ReactNode }>;
 };
 
-export const ElapsedRemaining = Object.assign({
+export const Time = Object.assign({
   Elapsed,
   Remaining,
   Toggle,
