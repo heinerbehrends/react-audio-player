@@ -1,7 +1,6 @@
 import { useContext, type HTMLAttributes, memo, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { PlayerContext } from "../Player/PlayerContext";
 
 const switchContext = {
@@ -17,28 +16,7 @@ export const Indicator = memo(function Indicator({
   type,
   ...props
 }: TimelineProgressProps) {
-  const { dragState, xOffset, time, sliderLength } = useContext(
-    switchContext[type]
-  );
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const { volumeState } = useContext(PlayerContext);
-  const duration = type === "timeline" ? audioElement?.duration ?? 1 : 1;
-
-  const progress = useMemo(
-    () =>
-      getProgress({
-        type,
-        dragState,
-        xOffset,
-        time,
-        duration,
-        sliderLength,
-        volumeState,
-      }),
-    [type, dragState, xOffset, time, duration, sliderLength, volumeState]
-  );
+  const progress = useProgress(type);
 
   const style = useMemo(
     () => ({
@@ -56,25 +34,13 @@ export const Indicator = memo(function Indicator({
   return <div {...props} style={style} />;
 });
 
-type getProgressProps = {
-  type: "timeline" | "volume";
-  dragState: "dragging" | "idle";
-  xOffset: number;
-  time: number;
-  duration: number;
-  sliderLength: number;
-  volumeState: "muted" | "low" | "high";
-};
-
-function getProgress({
-  type,
-  dragState,
-  xOffset,
-  time,
-  duration,
-  sliderLength,
-  volumeState,
-}: getProgressProps) {
+function useProgress(type: "timeline" | "volume") {
+  const { dragState, xOffset, time, sliderLength } = useContext(
+    switchContext[type]
+  );
+  const { volumeState, getPlayerState } = useContext(PlayerContext);
+  const { duration } = getPlayerState();
+  // const upperLimit = type === "timeline" ? duration : 1;
   if (type === "volume" && volumeState === "muted") {
     return 0;
   }
