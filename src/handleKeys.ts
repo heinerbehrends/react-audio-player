@@ -30,7 +30,7 @@ export function handleTimelineKeys({
   ) {
     return;
   }
-  const { duration, currentTime, volume, playbackRate } = getPlayerState();
+  const { duration } = getPlayerState();
   if (isNumericKey(event.key)) {
     const time = getNumericKeyValue({
       type,
@@ -38,30 +38,6 @@ export function handleTimelineKeys({
       key: event.key,
     });
     handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
-    event.preventDefault();
-    return true;
-  }
-  if (event.key.startsWith("Arrow")) {
-    const time = getArrowKeyValue({
-      type,
-      currentTime,
-      duration,
-      volume,
-      playbackRate,
-      event,
-    });
-    if (time === undefined) return;
-    if (type === "timeline") {
-      handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
-    }
-    if (type === "volume") {
-      handlePlayerAction({
-        type: "SEEK_TO_TIME",
-        time: Math.min(1, Math.max(0, time)),
-        component: type,
-      });
-    }
-
     event.preventDefault();
     return true;
   }
@@ -180,47 +156,6 @@ export function handleMediaKeys({
     return true;
   }
   return false;
-}
-
-type GetArrowKeyValueProps = {
-  type: "timeline" | "volume";
-  event: React.KeyboardEvent<HTMLButtonElement>;
-  currentTime: number;
-  duration: number;
-  volume: number;
-  playbackRate: number;
-};
-
-function getArrowKeyValue({
-  type,
-  event,
-  currentTime,
-  duration,
-  volume,
-}: GetArrowKeyValueProps) {
-  if (type === "timeline") {
-    if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
-      const newTime = event.shiftKey
-        ? Math.max(0, currentTime - 2)
-        : Math.max(0, currentTime - 10);
-      console.log("newTime", newTime);
-      return newTime;
-    }
-    if (["ArrowRight", "ArrowUp"].includes(event.key)) {
-      return event.shiftKey
-        ? Math.min(duration, currentTime + 2)
-        : Math.min(duration, currentTime + 10);
-    }
-  }
-  if (type === "volume") {
-    if (["ArrowDown", "ArrowLeft"].includes(event.key)) {
-      return event.shiftKey ? volume - 0.025 : volume - 0.05;
-    }
-    if (["ArrowUp", "ArrowRight"].includes(event.key)) {
-      return event.shiftKey ? volume + 0.025 : volume + 0.05;
-    }
-  }
-  return;
 }
 
 function isNumericKey(key: string): key is NumericKey {
