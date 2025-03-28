@@ -46,12 +46,12 @@ type VolumeComponent = React.FC<
   HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }
 > & {
   Progress: typeof VolumeProgress;
-  SeekButton: typeof VolumeSeekButton;
-  DragButton: typeof VolumeDragButton;
+  Set: typeof VolumeSeekButton;
+  Drag: typeof VolumeDragButton;
 };
 
 export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
   Progress: VolumeProgress,
-  SeekButton: VolumeSeekButton,
-  DragButton: VolumeDragButton,
+  Set: VolumeSeekButton,
+  Drag: VolumeDragButton,
 });
