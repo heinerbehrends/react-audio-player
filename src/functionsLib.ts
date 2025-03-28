@@ -39,5 +39,5 @@ export function calculateVolume({
 }
 
 export function areNumbersClose(a: number, b: number): boolean {
-  return Math.abs(a - b) < 0.05;
+  return Math.abs(a - b) < 0.001;
 }
