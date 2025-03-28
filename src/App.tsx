@@ -9,6 +9,7 @@ import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
+import { Debug } from "./Debug";
 
 function App() {
   return (
@@ -16,7 +17,9 @@ function App() {
       audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
     >
       <Timeline style={{ height: "40px", backgroundColor: "lightgray" }}>
-        <Timeline.Seek>
+        <Timeline.Seek
+          style={{ padding: 0, margin: 0, border: "none", background: "none" }}
+        >
           <Timeline.Progress style={{ backgroundColor: "darkgray" }} />
         </Timeline.Seek>
         <Timeline.Drag
@@ -27,6 +30,7 @@ function App() {
             border: "none",
           }}
         />
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -44,7 +48,14 @@ function App() {
         <Time.Remaining />
       </Time.Toggle>
       <Volume style={{ height: "40px", backgroundColor: "lightgray" }}>
-        <Volume.Set>
+        <Volume.Set
+          style={{
+            padding: 0,
+            margin: 0,
+            border: "none",
+            background: "none",
+          }}
+        >
           <Volume.Progress style={{ backgroundColor: "darkgray" }} />
         </Volume.Set>
         <Volume.Drag

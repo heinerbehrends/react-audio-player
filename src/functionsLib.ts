@@ -32,8 +32,9 @@ export function calculateVolumeDragEnd({
 export function calculateVolume({
   xOffset,
   sliderLength,
-}: Omit<CalculateVolumeArgs, "sliderStart">): number {
-  const progress = xOffset / sliderLength;
+  sliderStart,
+}: CalculateVolumeArgs): number {
+  const progress = (xOffset - sliderStart) / sliderLength;
   return Math.max(0, Math.min(1, progress));
 }
 

@@ -86,6 +86,7 @@ export function useDrag(type: "timeline" | "volume") {
           : calculateVolume({
               xOffset: clientX,
               sliderLength,
+              sliderStart,
             });
       const restrictedTime =
         type === "timeline"
