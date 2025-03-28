@@ -82,7 +82,7 @@ export function handleMediaKeys({
 }: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
   isVolume?: boolean;
 }) {
-  const { duration, currentTime, playbackRate } = getPlayerState();
+  const { duration, currentTime, volume, playbackRate } = getPlayerState();
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
     handlePlayerAction({ type: "TOGGLE_MUTE" });
     event.preventDefault();
@@ -116,6 +116,24 @@ export function handleMediaKeys({
   if (event.key.toLowerCase() === "j") {
     const time = Math.max(0, currentTime - 10);
     handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "ArrowDown") {
+    handlePlayerAction({
+      type: "SEEK_TO_TIME",
+      time: volume - 0.025,
+      component: "volume",
+    });
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "ArrowUp") {
+    handlePlayerAction({
+      type: "SEEK_TO_TIME",
+      time: volume + 0.025,
+      component: "volume",
+    });
     event.preventDefault();
     return true;
   }
@@ -196,10 +214,10 @@ function getArrowKeyValue({
   }
   if (type === "volume") {
     if (["ArrowDown", "ArrowLeft"].includes(event.key)) {
-      return event.shiftKey ? volume - 0.05 : volume - 0.1;
+      return event.shiftKey ? volume - 0.025 : volume - 0.05;
     }
     if (["ArrowUp", "ArrowRight"].includes(event.key)) {
-      return event.shiftKey ? volume + 0.05 : volume + 0.1;
+      return event.shiftKey ? volume + 0.025 : volume + 0.05;
     }
   }
   return;
