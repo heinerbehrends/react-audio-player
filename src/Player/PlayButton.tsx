@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { handleMediaKeys } from "../handleKeys";
 
 type PlayButtonProps = {
@@ -15,10 +14,11 @@ const ariaLabel = {
 };
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  const { handlePlayerAction, player: state } = useContext(PlayerContext);
   const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
+    handlePlayerAction,
+    player: state,
+    getPlayerState,
+  } = useContext(PlayerContext);
   const isPlaying = state === "playing";
   return (
     <button
@@ -29,7 +29,7 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
         handleMediaKeys({
           event,
           handlePlayerAction,
-          audioElement,
+          getPlayerState,
         });
       }}
       disabled={state === "loading"}

@@ -9,7 +9,6 @@ import {
 import { useDrag } from "./useDrag";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 
 type DragButtonProps = HTMLAttributes<HTMLButtonElement> & {
@@ -24,31 +23,21 @@ const switchContext = {
 export function DragButton({ type, ...props }: DragButtonProps) {
   const { xOffset, dragState, sliderLength, time, handleTimelineAction } =
     useContext(switchContext[type]);
-  const { handlePlayerAction, volumeState } = useContext(PlayerContext);
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-
+  const { handlePlayerAction, volumeState, getPlayerState } =
+    useContext(PlayerContext);
+  const { duration } = getPlayerState();
   const offset = useMemo(
     () =>
       getOffset({
         type,
         time,
-        duration: audioElement?.duration,
+        duration,
         sliderLength,
         dragState,
         xOffset,
         volumeState,
       }),
-    [
-      type,
-      time,
-      audioElement?.duration,
-      sliderLength,
-      dragState,
-      xOffset,
-      volumeState,
-    ]
+    [type, time, duration, sliderLength, dragState, xOffset, volumeState]
   );
 
   const handlePointerDown = useCallback(() => {
@@ -76,9 +65,9 @@ export function DragButton({ type, ...props }: DragButtonProps) {
         event,
         handlePlayerAction,
         type,
-        audioElement,
+        getPlayerState,
       }),
-    [handlePlayerAction, type, audioElement]
+    [handlePlayerAction, type, getPlayerState]
   );
 
   const style: CSSProperties = useMemo(
@@ -113,7 +102,7 @@ export function DragButton({ type, ...props }: DragButtonProps) {
 type GetOffsetArgs = {
   type: "timeline" | "volume";
   time: number;
-  duration: number | undefined;
+  duration: number;
   sliderLength: number;
   dragState: "dragging" | "idle";
   xOffset: number;

@@ -5,27 +5,32 @@ type ActionHandler<T> = (action: T) => void;
 type HandleKeyDownProps = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   handlePlayerAction: ActionHandler<PlayerProviderAction>;
+  getPlayerState: () => {
+    duration: number;
+    currentTime: number;
+    volume: number;
+    playbackRate: number;
+  };
   type: "timeline" | "volume";
-  audioElement: HTMLAudioElement | null;
 };
 
 export function handleTimelineKeys({
   event,
   handlePlayerAction,
+  getPlayerState,
   type,
-  audioElement,
 }: HandleKeyDownProps) {
-  const duration = audioElement?.duration ?? 0;
   if (
     handleMediaKeys({
       event,
       handlePlayerAction,
-      audioElement,
+      getPlayerState,
       isVolume: type === "volume",
     })
   ) {
     return;
   }
+  const { duration, currentTime, volume, playbackRate } = getPlayerState();
   if (isNumericKey(event.key)) {
     const time = getNumericKeyValue({
       type,
@@ -37,10 +42,15 @@ export function handleTimelineKeys({
     return true;
   }
   if (event.key.startsWith("Arrow")) {
-    console.log("event.key", event.key);
-    const time = getArrowKeyValue({ type, audioElement, event });
+    const time = getArrowKeyValue({
+      type,
+      currentTime,
+      duration,
+      volume,
+      playbackRate,
+      event,
+    });
     if (time === undefined) return;
-    console.log("time", time);
     if (type === "timeline") {
       handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
     }
@@ -67,13 +77,12 @@ export function handleTimelineKeys({
 export function handleMediaKeys({
   event,
   handlePlayerAction,
-  audioElement,
+  getPlayerState,
   isVolume = false,
 }: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
   isVolume?: boolean;
 }) {
-  const currentTime = audioElement?.currentTime ?? 0;
-  const duration = audioElement?.duration ?? 0;
+  const { duration, currentTime, playbackRate } = getPlayerState();
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
     handlePlayerAction({ type: "TOGGLE_MUTE" });
     event.preventDefault();
@@ -85,32 +94,28 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key.toLowerCase() === "l") {
-    if (!audioElement) return false;
     const time = Math.min(duration, currentTime + 10);
-    audioElement.currentTime = time;
+    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowRight") {
-    if (!audioElement) return false;
     if (isVolume) return false;
     const time = Math.min(duration, currentTime + 5);
-    audioElement.currentTime = time;
+    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowLeft") {
-    if (!audioElement) return false;
     if (isVolume) return false;
     const time = Math.max(0, currentTime - 5);
-    audioElement.currentTime = time;
+    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key.toLowerCase() === "j") {
-    if (!audioElement) return;
     const time = Math.max(0, currentTime - 10);
-    audioElement.currentTime = time;
+    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
     event.preventDefault();
     return true;
   }
@@ -132,7 +137,7 @@ export function handleMediaKeys({
     return true;
   }
   if ([">", "]"].includes(event.key)) {
-    const newRate = (audioElement?.playbackRate ?? 1) + 0.25;
+    const newRate = playbackRate + 0.25;
     const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
@@ -142,7 +147,7 @@ export function handleMediaKeys({
     return true;
   }
   if (["<", "["].includes(event.key)) {
-    const newRate = (audioElement?.playbackRate ?? 1) - 0.25;
+    const newRate = playbackRate - 0.25;
     const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
@@ -161,38 +166,39 @@ export function handleMediaKeys({
 
 type GetArrowKeyValueProps = {
   type: "timeline" | "volume";
-  audioElement: HTMLAudioElement | null;
   event: React.KeyboardEvent<HTMLButtonElement>;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  playbackRate: number;
 };
 
 function getArrowKeyValue({
   type,
   event,
-  audioElement,
+  currentTime,
+  duration,
+  volume,
 }: GetArrowKeyValueProps) {
-  const time = audioElement?.currentTime ?? 0;
-  const duration = audioElement?.duration ?? 0;
   if (type === "timeline") {
     if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
       const newTime = event.shiftKey
-        ? Math.max(0, time - 2)
-        : Math.max(0, time - 10);
+        ? Math.max(0, currentTime - 2)
+        : Math.max(0, currentTime - 10);
       console.log("newTime", newTime);
       return newTime;
     }
     if (["ArrowRight", "ArrowUp"].includes(event.key)) {
       return event.shiftKey
-        ? Math.min(duration, time + 2)
-        : Math.min(duration, time + 10);
+        ? Math.min(duration, currentTime + 2)
+        : Math.min(duration, currentTime + 10);
     }
   }
   if (type === "volume") {
     if (["ArrowDown", "ArrowLeft"].includes(event.key)) {
-      const volume = audioElement?.volume ?? 0;
       return event.shiftKey ? volume - 0.05 : volume - 0.1;
     }
     if (["ArrowUp", "ArrowRight"].includes(event.key)) {
-      const volume = audioElement?.volume ?? 0;
       return event.shiftKey ? volume + 0.05 : volume + 0.1;
     }
   }

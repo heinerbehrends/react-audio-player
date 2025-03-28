@@ -2,7 +2,6 @@ import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
 import { handleMediaKeys } from "../handleKeys";
-import { AudioContext } from "../AudioElement/AudioContext";
 
 function formatTime(time: number) {
   const minutes = Math.floor(time / 60);
@@ -15,10 +14,8 @@ type ChildrenProps = {
 };
 
 const Toggle = memo(function Toggle({ children }: ChildrenProps) {
-  const { handlePlayerAction, timeDisplay } = useContext(PlayerContext);
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
+  const { handlePlayerAction, timeDisplay, getPlayerState } =
+    useContext(PlayerContext);
 
   const handleClick = useCallback(() => {
     handlePlayerAction({ type: "TOGGLE_TIME_DISPLAY" });
@@ -32,7 +29,7 @@ const Toggle = memo(function Toggle({ children }: ChildrenProps) {
         handleMediaKeys({
           event,
           handlePlayerAction,
-          audioElement,
+          getPlayerState,
         });
       }}
       onClick={handleClick}

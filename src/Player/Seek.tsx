@@ -1,6 +1,5 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { handleMediaKeys } from "../handleKeys";
 
 type SeekButtonComponentProps = {
@@ -9,23 +8,20 @@ type SeekButtonComponentProps = {
 };
 
 export function Seek({ children, amount }: SeekButtonComponentProps) {
-  const { handlePlayerAction } = useContext(PlayerContext);
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
+  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
   const handleClick = useCallback(() => {
-    const time = audioElement?.currentTime ?? 0;
+    const { currentTime } = getPlayerState();
     handlePlayerAction({
       type: "SEEK_TO_TIME",
       component: "timeline",
-      time: time + amount,
+      time: currentTime + amount,
     });
-  }, [handlePlayerAction, audioElement, amount]);
+  }, [handlePlayerAction, getPlayerState, amount]);
   return (
     <button
       aria-label={`Seek ${amount}`}
       onKeyDown={(event) =>
-        handleMediaKeys({ event, handlePlayerAction, audioElement })
+        handleMediaKeys({ event, handlePlayerAction, getPlayerState })
       }
       onClick={handleClick}
     >

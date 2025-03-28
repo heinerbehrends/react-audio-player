@@ -92,6 +92,13 @@ export type PlayerContextType = {
   isMuted: boolean;
   playbackRate: number;
   volumeState: "muted" | "low" | "high";
+  getPlayerState: () => {
+    duration: number;
+    currentTime: number;
+    volume: number;
+    playbackRate: number;
+  };
+  getDuration: () => number;
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
   cues: VTTCue[];
@@ -103,6 +110,13 @@ export const initialState: PlayerContextType = {
   isMuted: false,
   playbackRate: 1,
   volumeState: "high",
+  getPlayerState: () => ({
+    duration: 0,
+    currentTime: 0,
+    volume: 1,
+    playbackRate: 1,
+  }),
+  getDuration: () => 0,
   timeDisplay: "elapsed",
   audioFiles: [],
   cues: [],

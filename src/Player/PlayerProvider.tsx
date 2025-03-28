@@ -35,7 +35,26 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
     audioElementRef: { current: audioElement },
     handleSideEffect,
   } = useContext(AudioContext);
-
+  const getDuration = useCallback(() => {
+    return audioElement?.duration ?? 0;
+  }, [audioElement]);
+  const getCurrentTime = useCallback(() => {
+    return audioElement?.currentTime ?? 0;
+  }, [audioElement]);
+  const getVolume = useCallback(() => {
+    return audioElement?.volume ?? 1;
+  }, [audioElement]);
+  const getPlaybackRate = useCallback(() => {
+    return audioElement?.playbackRate ?? 1;
+  }, [audioElement]);
+  const getPlayerState = useCallback(() => {
+    return {
+      duration: getDuration(),
+      currentTime: getCurrentTime(),
+      volume: getVolume(),
+      playbackRate: getPlaybackRate(),
+    };
+  }, [getDuration, getCurrentTime, getVolume, getPlaybackRate]);
   const handlePlayerAction = useCallback(
     (action: PlayerProviderAction) => {
       if (isSideEffectAction(action)) {
@@ -49,8 +68,23 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
   );
 
   const value = useMemo(
-    () => ({ ...state, handlePlayerAction }),
-    [state, handlePlayerAction]
+    () => ({
+      ...state,
+      handlePlayerAction,
+      getDuration,
+      getCurrentTime,
+      getVolume,
+      getPlaybackRate,
+      getPlayerState,
+    }),
+    [
+      state,
+      handlePlayerAction,
+      getDuration,
+      getCurrentTime,
+      getVolume,
+      getPlaybackRate,
+    ]
   );
 
   return (

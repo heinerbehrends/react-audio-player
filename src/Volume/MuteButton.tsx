@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { handleMediaKeys } from "../handleKeys";
@@ -8,28 +8,31 @@ type MuteButtonComponentProps = {
 };
 
 export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
-  const { handlePlayerAction, isMuted } = useContext(PlayerContext);
+  const { handlePlayerAction, isMuted, getPlayerState } =
+    useContext(PlayerContext);
   const {
-    audioElementRef: { current: audioElement },
     volumeCallbackRef: { current: volumeCallback },
   } = useContext(AudioContext);
+  const { volume } = getPlayerState();
+
+  const handleClick = useCallback(() => {
+    handlePlayerAction({ type: "TOGGLE_MUTE" });
+    if (!volumeCallback?.handleVolumeAction) return;
+    const nextVolume = isMuted ? volume : 0;
+    volumeCallback.handleVolumeAction({
+      type: "UPDATE_TIME",
+      time: nextVolume,
+    });
+  }, [handlePlayerAction, isMuted, volume, volumeCallback]);
+
   return (
     <button
       aria-label="Mute"
       aria-pressed={isMuted}
       onKeyDown={(event) =>
-        handleMediaKeys({ event, handlePlayerAction, audioElement })
+        handleMediaKeys({ event, handlePlayerAction, getPlayerState })
       }
-      onClick={() => {
-        handlePlayerAction({ type: "TOGGLE_MUTE" });
-        if (!volumeCallback?.handleVolumeAction) return;
-        // toggle mute is async, so isMuted has the old value
-        const nextVolume = isMuted ? audioElement?.volume ?? 0 : 0;
-        volumeCallback.handleVolumeAction({
-          type: "UPDATE_TIME",
-          time: nextVolume,
-        });
-      }}
+      onClick={handleClick}
     >
       {children}
     </button>

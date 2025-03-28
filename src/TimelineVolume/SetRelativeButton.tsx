@@ -63,7 +63,14 @@ export function SetRelativeButton({
         component: type,
       });
     },
-    [type, sliderStart, sliderLength, handleTimelineAction, audioElement]
+    [
+      type,
+      sliderStart,
+      sliderLength,
+      handleTimelineAction,
+      audioElement,
+      handlePlayerAction,
+    ]
   );
 
   const handleRef = useCallback(

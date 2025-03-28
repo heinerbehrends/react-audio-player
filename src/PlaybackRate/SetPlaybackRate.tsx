@@ -1,9 +1,9 @@
-import { useContext } from "react";
-import { AudioContext } from "../AudioElement/AudioContext";
+import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { handleMediaKeys } from "../handleKeys";
 import { areNumbersClose } from "../functionsLib";
-type SetSpeedProps = {
+
+type SetPlaybackRateProps = {
   playbackRate: number;
   children: React.ReactNode;
   currentIndicator?: React.ReactNode;
@@ -14,20 +14,18 @@ export function SetPlaybackRate({
   children,
   currentIndicator,
   ...props
-}: SetSpeedProps) {
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const { playbackRate: currentPlaybackRate, handlePlayerAction } =
-    useContext(PlayerContext);
-  function handleClick() {
-    if (!audioElement) return;
+}: SetPlaybackRateProps) {
+  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  const { playbackRate: currentPlaybackRate } = getPlayerState();
+
+  const handleClick = useCallback(() => {
     const limitedRate = Math.min(Math.max(playbackRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
       playbackRate: limitedRate,
     });
-  }
+  }, [handlePlayerAction, playbackRate]);
+
   const isCurrent = areNumbersClose(playbackRate, currentPlaybackRate);
   if (currentIndicator) {
     if (isCurrent) {
@@ -43,11 +41,10 @@ export function SetPlaybackRate({
         onClick={handleClick}
         {...props}
         onKeyDown={(event) => {
-          console.log("onKeyDown", event);
           handleMediaKeys({
             event,
             handlePlayerAction,
-            audioElement,
+            getPlayerState,
           });
         }}
       >
@@ -63,7 +60,7 @@ export function SetPlaybackRate({
         handleMediaKeys({
           event,
           handlePlayerAction,
-          audioElement,
+          getPlayerState,
         })
       }
       aria-label={`Set playback rate to ${playbackRate}x`}
