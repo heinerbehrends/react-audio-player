@@ -3,7 +3,6 @@ import type { TimelineContextAction } from "../Timeline/TimelineVolumeContext";
 import { useContext, useRef, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineVolumeContext";
 import { VolumeContext } from "../Volume/VolumeContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { calculateTime, calculateVolume } from "../functionsLib";
 
@@ -25,20 +24,13 @@ export function SetRelativeButton({
   const { handleTimelineAction, sliderStart, sliderLength } = useContext(
     switchContext[type]
   );
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const { handlePlayerAction } = useContext(PlayerContext);
-  const duration = audioElement?.duration ?? 0;
-  const time =
-    type === "timeline"
-      ? audioElement?.currentTime ?? 0
-      : audioElement?.volume ?? 0;
+  const { getPlayerState, handlePlayerAction } = useContext(PlayerContext);
+  const { duration, currentTime, volume } = getPlayerState();
+  const time = type === "timeline" ? currentTime : volume;
   const hasSetDimensions = useRef(false);
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
-      const duration = audioElement?.duration ?? 0;
       const xOffset = event.clientX - sliderStart;
       const time =
         type === "timeline"
@@ -68,8 +60,8 @@ export function SetRelativeButton({
       sliderStart,
       sliderLength,
       handleTimelineAction,
-      audioElement,
       handlePlayerAction,
+      duration,
     ]
   );
 

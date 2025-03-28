@@ -7,6 +7,7 @@ import {
   calculateVolume,
   calculateVolumeDragEnd,
 } from "../functionsLib";
+import { PlayerContext } from "../Player/PlayerContext";
 
 const mapContext = {
   timeline: TimelineContext,
@@ -19,6 +20,8 @@ export function useDrag(type: "timeline" | "volume") {
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
+  const { getPlayerState } = useContext(PlayerContext);
+  const { duration, currentTime, volume } = getPlayerState();
 
   const onPointerUpTimeline = useCallback(
     (clientX: number) => {
@@ -26,9 +29,8 @@ export function useDrag(type: "timeline" | "volume") {
         xOffset: clientX,
         sliderLength,
         sliderStart,
-        duration: audioElement?.duration ?? 0,
+        duration,
       });
-      const duration = audioElement?.duration ?? 0;
       const restrictedTime = Math.min(Math.max(time, 0), duration);
 
       handleTimelineAction({
@@ -37,7 +39,7 @@ export function useDrag(type: "timeline" | "volume") {
         component: "timeline",
       });
     },
-    [handleTimelineAction, sliderStart, sliderLength, audioElement]
+    [handleTimelineAction, sliderStart, sliderLength, duration]
   );
 
   const onPointerUpVolume = useCallback(
@@ -79,7 +81,7 @@ export function useDrag(type: "timeline" | "volume") {
               xOffset: clientX,
               sliderLength,
               sliderStart,
-              duration: audioElement?.duration ?? 0,
+              duration,
             })
           : calculateVolume({
               xOffset: clientX,
@@ -87,7 +89,7 @@ export function useDrag(type: "timeline" | "volume") {
             });
       const restrictedTime =
         type === "timeline"
-          ? Math.min(Math.max(time, 0), audioElement?.duration ?? 0)
+          ? Math.min(Math.max(time, 0), duration)
           : Math.min(Math.max(time, 0), 1);
 
       const restrictedClientX = Math.min(
@@ -101,19 +103,16 @@ export function useDrag(type: "timeline" | "volume") {
         component: type,
       });
     },
-    [handleTimelineAction, type, sliderStart, sliderLength, audioElement]
+    [handleTimelineAction, type, sliderStart, sliderLength, duration]
   );
 
   const onPointerCancel = useCallback(() => {
     handleTimelineAction({
       type: "DRAG_END",
-      time:
-        type === "timeline"
-          ? audioElement?.currentTime ?? 0
-          : audioElement?.volume ?? 0,
+      time: type === "timeline" ? currentTime : volume,
       component: type,
     });
-  }, [handleTimelineAction, type, audioElement]);
+  }, [handleTimelineAction, type, currentTime, volume]);
 
   useEffect(() => {
     if (dragState !== "dragging") {
