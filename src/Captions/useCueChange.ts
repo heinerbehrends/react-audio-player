@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { PlayerProviderAction } from "./PlayerContext";
+import { PlayerProviderAction } from "../Player/PlayerContext";
 
 type UseCueChangeArgs = {
   trackRef: React.RefObject<HTMLTrackElement | null>;

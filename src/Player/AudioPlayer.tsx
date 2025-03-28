@@ -1,6 +1,6 @@
 import { AudioContextProvider } from "../AudioElement/AudioContextProvider";
 import { AudioFile, PlayerContextProvider } from "./PlayerProvider";
-import { AudioElement } from "./AudioElement";
+import { AudioElement } from "../AudioElement/AudioElement";
 
 type AudioPlayerProps = {
   children: React.ReactNode;

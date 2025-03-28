@@ -98,7 +98,6 @@ function useHandlePointerDown(type: "timeline" | "volume") {
               sliderLength,
               sliderStart,
             });
-      console.log(time);
       handleTimelineAction({
         type: "SEEK_TO_TIME",
         time,

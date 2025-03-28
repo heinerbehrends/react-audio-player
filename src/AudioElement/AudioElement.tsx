@@ -1,7 +1,7 @@
-import { useContext, useRef, memo, useCallback } from "react";
-import { PlayerContext, type PlayerProviderAction } from "./PlayerContext";
-import { AudioContext } from "../AudioElement/AudioContext";
-import { useCueChange } from "./useCueChange";
+import { useContext, memo, useCallback } from "react";
+import { PlayerContext } from "../Player/PlayerContext";
+import { AudioContext } from "./AudioContext";
+import { Track } from "../Captions/Track";
 import { areNumbersClose } from "../functionsLib";
 
 const AudioElement = memo(function AudioElement() {
@@ -75,16 +75,5 @@ const AudioElement = memo(function AudioElement() {
     </audio>
   );
 });
-
-type TrackProps = {
-  src: string;
-  handlePlayerAction: (action: PlayerProviderAction) => void;
-};
-
-function Track({ src, handlePlayerAction }: TrackProps) {
-  const trackRef = useRef<HTMLTrackElement | null>(null);
-  useCueChange({ trackRef, handlePlayerAction });
-  return <track ref={trackRef} kind="captions" src={src} default />;
-}
 
 export { AudioElement };
