@@ -49,18 +49,21 @@ function useProgress(type: "timeline" | "volume") {
   } = useContext(switchContext[type]);
   const { volumeState, getPlayerState } = useContext(PlayerContext);
   const { duration } = getPlayerState();
+  const isDragging = dragState === "dragging";
   // const upperLimit = type === "timeline" ? duration : 1;
   if (type === "volume" && volumeState === "muted") {
     return 0;
   }
   if (type === "timeline") {
-    return dragState === "dragging" ? xOffset / sliderLength : time / duration;
+    return isDragging ? xOffset / sliderLength : time / duration;
   }
   if (type === "volume") {
-    return dragState === "dragging"
+    const dragVolume = xOffset / sliderLength;
+
+    return isDragging
       ? orientation === "horizontal"
-        ? xOffset / sliderLength
-        : 1 - xOffset / sliderLength
+        ? dragVolume
+        : 1 - dragVolume
       : time;
   }
   return time;
