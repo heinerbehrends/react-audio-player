@@ -9,7 +9,6 @@ import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
-import { Debug } from "./Debug";
 
 function App() {
   return (
@@ -30,7 +29,6 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -70,26 +68,6 @@ function App() {
           }}
         />
       </Volume>
-      {/* <Volume style={{ height: "40px", backgroundColor: "gray" }}>
-        <Volume.Set
-          style={{
-            padding: 0,
-            margin: 0,
-            border: "none",
-            background: "none",
-          }}
-        >
-          <Volume.Progress style={{ backgroundColor: "darkgray" }} />
-        </Volume.Set>
-        <Volume.Drag
-          style={{
-            height: "40px",
-            width: "40px",
-            borderRadius: "50%",
-            border: "none",
-          }}
-        />
-      </Volume> */}
       <PlaybackRate.Display />
       <PlaybackRate.Set rate={0.5}>
         <PlaybackRate.Current rate={0.5}>*</PlaybackRate.Current>
