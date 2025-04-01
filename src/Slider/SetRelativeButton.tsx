@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from "react";
-import { useContext, useRef, useCallback, useMemo } from "react";
+import { useContext, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
@@ -57,12 +57,23 @@ export function SetRelativeButton({
 
 function useHandleRef(type: "timeline" | "volume") {
   const { handleTimelineAction, orientation } = useContext(switchContext[type]);
-  const hasSentDimensions = useRef(false);
+
   return useCallback(
     (element: HTMLButtonElement | null) => {
-      if (!element || hasSentDimensions.current) {
+      if (!element) {
         return;
       }
+
+      const resizeObserver = new ResizeObserver(() => {
+        const rect = element.getBoundingClientRect();
+        handleTimelineAction({
+          type: "SLIDER_LOADED",
+          component: type,
+          sliderStart: orientation === "horizontal" ? rect.left : rect.top,
+          sliderLength: orientation === "horizontal" ? rect.width : rect.height,
+        });
+      });
+
       const rect = element.getBoundingClientRect();
       handleTimelineAction({
         type: "SLIDER_LOADED",
@@ -70,7 +81,10 @@ function useHandleRef(type: "timeline" | "volume") {
         sliderStart: orientation === "horizontal" ? rect.left : rect.top,
         sliderLength: orientation === "horizontal" ? rect.width : rect.height,
       });
-      hasSentDimensions.current = true;
+
+      resizeObserver.observe(element);
+
+      return () => resizeObserver.disconnect();
     },
     [handleTimelineAction, type, orientation]
   );
@@ -81,6 +95,7 @@ function useHandlePointerDown(type: "timeline" | "volume") {
   const { duration } = getPlayerState();
   const { sliderStart, sliderLength, handleTimelineAction, orientation } =
     useContext(switchContext[type]);
+
   return useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const xyOffset =
@@ -100,7 +115,6 @@ function useHandlePointerDown(type: "timeline" | "volume") {
               orientation,
             });
 
-      console.log("setting relative value", value);
       handleTimelineAction({
         type: "CHANGE_VALUE",
         value,
