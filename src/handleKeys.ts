@@ -32,12 +32,12 @@ export function handleTimelineKeys({
   }
   const { duration } = getPlayerState();
   if (isNumericKey(event.key)) {
-    const time = getNumericKeyValue({
+    const value = getNumericKeyValue({
       type,
       duration,
       key: event.key,
     });
-    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: type });
+    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: type });
     event.preventDefault();
     return true;
   }
@@ -70,35 +70,35 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key.toLowerCase() === "l") {
-    const time = Math.min(duration, currentTime + 10);
-    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    const value = Math.min(duration, currentTime + 10);
+    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowRight") {
     if (isVolume) return false;
-    const time = Math.min(duration, currentTime + 5);
-    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    const value = Math.min(duration, currentTime + 5);
+    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowLeft") {
     if (isVolume) return false;
-    const time = Math.max(0, currentTime - 5);
-    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    const value = Math.max(0, currentTime - 5);
+    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key.toLowerCase() === "j") {
-    const time = Math.max(0, currentTime - 10);
-    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    const value = Math.max(0, currentTime - 10);
+    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowDown") {
     handlePlayerAction({
       type: "SEEK_TO_TIME",
-      time: volume - 0.025,
+      value: volume - 0.025,
       component: "volume",
     });
     event.preventDefault();
@@ -107,7 +107,7 @@ export function handleMediaKeys({
   if (event.key === "ArrowUp") {
     handlePlayerAction({
       type: "SEEK_TO_TIME",
-      time: volume + 0.025,
+      value: volume + 0.025,
       component: "volume",
     });
     event.preventDefault();
@@ -121,12 +121,12 @@ export function handleMediaKeys({
     return true;
   }
   if (isNumericKey(event.key) && !isVolume) {
-    const time = getNumericKeyValue({
+    const value = getNumericKeyValue({
       type: "timeline",
       duration,
       key: event.key,
     });
-    handlePlayerAction({ type: "SEEK_TO_TIME", time, component: "timeline" });
+    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
     event.preventDefault();
     return true;
   }

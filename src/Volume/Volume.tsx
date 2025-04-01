@@ -22,7 +22,7 @@ function VolumeContainer({
 }: VolumeContainerProps) {
   return (
     <VolumeProvider orientation={orientation}>
-      <Container {...props} data-type="volume">
+      <Container {...props} data-type="volume" data-orientation={orientation}>
         {children}
       </Container>
     </VolumeProvider>
