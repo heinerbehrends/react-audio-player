@@ -23,7 +23,7 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
         backgroundColor: "#f5f5f5",
         borderRadius: "4px",
         position: "absolute",
-        top: 0,
+        top: 80,
         left: 60,
       }}
     >
@@ -37,6 +37,7 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
       <p>Width: {context.sliderLength}</p>
       <p>Drag State: {context.dragState}</p>
       <p>X Offset: {context.xyOffset}</p>
+      <p>Orientation: {context.orientation}</p>
     </div>
   );
 }

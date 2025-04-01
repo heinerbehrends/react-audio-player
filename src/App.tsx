@@ -30,6 +30,7 @@ function App() {
             border: "none",
           }}
         />
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -68,9 +69,8 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="volume" />
       </Volume>
-      <Volume style={{ height: "40px", backgroundColor: "gray" }}>
+      {/* <Volume style={{ height: "40px", backgroundColor: "gray" }}>
         <Volume.Set
           style={{
             padding: 0,
@@ -89,7 +89,7 @@ function App() {
             border: "none",
           }}
         />
-      </Volume>
+      </Volume> */}
       <PlaybackRate.Display />
       <PlaybackRate.Set rate={0.5}>
         <PlaybackRate.Current rate={0.5}>*</PlaybackRate.Current>

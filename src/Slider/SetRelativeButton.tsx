@@ -83,17 +83,18 @@ function useHandlePointerDown(type: "timeline" | "volume") {
     useContext(switchContext[type]);
   return useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
-      const xOffset = event.clientX;
+      const xyOffset =
+        orientation === "horizontal" ? event.clientX : event.clientY;
       const value =
         type === "timeline"
           ? calculateTime({
-              xyOffset: xOffset,
+              xyOffset,
               sliderStart,
               sliderLength,
               duration,
             })
           : calculateVolume({
-              xyOffset: xOffset,
+              xyOffset,
               sliderLength,
               sliderStart,
               orientation,

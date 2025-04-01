@@ -4,9 +4,14 @@ import {
   initialState as timelineInitialState,
 } from "../Timeline/TimelineContext";
 
-export const initialState: TimelineContextType = {
-  ...timelineInitialState,
-  value: 1,
+export type VolumeContextType = TimelineContextType & {
+  orientation: "horizontal" | "vertical";
 };
 
-export const VolumeContext = createContext<TimelineContextType>(initialState);
+export const initialState: VolumeContextType = {
+  ...timelineInitialState,
+  value: 1,
+  orientation: "horizontal",
+};
+
+export const VolumeContext = createContext<VolumeContextType>(initialState);

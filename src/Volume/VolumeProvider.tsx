@@ -25,7 +25,14 @@ export const VolumeProvider = memo(function VolumeProvider({
   children,
   orientation,
 }: VolumeProviderProps) {
-  const [state, dispatch] = useReducer(volumeReducer, initialState);
+  const [state, dispatch] = useReducer(
+    volumeReducer,
+    initialState,
+    (state) => ({
+      ...state,
+      orientation,
+    })
+  );
   const {
     audioElementRef: { current: audioElement },
     handleSideEffect,

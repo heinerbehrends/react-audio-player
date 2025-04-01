@@ -94,7 +94,6 @@ export function DragButton({ type, ...props }: DragButtonProps) {
       }),
     [handlePlayerAction, type, getPlayerState]
   );
-
   const style: CSSProperties = useMemo(
     () => ({
       position: "absolute",
@@ -152,8 +151,9 @@ function getOffset({
     return 0;
   }
   if (type === "timeline") {
-    const progress = value / (duration ?? 1);
-    return dragState === "dragging" ? xOffset : progress * sliderLength;
+    const progress = value / duration;
+    const offset = progress * sliderLength;
+    return dragState === "dragging" ? xOffset : offset;
   }
   if (type === "volume") {
     if (orientation === "horizontal") {

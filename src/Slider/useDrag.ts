@@ -45,13 +45,14 @@ export function useDrag(type: "timeline" | "volume") {
 
   const onPointerUpVolume = useCallback(
     (clientXY: number) => {
-      const time = calculateVolume({
+      const volume = calculateVolume({
         xyOffset: clientXY,
         sliderLength,
         sliderStart,
         orientation,
       });
-      const restrictedTime = Math.min(Math.max(time, 0), 1);
+
+      const restrictedTime = Math.min(Math.max(volume, 0), 1);
 
       handleTimelineAction({
         type: "DRAG_END",
@@ -77,34 +78,30 @@ export function useDrag(type: "timeline" | "volume") {
 
   const onPointerMove = useCallback(
     (event: PointerEvent | TouchEvent) => {
-      console.log("onPointerMove", event);
       const clientXY = getClientXY(event, orientation);
-      console.log("clientXY", clientXY);
-      const value =
-        type === "timeline"
-          ? calculateTime({
-              xyOffset: clientXY,
-              sliderLength,
-              sliderStart,
-              duration,
-            })
-          : calculateVolume({
-              xyOffset: clientXY,
-              sliderLength,
-              sliderStart,
-              orientation,
-            });
-      console.log("time", value);
+      const timeValue = calculateTime({
+        xyOffset: clientXY,
+        sliderLength,
+        duration,
+        sliderStart,
+      });
+      console.log("timeValue", timeValue);
+      const volumeValue = calculateVolume({
+        xyOffset: clientXY,
+        sliderLength,
+        sliderStart,
+        orientation,
+      });
+
       const restrictedValue =
         type === "timeline"
-          ? Math.min(Math.max(value, 0), duration)
-          : Math.min(Math.max(value, 0), 1);
-      console.log("restrictedTime", restrictedValue);
+          ? Math.min(Math.max(timeValue, 0), duration)
+          : Math.min(Math.max(volumeValue, 0), 1);
+
       const restrictedClientXY = Math.min(
         Math.max(clientXY, sliderStart),
         sliderStart + sliderLength
       );
-      console.log("restrictedClientXY", restrictedClientXY);
 
       handleTimelineAction({
         type: "DRAG",

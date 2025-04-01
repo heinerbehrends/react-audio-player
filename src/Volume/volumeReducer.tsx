@@ -30,7 +30,11 @@ export function volumeReducer(
         return state;
       }
       const xOffset = action.clientXY - state.sliderStart;
-      const volume = xOffset / state.sliderLength;
+
+      const volume =
+        state.orientation === "horizontal"
+          ? xOffset / state.sliderLength
+          : 1 - xOffset / state.sliderLength;
       return {
         ...state,
         xyOffset: xOffset,

@@ -3,10 +3,11 @@ import { TimelineContextType, TimelineContextAction } from "./TimelineContext";
 export function timelineReducer(
   state: TimelineContextType,
   action: TimelineContextAction
-) {
+): TimelineContextType {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
-      return { ...state, time: action.value };
+      console.log("timelineReducer updateUIValue", action.value);
+      return { ...state, value: action.value };
     }
     case "SLIDER_LOADED": {
       return {
@@ -22,21 +23,24 @@ export function timelineReducer(
       return {
         ...state,
         dragState: "dragging" as const,
-        xOffset: action.clientXY,
+        xyOffset: action.clientXY,
       };
     }
     case "DRAG": {
       if (state.dragState !== "dragging") {
         return state;
       }
-      return { ...state, xOffset: action.clientXY - state.sliderStart };
+      return {
+        ...state,
+        xyOffset: action.clientXY - state.sliderStart,
+      };
     }
     case "DRAG_END": {
       return {
         ...state,
         dragState: "idle" as const,
-        xOffset: 0,
-        time: action.value,
+        xyOffset: 0,
+        value: action.value,
       };
     }
     default: {
