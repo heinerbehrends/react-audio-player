@@ -77,5 +77,8 @@ export function playerReducer(
       if (!state.isMuted) return state;
       return { ...state, isMuted: false };
     }
+    case "PAUSE": {
+      return { ...state, player: "paused" as const };
+    }
   }
 }

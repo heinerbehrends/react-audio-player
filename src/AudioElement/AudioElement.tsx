@@ -52,6 +52,12 @@ const AudioElement = memo(function AudioElement() {
     handlePlayerAction({ type: "AUDIO_FILE_LOADED" });
   }, [handlePlayerAction]);
 
+  const handlePause = useCallback(() => {
+    if (audioElementRef.current?.currentTime === 0) {
+      handlePlayerAction({ type: "PAUSE" });
+    }
+  }, [handlePlayerAction, audioElementRef]);
+
   const hasTimelineCallback =
     !!timelineCallbackRef?.current?.handleTimelineAction;
   const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
@@ -65,6 +71,7 @@ const AudioElement = memo(function AudioElement() {
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
       onEnded={handleEnded}
       onError={handleError}
+      onPause={handlePause}
       onLoadedMetadata={handleLoadedMetadata}
       src={src}
       muted={isMuted}
