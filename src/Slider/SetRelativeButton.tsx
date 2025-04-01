@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { useContext, useRef, useCallback, useMemo } from "react";
-import { TimelineContext } from "../Timeline/TimelineVolumeContext";
+import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { calculateTime, calculateVolume } from "../functionsLib";
@@ -56,7 +56,7 @@ export function SetRelativeButton({
 }
 
 function useHandleRef(type: "timeline" | "volume") {
-  const { handleTimelineAction } = useContext(switchContext[type]);
+  const { handleTimelineAction, orientation } = useContext(switchContext[type]);
   const hasSentDimensions = useRef(false);
   return useCallback(
     (element: HTMLButtonElement | null) => {
@@ -65,42 +65,44 @@ function useHandleRef(type: "timeline" | "volume") {
       }
       const rect = element.getBoundingClientRect();
       handleTimelineAction({
-        type: "TIMELINE_LOADED",
+        type: "SLIDER_LOADED",
         component: type,
-        sliderStart: rect.left,
-        sliderLength: rect.width,
+        sliderStart: orientation === "horizontal" ? rect.left : rect.top,
+        sliderLength: orientation === "horizontal" ? rect.width : rect.height,
       });
       hasSentDimensions.current = true;
     },
-    [handleTimelineAction, type]
+    [handleTimelineAction, type, orientation]
   );
 }
 
 function useHandlePointerDown(type: "timeline" | "volume") {
   const { getPlayerState, handlePlayerAction } = useContext(PlayerContext);
   const { duration } = getPlayerState();
-  const { sliderStart, sliderLength, handleTimelineAction } = useContext(
-    switchContext[type]
-  );
+  const { sliderStart, sliderLength, handleTimelineAction, orientation } =
+    useContext(switchContext[type]);
   return useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const xOffset = event.clientX;
-      const time =
+      const value =
         type === "timeline"
           ? calculateTime({
-              xOffset,
+              xyOffset: xOffset,
               sliderStart,
               sliderLength,
               duration,
             })
           : calculateVolume({
-              xOffset,
+              xyOffset: xOffset,
               sliderLength,
               sliderStart,
+              orientation,
             });
+
+      console.log("setting relative value", value);
       handleTimelineAction({
         type: "SEEK_TO_TIME",
-        time,
+        value,
         component: type,
       });
       if (type === "volume") {
@@ -116,6 +118,7 @@ function useHandlePointerDown(type: "timeline" | "volume") {
       sliderStart,
       sliderLength,
       type,
+      orientation,
     ]
   );
 }

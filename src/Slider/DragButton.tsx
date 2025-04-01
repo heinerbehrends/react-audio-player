@@ -7,7 +7,7 @@ import {
   type HTMLAttributes,
 } from "react";
 import { useDrag } from "./useDrag";
-import { TimelineContext } from "../Timeline/TimelineVolumeContext";
+import { TimelineContext } from "../Timeline/TimelineContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 
@@ -21,23 +21,40 @@ const switchContext = {
 };
 
 export function DragButton({ type, ...props }: DragButtonProps) {
-  const { xOffset, dragState, sliderLength, time, handleTimelineAction } =
-    useContext(switchContext[type]);
+  const {
+    xyOffset,
+    dragState,
+    sliderLength,
+    value,
+    handleTimelineAction,
+    orientation,
+  } = useContext(switchContext[type]);
   const { handlePlayerAction, volumeState, getPlayerState } =
     useContext(PlayerContext);
   const { duration } = getPlayerState();
+
   const offset = useMemo(
     () =>
       getOffset({
         type,
-        time,
+        value,
         duration,
         sliderLength,
         dragState,
-        xOffset,
+        xOffset: xyOffset,
         volumeState,
+        orientation,
       }),
-    [type, time, duration, sliderLength, dragState, xOffset, volumeState]
+    [
+      type,
+      value,
+      duration,
+      sliderLength,
+      dragState,
+      xyOffset,
+      volumeState,
+      orientation,
+    ]
   );
 
   const handlePointerDown = useCallback(() => {
@@ -46,16 +63,24 @@ export function DragButton({ type, ...props }: DragButtonProps) {
         type: "UNMUTE",
       });
     }
-    handleTimelineAction({
-      type: "DRAG_START",
-      clientX: offset,
-    });
-  }, [handleTimelineAction, offset, handlePlayerAction, type]);
+    if (orientation === "horizontal") {
+      handleTimelineAction({
+        type: "DRAG_START",
+        clientXY: offset,
+      });
+    }
+    if (orientation === "vertical") {
+      handleTimelineAction({
+        type: "DRAG_START",
+        clientXY: offset,
+      });
+    }
+  }, [handleTimelineAction, offset, handlePlayerAction, type, orientation]);
 
   const handleTouchStart = useCallback(() => {
     handleTimelineAction({
       type: "DRAG_START",
-      clientX: offset,
+      clientXY: offset,
     });
   }, [handleTimelineAction, offset]);
 
@@ -76,11 +101,14 @@ export function DragButton({ type, ...props }: DragButtonProps) {
       gridColumn: "1 / 1",
       gridRow: "1 / 1",
       cursor: "grab",
-      transform: `translate(calc(${offset}px - 20px), 0)`,
+      transform:
+        orientation === "horizontal"
+          ? `translate(calc(${offset}px - 20px), 0)`
+          : `translate(0, calc(${offset}px - 20px))`,
       touchAction: "none",
       ...props.style,
     }),
-    [offset, props.style]
+    [offset, orientation, props.style]
   );
 
   useDrag(type);
@@ -101,32 +129,41 @@ export function DragButton({ type, ...props }: DragButtonProps) {
 
 type GetOffsetArgs = {
   type: "timeline" | "volume";
-  time: number;
+  value: number;
   duration: number;
   sliderLength: number;
   dragState: "dragging" | "idle";
   xOffset: number;
   volumeState: "muted" | "low" | "high";
+  orientation: "horizontal" | "vertical";
 };
 
 function getOffset({
   type,
-  time,
+  value,
   duration,
   sliderLength,
   dragState,
   xOffset,
   volumeState,
+  orientation,
 }: GetOffsetArgs): number {
   if (type === "volume" && volumeState === "muted") {
     return 0;
   }
   if (type === "timeline") {
-    const progress = time / (duration ?? 1);
+    const progress = value / (duration ?? 1);
     return dragState === "dragging" ? xOffset : progress * sliderLength;
   }
   if (type === "volume") {
-    return dragState === "dragging" ? xOffset : sliderLength * time;
+    if (orientation === "horizontal") {
+      return dragState === "dragging" ? xOffset : sliderLength * value;
+    }
+    if (orientation === "vertical") {
+      return dragState === "dragging"
+        ? xOffset
+        : sliderLength - sliderLength * value;
+    }
   }
   return 0;
 }

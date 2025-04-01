@@ -13,8 +13,8 @@ const AudioElement = memo(function AudioElement() {
   const handleTimeUpdate = useCallback(() => {
     if (timelineCallbackRef?.current?.handleTimelineAction) {
       timelineCallbackRef.current.handleTimelineAction({
-        type: "UPDATE_TIME",
-        time: audioElementRef.current?.currentTime ?? 0,
+        type: "UPDATE_UI_VALUE",
+        value: audioElementRef.current?.currentTime ?? 0,
       });
     }
   }, [timelineCallbackRef, audioElementRef]);
@@ -34,8 +34,8 @@ const AudioElement = memo(function AudioElement() {
 
     if (volumeCallbackRef?.current?.handleVolumeAction) {
       volumeCallbackRef.current.handleVolumeAction({
-        type: "UPDATE_TIME",
-        time: audioElementRef.current?.volume ?? 0,
+        type: "UPDATE_UI_VALUE",
+        value: audioElementRef.current?.volume ?? 0,
       });
     }
   }, [volumeCallbackRef, audioElementRef, isMuted, handlePlayerAction]);

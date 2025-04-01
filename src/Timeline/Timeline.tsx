@@ -1,8 +1,8 @@
 import { type HTMLAttributes } from "react";
-import { SetRelativeButton } from "../TimelineVolume/SetRelativeButton";
-import { DragButton } from "../TimelineVolume/DragButton";
-import { Indicator } from "../TimelineVolume/Indicator";
-import { Container } from "../TimelineVolume/Container";
+import { SetRelativeButton } from "../Slider/SetRelativeButton";
+import { DragButton } from "../Slider/DragButton";
+import { Indicator } from "../Slider/Indicator";
+import { Container } from "../Slider/Container";
 import { TimelineProvider } from "./TimelineProvider";
 
 type ProgressProps = Omit<HTMLAttributes<HTMLDivElement>, "type">;

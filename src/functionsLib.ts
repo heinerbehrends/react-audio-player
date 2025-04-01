@@ -1,40 +1,37 @@
 type CalculateTimeArgs = {
-  xOffset: number;
+  xyOffset: number;
   sliderLength: number;
   sliderStart: number;
   duration: number;
 };
 
 export function calculateTime({
-  xOffset,
+  xyOffset,
   sliderLength,
   sliderStart,
   duration,
 }: CalculateTimeArgs): number {
-  const progress = (xOffset - sliderStart) / sliderLength;
+  const progress = (xyOffset - sliderStart) / sliderLength;
   return progress * duration;
 }
 
 type CalculateVolumeArgs = {
-  xOffset: number;
+  xyOffset: number;
   sliderLength: number;
   sliderStart: number;
+  orientation: "horizontal" | "vertical";
 };
 
-export function calculateVolumeDragEnd({
-  xOffset,
-  sliderLength,
-  sliderStart,
-}: CalculateVolumeArgs): number {
-  return (xOffset - sliderStart) / sliderLength;
-}
-
 export function calculateVolume({
-  xOffset,
+  xyOffset,
   sliderLength,
   sliderStart,
+  orientation,
 }: CalculateVolumeArgs): number {
-  const progress = (xOffset - sliderStart) / sliderLength;
+  const progress =
+    orientation === "horizontal"
+      ? (xyOffset - sliderStart) / sliderLength
+      : (sliderLength - (xyOffset - sliderStart)) / sliderLength;
   return Math.max(0, Math.min(1, progress));
 }
 

@@ -20,8 +20,8 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
     if (!volumeCallback?.handleVolumeAction) return;
     const nextVolume = isMuted ? volume : 0;
     volumeCallback.handleVolumeAction({
-      type: "UPDATE_TIME",
-      time: nextVolume,
+      type: "UPDATE_UI_VALUE",
+      value: nextVolume,
     });
   }, [handlePlayerAction, isMuted, volume, volumeCallback]);
 

@@ -1,5 +1,5 @@
 import { useContext, type HTMLAttributes, memo, useMemo } from "react";
-import { TimelineContext } from "../Timeline/TimelineVolumeContext";
+import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
 
@@ -16,28 +16,37 @@ export const Indicator = memo(function Indicator({
   type,
   ...props
 }: TimelineProgressProps) {
+  const { orientation } = useContext(switchContext[type]);
+
   const progress = useProgress(type);
 
   const style = useMemo(
     () => ({
-      transform: `scaleX(${progress})`,
+      transform:
+        orientation === "horizontal"
+          ? `scaleX(${progress})`
+          : `scaleY(${progress})`,
       width: "100%",
       height: "100%",
-      transformOrigin: "left",
+      transformOrigin: orientation === "horizontal" ? "left" : "bottom",
       gridColumn: "1 / 1",
       gridRow: "1 / 1",
       ...props.style,
     }),
-    [progress, props.style]
+    [progress, props.style, orientation]
   );
 
   return <div {...props} style={style} />;
 });
 
 function useProgress(type: "timeline" | "volume") {
-  const { dragState, xOffset, time, sliderLength } = useContext(
-    switchContext[type]
-  );
+  const {
+    dragState,
+    xyOffset: xOffset,
+    value: time,
+    sliderLength,
+    orientation,
+  } = useContext(switchContext[type]);
   const { volumeState, getPlayerState } = useContext(PlayerContext);
   const { duration } = getPlayerState();
   // const upperLimit = type === "timeline" ? duration : 1;
@@ -48,7 +57,11 @@ function useProgress(type: "timeline" | "volume") {
     return dragState === "dragging" ? xOffset / sliderLength : time / duration;
   }
   if (type === "volume") {
-    return dragState === "dragging" ? xOffset / sliderLength : time;
+    return dragState === "dragging"
+      ? orientation === "horizontal"
+        ? xOffset / sliderLength
+        : 1 - xOffset / sliderLength
+      : time;
   }
   return time;
 }

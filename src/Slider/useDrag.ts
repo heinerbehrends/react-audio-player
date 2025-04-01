@@ -1,12 +1,8 @@
 import { useContext, useEffect, useCallback } from "react";
-import { TimelineContext } from "../Timeline/TimelineVolumeContext";
+import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import {
-  calculateTime,
-  calculateVolume,
-  calculateVolumeDragEnd,
-} from "../functionsLib";
+import { calculateTime, calculateVolume } from "../functionsLib";
 import { PlayerContext } from "../Player/PlayerContext";
 
 const mapContext = {
@@ -15,8 +11,13 @@ const mapContext = {
 };
 
 export function useDrag(type: "timeline" | "volume") {
-  const { dragState, handleTimelineAction, sliderStart, sliderLength } =
-    useContext(mapContext[type]);
+  const {
+    dragState,
+    handleTimelineAction,
+    sliderStart,
+    sliderLength,
+    orientation,
+  } = useContext(mapContext[type]);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
@@ -26,7 +27,7 @@ export function useDrag(type: "timeline" | "volume") {
   const onPointerUpTimeline = useCallback(
     (clientX: number) => {
       const time = calculateTime({
-        xOffset: clientX,
+        xyOffset: clientX,
         sliderLength,
         sliderStart,
         duration,
@@ -35,7 +36,7 @@ export function useDrag(type: "timeline" | "volume") {
 
       handleTimelineAction({
         type: "DRAG_END",
-        time: restrictedTime,
+        value: restrictedTime,
         component: "timeline",
       });
     },
@@ -43,74 +44,89 @@ export function useDrag(type: "timeline" | "volume") {
   );
 
   const onPointerUpVolume = useCallback(
-    (clientX: number) => {
-      const time = calculateVolumeDragEnd({
-        xOffset: clientX,
+    (clientXY: number) => {
+      const time = calculateVolume({
+        xyOffset: clientXY,
         sliderLength,
         sliderStart,
+        orientation,
       });
       const restrictedTime = Math.min(Math.max(time, 0), 1);
 
       handleTimelineAction({
         type: "DRAG_END",
-        time: restrictedTime,
+        value: restrictedTime,
         component: "volume",
       });
     },
-    [handleTimelineAction, sliderLength, sliderStart]
+    [handleTimelineAction, sliderLength, sliderStart, orientation]
   );
 
   const onPointerUp = useCallback(
-    ({ clientX }: PointerEvent) => {
+    ({ clientX, clientY }: PointerEvent) => {
+      const clientXY = orientation === "horizontal" ? clientX : clientY;
       if (type === "timeline") {
-        onPointerUpTimeline(clientX);
+        onPointerUpTimeline(clientXY);
       }
       if (type === "volume") {
-        onPointerUpVolume(clientX);
+        onPointerUpVolume(clientXY);
       }
     },
-    [type, onPointerUpTimeline, onPointerUpVolume]
+    [type, onPointerUpTimeline, onPointerUpVolume, orientation]
   );
 
   const onPointerMove = useCallback(
     (event: PointerEvent | TouchEvent) => {
-      const clientX = getClientX(event);
-      const time =
+      console.log("onPointerMove", event);
+      const clientXY = getClientXY(event, orientation);
+      console.log("clientXY", clientXY);
+      const value =
         type === "timeline"
           ? calculateTime({
-              xOffset: clientX,
+              xyOffset: clientXY,
               sliderLength,
               sliderStart,
               duration,
             })
           : calculateVolume({
-              xOffset: clientX,
+              xyOffset: clientXY,
               sliderLength,
               sliderStart,
+              orientation,
             });
-      const restrictedTime =
+      console.log("time", value);
+      const restrictedValue =
         type === "timeline"
-          ? Math.min(Math.max(time, 0), duration)
-          : Math.min(Math.max(time, 0), 1);
-
-      const restrictedClientX = Math.min(
-        Math.max(clientX, sliderStart),
+          ? Math.min(Math.max(value, 0), duration)
+          : Math.min(Math.max(value, 0), 1);
+      console.log("restrictedTime", restrictedValue);
+      const restrictedClientXY = Math.min(
+        Math.max(clientXY, sliderStart),
         sliderStart + sliderLength
       );
+      console.log("restrictedClientXY", restrictedClientXY);
+
       handleTimelineAction({
         type: "DRAG",
-        time: restrictedTime,
-        clientX: restrictedClientX,
+        time: restrictedValue,
+        clientXY: restrictedClientXY,
         component: type,
       });
     },
-    [handleTimelineAction, type, sliderStart, sliderLength, duration]
+    [
+      handleTimelineAction,
+      type,
+      sliderStart,
+      sliderLength,
+      duration,
+      orientation,
+    ]
   );
 
   const onPointerCancel = useCallback(() => {
     handleTimelineAction({
       type: "DRAG_END",
-      time: type === "timeline" ? currentTime : volume,
+      value: type === "timeline" ? currentTime : volume,
       component: type,
     });
   }, [handleTimelineAction, type, currentTime, volume]);
@@ -142,9 +158,14 @@ function isTouchEvent(event: PointerEvent | TouchEvent): event is TouchEvent {
   return "touches" in event;
 }
 
-export function getClientX(event: PointerEvent | TouchEvent): number {
+export function getClientXY(
+  event: PointerEvent | TouchEvent,
+  orientation: "horizontal" | "vertical"
+): number {
   if (isTouchEvent(event)) {
-    return event.touches[0]?.clientX ?? 0;
+    return orientation === "horizontal"
+      ? event.touches[0]?.clientX ?? 0
+      : event.touches[0]?.clientY ?? 0;
   }
-  return event.clientX;
+  return orientation === "horizontal" ? event.clientX : event.clientY;
 }

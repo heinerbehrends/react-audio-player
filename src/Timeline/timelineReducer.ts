@@ -1,17 +1,14 @@
-import {
-  TimelineContextType,
-  TimelineContextAction,
-} from "./TimelineVolumeContext";
+import { TimelineContextType, TimelineContextAction } from "./TimelineContext";
 
 export function timelineReducer(
   state: TimelineContextType,
   action: TimelineContextAction
 ) {
   switch (action.type) {
-    case "UPDATE_TIME": {
-      return { ...state, time: action.time };
+    case "UPDATE_UI_VALUE": {
+      return { ...state, time: action.value };
     }
-    case "TIMELINE_LOADED": {
+    case "SLIDER_LOADED": {
       return {
         ...state,
         sliderStart: action.sliderStart,
@@ -25,21 +22,21 @@ export function timelineReducer(
       return {
         ...state,
         dragState: "dragging" as const,
-        xOffset: action.clientX,
+        xOffset: action.clientXY,
       };
     }
     case "DRAG": {
       if (state.dragState !== "dragging") {
         return state;
       }
-      return { ...state, xOffset: action.clientX - state.sliderStart };
+      return { ...state, xOffset: action.clientXY - state.sliderStart };
     }
     case "DRAG_END": {
       return {
         ...state,
         dragState: "idle" as const,
         xOffset: 0,
-        time: action.time,
+        time: action.value,
       };
     }
     default: {

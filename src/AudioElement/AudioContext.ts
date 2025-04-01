@@ -11,7 +11,7 @@ import type {
   DragEndAction,
   DragAction,
   TimelineContextAction,
-} from "../Timeline/TimelineVolumeContext";
+} from "../Timeline/TimelineContext";
 
 export type TimelineProviderRef = {
   handleTimelineAction: ((action: TimelineContextAction) => void) | null;
@@ -28,7 +28,7 @@ export type StopAudioAction = {
 export type SeekToTimeAction = {
   type: "SEEK_TO_TIME";
   component: "timeline" | "volume";
-  time: number;
+  value: number;
 };
 
 export type SideEffectAction =

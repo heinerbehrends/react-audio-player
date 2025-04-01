@@ -12,16 +12,18 @@ import {
   isTimelineSideEffect,
   TimelineContextType,
   type TimelineProviderAction,
-} from "../Timeline/TimelineVolumeContext";
+} from "../Timeline/TimelineContext";
 import { volumeReducer } from "./volumeReducer";
 import { AudioContext } from "../AudioElement/AudioContext";
 
 type VolumeProviderProps = {
   children: React.ReactNode;
+  orientation: "horizontal" | "vertical";
 };
 
 export const VolumeProvider = memo(function VolumeProvider({
   children,
+  orientation,
 }: VolumeProviderProps) {
   const [state, dispatch] = useReducer(volumeReducer, initialState);
   const {
@@ -50,16 +52,19 @@ export const VolumeProvider = memo(function VolumeProvider({
   }, [handleTimelineAction, volumeCallbackRef]);
 
   const value = useMemo(() => {
-    const result: TimelineContextType = {
+    const result: TimelineContextType & {
+      orientation: "horizontal" | "vertical";
+    } = {
       sliderStart: state.sliderStart,
       sliderLength: state.sliderLength,
-      time: state.time,
-      xOffset: state.xOffset,
+      value: state.value,
+      xyOffset: state.xyOffset,
       dragState: state.dragState,
       handleTimelineAction,
+      orientation,
     };
     return result;
-  }, [state, handleTimelineAction]);
+  }, [state, handleTimelineAction, orientation]);
 
   return (
     <VolumeContext.Provider value={value}>{children}</VolumeContext.Provider>

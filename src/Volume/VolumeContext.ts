@@ -2,11 +2,11 @@ import { createContext } from "react";
 import {
   type TimelineContextType,
   initialState as timelineInitialState,
-} from "../Timeline/TimelineVolumeContext";
+} from "../Timeline/TimelineContext";
 
 export const initialState: TimelineContextType = {
   ...timelineInitialState,
-  time: 1,
+  value: 1,
 };
 
 export const VolumeContext = createContext<TimelineContextType>(initialState);

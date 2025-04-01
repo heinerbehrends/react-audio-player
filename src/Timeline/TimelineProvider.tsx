@@ -13,7 +13,7 @@ import {
   isTimelineAction,
   type TimelineContextType,
   type TimelineProviderAction,
-} from "./TimelineVolumeContext";
+} from "./TimelineContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { timelineReducer } from "./timelineReducer";
 
@@ -53,18 +53,20 @@ export const TimelineProvider = memo(function TimelineProvider({
     const result: TimelineContextType = {
       sliderStart: state.sliderStart,
       sliderLength: state.sliderLength,
-      time: state.time,
-      xOffset: state.xOffset,
+      value: state.value,
+      xyOffset: state.xyOffset,
       dragState: state.dragState,
+      orientation: state.orientation,
       handleTimelineAction,
     };
     return result;
   }, [
     state.sliderStart,
     state.sliderLength,
-    state.time,
-    state.xOffset,
+    state.value,
+    state.xyOffset,
     state.dragState,
+    state.orientation,
     handleTimelineAction,
   ]);
 

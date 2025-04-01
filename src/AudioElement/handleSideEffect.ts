@@ -32,10 +32,10 @@ export function handleSideEffect(
     case "DRAG_END":
     case "SEEK_TO_TIME": {
       if (action.component === "timeline") {
-        audioElement.currentTime = action.time;
+        audioElement.currentTime = action.value;
       }
       if (action.component === "volume") {
-        audioElement.volume = action.time;
+        audioElement.volume = action.value;
       }
       break;
     }

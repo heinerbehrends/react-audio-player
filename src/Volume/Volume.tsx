@@ -1,8 +1,8 @@
 import { type HTMLAttributes } from "react";
-import { SetRelativeButton } from "../TimelineVolume/SetRelativeButton";
-import { DragButton } from "../TimelineVolume/DragButton";
-import { Indicator } from "../TimelineVolume/Indicator";
-import { Container } from "../TimelineVolume/Container";
+import { SetRelativeButton } from "../Slider/SetRelativeButton";
+import { DragButton } from "../Slider/DragButton";
+import { Indicator } from "../Slider/Indicator";
+import { Container } from "../Slider/Container";
 import { VolumeProvider } from "./VolumeProvider";
 
 type ProgressProps = Omit<HTMLAttributes<HTMLDivElement>, "type">;
@@ -12,11 +12,16 @@ type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, "type"> & {
 
 type VolumeContainerProps = HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
+  orientation?: "horizontal" | "vertical";
 };
 
-function VolumeContainer({ children, ...props }: VolumeContainerProps) {
+function VolumeContainer({
+  children,
+  orientation = "horizontal",
+  ...props
+}: VolumeContainerProps) {
   return (
-    <VolumeProvider>
+    <VolumeProvider orientation={orientation}>
       <Container {...props} data-type="volume">
         {children}
       </Container>
@@ -43,7 +48,10 @@ function VolumeDragButton(props: VolumeDragButtonProps) {
 }
 
 type VolumeComponent = React.FC<
-  HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }
+  HTMLAttributes<HTMLDivElement> & {
+    children: React.ReactNode;
+    orientation?: "horizontal" | "vertical";
+  }
 > & {
   Progress: typeof VolumeProgress;
   Set: typeof VolumeSeekButton;

@@ -25,11 +25,9 @@ export function playerReducer(
       return { ...state, isMuted: !state.isMuted, volumeState: newVolumeState };
     }
     case "SET_PLAYBACK_RATE": {
-      console.log("playerReducer: SET_PLAYBACK_RATE", action.playbackRate);
       return { ...state, playbackRate: action.playbackRate };
     }
     case "AUDIO_FILE_ENDED": {
-      console.log("playerReducer: AUDIO_FILE_ENDED");
       return { ...state, player: "paused" as const, time: 0 };
     }
     case "TOGGLE_TIME_DISPLAY": {

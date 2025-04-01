@@ -1,14 +1,14 @@
 import type {
   TimelineContextType,
   TimelineContextAction,
-} from "../Timeline/TimelineVolumeContext";
+} from "../Timeline/TimelineContext";
 
 export function volumeReducer(
   state: TimelineContextType,
   action: TimelineContextAction
 ): TimelineContextType {
   switch (action.type) {
-    case "TIMELINE_LOADED": {
+    case "SLIDER_LOADED": {
       return {
         ...state,
         sliderStart: action.sliderStart,
@@ -22,19 +22,19 @@ export function volumeReducer(
       return {
         ...state,
         dragState: "dragging" as const,
-        xOffset: action.clientX,
+        xyOffset: action.clientXY,
       };
     }
     case "DRAG": {
       if (state.dragState !== "dragging") {
         return state;
       }
-      const xOffset = action.clientX - state.sliderStart;
+      const xOffset = action.clientXY - state.sliderStart;
       const volume = xOffset / state.sliderLength;
       return {
         ...state,
-        xOffset,
-        time: volume,
+        xyOffset: xOffset,
+        value: volume,
       };
     }
     case "DRAG_END": {
@@ -42,12 +42,12 @@ export function volumeReducer(
       return {
         ...state,
         dragState: "idle" as const,
-        xOffset: 0,
-        time: action.time,
+        xyOffset: 0,
+        value: action.value,
       };
     }
-    case "UPDATE_TIME": {
-      return { ...state, time: action.time };
+    case "UPDATE_UI_VALUE": {
+      return { ...state, value: action.value };
     }
     default: {
       return state;

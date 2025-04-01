@@ -4,52 +4,58 @@ import { SideEffectAction } from "../AudioElement/AudioContext";
 export const TimelineContext = createContext<TimelineContextType>({
   sliderStart: 0,
   sliderLength: 0,
-  time: 0,
-  xOffset: 0,
+  value: 0,
+  xyOffset: 0,
   dragState: "idle",
+  orientation: "horizontal",
   handleTimelineAction: () => {},
 });
 
 export type TimelineContextType = {
   sliderStart: number;
   sliderLength: number;
-  time: number;
-  xOffset: number;
+  value: number;
+  xyOffset: number;
   dragState: "idle" | "dragging";
+  orientation: "horizontal" | "vertical";
   handleTimelineAction: (action: TimelineProviderAction) => void;
 };
 
-export type TimelineLoadedAction = {
-  type: "TIMELINE_LOADED";
-  component: "timeline" | "volume";
+type SliderComponent = "timeline" | "volume";
+
+export type SliderLoadedAction = {
+  type: "SLIDER_LOADED";
+  component: SliderComponent;
   sliderStart: number;
   sliderLength: number;
 };
 
 export type DragStartAction = {
   type: "DRAG_START";
-  clientX: number;
-};
-export type DragAction = {
-  type: "DRAG";
-  clientX: number;
-  component: "timeline" | "volume";
-  time: number;
-};
-export type DragEndAction = {
-  type: "DRAG_END";
-  time: number;
-  component: "timeline" | "volume";
+  clientXY: number;
 };
 
-export type UpdateTimeAction = {
-  type: "UPDATE_TIME";
+export type DragAction = {
+  type: "DRAG";
+  clientXY: number;
+  component: SliderComponent;
   time: number;
+};
+
+export type DragEndAction = {
+  type: "DRAG_END";
+  value: number;
+  component: SliderComponent;
+};
+
+export type UpdateUiValueAction = {
+  type: "UPDATE_UI_VALUE";
+  value: number;
 };
 
 export type TimelineContextAction =
-  | TimelineLoadedAction
-  | UpdateTimeAction
+  | SliderLoadedAction
+  | UpdateUiValueAction
   | DragAction
   | DragStartAction
   | DragEndAction;
@@ -73,11 +79,11 @@ const TIMELINE_SIDE_EFFECT_MAP: Record<TimelineSideEffectAction, boolean> = {
 };
 
 const TIMELINE_DISPATCH_MAP: Record<TimelineActionType, true> = {
-  TIMELINE_LOADED: true,
+  SLIDER_LOADED: true,
   DRAG_START: true,
   DRAG: true,
   DRAG_END: true,
-  UPDATE_TIME: true,
+  UPDATE_UI_VALUE: true,
 };
 
 export function isTimelineSideEffect(
@@ -97,8 +103,9 @@ export function isTimelineAction(
 export const initialState: TimelineContextType = {
   sliderStart: 0,
   sliderLength: 0,
-  time: 0,
-  xOffset: 0,
+  value: 0,
+  xyOffset: 0,
   dragState: "idle",
+  orientation: "horizontal",
   handleTimelineAction: () => {},
 };
