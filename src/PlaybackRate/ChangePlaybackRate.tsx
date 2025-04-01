@@ -1,6 +1,7 @@
 import { useCallback, useContext } from "react";
-import { handleMediaKeys } from "../handleKeys";
+import { useHandleMediaKeys } from "../handleKeys";
 import { PlayerContext } from "../Player/PlayerContext";
+
 type IncreaseDecreaseProps = {
   amount: number;
   children: React.ReactNode;
@@ -11,32 +12,14 @@ export function ChangePlaybackRate({
   children,
   ...props
 }: IncreaseDecreaseProps) {
-  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  const handleClick = useHandleClick(amount);
 
-  const handleClick = useCallback(
-    function handleClick() {
-      const { playbackRate } = getPlayerState();
-      const newRate = playbackRate + amount;
-      const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
-      handlePlayerAction({
-        type: "SET_PLAYBACK_RATE",
-        playbackRate: limitedRate,
-      });
-    },
-    [amount, handlePlayerAction, getPlayerState]
-  );
+  const handleKeyDown = useHandleMediaKeys();
 
   return (
     <button
       onClick={handleClick}
-      onKeyDown={(event) => {
-        console.log("onKeyDown", event);
-        handleMediaKeys({
-          event,
-          handlePlayerAction,
-          getPlayerState,
-        });
-      }}
+      onKeyDown={handleKeyDown}
       aria-label={
         amount > 0
           ? `Increase playback rate by ${Math.abs(amount)}x`
@@ -47,4 +30,17 @@ export function ChangePlaybackRate({
       {children}
     </button>
   );
+}
+
+function useHandleClick(amount: number) {
+  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  return useCallback(() => {
+    const { playbackRate } = getPlayerState();
+    const newRate = playbackRate + amount;
+    const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
+    handlePlayerAction({
+      type: "SET_PLAYBACK_RATE",
+      playbackRate: limitedRate,
+    });
+  }, [handlePlayerAction, getPlayerState, amount]);
 }

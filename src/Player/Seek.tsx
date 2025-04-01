@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { handleMediaKeys } from "../handleKeys";
+import { useHandleMediaKeys } from "../handleKeys";
 
 type SeekButtonComponentProps = {
   children: React.ReactNode;
@@ -17,12 +17,11 @@ export function Seek({ children, amount }: SeekButtonComponentProps) {
       value: currentTime + amount,
     });
   }, [handlePlayerAction, getPlayerState, amount]);
+  const handleKeyDown = useHandleMediaKeys();
   return (
     <button
       aria-label={`Seek ${amount}`}
-      onKeyDown={(event) =>
-        handleMediaKeys({ event, handlePlayerAction, getPlayerState })
-      }
+      onKeyDown={handleKeyDown}
       onClick={handleClick}
     >
       {children}

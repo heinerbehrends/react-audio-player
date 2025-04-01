@@ -1,4 +1,8 @@
-import type { PlayerProviderAction } from "./Player/PlayerContext";
+import { useCallback, useContext } from "react";
+import {
+  PlayerContext,
+  type PlayerProviderAction,
+} from "./Player/PlayerContext";
 
 type ActionHandler<T> = (action: T) => void;
 
@@ -198,4 +202,14 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
     },
   };
   return keyToTimeMap[type][key];
+}
+
+export function useHandleMediaKeys() {
+  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  return useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      handleMediaKeys({ event, handlePlayerAction, getPlayerState });
+    },
+    [handlePlayerAction, getPlayerState]
+  );
 }

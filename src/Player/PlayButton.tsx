@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { handleMediaKeys } from "../handleKeys";
+import { useHandleMediaKeys } from "../handleKeys";
 
 type PlayButtonProps = {
   children: React.ReactNode;
@@ -14,26 +14,15 @@ const ariaLabel = {
 };
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  const {
-    handlePlayerAction,
-    player: state,
-    getPlayerState,
-  } = useContext(PlayerContext);
-  const isPlaying = state === "playing";
+  const { isPlaying, isDisabled, ariaLabel } = usePlayButtonProps();
+  const handleKeyDown = useHandleMediaKeys();
+  const handleClick = useHandleClick();
   return (
     <button
-      onClick={() => {
-        handlePlayerAction({ type: "TOGGLE_PLAY" });
-      }}
-      onKeyDown={(event) => {
-        handleMediaKeys({
-          event,
-          handlePlayerAction,
-          getPlayerState,
-        });
-      }}
-      disabled={state === "loading"}
-      aria-label={ariaLabel[state]}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      disabled={isDisabled}
+      aria-label={ariaLabel}
       aria-pressed={isPlaying}
       {...props}
     >
@@ -42,9 +31,38 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
   );
 }
 
-function Playing({ children }: { children: React.ReactNode }) {
+function useIsPlaying() {
   const { player: state } = useContext(PlayerContext);
-  if (state !== "playing") {
+  return state === "playing";
+}
+
+function useIsDisabled() {
+  const { player: state } = useContext(PlayerContext);
+  return state === "loading";
+}
+
+function useHandleClick() {
+  const { handlePlayerAction } = useContext(PlayerContext);
+  return () => {
+    handlePlayerAction({ type: "TOGGLE_PLAY" });
+  };
+}
+
+function useAriaLabel() {
+  const isPlaying = useIsPlaying();
+  return ariaLabel[isPlaying ? "playing" : "paused"];
+}
+
+function usePlayButtonProps() {
+  const isPlaying = useIsPlaying();
+  const isDisabled = useIsDisabled();
+  const ariaLabel = useAriaLabel();
+  return { isPlaying, isDisabled, ariaLabel };
+}
+
+function Playing({ children }: { children: React.ReactNode }) {
+  const isPlaying = useIsPlaying();
+  if (!isPlaying) {
     return null;
   }
 

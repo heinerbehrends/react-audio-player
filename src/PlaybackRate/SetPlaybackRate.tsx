@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { handleMediaKeys } from "../handleKeys";
+import { useHandleMediaKeys } from "../handleKeys";
 import { areNumbersClose } from "../functionsLib";
 
 type SetPlaybackRateProps = {
@@ -26,6 +26,8 @@ export function SetPlaybackRate({
     });
   }, [handlePlayerAction, rate]);
 
+  const handleKeyDown = useHandleMediaKeys();
+
   const isCurrent = areNumbersClose(rate, currentPlaybackRate);
   if (currentIndicator) {
     if (isCurrent) {
@@ -37,17 +39,7 @@ export function SetPlaybackRate({
       );
     }
     return (
-      <button
-        onClick={handleClick}
-        {...props}
-        onKeyDown={(event) => {
-          handleMediaKeys({
-            event,
-            handlePlayerAction,
-            getPlayerState,
-          });
-        }}
-      >
+      <button onClick={handleClick} onKeyDown={handleKeyDown} {...props}>
         <span style={{ visibility: "hidden" }}>{currentIndicator}</span>
         {children}
       </button>
@@ -56,13 +48,7 @@ export function SetPlaybackRate({
   return (
     <button
       onClick={handleClick}
-      onKeyDown={(event) =>
-        handleMediaKeys({
-          event,
-          handlePlayerAction,
-          getPlayerState,
-        })
-      }
+      onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
       {...props}
     >
@@ -89,9 +75,10 @@ type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 export function RateDisplay({ ...props }: RateDisplayProps) {
   const { playbackRate: currentPlaybackRate } = useContext(PlayerContext);
+  const roundedRate = Math.round(currentPlaybackRate * 10) / 10;
   return (
     <span aria-label="Current playback rate" {...props}>
-      {currentPlaybackRate}x
+      {roundedRate}x
     </span>
   );
 }
