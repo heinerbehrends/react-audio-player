@@ -12,7 +12,7 @@ export function Seek({ children, amount }: SeekButtonComponentProps) {
   const handleClick = useCallback(() => {
     const { currentTime } = getPlayerState();
     handlePlayerAction({
-      type: "SEEK_TO_TIME",
+      type: "CHANGE_VALUE",
       component: "timeline",
       time: currentTime + amount,
     });

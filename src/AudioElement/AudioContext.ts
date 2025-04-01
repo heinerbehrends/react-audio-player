@@ -25,8 +25,8 @@ export type StopAudioAction = {
   type: "STOP_AUDIO";
 };
 
-export type SeekToTimeAction = {
-  type: "SEEK_TO_TIME";
+export type ChangeValueAction = {
+  type: "CHANGE_VALUE";
   component: "timeline" | "volume";
   value: number;
 };
@@ -34,7 +34,7 @@ export type SeekToTimeAction = {
 export type SideEffectAction =
   | TogglePlayAction
   | ToggleMuteAction
-  | SeekToTimeAction
+  | ChangeValueAction
   | DragAction
   | DragEndAction
   | AudioFileEndedAction

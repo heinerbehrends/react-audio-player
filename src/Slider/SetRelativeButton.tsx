@@ -101,7 +101,7 @@ function useHandlePointerDown(type: "timeline" | "volume") {
 
       console.log("setting relative value", value);
       handleTimelineAction({
-        type: "SEEK_TO_TIME",
+        type: "CHANGE_VALUE",
         value,
         component: type,
       });

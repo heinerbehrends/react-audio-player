@@ -37,7 +37,7 @@ export function handleTimelineKeys({
       duration,
       key: event.key,
     });
-    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: type });
+    handlePlayerAction({ type: "CHANGE_VALUE", value, component: type });
     event.preventDefault();
     return true;
   }
@@ -71,33 +71,33 @@ export function handleMediaKeys({
   }
   if (event.key.toLowerCase() === "l") {
     const value = Math.min(duration, currentTime + 10);
-    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
+    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowRight") {
     if (isVolume) return false;
     const value = Math.min(duration, currentTime + 5);
-    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
+    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowLeft") {
     if (isVolume) return false;
     const value = Math.max(0, currentTime - 5);
-    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
+    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key.toLowerCase() === "j") {
     const value = Math.max(0, currentTime - 10);
-    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
+    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowDown") {
     handlePlayerAction({
-      type: "SEEK_TO_TIME",
+      type: "CHANGE_VALUE",
       value: volume - 0.025,
       component: "volume",
     });
@@ -106,7 +106,7 @@ export function handleMediaKeys({
   }
   if (event.key === "ArrowUp") {
     handlePlayerAction({
-      type: "SEEK_TO_TIME",
+      type: "CHANGE_VALUE",
       value: volume + 0.025,
       component: "volume",
     });
@@ -126,7 +126,7 @@ export function handleMediaKeys({
       duration,
       key: event.key,
     });
-    handlePlayerAction({ type: "SEEK_TO_TIME", value, component: "timeline" });
+    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
     event.preventDefault();
     return true;
   }

@@ -70,7 +70,7 @@ type TimelineSideEffectAction = Exclude<SideEffectActionType, "UNMUTE">;
 const TIMELINE_SIDE_EFFECT_MAP: Record<TimelineSideEffectAction, boolean> = {
   DRAG: true,
   DRAG_END: true,
-  SEEK_TO_TIME: true,
+  CHANGE_VALUE: true,
   TOGGLE_PLAY: true,
   TOGGLE_MUTE: true,
   AUDIO_FILE_ENDED: true,

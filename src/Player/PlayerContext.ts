@@ -64,7 +64,7 @@ export type PlayerProviderAction = SideEffectAction | PlayerContextAction;
 export const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   TOGGLE_PLAY: true,
   TOGGLE_MUTE: true,
-  SEEK_TO_TIME: true,
+  CHANGE_VALUE: true,
   AUDIO_FILE_ENDED: true,
   DRAG: true,
   DRAG_END: true,

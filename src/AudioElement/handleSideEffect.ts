@@ -30,7 +30,7 @@ export function handleSideEffect(
       break;
     }
     case "DRAG_END":
-    case "SEEK_TO_TIME": {
+    case "CHANGE_VALUE": {
       if (action.component === "timeline") {
         audioElement.currentTime = action.value;
       }
