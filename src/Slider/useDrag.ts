@@ -79,24 +79,24 @@ export function useDrag(type: "timeline" | "volume") {
   const onPointerMove = useCallback(
     (event: PointerEvent | TouchEvent) => {
       const clientXY = getClientXY(event, orientation);
-      const timeValue = calculateTime({
-        xyOffset: clientXY,
-        sliderLength,
-        duration,
-        sliderStart,
-      });
-      console.log("timeValue", timeValue);
-      const volumeValue = calculateVolume({
-        xyOffset: clientXY,
-        sliderLength,
-        sliderStart,
-        orientation,
-      });
-
+      const value =
+        type === "timeline"
+          ? calculateTime({
+              xyOffset: clientXY,
+              sliderLength,
+              duration,
+              sliderStart,
+            })
+          : calculateVolume({
+              xyOffset: clientXY,
+              sliderLength,
+              sliderStart,
+              orientation,
+            });
       const restrictedValue =
         type === "timeline"
-          ? Math.min(Math.max(timeValue, 0), duration)
-          : Math.min(Math.max(volumeValue, 0), 1);
+          ? Math.min(Math.max(value, 0), duration)
+          : Math.min(Math.max(value, 0), 1);
 
       const restrictedClientXY = Math.min(
         Math.max(clientXY, sliderStart),

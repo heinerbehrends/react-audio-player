@@ -6,7 +6,6 @@ export function timelineReducer(
 ): TimelineContextType {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
-      console.log("timelineReducer updateUIValue", action.value);
       return { ...state, value: action.value };
     }
     case "SLIDER_LOADED": {

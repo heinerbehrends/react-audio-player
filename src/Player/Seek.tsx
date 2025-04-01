@@ -14,7 +14,7 @@ export function Seek({ children, amount }: SeekButtonComponentProps) {
     handlePlayerAction({
       type: "CHANGE_VALUE",
       component: "timeline",
-      time: currentTime + amount,
+      value: currentTime + amount,
     });
   }, [handlePlayerAction, getPlayerState, amount]);
   return (

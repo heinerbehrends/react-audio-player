@@ -148,7 +148,12 @@ function getOffset({
   orientation,
 }: GetOffsetArgs): number {
   if (type === "volume" && volumeState === "muted") {
-    return 0;
+    if (orientation === "horizontal") {
+      return 0;
+    }
+    if (orientation === "vertical") {
+      return sliderLength;
+    }
   }
   if (type === "timeline") {
     const progress = value / duration;
