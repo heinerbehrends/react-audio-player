@@ -10,8 +10,16 @@ import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 // import { Debug } from "./Debug";
+import { useEffect, useState } from "react";
 
 function App() {
+  const searchParams = useUrlParams();
+  console.log("searchParams", searchParams);
+  const volumeOrientation =
+    (searchParams.get("orientation") as "horizontal" | "vertical") ??
+    "horizontal";
+  console.log("volumeOrientation", volumeOrientation);
+
   return (
     <AudioPlayer
       audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
@@ -49,8 +57,12 @@ function App() {
       /
       <Time.Duration />
       <Volume
-        orientation="vertical"
-        style={{ width: "40px", height: "400px", backgroundColor: "gray" }}
+        orientation={volumeOrientation}
+        style={{
+          width: volumeOrientation === "horizontal" ? "400px" : "40px",
+          height: volumeOrientation === "horizontal" ? "40px" : "400px",
+          backgroundColor: "gray",
+        }}
       >
         <Volume.Set
           style={{
@@ -97,3 +109,19 @@ function App() {
 }
 
 export default App;
+
+function useUrlParams() {
+  const [searchParams, setSearchParams] = useState<URLSearchParams>(
+    new URLSearchParams(window.location.search)
+  );
+  useEffect(() => {
+    function handleUrlChange() {
+      setSearchParams(new URLSearchParams(window.location.search));
+    }
+
+    window.addEventListener("popstate", handleUrlChange);
+    return () => window.removeEventListener("popstate", handleUrlChange);
+  }, []);
+
+  return searchParams;
+}

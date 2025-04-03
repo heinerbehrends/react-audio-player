@@ -106,7 +106,7 @@ export type PlayerState = {
   duration: number;
   currentTime: number;
   volume: number;
-  unmuteVolumeRef: React.RefObject<number>;
+  unmuteVolumeRef: React.MutableRefObject<number>;
 };
 
 export type PlayerContextType = {
@@ -115,7 +115,7 @@ export type PlayerContextType = {
   isMuted: boolean;
   playbackRate: number;
   volumeState: VolumeState;
-  unmuteVolumeRef: React.RefObject<number>;
+  unmuteVolumeRef: React.MutableRefObject<number>;
   getPlayerState: () => PlayerState;
   getDuration: () => number;
   timeDisplay: "elapsed" | "remaining";
@@ -129,13 +129,13 @@ export const initialState: PlayerContextType = {
   isMuted: false,
   playbackRate: 1,
   volumeState: "high",
-  unmuteVolumeRef: { current: 1 } as React.RefObject<number>,
+  unmuteVolumeRef: { current: 1 } as React.MutableRefObject<number>,
   getPlayerState: () => ({
     duration: 0,
     currentTime: 0,
     volume: 1,
     playbackRate: 1,
-    unmuteVolumeRef: { current: 1 } as React.RefObject<number>,
+    unmuteVolumeRef: { current: 1 } as React.MutableRefObject<number>,
   }),
   getDuration: () => 0,
   timeDisplay: "elapsed",

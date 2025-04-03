@@ -45,12 +45,13 @@ function useToggleMute() {
   const { volume, unmuteVolumeRef } = getPlayerState();
 
   return useCallback(() => {
-    const newVolume = areNumbersClose(volume, 0)
+    if (!volumeCallback?.handleVolumeAction) return;
+
+    const unmuteVolume = areNumbersClose(volume, 0)
       ? unmuteVolumeRef.current
       : volume;
-    console.log("TOGGLE_MUTE newVolume", newVolume);
-    handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: newVolume });
-    if (!volumeCallback?.handleVolumeAction) return;
+    handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume });
+
     const nextVolume = isMuted ? volume : 0;
     volumeCallback.handleVolumeAction({
       type: "UPDATE_UI_VALUE",
@@ -59,39 +60,39 @@ function useToggleMute() {
   }, [handlePlayerAction, isMuted, volume, volumeCallback, unmuteVolumeRef]);
 }
 
-function Muted({ children }: MutedProps) {
+function Muted({ children }: MutedProps): React.ReactElement | null {
   const { volumeState } = useContext(PlayerContext);
   if (volumeState !== "muted") return null;
-  return children;
+  return <>{children}</>;
 }
 
 type LowVolumeProps = {
   children: React.ReactNode;
 };
 
-function LowVolume({ children }: LowVolumeProps) {
+function LowVolume({ children }: LowVolumeProps): React.ReactElement | null {
   const { volumeState } = useContext(PlayerContext);
   if (volumeState !== "low") return null;
-  return children;
+  return <>{children}</>;
 }
 
 type HighVolumeProps = {
   children: React.ReactNode;
 };
 
-function HighVolume({ children }: HighVolumeProps) {
+function HighVolume({ children }: HighVolumeProps): React.ReactElement | null {
   const { volumeState } = useContext(PlayerContext);
   if (volumeState !== "high") return null;
-  return children;
+  return <>{children}</>;
 }
 
 type MuteButtonComponent = React.FC<MuteButtonComponentProps> & {
-  Muted: React.FC<MutedProps>;
-  LowVolume: React.FC<LowVolumeProps>;
-  HighVolume: React.FC<HighVolumeProps>;
+  Muted: typeof Muted;
+  LowVolume: typeof LowVolume;
+  HighVolume: typeof HighVolume;
 };
 
 MuteButtonComponent.Muted = Muted;
 MuteButtonComponent.LowVolume = LowVolume;
 MuteButtonComponent.HighVolume = HighVolume;
-export const MuteButton = MuteButtonComponent;
+export const MuteButton = MuteButtonComponent as MuteButtonComponent;

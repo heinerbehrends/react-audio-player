@@ -47,28 +47,36 @@ function usePlayButtonProps() {
   return { isPlaying, isDisabled, ariaLabel };
 }
 
-function Playing({ children }: { children: React.ReactNode }) {
+function Playing({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement | null {
   const { playerState } = useContext(PlayerContext);
   const isPlaying = playerState === "playing";
   if (!isPlaying) {
     return null;
   }
 
-  return children;
+  return <>{children}</>;
 }
 
-function Paused({ children }: { children: React.ReactNode }) {
+function Paused({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement | null {
   const { playerState } = useContext(PlayerContext);
   const isPlaying = playerState === "playing";
   if (isPlaying) {
     return null;
   }
-  return children;
+  return <>{children}</>;
 }
 
 type PlayButtonComponent = React.FC<PlayButtonProps> & {
-  Playing: React.FC<{ children: React.ReactNode }>;
-  Paused: React.FC<{ children: React.ReactNode }>;
+  Playing: typeof Playing;
+  Paused: typeof Paused;
 };
 
 PlayButtonComponent.Playing = Playing;

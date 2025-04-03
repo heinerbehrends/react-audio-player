@@ -1,0 +1,108 @@
+import "@testing-library/jest-dom";
+import { afterEach, beforeAll, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+
+// Automatically cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+
+// Mock HTMLMediaElement API which is not implemented in JSDOM
+beforeAll(() => {
+  // Mock play/pause methods
+  window.HTMLMediaElement.prototype.play = vi
+    .fn()
+    .mockImplementation(() => Promise.resolve());
+  window.HTMLMediaElement.prototype.pause = vi.fn();
+  window.HTMLMediaElement.prototype.load = vi.fn();
+
+  // Mock media properties
+  Object.defineProperties(window.HTMLMediaElement.prototype, {
+    currentTime: {
+      get() {
+        return this._currentTime || 0;
+      },
+      set(time) {
+        this._currentTime = time;
+      },
+    },
+    duration: {
+      get() {
+        return this._duration || 100;
+      },
+      set(time) {
+        this._duration = time;
+      },
+    },
+    paused: {
+      get() {
+        return this._paused !== false;
+      },
+      set(value) {
+        this._paused = value;
+      },
+    },
+    muted: {
+      get() {
+        return this._muted || false;
+      },
+      set(value) {
+        this._muted = value;
+      },
+    },
+    volume: {
+      get() {
+        return this._volume === undefined ? 1 : this._volume;
+      },
+      set(value) {
+        this._volume = value;
+      },
+    },
+    playbackRate: {
+      get() {
+        return this._playbackRate || 1;
+      },
+      set(value) {
+        this._playbackRate = value;
+      },
+    },
+  });
+});
+
+// Mock browser APIs used in your components
+beforeAll(() => {
+  // Mock ResizeObserver
+  global.ResizeObserver = class ResizeObserver {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  };
+
+  // Mock TextTrack API if used for captions
+  if (!window.TextTrack) {
+    // Create mock TextTrackCueList
+    const createCueList = () => ({
+      length: 0,
+      getCueById: vi.fn(),
+      [Symbol.iterator]: function* () {},
+    });
+
+    window.TextTrack = class TextTrack {
+      mode = "showing" as TextTrackMode;
+      kind = "subtitles" as TextTrackKind;
+      label = "";
+      language = "";
+      id = "";
+      inBandMetadataTrackDispatchType = "";
+      cues = createCueList();
+      activeCues = createCueList();
+      oncuechange = null;
+
+      addCue = vi.fn();
+      removeCue = vi.fn();
+      addEventListener = vi.fn();
+      removeEventListener = vi.fn();
+      dispatchEvent = vi.fn().mockReturnValue(true);
+    };
+  }
+});

@@ -35,10 +35,13 @@ type CurrentIndicatorProps = {
   children: React.ReactNode;
 };
 
-export function CurrentIndicator({ rate, children }: CurrentIndicatorProps) {
+export function CurrentIndicator({
+  rate,
+  children,
+}: CurrentIndicatorProps): React.ReactElement | null {
   const isCurrent = useIsCurrent(rate);
   if (isCurrent) {
-    return children;
+    return <>{children}</>;
   }
   return <span style={{ visibility: "hidden" }}>{children}</span>;
 }

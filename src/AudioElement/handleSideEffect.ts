@@ -22,7 +22,6 @@ export function handleSideEffect(
     }
     case "TOGGLE_MUTE": {
       if (audioElement.muted) {
-        console.log("UNMUTE", action.unmuteVolume);
         audioElement.volume = action.unmuteVolume;
       }
       audioElement.muted = !audioElement.muted;

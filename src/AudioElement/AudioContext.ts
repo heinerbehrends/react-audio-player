@@ -43,13 +43,13 @@ export type SideEffectAction =
   | UnmuteAction;
 
 export type AudioContextType = {
-  audioElementRef: React.RefObject<HTMLAudioElement | null>;
+  audioElementRef: React.MutableRefObject<HTMLAudioElement | null>;
   handleSideEffect: (
     action: SideEffectAction,
     audioElement: HTMLAudioElement | null
   ) => void;
-  timelineCallbackRef: React.RefObject<TimelineProviderRef>;
-  volumeCallbackRef: React.RefObject<VolumeProviderRef>;
+  timelineCallbackRef: React.MutableRefObject<TimelineProviderRef>;
+  volumeCallbackRef: React.MutableRefObject<VolumeProviderRef>;
 };
 
 export const AudioContext = createContext<AudioContextType>({
