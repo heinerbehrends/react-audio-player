@@ -2,6 +2,7 @@ import { useCallback, useContext } from "react";
 import {
   PlayerContext,
   PlayerState,
+  VolumeState,
   type PlayerProviderAction,
 } from "./Player/PlayerContext";
 import { areNumbersClose } from "./functionsLib";
@@ -12,6 +13,8 @@ type HandleKeyDownProps = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   handlePlayerAction: ActionHandler<PlayerProviderAction>;
   getPlayerState: () => PlayerState;
+  playbackRate: number;
+  volumeState: VolumeState;
   type: "timeline" | "volume";
 };
 
@@ -20,6 +23,8 @@ export function handleTimelineKeys({
   handlePlayerAction,
   getPlayerState,
   type,
+  playbackRate,
+  volumeState,
 }: HandleKeyDownProps) {
   if (
     handleMediaKeys({
@@ -27,6 +32,8 @@ export function handleTimelineKeys({
       handlePlayerAction,
       getPlayerState,
       isVolume: type === "volume",
+      playbackRate,
+      volumeState,
     })
   ) {
     return;
@@ -51,24 +58,44 @@ export function handleTimelineKeys({
   return false;
 }
 
+export function useHandleTimelineKeys(type: "timeline" | "volume") {
+  const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
+    useContext(PlayerContext);
+  return useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) =>
+      handleTimelineKeys({
+        event,
+        handlePlayerAction,
+        getPlayerState,
+        type,
+        playbackRate,
+        volumeState,
+      }),
+    [handlePlayerAction, getPlayerState, playbackRate, volumeState, type]
+  );
+}
 export function handleMediaKeys({
   event,
   handlePlayerAction,
   getPlayerState,
   isVolume = false,
+  playbackRate,
+  volumeState,
 }: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
   isVolume?: boolean;
+  playbackRate: number;
+  volumeState: VolumeState;
 }) {
   const {
     duration,
     currentTime,
     volume,
-    playbackRate,
-    volumeState,
     unmuteVolumeRef: unmuteVolume,
   } = getPlayerState();
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
-    const nextVolume = volumeState === "muted" ? unmuteVolume.current : volume;
+    const nextVolume = areNumbersClose(volume, 0)
+      ? unmuteVolume.current
+      : volume;
     handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextVolume });
     event.preventDefault();
     return true;
@@ -217,11 +244,18 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
 }
 
 export function useHandleMediaKeys() {
-  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
+    useContext(PlayerContext);
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      handleMediaKeys({ event, handlePlayerAction, getPlayerState });
+      handleMediaKeys({
+        event,
+        handlePlayerAction,
+        getPlayerState,
+        playbackRate,
+        volumeState,
+      });
     },
-    [handlePlayerAction, getPlayerState]
+    [handlePlayerAction, getPlayerState, playbackRate, volumeState]
   );
 }

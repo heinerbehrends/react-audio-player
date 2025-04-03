@@ -2,54 +2,27 @@ import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useHandleMediaKeys } from "../handleKeys";
 import { areNumbersClose } from "../functionsLib";
+import { useIsDisabled } from "../hooks";
 
 type SetPlaybackRateProps = {
   rate: number;
   children: React.ReactNode;
-  currentIndicator?: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function SetPlaybackRate({
   rate,
   children,
-  currentIndicator,
   ...props
 }: SetPlaybackRateProps) {
-  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
-  const { playbackRate: currentPlaybackRate } = getPlayerState();
-
-  const handleClick = useCallback(() => {
-    const limitedRate = Math.min(Math.max(rate, 0.5), 4);
-    handlePlayerAction({
-      type: "SET_PLAYBACK_RATE",
-      playbackRate: limitedRate,
-    });
-  }, [handlePlayerAction, rate]);
-
+  const setPlaybackRate = useSetPlaybackRate(rate);
   const handleKeyDown = useHandleMediaKeys();
-
-  const isCurrent = areNumbersClose(rate, currentPlaybackRate);
-  if (currentIndicator) {
-    if (isCurrent) {
-      return (
-        <button onClick={handleClick} {...props}>
-          {currentIndicator}
-          {children}
-        </button>
-      );
-    }
-    return (
-      <button onClick={handleClick} onKeyDown={handleKeyDown} {...props}>
-        <span style={{ visibility: "hidden" }}>{currentIndicator}</span>
-        {children}
-      </button>
-    );
-  }
+  const isDisabled = useIsDisabled();
   return (
     <button
-      onClick={handleClick}
+      onClick={setPlaybackRate}
       onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
+      disabled={isDisabled}
       {...props}
     >
       {children}
@@ -63,12 +36,11 @@ type CurrentIndicatorProps = {
 };
 
 export function CurrentIndicator({ rate, children }: CurrentIndicatorProps) {
-  const { playbackRate: currentPlaybackRate } = useContext(PlayerContext);
-  const isCurrent = areNumbersClose(rate, currentPlaybackRate);
+  const isCurrent = useIsCurrent(rate);
   if (isCurrent) {
     return children;
   }
-  return null;
+  return <span style={{ visibility: "hidden" }}>{children}</span>;
 }
 
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
@@ -81,4 +53,17 @@ export function RateDisplay({ ...props }: RateDisplayProps) {
       {roundedRate}x
     </span>
   );
+}
+
+function useSetPlaybackRate(rate: number) {
+  const { handlePlayerAction } = useContext(PlayerContext);
+  const setPlaybackRate = useCallback(() => {
+    handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
+  }, [handlePlayerAction, rate]);
+  return setPlaybackRate;
+}
+
+function useIsCurrent(rate: number) {
+  const { playbackRate: currentPlaybackRate } = useContext(PlayerContext);
+  return areNumbersClose(rate, currentPlaybackRate);
 }

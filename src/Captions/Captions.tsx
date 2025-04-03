@@ -5,8 +5,10 @@ export const Captions = (props: React.HTMLAttributes<HTMLElement>) => {
   const { cues } = useContext(PlayerContext);
   return (
     <section
-      aria-label="Transcript"
+      aria-label="Captions"
       aria-live="polite"
+      aria-atomic="false"
+      aria-relevant="additions"
       role="region"
       tabIndex={0}
       {...props}

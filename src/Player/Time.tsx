@@ -1,46 +1,38 @@
 import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
-import { handleMediaKeys } from "../handleKeys";
-
-function formatTime(time: number) {
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
+import { useHandleMediaKeys } from "../handleKeys";
+import { useIsDisabled } from "../hooks";
 
 type ChildrenProps = {
   children: React.ReactNode;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-const Toggle = memo(function Toggle({ children }: ChildrenProps) {
-  const { handlePlayerAction, timeDisplay, getPlayerState } =
-    useContext(PlayerContext);
+const Toggle = memo(function Toggle({ children, ...props }: ChildrenProps) {
+  const { handlePlayerAction, timeDisplay } = useContext(PlayerContext);
 
   const handleClick = useCallback(() => {
     handlePlayerAction({ type: "TOGGLE_TIME_DISPLAY" });
   }, [handlePlayerAction]);
+  const isDisabled = useIsDisabled();
+  const handleMediaKeys = useHandleMediaKeys();
 
   return (
     <button
       aria-label="Toggle elapsed and remaining time"
       aria-pressed={timeDisplay === "remaining"}
-      onKeyDown={(event) => {
-        handleMediaKeys({
-          event,
-          handlePlayerAction,
-          getPlayerState,
-        });
-      }}
+      onKeyDown={handleMediaKeys}
       onClick={handleClick}
+      disabled={isDisabled}
+      {...props}
     >
       {children}
     </button>
   );
 });
 
-const Elapsed = memo(function Elapsed({ children }: ChildrenProps) {
-  const { player, timeDisplay } = useContext(PlayerContext);
+const Elapsed = memo(function Elapsed() {
+  const { playerState: player, timeDisplay } = useContext(PlayerContext);
   const { elapsed } = useTimeDisplay();
 
   if (timeDisplay === "remaining") {
@@ -49,15 +41,11 @@ const Elapsed = memo(function Elapsed({ children }: ChildrenProps) {
   if (player === "loading") {
     return <time aria-label="elapsed">0:00</time>;
   }
-  return (
-    <time aria-label="elapsed">
-      {children} {formatTime(elapsed)}
-    </time>
-  );
+  return <time aria-label="elapsed">{formatTime(elapsed)}</time>;
 });
 
-const Remaining = memo(function Remaining({ children }: ChildrenProps) {
-  const { player, timeDisplay } = useContext(PlayerContext);
+const Remaining = memo(function Remaining() {
+  const { playerState: player, timeDisplay } = useContext(PlayerContext);
   const { remaining } = useTimeDisplay();
 
   if (timeDisplay === "elapsed") {
@@ -66,22 +54,34 @@ const Remaining = memo(function Remaining({ children }: ChildrenProps) {
   if (player === "loading") {
     return <time aria-label="remaining">0:00</time>;
   }
-  return (
-    <time aria-label="remaining">
-      {children} -{formatTime(remaining)}
-    </time>
-  );
+  return <time aria-label="remaining">-{formatTime(remaining)}</time>;
+});
+
+const Duration = memo(function Duration() {
+  const { getPlayerState } = useContext(PlayerContext);
+  const { duration } = getPlayerState();
+  return <time aria-label="duration">{formatTime(duration)}</time>;
 });
 
 type Time = React.NamedExoticComponent<{
   children: React.ReactNode;
 }> & {
-  Elapsed: React.NamedExoticComponent<{ children: React.ReactNode }>;
-  Remaining: React.NamedExoticComponent<{ children: React.ReactNode }>;
+  Elapsed: React.NamedExoticComponent;
+  Remaining: React.NamedExoticComponent;
+  Duration: React.NamedExoticComponent;
+  Toggle: React.NamedExoticComponent<{ children: React.ReactNode }>;
 };
 
-export const Time = Object.assign({
+export const Time: Time = Object.assign({
   Elapsed,
   Remaining,
+  Duration,
   Toggle,
 });
+
+function formatTime(time: number) {
+  const roundedTime = Math.round(time);
+  const minutes = Math.floor(roundedTime / 60);
+  const seconds = roundedTime % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}

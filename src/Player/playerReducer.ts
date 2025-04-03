@@ -6,25 +6,25 @@ export function playerReducer(
 ): PlayerContextType {
   switch (action.type) {
     case "AUDIO_FILE_LOADED": {
-      if (state.player === "loading") {
+      if (state.playerState === "loading") {
         return {
           ...state,
-          player: "paused" as const,
+          playerState: "paused" as const,
         };
       }
       return state;
     }
     case "TOGGLE_PLAY": {
-      if (state.player === "playing") {
+      if (state.playerState === "playing") {
         return {
           ...state,
-          player: "paused" as const,
+          playerState: "paused" as const,
         };
       }
-      if (state.player === "paused") {
+      if (state.playerState === "paused") {
         return {
           ...state,
-          player: "playing" as const,
+          playerState: "playing" as const,
         };
       }
       return state;
@@ -46,7 +46,7 @@ export function playerReducer(
     case "AUDIO_FILE_ENDED": {
       return {
         ...state,
-        player: "paused" as const,
+        playerState: "paused" as const,
       };
     }
     case "TOGGLE_TIME_DISPLAY": {
@@ -59,7 +59,7 @@ export function playerReducer(
       };
     }
     case "AUDIO_FILE_ERROR": {
-      return { ...state, player: "error" as const };
+      return { ...state, playerState: "error" as const };
     }
     case "CAPTION_CUE_CHANGE": {
       return {
@@ -78,7 +78,10 @@ export function playerReducer(
       return { ...state, isMuted: false };
     }
     case "PAUSE": {
-      return { ...state, player: "paused" as const };
+      return { ...state, playerState: "paused" as const };
+    }
+    default: {
+      return state;
     }
   }
 }

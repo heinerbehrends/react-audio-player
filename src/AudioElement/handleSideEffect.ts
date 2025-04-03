@@ -21,8 +21,8 @@ export function handleSideEffect(
       break;
     }
     case "TOGGLE_MUTE": {
-      console.log("TOGGLE_MUTE", audioElement.muted);
       if (audioElement.muted) {
+        console.log("UNMUTE", action.unmuteVolume);
         audioElement.volume = action.unmuteVolume;
       }
       audioElement.muted = !audioElement.muted;
@@ -50,7 +50,6 @@ export function handleSideEffect(
       break;
     }
     case "SET_PLAYBACK_RATE": {
-      console.log("SET_PLAYBACK_RATE", action);
       audioElement.playbackRate = action.playbackRate;
       break;
     }

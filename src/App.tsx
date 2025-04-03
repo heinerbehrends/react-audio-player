@@ -9,7 +9,7 @@ import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
-import { Debug } from "./Debug";
+// import { Debug } from "./Debug";
 
 function App() {
   return (
@@ -30,7 +30,6 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -43,10 +42,12 @@ function App() {
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
       <Seek amount={10}>Forward</Seek>
-      <Time.Toggle>
-        <Time.Elapsed />
-        <Time.Remaining />
-      </Time.Toggle>
+      {/* <Time.Toggle> */}
+      <Time.Elapsed />
+      {/* <Time.Remaining /> */}
+      {/* </Time.Toggle> */}
+      /
+      <Time.Duration />
       <Volume
         orientation="vertical"
         style={{ width: "40px", height: "400px", backgroundColor: "gray" }}

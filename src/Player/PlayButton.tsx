@@ -6,7 +6,7 @@ type PlayButtonProps = {
   children: React.ReactNode;
 } & React.HTMLAttributes<HTMLButtonElement>;
 
-const ariaLabel = {
+const ariaLabelMap = {
   playing: "Pause audio",
   paused: "Play audio",
   loading: "Loading audio",
@@ -17,6 +17,7 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
   const { isPlaying, isDisabled, ariaLabel } = usePlayButtonProps();
   const handleKeyDown = useHandleMediaKeys();
   const handleClick = useHandleClick();
+
   return (
     <button
       onClick={handleClick}
@@ -31,16 +32,6 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
   );
 }
 
-function useIsPlaying() {
-  const { player: state } = useContext(PlayerContext);
-  return state === "playing";
-}
-
-function useIsDisabled() {
-  const { player: state } = useContext(PlayerContext);
-  return state === "loading";
-}
-
 function useHandleClick() {
   const { handlePlayerAction } = useContext(PlayerContext);
   return () => {
@@ -48,20 +39,17 @@ function useHandleClick() {
   };
 }
 
-function useAriaLabel() {
-  const isPlaying = useIsPlaying();
-  return ariaLabel[isPlaying ? "playing" : "paused"];
-}
-
 function usePlayButtonProps() {
-  const isPlaying = useIsPlaying();
-  const isDisabled = useIsDisabled();
-  const ariaLabel = useAriaLabel();
+  const { playerState } = useContext(PlayerContext);
+  const isPlaying = playerState === "playing";
+  const isDisabled = playerState === "loading" || playerState === "error";
+  const ariaLabel = ariaLabelMap[playerState];
   return { isPlaying, isDisabled, ariaLabel };
 }
 
 function Playing({ children }: { children: React.ReactNode }) {
-  const isPlaying = useIsPlaying();
+  const { playerState } = useContext(PlayerContext);
+  const isPlaying = playerState === "playing";
   if (!isPlaying) {
     return null;
   }
@@ -70,8 +58,9 @@ function Playing({ children }: { children: React.ReactNode }) {
 }
 
 function Paused({ children }: { children: React.ReactNode }) {
-  const { player: state } = useContext(PlayerContext);
-  if (state !== "paused") {
+  const { playerState } = useContext(PlayerContext);
+  const isPlaying = playerState === "playing";
+  if (isPlaying) {
     return null;
   }
   return children;

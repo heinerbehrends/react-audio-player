@@ -1,17 +1,11 @@
-import { handleTimelineKeys } from "../handleKeys";
-import {
-  useContext,
-  useCallback,
-  useMemo,
-  type CSSProperties,
-  type HTMLAttributes,
-} from "react";
+import { useHandleTimelineKeys } from "../handleKeys";
+import { useContext, useCallback, useMemo } from "react";
 import { useDrag } from "./useDrag";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 
-type DragButtonProps = HTMLAttributes<HTMLButtonElement> & {
+type DragButtonProps = React.HTMLAttributes<HTMLButtonElement> & {
   type: "timeline" | "volume";
 };
 
@@ -21,43 +15,43 @@ const switchContext = {
 };
 
 export function DragButton({ type, ...props }: DragButtonProps) {
-  const {
-    xyOffset,
-    dragState,
-    sliderLength,
-    value,
-    handleTimelineAction,
-    orientation,
-  } = useContext(switchContext[type]);
-  const { handlePlayerAction, volumeState, getPlayerState } =
-    useContext(PlayerContext);
-  const { duration } = getPlayerState();
+  const handleDragStart = useHandleDragStart(type);
+  const handleKeyDown = useHandleTimelineKeys(type);
+  const style = useDragStyles(type, props.style ?? {});
 
-  const offset = useMemo(
-    () =>
-      getOffset({
-        type,
-        value,
-        duration,
-        sliderLength,
-        dragState,
-        xOffset: xyOffset,
-        volumeState,
-        orientation,
-      }),
-    [
-      type,
-      value,
-      duration,
-      sliderLength,
-      dragState,
-      xyOffset,
-      volumeState,
-      orientation,
-    ]
+  useDrag(type);
+
+  return (
+    <button
+      {...props}
+      style={style}
+      aria-label={
+        type === "timeline" ? "Drag to seek" : "Drag to adjust volume"
+      }
+      onPointerDown={handleDragStart}
+      onTouchStart={handleDragStart}
+      onKeyDown={handleKeyDown}
+    />
   );
+}
 
-  const handlePointerDown = useCallback(() => {
+type GetOffsetArgs = {
+  type: "timeline" | "volume";
+  value: number;
+  duration: number;
+  sliderLength: number;
+  dragState: "dragging" | "idle";
+  xOffset: number;
+  volumeState: "muted" | "low" | "high";
+  orientation: "horizontal" | "vertical";
+};
+
+function useHandleDragStart(type: "timeline" | "volume") {
+  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  const { handleTimelineAction, orientation } = useContext(switchContext[type]);
+  const offset = useOffset(type);
+
+  return useCallback(() => {
     if (type === "volume") {
       handlePlayerAction({
         type: "UNMUTE",
@@ -81,31 +75,22 @@ export function DragButton({ type, ...props }: DragButtonProps) {
     }
   }, [
     handleTimelineAction,
+    orientation,
     offset,
     handlePlayerAction,
-    type,
-    orientation,
     getPlayerState,
+    type,
   ]);
+}
 
-  const handleTouchStart = useCallback(() => {
-    handleTimelineAction({
-      type: "DRAG_START",
-      clientXY: offset,
-    });
-  }, [handleTimelineAction, offset]);
+function useDragStyles(
+  type: "timeline" | "volume",
+  style: React.CSSProperties
+): React.CSSProperties {
+  const { orientation } = useContext(switchContext[type]);
+  const offset = useOffset(type);
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) =>
-      handleTimelineKeys({
-        event,
-        handlePlayerAction,
-        type,
-        getPlayerState,
-      }),
-    [handlePlayerAction, type, getPlayerState]
-  );
-  const style: CSSProperties = useMemo(
+  return useMemo(
     () => ({
       position: "absolute",
       gridColumn: "1 / 1",
@@ -116,37 +101,41 @@ export function DragButton({ type, ...props }: DragButtonProps) {
           ? `translate(calc(${offset}px - 20px), 0)`
           : `translate(0, calc(${offset}px - 20px))`,
       touchAction: "none",
-      ...props.style,
+      ...style,
     }),
-    [offset, orientation, props.style]
-  );
-
-  useDrag(type);
-
-  return (
-    <button
-      {...props}
-      style={style}
-      aria-label={
-        type === "timeline" ? "Drag to seek" : "Drag to adjust volume"
-      }
-      onPointerDown={handlePointerDown}
-      onTouchStart={handleTouchStart}
-      onKeyDown={handleKeyDown}
-    />
+    [offset, orientation, style]
   );
 }
 
-type GetOffsetArgs = {
-  type: "timeline" | "volume";
-  value: number;
-  duration: number;
-  sliderLength: number;
-  dragState: "dragging" | "idle";
-  xOffset: number;
-  volumeState: "muted" | "low" | "high";
-  orientation: "horizontal" | "vertical";
-};
+function useOffset(type: "timeline" | "volume") {
+  const { xyOffset, dragState, sliderLength, value, orientation } = useContext(
+    switchContext[type]
+  );
+  const { getPlayerState, volumeState } = useContext(PlayerContext);
+  const { duration } = getPlayerState();
+
+  return useMemo(() => {
+    return getOffset({
+      type,
+      value,
+      duration,
+      sliderLength,
+      dragState,
+      xOffset: xyOffset,
+      volumeState,
+      orientation,
+    });
+  }, [
+    type,
+    value,
+    duration,
+    sliderLength,
+    dragState,
+    xyOffset,
+    volumeState,
+    orientation,
+  ]);
+}
 
 function getOffset({
   type,

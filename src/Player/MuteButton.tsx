@@ -1,44 +1,31 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { handleMediaKeys } from "../handleKeys";
+import { useHandleMediaKeys } from "../handleKeys";
+import { useIsDisabled } from "../hooks";
+import { areNumbersClose } from "../functionsLib";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
-  const {
-    handlePlayerAction,
-    isMuted,
-    getPlayerState,
-    unmuteVolumeRef: unmuteVolume,
-    volumeState,
-  } = useContext(PlayerContext);
-  const {
-    volumeCallbackRef: { current: volumeCallback },
-  } = useContext(AudioContext);
-  const { volume } = getPlayerState();
-
-  const handleClick = useCallback(() => {
-    const newVolume = volumeState === "muted" ? unmuteVolume.current : volume;
-    handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: newVolume });
-    if (!volumeCallback?.handleVolumeAction) return;
-    const nextVolume = isMuted ? volume : 0;
-    volumeCallback.handleVolumeAction({
-      type: "UPDATE_UI_VALUE",
-      value: nextVolume,
-    });
-  }, [handlePlayerAction, isMuted, volume, volumeCallback]);
+export function MuteButtonComponent({
+  children,
+  ...props
+}: MuteButtonComponentProps) {
+  const { isMuted } = useContext(PlayerContext);
+  const toggleMute = useToggleMute();
+  const handleMediaKeys = useHandleMediaKeys();
+  const isDisabled = useIsDisabled();
 
   return (
     <button
       aria-label="Mute"
       aria-pressed={isMuted}
-      onKeyDown={(event) =>
-        handleMediaKeys({ event, handlePlayerAction, getPlayerState })
-      }
-      onClick={handleClick}
+      onKeyDown={handleMediaKeys}
+      onClick={toggleMute}
+      disabled={isDisabled}
+      {...props}
     >
       {children}
     </button>
@@ -48,6 +35,29 @@ export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
 type MutedProps = {
   children: React.ReactNode;
 };
+
+function useToggleMute() {
+  const { getPlayerState, handlePlayerAction, isMuted } =
+    useContext(PlayerContext);
+  const {
+    volumeCallbackRef: { current: volumeCallback },
+  } = useContext(AudioContext);
+  const { volume, unmuteVolumeRef } = getPlayerState();
+
+  return useCallback(() => {
+    const newVolume = areNumbersClose(volume, 0)
+      ? unmuteVolumeRef.current
+      : volume;
+    console.log("TOGGLE_MUTE newVolume", newVolume);
+    handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: newVolume });
+    if (!volumeCallback?.handleVolumeAction) return;
+    const nextVolume = isMuted ? volume : 0;
+    volumeCallback.handleVolumeAction({
+      type: "UPDATE_UI_VALUE",
+      value: nextVolume,
+    });
+  }, [handlePlayerAction, isMuted, volume, volumeCallback, unmuteVolumeRef]);
+}
 
 function Muted({ children }: MutedProps) {
   const { volumeState } = useContext(PlayerContext);

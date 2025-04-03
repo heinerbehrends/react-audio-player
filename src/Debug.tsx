@@ -3,6 +3,7 @@ import { PlayerContext } from "./Player/PlayerContext";
 import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
 import { AudioContext } from "./AudioElement/AudioContext";
+
 const mapContext = {
   timeline: TimelineContext,
   volume: VolumeContext,
@@ -10,12 +11,11 @@ const mapContext = {
 
 export function Debug({ type }: { type: "timeline" | "volume" }) {
   const {
-    player: state,
+    playerState: state,
     cues,
-    unmuteVolumeRef: unmuteVolume,
     volumeState,
+    unmuteVolumeRef: { current: unmuteVolume },
   } = useContext(PlayerContext);
-  console.log("cues", cues);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
@@ -44,7 +44,7 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
       <p>Drag State: {context.dragState}</p>
       <p>X Offset: {context.xyOffset}</p>
       <p>Orientation: {context.orientation}</p>
-      <p>Unmute Volume: {unmuteVolume.current}</p>
+      <p>Unmute Volume: {unmuteVolume}</p>
       <p>Volume state: {volumeState}</p>
     </div>
   );

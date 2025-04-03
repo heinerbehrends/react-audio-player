@@ -1,15 +1,34 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useHandleMediaKeys } from "../handleKeys";
+import { useIsDisabled } from "../hooks";
 
 type SeekButtonComponentProps = {
   children: React.ReactNode;
   amount: number;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function Seek({ children, amount }: SeekButtonComponentProps) {
+export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
+  const seekAmount = useSeek(amount);
+  const handleMediaKeys = useHandleMediaKeys();
+  const isDisabled = useIsDisabled();
+
+  return (
+    <button
+      aria-label={`Seek ${amount}`}
+      onKeyDown={handleMediaKeys}
+      onClick={seekAmount}
+      disabled={isDisabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+function useSeek(amount: number) {
   const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
-  const handleClick = useCallback(() => {
+  return useCallback(() => {
     const { currentTime } = getPlayerState();
     handlePlayerAction({
       type: "CHANGE_VALUE",
@@ -17,14 +36,4 @@ export function Seek({ children, amount }: SeekButtonComponentProps) {
       value: currentTime + amount,
     });
   }, [handlePlayerAction, getPlayerState, amount]);
-  const handleKeyDown = useHandleMediaKeys();
-  return (
-    <button
-      aria-label={`Seek ${amount}`}
-      onKeyDown={handleKeyDown}
-      onClick={handleClick}
-    >
-      {children}
-    </button>
-  );
 }
