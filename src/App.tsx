@@ -9,6 +9,7 @@ import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
+import { Debug } from "./Debug";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             border: "none",
           }}
         />
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>

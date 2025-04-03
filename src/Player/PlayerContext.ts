@@ -11,6 +11,7 @@ export type TogglePlayAction = {
 
 export type ToggleMuteAction = {
   type: "TOGGLE_MUTE";
+  unmuteVolume: number;
 };
 
 type ToggleTimeDisplayAction = {
@@ -48,6 +49,11 @@ export type PauseAction = {
   type: "PAUSE";
 };
 
+export type SetUnmuteVolumeAction = {
+  type: "SET_UNMUTE_VOLUME";
+  unmuteVolume: number;
+};
+
 export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
@@ -59,10 +65,11 @@ export type PlayerContextAction =
   | SetPlaybackRateAction
   | SetVolumeStateAction
   | UnmuteAction
-  | PauseAction;
+  | PauseAction
+  | SetUnmuteVolumeAction;
 
 type SideEffectActionType = SideEffectAction["type"];
-type PlayerContextActionType = PlayerContextAction["type"];
+export type PlayerContextActionType = PlayerContextAction["type"];
 
 export type PlayerProviderAction = SideEffectAction | PlayerContextAction;
 
@@ -78,7 +85,7 @@ export const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   UNMUTE: true,
 };
 
-export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {
+export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, boolean> = {
   AUDIO_FILE_LOADED: true,
   TOGGLE_PLAY: true,
   TOGGLE_MUTE: true,
@@ -90,6 +97,18 @@ export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, true> = {
   SET_VOLUME_STATE: true,
   UNMUTE: true,
   PAUSE: true,
+  SET_UNMUTE_VOLUME: false,
+};
+
+type VolumeState = "muted" | "low" | "high";
+
+export type PlayerState = {
+  duration: number;
+  currentTime: number;
+  volume: number;
+  playbackRate: number;
+  volumeState: VolumeState;
+  unmuteVolumeRef: React.RefObject<number>;
 };
 
 export type PlayerContextType = {
@@ -97,13 +116,9 @@ export type PlayerContextType = {
   player: "loading" | "playing" | "paused" | "error";
   isMuted: boolean;
   playbackRate: number;
-  volumeState: "muted" | "low" | "high";
-  getPlayerState: () => {
-    duration: number;
-    currentTime: number;
-    volume: number;
-    playbackRate: number;
-  };
+  volumeState: VolumeState;
+  unmuteVolumeRef: React.RefObject<number>;
+  getPlayerState: () => PlayerState;
   getDuration: () => number;
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
@@ -116,11 +131,14 @@ export const initialState: PlayerContextType = {
   isMuted: false,
   playbackRate: 1,
   volumeState: "high",
+  unmuteVolumeRef: { current: 1 } as React.RefObject<number>,
   getPlayerState: () => ({
     duration: 0,
     currentTime: 0,
     volume: 1,
     playbackRate: 1,
+    volumeState: "high",
+    unmuteVolumeRef: { current: 1 } as React.RefObject<number>,
   }),
   getDuration: () => 0,
   timeDisplay: "elapsed",

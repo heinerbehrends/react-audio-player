@@ -1,4 +1,11 @@
-import { useMemo, useReducer, memo, useContext, useCallback } from "react";
+import {
+  useMemo,
+  useReducer,
+  memo,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import {
   PLAYER_DISPATCH_MAP,
   PLAYER_SIDE_EFFECT_MAP,
@@ -6,6 +13,9 @@ import {
   PlayerContext,
   type PlayerContextAction,
   type PlayerProviderAction,
+  type PlayerContextType,
+  PlayerContextActionType,
+  PlayerState,
 } from "./PlayerContext";
 import { playerReducer } from "./playerReducer";
 import {
@@ -31,32 +41,28 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
     ...initialState,
     audioFiles,
   });
+  const unmuteVolumeRef = useRef(initialState.unmuteVolumeRef.current);
+
   const {
     audioElementRef: { current: audioElement },
     handleSideEffect,
   } = useContext(AudioContext);
-  const getDuration = useCallback(() => {
-    return audioElement?.duration ?? 0;
-  }, [audioElement]);
-  const getCurrentTime = useCallback(() => {
-    return audioElement?.currentTime ?? 0;
-  }, [audioElement]);
-  const getVolume = useCallback(() => {
-    return audioElement?.volume ?? 1;
-  }, [audioElement]);
-  const getPlaybackRate = useCallback(() => {
-    return audioElement?.playbackRate ?? 1;
-  }, [audioElement]);
-  const getPlayerState = useCallback(() => {
+
+  const getPlayerState = useCallback((): PlayerState => {
     return {
-      duration: getDuration(),
-      currentTime: getCurrentTime(),
-      volume: getVolume(),
-      playbackRate: getPlaybackRate(),
+      duration: audioElement?.duration ?? 0,
+      currentTime: audioElement?.currentTime ?? 0,
+      volume: audioElement?.volume ?? 1,
+      playbackRate: audioElement?.playbackRate ?? 1,
+      volumeState: state.volumeState,
+      unmuteVolumeRef: unmuteVolumeRef,
     };
-  }, [getDuration, getCurrentTime, getVolume, getPlaybackRate]);
+  }, [audioElement, state.volumeState]);
   const handlePlayerAction = useCallback(
     (action: PlayerProviderAction) => {
+      if (action.type === "SET_UNMUTE_VOLUME") {
+        unmuteVolumeRef.current = action.unmuteVolume;
+      }
       if (isSideEffectAction(action)) {
         handleSideEffect(action, audioElement);
       }
@@ -68,23 +74,14 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
   );
 
   const value = useMemo(
-    () => ({
-      ...state,
-      handlePlayerAction,
-      getDuration,
-      getCurrentTime,
-      getVolume,
-      getPlaybackRate,
-      getPlayerState,
-    }),
-    [
-      state,
-      handlePlayerAction,
-      getDuration,
-      getCurrentTime,
-      getVolume,
-      getPlaybackRate,
-    ]
+    () =>
+      ({
+        ...state,
+        handlePlayerAction,
+        getPlayerState,
+        unmuteVolumeRef,
+      } satisfies PlayerContextType),
+    [state, handlePlayerAction, getPlayerState]
   );
 
   return (
@@ -101,5 +98,5 @@ function isSideEffectAction(
 function isPlayerContextAction(
   action: PlayerProviderAction
 ): action is PlayerContextAction {
-  return action.type in PLAYER_DISPATCH_MAP;
+  return PLAYER_DISPATCH_MAP[action.type as PlayerContextActionType];
 }

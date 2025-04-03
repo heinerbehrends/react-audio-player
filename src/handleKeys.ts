@@ -1,20 +1,17 @@
 import { useCallback, useContext } from "react";
 import {
   PlayerContext,
+  PlayerState,
   type PlayerProviderAction,
 } from "./Player/PlayerContext";
+import { areNumbersClose } from "./functionsLib";
 
 type ActionHandler<T> = (action: T) => void;
 
 type HandleKeyDownProps = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   handlePlayerAction: ActionHandler<PlayerProviderAction>;
-  getPlayerState: () => {
-    duration: number;
-    currentTime: number;
-    volume: number;
-    playbackRate: number;
-  };
+  getPlayerState: () => PlayerState;
   type: "timeline" | "volume";
 };
 
@@ -62,9 +59,17 @@ export function handleMediaKeys({
 }: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
   isVolume?: boolean;
 }) {
-  const { duration, currentTime, volume, playbackRate } = getPlayerState();
+  const {
+    duration,
+    currentTime,
+    volume,
+    playbackRate,
+    volumeState,
+    unmuteVolumeRef: unmuteVolume,
+  } = getPlayerState();
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
-    handlePlayerAction({ type: "TOGGLE_MUTE" });
+    const nextVolume = volumeState === "muted" ? unmuteVolume.current : volume;
+    handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextVolume });
     event.preventDefault();
     return true;
   }
@@ -100,9 +105,16 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key === "ArrowDown") {
+    const restrictedVolume = Math.max(volume - 0.025, 0);
+    if (areNumbersClose(restrictedVolume, 0) && volumeState !== "muted") {
+      handlePlayerAction({
+        type: "SET_UNMUTE_VOLUME",
+        unmuteVolume: 0.025,
+      });
+    }
     handlePlayerAction({
       type: "CHANGE_VALUE",
-      value: volume - 0.025,
+      value: restrictedVolume,
       component: "volume",
     });
     event.preventDefault();

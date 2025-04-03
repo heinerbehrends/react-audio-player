@@ -62,6 +62,10 @@ export function DragButton({ type, ...props }: DragButtonProps) {
       handlePlayerAction({
         type: "UNMUTE",
       });
+      handlePlayerAction({
+        type: "SET_UNMUTE_VOLUME",
+        unmuteVolume: getPlayerState().volume,
+      });
     }
     if (orientation === "horizontal") {
       handleTimelineAction({
@@ -75,7 +79,14 @@ export function DragButton({ type, ...props }: DragButtonProps) {
         clientXY: offset,
       });
     }
-  }, [handleTimelineAction, offset, handlePlayerAction, type, orientation]);
+  }, [
+    handleTimelineAction,
+    offset,
+    handlePlayerAction,
+    type,
+    orientation,
+    getPlayerState,
+  ]);
 
   const handleTouchStart = useCallback(() => {
     handleTimelineAction({

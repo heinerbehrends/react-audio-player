@@ -8,15 +8,21 @@ type MuteButtonComponentProps = {
 };
 
 export function MuteButtonComponent({ children }: MuteButtonComponentProps) {
-  const { handlePlayerAction, isMuted, getPlayerState } =
-    useContext(PlayerContext);
+  const {
+    handlePlayerAction,
+    isMuted,
+    getPlayerState,
+    unmuteVolumeRef: unmuteVolume,
+    volumeState,
+  } = useContext(PlayerContext);
   const {
     volumeCallbackRef: { current: volumeCallback },
   } = useContext(AudioContext);
   const { volume } = getPlayerState();
 
   const handleClick = useCallback(() => {
-    handlePlayerAction({ type: "TOGGLE_MUTE" });
+    const newVolume = volumeState === "muted" ? unmuteVolume.current : volume;
+    handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: newVolume });
     if (!volumeCallback?.handleVolumeAction) return;
     const nextVolume = isMuted ? volume : 0;
     volumeCallback.handleVolumeAction({
