@@ -1,23 +1,17 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "../custom-render";
+import { screen } from "@testing-library/react";
 import { MuteButton } from "../../src/Player/MuteButton";
-import { AudioPlayer } from "../../src/Player/AudioPlayer";
 
 describe("MuteButton", () => {
   it("renders with correct aria-pressed attribute based on muted state", () => {
-    // Mock the audio files for AudioPlayer
-    const audioFiles = [{ src: "test-audio.mp3" }];
-
-    // Render the MuteButton inside AudioPlayer for context
     render(
-      <AudioPlayer audioFiles={audioFiles}>
-        <MuteButton>
-          <MuteButton.Muted>Muted</MuteButton.Muted>
-          <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
-          <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
-        </MuteButton>
-      </AudioPlayer>
+      <MuteButton>
+        <MuteButton.Muted>Muted</MuteButton.Muted>
+        <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
+        <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
+      </MuteButton>
     );
 
     // Get the button element
@@ -28,18 +22,13 @@ describe("MuteButton", () => {
   });
 
   it("displays the correct volume state content", () => {
-    // Mock the audio files for AudioPlayer
-    const audioFiles = [{ src: "test-audio.mp3" }];
-
     // Render the MuteButton inside AudioPlayer for context
     render(
-      <AudioPlayer audioFiles={audioFiles}>
-        <MuteButton>
-          <MuteButton.Muted>Muted</MuteButton.Muted>
-          <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
-          <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
-        </MuteButton>
-      </AudioPlayer>
+      <MuteButton>
+        <MuteButton.Muted>Muted</MuteButton.Muted>
+        <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
+        <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
+      </MuteButton>
     );
 
     // By default, the volumeState should be "high"
