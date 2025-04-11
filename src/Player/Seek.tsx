@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useHandleMediaKeys } from "../handleKeys";
-import { useIsDisabled } from "../hooks";
+import { useIsDisabled } from "../useIsDisabled";
 
 type SeekButtonComponentProps = {
   children: React.ReactNode;

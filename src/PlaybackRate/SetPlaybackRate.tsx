@@ -2,7 +2,7 @@ import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useHandleMediaKeys } from "../handleKeys";
 import { areNumbersClose } from "../functionsLib";
-import { useIsDisabled } from "../hooks";
+import { useIsDisabled } from "../useIsDisabled";
 
 type SetPlaybackRateProps = {
   rate: number;

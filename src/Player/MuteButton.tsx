@@ -2,7 +2,7 @@ import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { useHandleMediaKeys } from "../handleKeys";
-import { useIsDisabled } from "../hooks";
+import { useIsDisabled } from "../useIsDisabled";
 import { areNumbersClose } from "../functionsLib";
 
 type MuteButtonComponentProps = {
