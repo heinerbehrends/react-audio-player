@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio } from "./test-utils";
+import { waitForAudio } from "../test-utils";
 
 let page: Page;
 
@@ -11,10 +11,7 @@ test.beforeAll(async ({ browser }) => {
 
 test("progress indicator initial state", async () => {
   const progressIndicator = page.getByLabel("Audio progress");
-  await expect(progressIndicator).toHaveAttribute(
-    "role",
-    "progressbar"
-  );
+  await expect(progressIndicator).toHaveAttribute("role", "progressbar");
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
   await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");
 });

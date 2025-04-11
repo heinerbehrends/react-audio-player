@@ -2,7 +2,7 @@ import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "./AudioContext";
 import { Track } from "../Captions/Track";
-import { areNumbersClose } from "../functionsLib";
+import { areNumbersClose } from "../Shared/sharedFunctions";
 
 export const AudioElement = memo(function AudioElement() {
   const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);

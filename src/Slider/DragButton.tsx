@@ -1,4 +1,4 @@
-import { useHandleTimelineKeys } from "../handleKeys";
+import { useHandleSliderKeys } from "../KeyboardControls/keyboardHooks";
 import { useContext, useCallback, useMemo } from "react";
 import { useDrag } from "./useDrag";
 import { TimelineContext } from "../Timeline/TimelineContext";
@@ -16,7 +16,7 @@ const switchContext = {
 
 export function DragButton({ type, ...props }: DragButtonProps) {
   const handleDragStart = useHandleDragStart(type);
-  const handleKeyDown = useHandleTimelineKeys(type);
+  const handleKeyDown = useHandleSliderKeys(type);
   const style = useDragStyles(type, props.style ?? {});
 
   useDrag(type);

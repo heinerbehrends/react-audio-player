@@ -11,8 +11,8 @@ export function calculateTime({
   sliderStart,
   duration,
 }: CalculateTimeArgs): number {
-  const progress = (xyOffset - sliderStart) / sliderLength;
-  return progress * duration;
+  const time = ((xyOffset - sliderStart) / sliderLength) * duration;
+  return Math.min(Math.max(time, 0), duration);
 }
 
 type CalculateVolumeArgs = {

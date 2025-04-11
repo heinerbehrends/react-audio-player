@@ -1,9 +1,9 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { useHandleMediaKeys } from "../handleKeys";
-import { useIsDisabled } from "../useIsDisabled";
-import { areNumbersClose } from "../functionsLib";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useIsDisabled } from "../Shared/useIsDisabled";
+import { areNumbersClose } from "../Shared/sharedFunctions";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;

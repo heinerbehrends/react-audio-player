@@ -1,8 +1,8 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { useHandleMediaKeys } from "../handleKeys";
-import { areNumbersClose } from "../functionsLib";
-import { useIsDisabled } from "../useIsDisabled";
+import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
+import { areNumbersClose } from "../Shared/sharedFunctions";
+import { useIsDisabled } from "../Shared/useIsDisabled";
 
 type SetPlaybackRateProps = {
   rate: number;

@@ -3,7 +3,7 @@ import { useContext, useCallback, useMemo } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
-import { calculateTime, calculateVolume } from "../functionsLib";
+import { calculateTime, calculateVolume } from "../Shared/sharedFunctions";
 
 const switchContext = {
   timeline: TimelineContext,

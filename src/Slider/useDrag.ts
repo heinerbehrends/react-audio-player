@@ -2,7 +2,7 @@ import { useContext, useEffect, useCallback } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { calculateTime, calculateVolume } from "../functionsLib";
+import { calculateTime, calculateVolume } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
 
 const mapContext = {
@@ -32,11 +32,10 @@ export function useDrag(type: "timeline" | "volume") {
         sliderStart,
         duration,
       });
-      const restrictedTime = Math.min(Math.max(time, 0), duration);
 
       handleTimelineAction({
         type: "DRAG_END",
-        value: restrictedTime,
+        value: time,
         component: "timeline",
       });
     },

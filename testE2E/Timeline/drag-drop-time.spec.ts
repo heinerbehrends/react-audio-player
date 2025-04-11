@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { waitForAudio, getTimelineState, getAudioState } from "./test-utils";
+import { waitForAudio, getTimelineState, getAudioState } from "../test-utils";
 
 const PRECISION = 0.25;
 

@@ -3,7 +3,7 @@ import { PlayButton } from "./Player/PlayButton";
 import { Timeline } from "./Timeline/Timeline";
 import { MuteButton } from "./Player/MuteButton";
 import { Volume } from "./Volume/Volume";
-import { Time } from "./Player/Time";
+import { Time } from "./TimeDisplay/Time";
 import { Captions } from "./Captions/Captions";
 import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";

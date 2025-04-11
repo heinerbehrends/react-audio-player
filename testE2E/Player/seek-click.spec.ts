@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getTimelineState, getAudioState } from "./test-utils";
+import { waitForAudio, getTimelineState, getAudioState } from "../test-utils";
 
 const CLICK_OFFSET = 100;
 const PRECISION = 0.25;

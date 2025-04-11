@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio } from "./test-utils";
+import { waitForAudio } from "../test-utils";
 
 let page: Page;
 
@@ -42,20 +42,20 @@ test("toggle play button has correct name and aria attributes and works", async 
   await expect(isPaused).toBe(true);
 });
 
-  test("The play button receives focus and can be used with keyboard", async () => {
-    await page.evaluate(() => {
-      const playButton = document.querySelector(
-        'button[aria-label="Play audio"]'
-      );
-      if (playButton instanceof HTMLElement) {
-        playButton.focus();
-      }
-    });
-    const playButton = page.getByRole("button", { name: /Play/ });
-    await expect(playButton).toBeFocused();
-    await page.keyboard.press("Enter");
-    const pauseButton = page.getByRole("button", { name: /Pause/ });
-    await expect(pauseButton).toBeFocused();
-    await page.keyboard.press("Space");
-    await expect(playButton).toBeFocused();
+test("The play button receives focus and can be used with keyboard", async () => {
+  await page.evaluate(() => {
+    const playButton = document.querySelector(
+      'button[aria-label="Play audio"]'
+    );
+    if (playButton instanceof HTMLElement) {
+      playButton.focus();
+    }
   });
+  const playButton = page.getByRole("button", { name: /Play/ });
+  await expect(playButton).toBeFocused();
+  await page.keyboard.press("Enter");
+  const pauseButton = page.getByRole("button", { name: /Pause/ });
+  await expect(pauseButton).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(playButton).toBeFocused();
+});

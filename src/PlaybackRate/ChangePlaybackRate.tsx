@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
-import { useHandleMediaKeys } from "../handleKeys";
+import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
 import { PlayerContext } from "../Player/PlayerContext";
-import { useIsDisabled } from "../useIsDisabled";
+import { useIsDisabled } from "../Shared/useIsDisabled";
 
 type IncreaseDecreaseProps = {
   amount: number;

@@ -1,8 +1,8 @@
 import { useContext, memo, useCallback } from "react";
-import { PlayerContext } from "./PlayerContext";
+import { PlayerContext } from "../Player/PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
-import { useHandleMediaKeys } from "../handleKeys";
-import { useIsDisabled } from "../useIsDisabled";
+import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
 
 type ChildrenProps = {
   children: React.ReactNode;
