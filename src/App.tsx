@@ -37,6 +37,7 @@ function App() {
             border: "none",
           }}
         />
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -81,7 +82,7 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="volume" />
+        {/* <Debug type="volume" /> */}
       </Volume>
       <PlaybackRate.Display />
       <PlaybackRate.Set rate={0.5}>

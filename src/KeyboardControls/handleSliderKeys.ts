@@ -10,14 +10,14 @@ export type HandleKeyDownProps = {
   getPlayerState: () => PlayerState;
   playbackRate: number;
   volumeState: VolumeState;
-  type: "timeline" | "volume";
+  type?: "timeline" | "volume";
 };
 
 export function handleSliderKeys({
   event,
   handlePlayerAction,
   getPlayerState,
-  type,
+  type = "timeline",
   playbackRate,
   volumeState,
 }: HandleKeyDownProps) {

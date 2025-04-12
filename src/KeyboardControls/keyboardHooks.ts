@@ -20,7 +20,7 @@ export function useHandleMediaKeys() {
   );
 }
 
-export function useHandleSliderKeys(type: "timeline" | "volume") {
+export function useHandleSliderKeys(type: "timeline" | "volume" = "timeline") {
   const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
     useContext(PlayerContext);
   return useCallback(

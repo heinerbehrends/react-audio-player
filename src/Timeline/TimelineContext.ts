@@ -5,6 +5,8 @@ export const TimelineContext = createContext<TimelineContextType>({
   sliderStart: 0,
   sliderLength: 0,
   value: 0,
+  minValue: 0,
+  maxValue: 1,
   xyOffset: 0,
   dragState: "idle",
   orientation: "horizontal",
@@ -15,17 +17,16 @@ export type TimelineContextType = {
   sliderStart: number;
   sliderLength: number;
   value: number;
+  minValue: number;
+  maxValue: number;
   xyOffset: number;
   dragState: "idle" | "dragging";
   orientation: "horizontal" | "vertical";
   handleTimelineAction: (action: TimelineProviderAction) => void;
 };
 
-type SliderComponent = "timeline" | "volume";
-
 export type SliderLoadedAction = {
   type: "SLIDER_LOADED";
-  component: SliderComponent;
   sliderStart: number;
   sliderLength: number;
 };
@@ -134,6 +135,8 @@ export const initialState: TimelineContextType = {
   sliderStart: 0,
   sliderLength: 0,
   value: 0,
+  minValue: 0,
+  maxValue: 1,
   xyOffset: 0,
   dragState: "idle",
   orientation: "horizontal",

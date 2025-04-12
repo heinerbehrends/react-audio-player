@@ -46,6 +46,8 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
       <p>Orientation: {context.orientation}</p>
       <p>Unmute Volume: {unmuteVolume}</p>
       <p>Volume state: {volumeState}</p>
+      <p>Min Value: {context.minValue}</p>
+      <p>Max Value: {context.maxValue}</p>
     </div>
   );
 }

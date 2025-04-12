@@ -11,6 +11,8 @@ export type VolumeContextType = TimelineContextType & {
 export const initialState: VolumeContextType = {
   ...timelineInitialState,
   value: 1,
+  minValue: 0,
+  maxValue: 1,
   orientation: "horizontal",
 };
 

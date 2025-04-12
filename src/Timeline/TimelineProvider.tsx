@@ -16,6 +16,7 @@ import {
 } from "./TimelineContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { timelineReducer } from "./timelineReducer";
+import { PlayerContext } from "../Player/PlayerContext";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
@@ -23,13 +24,18 @@ type TimelineProviderProps = {
 export const TimelineProvider = memo(function TimelineProvider({
   children,
 }: TimelineProviderProps) {
-  const [state, dispatch] = useReducer(timelineReducer, initialState);
   const {
     audioElementRef: { current: audioElement },
     handleSideEffect,
     timelineCallbackRef,
   } = useContext(AudioContext);
-
+  const { getPlayerState } = useContext(PlayerContext);
+  const { duration } = getPlayerState();
+  const [state, dispatch] = useReducer(timelineReducer, {
+    ...initialState,
+    minValue: 0,
+    maxValue: duration,
+  });
   const handleTimelineAction = useCallback(
     (action: TimelineProviderAction) => {
       if (isTimelineSideEffect(action)) {
@@ -54,6 +60,8 @@ export const TimelineProvider = memo(function TimelineProvider({
       sliderStart: state.sliderStart,
       sliderLength: state.sliderLength,
       value: state.value,
+      minValue: state.minValue,
+      maxValue: duration,
       xyOffset: state.xyOffset,
       dragState: state.dragState,
       orientation: state.orientation,
@@ -64,10 +72,12 @@ export const TimelineProvider = memo(function TimelineProvider({
     state.sliderStart,
     state.sliderLength,
     state.value,
+    state.minValue,
     state.xyOffset,
     state.dragState,
     state.orientation,
     handleTimelineAction,
+    duration,
   ]);
 
   return (

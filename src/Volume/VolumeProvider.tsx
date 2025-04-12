@@ -65,6 +65,8 @@ export const VolumeProvider = memo(function VolumeProvider({
       sliderStart: state.sliderStart,
       sliderLength: state.sliderLength,
       value: state.value,
+      minValue: state.minValue,
+      maxValue: state.maxValue,
       xyOffset: state.xyOffset,
       dragState: state.dragState,
       handleTimelineAction,
