@@ -12,7 +12,7 @@ export function SeekTime({ children, ...props }: SeekTimeProps) {
   const context = useContext(TimelineContext);
   const ariaAttributes = useTimelineAriaAttributes();
   const handleRef = useHandleRef(context);
-  const handlePointerDown = useHandleSeek(context);
+  const handlePointerDown = useHandleSeek();
   return (
     <SetRelativeButton
       {...ariaAttributes}

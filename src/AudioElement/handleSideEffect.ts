@@ -1,4 +1,4 @@
-import { calculateVolume } from "../Shared/sharedFunctions";
+import { areNumbersClose, calculateVolume } from "../Shared/sharedFunctions";
 import { calculateTime } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./AudioContext";
 
@@ -66,6 +66,10 @@ export function handleSideEffect(
       }
       if (action.component === "volume") {
         const limitedVolume = Math.min(Math.max(action.value, 0), 1);
+        const isCloseToZero = areNumbersClose(limitedVolume, 0);
+        if (audioElement.muted && !isCloseToZero) {
+          audioElement.muted = false;
+        }
         audioElement.volume = limitedVolume;
       }
       break;

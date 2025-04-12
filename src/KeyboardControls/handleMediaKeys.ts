@@ -1,16 +1,32 @@
-import { VolumeState } from "../Player/PlayerContext";
+import { useContext, useCallback } from "react";
+import { PlayerContext } from "../Player/PlayerContext";
+import {
+  PlayerProviderAction,
+  PlayerState,
+  VolumeState,
+} from "../Player/PlayerContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
-import { HandleKeyDownProps } from "./handleSliderKeys";
+
+type ActionHandler<T> = (action: T) => void;
+
+export type HandleKeyDownProps = {
+  event: React.KeyboardEvent<HTMLButtonElement>;
+  handlePlayerAction: ActionHandler<PlayerProviderAction>;
+  getPlayerState: () => PlayerState;
+  playbackRate: number;
+  volumeState: VolumeState;
+  type?: "timeline" | "volume" | undefined;
+};
 
 export function handleMediaKeys({
   event,
   handlePlayerAction,
   getPlayerState,
-  isVolume = false,
+  slider,
   playbackRate,
   volumeState,
 }: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
-  isVolume?: boolean;
+  slider?: "timeline" | "volume" | undefined;
   playbackRate: number;
   volumeState: VolumeState;
 }) {
@@ -20,6 +36,13 @@ export function handleMediaKeys({
     volume,
     unmuteVolumeRef: unmuteVolume,
   } = getPlayerState();
+  if (slider) {
+    if (["Enter", " "].includes(event.key)) {
+      handlePlayerAction({ type: "TOGGLE_PLAY" });
+      event.preventDefault();
+      return true;
+    }
+  }
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
     const nextVolume = areNumbersClose(volume, 0)
       ? unmuteVolume.current
@@ -34,28 +57,50 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key.toLowerCase() === "l") {
-    const value = Math.min(duration, currentTime + 10);
-    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
+    handlePlayerAction({
+      type: "CHANGE_VALUE",
+      value: currentTime + 10,
+      component: "timeline",
+    });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowRight") {
-    if (isVolume) return false;
-    const value = Math.min(duration, currentTime + 5);
-    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
+    if (slider === "volume") return;
+    handlePlayerAction({
+      type: "CHANGE_VALUE",
+      value: currentTime + 5,
+      component: "timeline",
+    });
     event.preventDefault();
     return true;
   }
   if (event.key === "ArrowLeft") {
-    if (isVolume) return false;
-    const value = Math.max(0, currentTime - 5);
-    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
+    if (slider === "volume") return;
+    handlePlayerAction({
+      type: "CHANGE_VALUE",
+      value: currentTime - 5,
+      component: "timeline",
+    });
     event.preventDefault();
     return true;
   }
   if (event.key.toLowerCase() === "j") {
-    const value = Math.max(0, currentTime - 10);
-    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
+    handlePlayerAction({
+      type: "CHANGE_VALUE",
+      value: currentTime - 10,
+      component: "timeline",
+    });
+    event.preventDefault();
+    return true;
+  }
+  if (event.key === "ArrowUp") {
+    handlePlayerAction({ type: "UNMUTE" });
+    handlePlayerAction({
+      type: "CHANGE_VALUE",
+      value: volume + 0.025,
+      component: "volume",
+    });
     event.preventDefault();
     return true;
   }
@@ -67,18 +112,14 @@ export function handleMediaKeys({
         unmuteVolume: 0.025,
       });
     }
+    if (!areNumbersClose(restrictedVolume, 0)) {
+      handlePlayerAction({
+        type: "UNMUTE",
+      });
+    }
     handlePlayerAction({
       type: "CHANGE_VALUE",
       value: restrictedVolume,
-      component: "volume",
-    });
-    event.preventDefault();
-    return true;
-  }
-  if (event.key === "ArrowUp") {
-    handlePlayerAction({
-      type: "CHANGE_VALUE",
-      value: volume + 0.025,
       component: "volume",
     });
     event.preventDefault();
@@ -91,32 +132,37 @@ export function handleMediaKeys({
     event.preventDefault();
     return true;
   }
-  if (isNumericKey(event.key) && !isVolume) {
+  if (isNumericKey(event.key)) {
     const value = getNumericKeyValue({
-      type: "timeline",
+      type: slider ?? "timeline",
       duration,
       key: event.key,
     });
-    handlePlayerAction({ type: "CHANGE_VALUE", value, component: "timeline" });
+    if (!areNumbersClose(value, 0)) {
+      handlePlayerAction({
+        type: "UNMUTE",
+      });
+    }
+    handlePlayerAction({
+      type: "CHANGE_VALUE",
+      value,
+      component: slider ?? "timeline",
+    });
     event.preventDefault();
     return true;
   }
   if ([">", "]"].includes(event.key)) {
-    const newRate = playbackRate + 0.25;
-    const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
-      playbackRate: limitedRate,
+      playbackRate: playbackRate + 0.25,
     });
     event.preventDefault();
     return true;
   }
   if (["<", "["].includes(event.key)) {
-    const newRate = playbackRate - 0.25;
-    const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
-      playbackRate: limitedRate,
+      playbackRate: playbackRate - 0.25,
     });
     event.preventDefault();
     return true;
@@ -169,4 +215,22 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
     },
   };
   return keyToTimeMap[type][key];
+}
+
+export function useHandleMediaKeys(slider?: "timeline" | "volume") {
+  const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
+    useContext(PlayerContext);
+  return useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      handleMediaKeys({
+        event,
+        handlePlayerAction,
+        getPlayerState,
+        playbackRate,
+        volumeState,
+        slider,
+      });
+    },
+    [handlePlayerAction, getPlayerState, playbackRate, volumeState, slider]
+  );
 }

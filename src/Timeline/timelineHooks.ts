@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo } from "react";
 import { TimelineContext, TimelineContextType } from "./TimelineContext";
-import { useOffset } from "../Slider/sliderHooks";
+import { useOffset, getOffset } from "../Slider/sliderHooks";
 import { PlayerContext } from "../Player/PlayerContext";
 import { VolumeContextType } from "../Volume/VolumeContext";
 import { getClientXY } from "../Slider/useDrag";
@@ -9,7 +9,7 @@ import { calculateTime } from "../Shared/sharedFunctions";
 export function useHandleDragStartTimeline() {
   const { handleTimelineAction } = useContext(TimelineContext);
   const context = useContext(TimelineContext);
-  const offset = useOffset({ context, type: "timeline" });
+  const offset = useOffset({ context, getOffset });
   return useCallback(() => {
     handleTimelineAction({ type: "DRAG_START", clientXY: offset });
   }, [handleTimelineAction, offset]);
@@ -38,10 +38,9 @@ export function useHandleDragEndTimeline() {
   );
 }
 
-export function useHandleDragTimeline(
-  context: TimelineContextType | VolumeContextType
-) {
+export function useHandleDragTimeline() {
   const { getPlayerState } = useContext(PlayerContext);
+  const context = useContext(TimelineContext);
   const { handleTimelineAction, orientation, sliderLength, sliderStart } =
     context;
   const { duration } = getPlayerState();
@@ -61,9 +60,8 @@ export function useHandleDragTimeline(
   );
 }
 
-export function useHandleSeek(
-  context: TimelineContextType | VolumeContextType
-) {
+export function useHandleSeek() {
+  const context = useContext(TimelineContext);
   const { getPlayerState } = useContext(PlayerContext);
   const { duration } = getPlayerState();
   const { sliderStart, sliderLength, handleTimelineAction, orientation } =
@@ -100,7 +98,7 @@ export function useDragStylesTimeline({
   style,
 }: UseDragStylesArgs): React.CSSProperties {
   const { orientation } = context;
-  const offset = useOffset({ context, type: "timeline" });
+  const offset = useOffset({ context, getOffset });
   return useMemo(
     () => ({
       position: "absolute",
@@ -136,5 +134,34 @@ export function useTimelineAriaAttributes() {
     "aria-valuetext": `Position ${formatTime(currentTime)} of ${formatTime(
       duration
     )} (${Math.round((currentTime / duration) * 100)}% complete)`,
+  };
+}
+
+export function useTimelineIndicatorStyles({
+  context,
+  style,
+}: UseDragStylesArgs): React.CSSProperties {
+  const { sliderLength } = context;
+  const offset = useOffset({ context, getOffset });
+  const progress = offset / sliderLength;
+  return useMemo(
+    () => ({
+      transform: `scaleX(${progress})`,
+      width: "100%",
+      height: "100%",
+      transformOrigin: "left",
+      ...style,
+    }),
+    [progress, style]
+  );
+}
+
+export function useTimelineDragProps(style: React.CSSProperties) {
+  const context = useContext(TimelineContext);
+  return {
+    handleDragStart: useHandleDragStartTimeline(),
+    handleDragEnd: useHandleDragEndTimeline(),
+    handleDrag: useHandleDragTimeline(),
+    style: useDragStylesTimeline({ context, style }),
   };
 }

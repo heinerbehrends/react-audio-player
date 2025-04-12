@@ -2,7 +2,7 @@ import { useContext, memo, useCallback } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
 import { useIsDisabled } from "../Shared/useIsDisabled";
-import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 
 type ChildrenProps = {
   children: React.ReactNode;

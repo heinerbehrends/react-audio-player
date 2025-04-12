@@ -1,15 +1,23 @@
-import { useContext, useCallback } from "react";
-import { VolumeContext, VolumeContextType } from "./VolumeContext";
+import { useContext, useCallback, useMemo } from "react";
+import { VolumeContext, type VolumeContextType } from "./VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
-import { useOffset } from "../Slider/sliderHooks";
+import {
+  getOffset,
+  useOffset,
+  type GetOffsetArgs,
+} from "../Slider/sliderHooks";
 import { getClientXY } from "../Slider/useDrag";
 import { calculateVolume } from "../Shared/sharedFunctions";
 
 export function useHandleVolumeDragStart() {
-  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
+  const { handlePlayerAction, getPlayerState, volumeState } =
+    useContext(PlayerContext);
   const context = useContext(VolumeContext);
   const { handleTimelineAction } = context;
-  const offset = useOffset({ context, type: "volume" });
+  const offset = useOffset({
+    context,
+    getOffset: getVolumeOffset(volumeState),
+  });
   return useCallback(() => {
     handlePlayerAction({
       type: "UNMUTE",
@@ -109,4 +117,86 @@ export function useVolumeAriaAttributes() {
     "aria-valuenow": volume,
     "aria-valuetext": `Volume ${Math.round(volume * 100)}%`,
   };
+}
+
+export type GetVolumeOffsetArgs = GetOffsetArgs & {
+  volumeState: "muted" | "low" | "high";
+};
+
+export function getVolumeOffset(volumeState: "muted" | "low" | "high") {
+  return (args: GetOffsetArgs): number => {
+    const { orientation, sliderLength, xyOffset, value, dragState } = args;
+    if (volumeState === "muted") {
+      if (orientation === "horizontal") {
+        return 0;
+      }
+      if (orientation === "vertical") {
+        return sliderLength;
+      }
+    }
+    return getOffset({
+      value,
+      sliderLength,
+      xyOffset,
+      dragState,
+    });
+  };
+}
+
+export function useDragStylesVolume(
+  style: React.CSSProperties
+): React.CSSProperties {
+  const { volumeState } = useContext(PlayerContext);
+  const context = useContext(VolumeContext);
+  const { orientation } = context;
+  const offset = useOffset({
+    context,
+    getOffset: getVolumeOffset(volumeState),
+  });
+  return useMemo(
+    () => ({
+      position: "absolute",
+      gridColumn: "1 / 1",
+      gridRow: "1 / 1",
+      cursor: "grab",
+      transform:
+        orientation === "horizontal"
+          ? `translate(calc(${offset}px - 20px), 0)`
+          : `translate(0, calc(${offset}px - 20px))`,
+      touchAction: "none",
+      ...style,
+    }),
+    [offset, orientation, style]
+  );
+}
+
+type UseVolumeIndicatorStylesArgs = {
+  context: VolumeContextType;
+  style: React.CSSProperties;
+};
+
+export function useVolumeIndicatorStyles({
+  context,
+  style,
+}: UseVolumeIndicatorStylesArgs): React.CSSProperties {
+  const { volumeState } = useContext(PlayerContext);
+  const { sliderLength, orientation } = context;
+  const offset = useOffset({
+    context,
+    getOffset: getVolumeOffset(volumeState),
+  });
+  const progress = offset / sliderLength;
+  return useMemo(
+    () => ({
+      transform:
+        orientation === "horizontal"
+          ? `scaleX(${progress})`
+          : `scaleY(${progress})`,
+      width: "100%",
+      height: "100%",
+      transformOrigin: orientation === "horizontal" ? "left" : "bottom",
+      ...style,
+    }),
+    [progress, orientation, style]
+  );
 }

@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
-import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 
 type PlayButtonProps = {
   children: React.ReactNode;

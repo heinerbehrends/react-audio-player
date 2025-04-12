@@ -1,14 +1,15 @@
 import { useCallback, useMemo, useRef, useEffect, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { TimelineContextType } from "../Timeline/TimelineContext";
-import { VolumeContextType } from "../Volume/VolumeContext";
+import type { TimelineContextType } from "../Timeline/TimelineContext";
+import type { VolumeContextType } from "../Volume/VolumeContext";
+import type { GetVolumeOffsetArgs } from "../Volume/volumeHooks";
 
 type UseOffsetArgs = {
   context: VolumeContextType | TimelineContextType;
-  type: "timeline" | "volume";
+  getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
 };
 
-export function useOffset({ context, type }: UseOffsetArgs) {
+export function useOffset({ context, getOffset }: UseOffsetArgs) {
   const {
     xyOffset,
     dragState,
@@ -22,7 +23,6 @@ export function useOffset({ context, type }: UseOffsetArgs) {
 
   return useMemo(() => {
     return getOffset({
-      type,
       value,
       sliderLength,
       xyOffset,
@@ -33,7 +33,6 @@ export function useOffset({ context, type }: UseOffsetArgs) {
       volumeState,
     });
   }, [
-    type,
     value,
     sliderLength,
     xyOffset,
@@ -42,11 +41,11 @@ export function useOffset({ context, type }: UseOffsetArgs) {
     volumeState,
     minValue,
     maxValue,
+    getOffset,
   ]);
 }
 
-type GetOffsetArgs = {
-  type: "timeline" | "volume";
+export type GetOffsetArgs = {
   value: number;
   sliderLength: number;
   xyOffset: number;
@@ -57,8 +56,7 @@ type GetOffsetArgs = {
   volumeState?: "muted" | "low" | "high";
 };
 
-function getOffset({
-  type,
+export function getOffset({
   value,
   sliderLength,
   xyOffset,
@@ -66,18 +64,7 @@ function getOffset({
   maxValue = 1,
   dragState,
   orientation = "horizontal",
-  volumeState = "high",
 }: GetOffsetArgs): number {
-  if (type === "volume") {
-    if (volumeState === "muted") {
-      if (orientation === "horizontal") {
-        return 0;
-      }
-      if (orientation === "vertical") {
-        return sliderLength;
-      }
-    }
-  }
   if (dragState === "dragging") {
     return xyOffset;
   }
@@ -140,63 +127,4 @@ export function useHandleRef(context: TimelineContextType | VolumeContextType) {
   }, []);
 
   return handleRef;
-}
-
-type UseDragStylesArgs = {
-  context: VolumeContextType | TimelineContextType;
-  type: "timeline" | "volume";
-  style: React.CSSProperties;
-};
-
-export function useDragStyles({
-  context,
-  type,
-  style,
-}: UseDragStylesArgs): React.CSSProperties {
-  const { orientation } = context;
-  const offset = useOffset({ context, type });
-  return useMemo(
-    () => ({
-      position: "absolute",
-      gridColumn: "1 / 1",
-      gridRow: "1 / 1",
-      cursor: "grab",
-      transform:
-        orientation === "horizontal"
-          ? `translate(calc(${offset}px - 20px), 0)`
-          : `translate(0, calc(${offset}px - 20px))`,
-      touchAction: "none",
-      ...style,
-    }),
-    [offset, orientation, style]
-  );
-}
-
-type UseIndicatorStylesArgs = {
-  context: VolumeContextType | TimelineContextType;
-  type: "timeline" | "volume";
-  style: React.CSSProperties;
-};
-
-export function useIndicatorStyles({
-  context,
-  type,
-  style,
-}: UseIndicatorStylesArgs) {
-  const { orientation, sliderLength } = context;
-  const offset = useOffset({ context, type });
-  const progress = offset / sliderLength;
-  return useMemo(
-    () => ({
-      transform:
-        orientation === "horizontal"
-          ? `scaleX(${progress})`
-          : `scaleY(${progress})`,
-      width: "100%",
-      height: "100%",
-      transformOrigin: orientation === "horizontal" ? "left" : "bottom",
-      ...style,
-    }),
-    [progress, orientation, style]
-  );
 }

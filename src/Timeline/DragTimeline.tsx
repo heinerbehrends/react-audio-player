@@ -1,29 +1,22 @@
-import { HTMLAttributes, useContext } from "react";
-import { useHandleSliderKeys } from "../KeyboardControls/keyboardHooks";
+import { type HTMLAttributes, useContext } from "react";
+import { TimelineContext } from "./TimelineContext";
 import { DragButton } from "../Slider/DragButton";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useDrag } from "../Slider/useDrag";
-import { TimelineContext } from "./TimelineContext";
-import {
-  useHandleDragStartTimeline,
-  useHandleDragEndTimeline,
-  useHandleDragTimeline,
-  useDragStylesTimeline,
-} from "./timelineHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useTimelineDragProps } from "./timelineHooks";
 
 export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(TimelineContext);
-  const handleDragStart = useHandleDragStartTimeline();
-  const handleDragEnd = useHandleDragEndTimeline();
-  const handleDragMove = useHandleDragTimeline(context);
+  const { handleDragStart, handleDragEnd, handleDrag, style } =
+    useTimelineDragProps(props.style ?? {});
+  const handleKeyDown = useHandleMediaKeys("timeline");
   const handleDragCancel = useOnPointerCancel(context);
-  const handleKeyDown = useHandleSliderKeys();
-  const style = useDragStylesTimeline({ context, style: props.style ?? {} });
 
   useDrag({
     context,
     onPointerUp: handleDragEnd,
-    onPointerMove: handleDragMove,
+    onPointerMove: handleDrag,
     onPointerCancel: handleDragCancel,
   });
 

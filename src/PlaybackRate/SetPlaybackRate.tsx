@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 
@@ -50,7 +50,7 @@ type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 export function RateDisplay({ ...props }: RateDisplayProps) {
   const { playbackRate: currentPlaybackRate } = useContext(PlayerContext);
-  const roundedRate = Math.round(currentPlaybackRate * 10) / 10;
+  const roundedRate = Math.round(currentPlaybackRate * 100) / 100;
   return (
     <span aria-label="Current playback rate" {...props}>
       {roundedRate}x

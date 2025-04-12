@@ -3,9 +3,9 @@ import { Indicator } from "../Slider/Indicator";
 import { Container } from "../Slider/Container";
 import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
-import { useIndicatorStyles } from "../Slider/sliderHooks";
 import { VolumeDragButton } from "./DragVolume";
 import { SetVolume } from "./SetVolume";
+import { useVolumeIndicatorStyles } from "./volumeHooks";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -30,9 +30,8 @@ function VolumeContainer({
 
 function VolumeProgress(props: ProgressProps) {
   const context = useContext(VolumeContext);
-  const style = useIndicatorStyles({
+  const style = useVolumeIndicatorStyles({
     context,
-    type: "volume",
     style: props.style ?? {},
   });
   return <Indicator {...props} style={style} />;

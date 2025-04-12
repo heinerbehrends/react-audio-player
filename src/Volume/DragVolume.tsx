@@ -1,9 +1,10 @@
 import { HTMLAttributes, useContext } from "react";
-import { useDragStyles, useOnPointerCancel } from "../Slider/sliderHooks";
+import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { VolumeContext } from "./VolumeContext";
-import { useHandleSliderKeys } from "../KeyboardControls/keyboardHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useDrag } from "../Slider/useDrag";
 import {
+  useDragStylesVolume,
   useHandleDragEndVolume,
   useHandleDragVolume,
   useHandleVolumeDragStart,
@@ -16,12 +17,8 @@ export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const handleDragEnd = useHandleDragEndVolume();
   const handleDragMove = useHandleDragVolume(context);
   const handleDragCancel = useOnPointerCancel(context);
-  const handleKeyDown = useHandleSliderKeys("volume");
-  const style = useDragStyles({
-    context,
-    style: props.style ?? {},
-    type: "volume",
-  });
+  const handleKeyDown = useHandleMediaKeys("volume");
+  const style = useDragStylesVolume(props.style ?? {});
   useDrag({
     context,
     onPointerUp: handleDragEnd,
@@ -33,6 +30,7 @@ export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
       handleDragStart={handleDragStart}
       handleKeyDown={handleKeyDown}
       context={context}
+      aria-label="Drag to adjust volume"
       {...props}
       style={style}
     />

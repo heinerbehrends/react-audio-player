@@ -1,5 +1,5 @@
 import { useCallback, useContext } from "react";
-import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 
@@ -38,10 +38,9 @@ function useHandleClick(amount: number) {
   const { handlePlayerAction, playbackRate } = useContext(PlayerContext);
   return useCallback(() => {
     const newRate = playbackRate + amount;
-    const limitedRate = Math.min(Math.max(newRate, 0.5), 4);
     handlePlayerAction({
       type: "SET_PLAYBACK_RATE",
-      playbackRate: limitedRate,
+      playbackRate: newRate,
     });
   }, [handlePlayerAction, amount, playbackRate]);
 }
