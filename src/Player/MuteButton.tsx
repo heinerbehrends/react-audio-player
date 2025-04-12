@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useHandleMediaKeys } from "../KeyboardControls/keyboardHooks";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 

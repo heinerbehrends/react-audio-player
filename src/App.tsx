@@ -11,14 +11,13 @@ import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 // import { Debug } from "./Debug";
 import { useEffect, useState } from "react";
+import { Debug } from "./Debug";
 
 function App() {
   const searchParams = useUrlParams();
-  console.log("searchParams", searchParams);
   const volumeOrientation =
     (searchParams.get("orientation") as "horizontal" | "vertical") ??
     "horizontal";
-  console.log("volumeOrientation", volumeOrientation);
 
   return (
     <AudioPlayer
@@ -59,8 +58,8 @@ function App() {
       <Volume
         orientation={volumeOrientation}
         style={{
-          width: volumeOrientation === "horizontal" ? "400px" : "40px",
-          height: volumeOrientation === "horizontal" ? "40px" : "400px",
+          width: volumeOrientation === "horizontal" ? undefined : "40px",
+          height: volumeOrientation === "horizontal" ? "40px" : undefined,
           backgroundColor: "gray",
         }}
       >
@@ -82,6 +81,7 @@ function App() {
             border: "none",
           }}
         />
+        <Debug type="volume" />
       </Volume>
       <PlaybackRate.Display />
       <PlaybackRate.Set rate={0.5}>

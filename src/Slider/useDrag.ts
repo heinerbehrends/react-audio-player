@@ -2,66 +2,21 @@ import { useContext, useEffect, useCallback } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { calculateTime, calculateVolume } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
 
-const mapContext = {
+const switchContext = {
   timeline: TimelineContext,
   volume: VolumeContext,
 };
 
 export function useDrag(type: "timeline" | "volume") {
-  const {
-    dragState,
-    handleTimelineAction,
-    sliderStart,
-    sliderLength,
-    orientation,
-  } = useContext(mapContext[type]);
+  const { dragState, orientation } = useContext(switchContext[type]);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
-  const { getPlayerState } = useContext(PlayerContext);
-  const { duration, currentTime, volume } = getPlayerState();
 
-  const onPointerUpTimeline = useCallback(
-    (clientX: number) => {
-      const time = calculateTime({
-        xyOffset: clientX,
-        sliderLength,
-        sliderStart,
-        duration,
-      });
-
-      handleTimelineAction({
-        type: "DRAG_END",
-        value: time,
-        component: "timeline",
-      });
-    },
-    [handleTimelineAction, sliderStart, sliderLength, duration]
-  );
-
-  const onPointerUpVolume = useCallback(
-    (clientXY: number) => {
-      const volume = calculateVolume({
-        xyOffset: clientXY,
-        sliderLength,
-        sliderStart,
-        orientation,
-      });
-
-      const restrictedTime = Math.min(Math.max(volume, 0), 1);
-
-      handleTimelineAction({
-        type: "DRAG_END",
-        value: restrictedTime,
-        component: "volume",
-      });
-    },
-    [handleTimelineAction, sliderLength, sliderStart, orientation]
-  );
-
+  const onPointerUpTimeline = useOnPointerUpTimeline();
+  const onPointerUpVolume = useOnPointerUpVolume();
   const onPointerUp = useCallback(
     ({ clientX, clientY }: PointerEvent) => {
       const clientXY = orientation === "horizontal" ? clientX : clientY;
@@ -75,57 +30,8 @@ export function useDrag(type: "timeline" | "volume") {
     [type, onPointerUpTimeline, onPointerUpVolume, orientation]
   );
 
-  const onPointerMove = useCallback(
-    (event: PointerEvent | TouchEvent) => {
-      const clientXY = getClientXY(event, orientation);
-      const value =
-        type === "timeline"
-          ? calculateTime({
-              xyOffset: clientXY,
-              sliderLength,
-              duration,
-              sliderStart,
-            })
-          : calculateVolume({
-              xyOffset: clientXY,
-              sliderLength,
-              sliderStart,
-              orientation,
-            });
-      const restrictedValue =
-        type === "timeline"
-          ? Math.min(Math.max(value, 0), duration)
-          : Math.min(Math.max(value, 0), 1);
-
-      const restrictedClientXY = Math.min(
-        Math.max(clientXY, sliderStart),
-        sliderStart + sliderLength
-      );
-
-      handleTimelineAction({
-        type: "DRAG",
-        time: restrictedValue,
-        clientXY: restrictedClientXY,
-        component: type,
-      });
-    },
-    [
-      handleTimelineAction,
-      type,
-      sliderStart,
-      sliderLength,
-      duration,
-      orientation,
-    ]
-  );
-
-  const onPointerCancel = useCallback(() => {
-    handleTimelineAction({
-      type: "DRAG_END",
-      value: type === "timeline" ? currentTime : volume,
-      component: type,
-    });
-  }, [handleTimelineAction, type, currentTime, volume]);
+  const onPointerMove = useOnPointerMove(type);
+  const onPointerCancel = useOnPointerCancel();
 
   useEffect(() => {
     if (dragState !== "dragging") {
@@ -164,4 +70,84 @@ export function getClientXY(
       : event.touches[0]?.clientY ?? 0;
   }
   return orientation === "horizontal" ? event.clientX : event.clientY;
+}
+
+function useOnPointerUpTimeline() {
+  const { getPlayerState } = useContext(PlayerContext);
+  const { handleTimelineAction, orientation, sliderLength, sliderStart } =
+    useContext(TimelineContext);
+  const { duration } = getPlayerState();
+
+  return useCallback(
+    (clientX: number) => {
+      handleTimelineAction({
+        type: "DRAG_END",
+        component: "timeline",
+        clientXY: clientX,
+        duration,
+        sliderLength,
+        sliderStart,
+        orientation,
+      });
+    },
+    [handleTimelineAction, duration, sliderLength, sliderStart, orientation]
+  );
+}
+
+function useOnPointerUpVolume() {
+  const { handleTimelineAction, orientation, sliderLength, sliderStart } =
+    useContext(VolumeContext);
+
+  return useCallback(
+    (clientXY: number) => {
+      handleTimelineAction({
+        type: "DRAG_END",
+        component: "volume",
+        clientXY,
+        sliderLength,
+        sliderStart,
+        orientation,
+      });
+    },
+    [handleTimelineAction, orientation, sliderLength, sliderStart]
+  );
+}
+
+function useOnPointerMove(type: "timeline" | "volume") {
+  const { getPlayerState } = useContext(PlayerContext);
+  const { handleTimelineAction, orientation, sliderLength, sliderStart } =
+    useContext(switchContext[type]);
+  const { duration } = getPlayerState();
+  return useCallback(
+    (event: PointerEvent | TouchEvent) => {
+      const clientXY = getClientXY(event, orientation);
+      handleTimelineAction({
+        type: "DRAG",
+        component: type,
+        clientXY,
+        duration,
+        sliderLength,
+        sliderStart,
+        orientation,
+      });
+    },
+    [
+      handleTimelineAction,
+      type,
+      duration,
+      sliderLength,
+      sliderStart,
+      orientation,
+    ]
+  );
+}
+
+function useOnPointerCancel() {
+  const { handleTimelineAction } = useContext(TimelineContext);
+
+  return useCallback(() => {
+    handleTimelineAction({
+      type: "CANCEL_DRAG",
+    });
+  }, [handleTimelineAction]);
 }

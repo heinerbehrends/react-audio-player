@@ -1,7 +1,7 @@
 import { useContext, useCallback } from "react";
 import { handleMediaKeys } from "./handleMediaKeys";
 import { PlayerContext } from "../Player/PlayerContext";
-import { handleTimelineKeys } from "./handleTimelineKeys";
+import { handleSliderKeys } from "./handleSliderKeys";
 
 export function useHandleMediaKeys() {
   const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
@@ -25,7 +25,7 @@ export function useHandleSliderKeys(type: "timeline" | "volume") {
     useContext(PlayerContext);
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) =>
-      handleTimelineKeys({
+      handleSliderKeys({
         event,
         handlePlayerAction,
         getPlayerState,

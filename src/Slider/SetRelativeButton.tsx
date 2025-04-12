@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from "react";
-import { useContext, useCallback, useMemo } from "react";
+import { useContext, useCallback, useMemo, useEffect, useRef } from "react";
 import { TimelineContext } from "../Timeline/TimelineContext";
 import { VolumeContext } from "../Volume/VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
@@ -57,14 +57,15 @@ export function SetRelativeButton({
 
 function useHandleRef(type: "timeline" | "volume") {
   const { handleTimelineAction, orientation } = useContext(switchContext[type]);
+  const observerRef = useRef<ResizeObserver>();
 
-  return useCallback(
+  const handleRef = useCallback(
     (element: HTMLButtonElement | null) => {
       if (!element) {
         return;
       }
 
-      const resizeObserver = new ResizeObserver(() => {
+      observerRef.current = new ResizeObserver(() => {
         const rect = element.getBoundingClientRect();
         handleTimelineAction({
           type: "SLIDER_LOADED",
@@ -82,12 +83,16 @@ function useHandleRef(type: "timeline" | "volume") {
         sliderLength: orientation === "horizontal" ? rect.width : rect.height,
       });
 
-      resizeObserver.observe(element);
-
-      return () => resizeObserver.disconnect();
+      observerRef.current.observe(element);
     },
     [handleTimelineAction, type, orientation]
   );
+
+  useEffect(() => {
+    return () => observerRef.current?.disconnect();
+  }, []);
+
+  return handleRef;
 }
 
 function useHandlePointerDown(type: "timeline" | "volume") {

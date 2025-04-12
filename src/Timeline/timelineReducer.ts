@@ -1,3 +1,4 @@
+import { calculateTime } from "../Shared/sharedFunctions";
 import { TimelineContextType, TimelineContextAction } from "./TimelineContext";
 
 export function timelineReducer(
@@ -29,17 +30,45 @@ export function timelineReducer(
       if (state.dragState !== "dragging") {
         return state;
       }
+      if (action.component !== "timeline") {
+        return state;
+      }
+      const restrictedClientXY = Math.min(
+        Math.max(action.clientXY, state.sliderStart),
+        state.sliderStart + state.sliderLength
+      );
+      const xOffset = restrictedClientXY - state.sliderStart;
       return {
         ...state,
-        xyOffset: action.clientXY - state.sliderStart,
+        xyOffset: xOffset,
       };
     }
     case "DRAG_END": {
+      if (state.dragState !== "dragging") {
+        return state;
+      }
+      if (action.component !== "timeline") {
+        return state;
+      }
+      const time = calculateTime({
+        xyOffset: action.clientXY,
+        sliderLength: state.sliderLength,
+        duration: action.duration,
+        sliderStart: state.sliderStart,
+      });
+      const limitedTime = Math.min(Math.max(time, 0), action.duration);
       return {
         ...state,
         dragState: "idle" as const,
         xyOffset: 0,
-        value: action.value,
+        value: limitedTime,
+      };
+    }
+    case "CANCEL_DRAG": {
+      return {
+        ...state,
+        dragState: "idle" as const,
+        xyOffset: 0,
       };
     }
     default: {

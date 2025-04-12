@@ -35,17 +35,45 @@ export type DragStartAction = {
   clientXY: number;
 };
 
-export type DragAction = {
-  type: "DRAG";
-  clientXY: number;
-  component: SliderComponent;
-  time: number;
-};
+export type DragAction =
+  | {
+      type: "DRAG";
+      component: "volume";
+      clientXY: number;
+      sliderLength: number;
+      sliderStart: number;
+      orientation: "horizontal" | "vertical";
+    }
+  | {
+      type: "DRAG";
+      component: "timeline";
+      clientXY: number;
+      duration: number;
+      sliderLength: number;
+      sliderStart: number;
+    };
 
-export type DragEndAction = {
-  type: "DRAG_END";
-  value: number;
-  component: SliderComponent;
+export type DragEndAction =
+  | {
+      type: "DRAG_END";
+      clientXY: number;
+      component: "volume";
+      sliderLength: number;
+      sliderStart: number;
+      orientation: "horizontal" | "vertical";
+    }
+  | {
+      type: "DRAG_END";
+      clientXY: number;
+      duration: number;
+      component: "timeline";
+      sliderLength: number;
+      sliderStart: number;
+      orientation: "horizontal" | "vertical";
+    };
+
+type CancelDragAction = {
+  type: "CANCEL_DRAG";
 };
 
 export type UpdateUiValueAction = {
@@ -58,7 +86,8 @@ export type TimelineContextAction =
   | UpdateUiValueAction
   | DragAction
   | DragStartAction
-  | DragEndAction;
+  | DragEndAction
+  | CancelDragAction;
 
 export type TimelineProviderAction = SideEffectAction | TimelineContextAction;
 
@@ -84,6 +113,7 @@ const TIMELINE_DISPATCH_MAP: Record<TimelineActionType, true> = {
   DRAG: true,
   DRAG_END: true,
   UPDATE_UI_VALUE: true,
+  CANCEL_DRAG: true,
 };
 
 export function isTimelineSideEffect(

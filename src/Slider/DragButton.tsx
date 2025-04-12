@@ -23,11 +23,9 @@ export function DragButton({ type, ...props }: DragButtonProps) {
 
   return (
     <button
+      aria-label={getAriaLabel(type)}
       {...props}
       style={style}
-      aria-label={
-        type === "timeline" ? "Drag to seek" : "Drag to adjust volume"
-      }
       onPointerDown={handleDragStart}
       onTouchStart={handleDragStart}
       onKeyDown={handleKeyDown}
@@ -89,7 +87,6 @@ function useDragStyles(
 ): React.CSSProperties {
   const { orientation } = useContext(switchContext[type]);
   const offset = useOffset(type);
-
   return useMemo(
     () => ({
       position: "absolute",
@@ -105,6 +102,10 @@ function useDragStyles(
     }),
     [offset, orientation, style]
   );
+}
+
+function getAriaLabel(type: "timeline" | "volume") {
+  return type === "timeline" ? "Drag to seek" : "Drag to adjust volume";
 }
 
 function useOffset(type: "timeline" | "volume") {
@@ -147,7 +148,46 @@ function getOffset({
   volumeState,
   orientation,
 }: GetOffsetArgs): number {
-  if (type === "volume" && volumeState === "muted") {
+  if (type === "volume") {
+    return getVolumeOffset({
+      value,
+      orientation,
+      dragState,
+      xOffset,
+      sliderLength,
+      volumeState,
+    });
+  }
+  if (type === "timeline") {
+    return getTimelineOffset({
+      value,
+      duration,
+      sliderLength,
+      dragState,
+      xOffset,
+    });
+  }
+  return 0;
+}
+
+type GetVolumeOffsetArgs = {
+  value: number;
+  sliderLength: number;
+  dragState: "dragging" | "idle";
+  xOffset: number;
+  orientation: "horizontal" | "vertical";
+  volumeState: "muted" | "low" | "high";
+};
+
+function getVolumeOffset({
+  value,
+  orientation,
+  dragState,
+  xOffset,
+  sliderLength,
+  volumeState,
+}: GetVolumeOffsetArgs): number {
+  if (volumeState === "muted") {
     if (orientation === "horizontal") {
       return 0;
     }
@@ -155,20 +195,33 @@ function getOffset({
       return sliderLength;
     }
   }
-  if (type === "timeline") {
-    const progress = value / duration;
-    const offset = progress * sliderLength;
-    return dragState === "dragging" ? xOffset : offset;
+  if (orientation === "horizontal") {
+    return dragState === "dragging" ? xOffset : sliderLength * value;
   }
-  if (type === "volume") {
-    if (orientation === "horizontal") {
-      return dragState === "dragging" ? xOffset : sliderLength * value;
-    }
-    if (orientation === "vertical") {
-      return dragState === "dragging"
-        ? xOffset
-        : sliderLength - sliderLength * value;
-    }
+  if (orientation === "vertical") {
+    return dragState === "dragging"
+      ? xOffset
+      : sliderLength - sliderLength * value;
   }
   return 0;
+}
+
+type GetTimelineOffsetArgs = {
+  value: number;
+  duration: number;
+  sliderLength: number;
+  dragState: "dragging" | "idle";
+  xOffset: number;
+};
+
+function getTimelineOffset({
+  value,
+  duration,
+  sliderLength,
+  dragState,
+  xOffset,
+}: GetTimelineOffsetArgs): number {
+  const progress = value / duration;
+  const offset = progress * sliderLength;
+  return dragState === "dragging" ? xOffset : offset;
 }

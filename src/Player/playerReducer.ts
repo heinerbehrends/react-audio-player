@@ -38,9 +38,10 @@ export function playerReducer(
       };
     }
     case "SET_PLAYBACK_RATE": {
+      const limitedRate = Math.min(Math.max(action.playbackRate, 0.5), 4);
       return {
         ...state,
-        playbackRate: action.playbackRate,
+        playbackRate: limitedRate,
       };
     }
     case "AUDIO_FILE_ENDED": {
