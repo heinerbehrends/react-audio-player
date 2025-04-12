@@ -1,23 +1,15 @@
 import { useContext, useCallback } from "react";
 import { VolumeContext, type VolumeContextType } from "./VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
-import {
-  getOffset,
-  useOffset,
-  type GetOffsetArgs,
-} from "../Slider/sliderHooks";
+import { getOffset, type GetOffsetArgs } from "../Slider/sliderHooks";
 import { getClientXY } from "../Slider/useDrag";
 import { calculateVolume } from "../Shared/sharedFunctions";
 
 export function useHandleVolumeDragStart() {
-  const { handlePlayerAction, getPlayerState, volumeState } =
-    useContext(PlayerContext);
+  const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
   const context = useContext(VolumeContext);
   const { handleTimelineAction } = context;
-  const offset = useOffset({
-    context,
-    getOffset: getVolumeOffset(volumeState),
-  });
+
   return useCallback(() => {
     handlePlayerAction({
       type: "UNMUTE",
@@ -26,11 +18,21 @@ export function useHandleVolumeDragStart() {
       type: "SET_UNMUTE_VOLUME",
       unmuteVolume: getPlayerState().volume,
     });
+
+    // If this is from a pointer event, use its position
+    // Otherwise, calculate from current volume
+    const clientXY = getOffset({
+      value: getPlayerState().volume,
+      sliderLength: context.sliderLength,
+      xyOffset: 0,
+      dragState: "idle",
+      orientation: context.orientation,
+    });
     handleTimelineAction({
       type: "DRAG_START",
-      clientXY: offset,
+      clientXY,
     });
-  }, [handlePlayerAction, getPlayerState, handleTimelineAction, offset]);
+  }, [handlePlayerAction, getPlayerState, handleTimelineAction, context]);
 }
 
 export function useHandleDragEndVolume() {
