@@ -59,7 +59,7 @@ function App() {
         orientation={volumeOrientation}
         style={{
           width: volumeOrientation === "horizontal" ? undefined : "40px",
-          height: volumeOrientation === "horizontal" ? "40px" : undefined,
+          height: volumeOrientation === "horizontal" ? "40px" : "400px",
           backgroundColor: "gray",
         }}
       >

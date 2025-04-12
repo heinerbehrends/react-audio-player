@@ -160,18 +160,31 @@ export function useDragStyles({
 type UseIndicatorStylesArgs = {
   context: TimelineContextType | VolumeContextType;
   style: React.CSSProperties;
+  type?: "volume" | "timeline";
   getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
-  orientation?: "horizontal" | "vertical";
+  dragState: "dragging" | "idle";
+  // orientation?: "horizontal" | "vertical";
 };
 
 export function useIndicatorStyles({
   context,
   style,
+  type,
   getOffset,
+  dragState,
 }: UseIndicatorStylesArgs): React.CSSProperties {
   const { orientation } = context;
   const offset = useOffset({ context, getOffset });
-  const progress = offset / context.sliderLength;
+  let progress = offset / context.sliderLength;
+
+  if (
+    type === "volume" &&
+    orientation === "vertical" &&
+    dragState === "dragging"
+  ) {
+    progress = 1 - progress;
+  }
+
   return useMemo(
     () => ({
       transform:

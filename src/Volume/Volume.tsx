@@ -36,6 +36,8 @@ function VolumeProgress(props: ProgressProps) {
     context,
     style: props.style ?? {},
     getOffset: getVolumeOffset(volumeState),
+    type: "volume",
+    dragState: context.dragState,
   });
   return <Indicator {...props} style={style} />;
 }
