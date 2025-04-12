@@ -1,10 +1,9 @@
 import { HTMLAttributes, useContext } from "react";
-import { useOnPointerCancel } from "../Slider/sliderHooks";
+import { useDragStyles, useOnPointerCancel } from "../Slider/sliderHooks";
 import { VolumeContext } from "./VolumeContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useDrag } from "../Slider/useDrag";
 import {
-  useDragStylesVolume,
   useHandleDragEndVolume,
   useHandleDragVolume,
   useHandleVolumeDragStart,
@@ -18,7 +17,7 @@ export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const handleDragMove = useHandleDragVolume(context);
   const handleDragCancel = useOnPointerCancel(context);
   const handleKeyDown = useHandleMediaKeys("volume");
-  const style = useDragStylesVolume(props.style ?? {});
+  const style = useDragStyles({ context, style: props.style ?? {} });
   useDrag({
     context,
     onPointerUp: handleDragEnd,

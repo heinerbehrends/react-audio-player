@@ -128,3 +128,61 @@ export function useHandleRef(context: TimelineContextType | VolumeContextType) {
 
   return handleRef;
 }
+
+type UseDragStylesArgs = {
+  context: TimelineContextType | VolumeContextType;
+  style: React.CSSProperties;
+};
+
+export function useDragStyles({
+  context,
+  style,
+}: UseDragStylesArgs): React.CSSProperties {
+  const { orientation } = context;
+  const offset = useOffset({ context, getOffset });
+  return useMemo(
+    () => ({
+      position: "absolute",
+      gridColumn: "1 / 1",
+      gridRow: "1 / 1",
+      cursor: "grab",
+      transform:
+        orientation === "horizontal"
+          ? `translate(calc(${offset}px - 20px), 0)`
+          : `translate(0, calc(${offset}px - 20px))`,
+      touchAction: "none",
+      ...style,
+    }),
+    [offset, orientation, style]
+  );
+}
+
+type UseIndicatorStylesArgs = {
+  context: TimelineContextType | VolumeContextType;
+  style: React.CSSProperties;
+  getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
+  orientation?: "horizontal" | "vertical";
+};
+
+export function useIndicatorStyles({
+  context,
+  style,
+  getOffset,
+}: UseIndicatorStylesArgs): React.CSSProperties {
+  const { orientation } = context;
+  const offset = useOffset({ context, getOffset });
+  const progress = offset / context.sliderLength;
+  return useMemo(
+    () => ({
+      transform:
+        orientation === "horizontal"
+          ? `scaleX(${progress})`
+          : `scaleY(${progress})`,
+      width: "100%",
+      height: "100%",
+      transformOrigin: orientation === "horizontal" ? "left" : "bottom",
+      ...style,
+    }),
+    [progress, orientation, style]
+  );
+}

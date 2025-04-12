@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo } from "react";
 import { TimelineContext, TimelineContextType } from "./TimelineContext";
-import { useOffset, getOffset } from "../Slider/sliderHooks";
+import { useOffset, getOffset, useDragStyles } from "../Slider/sliderHooks";
 import { PlayerContext } from "../Player/PlayerContext";
 import { VolumeContextType } from "../Volume/VolumeContext";
 import { getClientXY } from "../Slider/useDrag";
@@ -93,29 +93,6 @@ export type UseDragStylesArgs = {
   style: React.CSSProperties;
 };
 
-export function useDragStylesTimeline({
-  context,
-  style,
-}: UseDragStylesArgs): React.CSSProperties {
-  const { orientation } = context;
-  const offset = useOffset({ context, getOffset });
-  return useMemo(
-    () => ({
-      position: "absolute",
-      gridColumn: "1 / 1",
-      gridRow: "1 / 1",
-      cursor: "grab",
-      transform:
-        orientation === "horizontal"
-          ? `translate(calc(${offset}px - 20px), 0)`
-          : `translate(0, calc(${offset}px - 20px))`,
-      touchAction: "none",
-      ...style,
-    }),
-    [offset, orientation, style]
-  );
-}
-
 export function useTimelineAriaAttributes() {
   const { getPlayerState } = useContext(PlayerContext);
   const { currentTime, duration } = getPlayerState();
@@ -162,6 +139,6 @@ export function useTimelineDragProps(style: React.CSSProperties) {
     handleDragStart: useHandleDragStartTimeline(),
     handleDragEnd: useHandleDragEndTimeline(),
     handleDrag: useHandleDragTimeline(),
-    style: useDragStylesTimeline({ context, style }),
+    style: useDragStyles({ context, style }),
   };
 }
