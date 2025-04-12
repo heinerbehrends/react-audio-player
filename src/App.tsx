@@ -11,7 +11,6 @@ import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 // import { Debug } from "./Debug";
 import { useEffect, useState } from "react";
-import { Debug } from "./Debug";
 
 function App() {
   const searchParams = useUrlParams();
@@ -37,7 +36,7 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="timeline" />
+        {/* <Debug type="timeline" /> */}
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>

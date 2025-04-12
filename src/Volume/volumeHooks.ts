@@ -25,7 +25,7 @@ export function useHandleVolumeDragStart() {
   }, [handlePlayerAction, getPlayerState, handleTimelineAction, offset]);
 }
 
-export function useOnPointerUpVolume() {
+export function useHandleDragEndVolume() {
   const { handleTimelineAction, orientation, sliderLength, sliderStart } =
     useContext(VolumeContext);
 
@@ -45,7 +45,7 @@ export function useOnPointerUpVolume() {
   );
 }
 
-export function useOnPointerMoveVolume(context: VolumeContextType) {
+export function useHandleDragVolume(context: VolumeContextType) {
   const { handleTimelineAction, orientation, sliderLength, sliderStart } =
     context;
   return useCallback(
