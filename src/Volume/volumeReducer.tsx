@@ -1,4 +1,4 @@
-import { calculateVolume } from "../Shared/sharedFunctions";
+import { calculateValue } from "../Shared/sharedFunctions";
 import type {
   TimelineContextType,
   TimelineContextAction,
@@ -54,7 +54,7 @@ export function volumeReducer(
     case "DRAG_END": {
       if (state.dragState !== "dragging") return state;
       if (action.component !== "volume") return state;
-      const volume = calculateVolume({
+      const volume = calculateValue({
         xyOffset: action.clientXY,
         sliderLength: state.sliderLength,
         sliderStart: state.sliderStart,

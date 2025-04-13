@@ -15,7 +15,7 @@ export type HandleKeyDownProps = {
   getPlayerState: () => PlayerState;
   playbackRate: number;
   volumeState: VolumeState;
-  type?: "timeline" | "volume" | undefined;
+  type?: "timeline" | "volume" | "playbackRate" | undefined;
 };
 
 export function handleMediaKeys({
@@ -26,7 +26,7 @@ export function handleMediaKeys({
   playbackRate,
   volumeState,
 }: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
-  slider?: "timeline" | "volume" | undefined;
+  slider?: "timeline" | "volume" | "playbackRate" | undefined;
   playbackRate: number;
   volumeState: VolumeState;
 }) {
@@ -182,7 +182,7 @@ function isNumericKey(key: string): key is NumericKey {
 type NumericKey = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 type getNumericKeyValueProps = {
-  type: "timeline" | "volume";
+  type: "timeline" | "volume" | "playbackRate";
   duration: number;
   key: NumericKey;
 };
@@ -213,11 +213,25 @@ function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
       "8": 0.8,
       "9": 0.9,
     },
+    playbackRate: {
+      "0": 0.5,
+      "1": 0.75,
+      "2": 1,
+      "3": 1.25,
+      "4": 1.5,
+      "5": 1.75,
+      "6": 2,
+      "7": 2.25,
+      "8": 2.5,
+      "9": 2.75,
+    },
   };
   return keyToTimeMap[type][key];
 }
 
-export function useHandleMediaKeys(slider?: "timeline" | "volume") {
+export function useHandleMediaKeys(
+  slider?: "timeline" | "volume" | "playbackRate"
+) {
   const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
     useContext(PlayerContext);
   return useCallback(

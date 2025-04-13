@@ -1,40 +1,30 @@
-type CalculateTimeArgs = {
-  xyOffset: number;
-  sliderLength: number;
-  sliderStart: number;
-  duration: number;
-};
-
-export function calculateTime({
-  xyOffset,
-  sliderLength,
-  sliderStart,
-  duration,
-}: CalculateTimeArgs): number {
-  const time = ((xyOffset - sliderStart) / sliderLength) * duration;
-  return Math.min(Math.max(time, 0), duration);
-}
-
-type CalculateVolumeArgs = {
-  xyOffset: number;
-  sliderLength: number;
-  sliderStart: number;
-  orientation: "horizontal" | "vertical";
-};
-
-export function calculateVolume({
-  xyOffset,
-  sliderLength,
-  sliderStart,
-  orientation,
-}: CalculateVolumeArgs): number {
-  const progress =
-    orientation === "horizontal"
-      ? (xyOffset - sliderStart) / sliderLength
-      : (sliderLength - (xyOffset - sliderStart)) / sliderLength;
-  return Math.max(0, Math.min(1, progress));
-}
-
 export function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.001;
+}
+
+type CalculateValueArgs = {
+  xyOffset: number;
+  sliderLength: number;
+  sliderStart: number;
+  orientation?: "horizontal" | "vertical";
+  minValue?: number;
+  maxValue?: number;
+};
+
+export function calculateValue({
+  xyOffset,
+  sliderLength,
+  sliderStart,
+  orientation = "horizontal",
+  minValue = 0,
+  maxValue = 1,
+}: CalculateValueArgs): number {
+  const normalizedProgress =
+    orientation === "horizontal"
+      ? (xyOffset - sliderStart) / sliderLength
+      : 1 - (xyOffset - sliderStart) / sliderLength;
+  const valueRange = maxValue - minValue;
+  const mappedValue = minValue + normalizedProgress * valueRange;
+
+  return Math.max(minValue, Math.min(maxValue, mappedValue));
 }

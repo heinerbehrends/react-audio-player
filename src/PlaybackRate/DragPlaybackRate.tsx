@@ -1,18 +1,19 @@
-import { type HTMLAttributes, useContext } from "react";
-import { TimelineContext } from "./TimelineContext";
+import { useContext } from "react";
+import { PlaybackRateContext } from "./PlaybackRateContext";
+import { useTimelineDragProps } from "../Timeline/timelineHooks";
 import { DragButton } from "../Slider/DragButton";
-import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useDrag } from "../Slider/useDrag";
+import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useTimelineDragProps } from "./timelineHooks";
 
-export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
-  const context = useContext(TimelineContext);
+export function DragPlaybackRate(
+  props: React.HTMLAttributes<HTMLButtonElement>
+) {
+  const context = useContext(PlaybackRateContext);
   const { handleDragStart, handleDragEnd, handleDrag, style } =
     useTimelineDragProps({ style: props.style ?? {}, context });
-  const handleKeyDown = useHandleMediaKeys("timeline");
   const handleDragCancel = useOnPointerCancel(context);
-
+  const handleKeyDown = useHandleMediaKeys("playbackRate");
   useDrag({
     context,
     onPointerUp: handleDragEnd,
@@ -22,10 +23,9 @@ export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
 
   return (
     <DragButton
-      handleDragStart={handleDragStart}
       handleKeyDown={handleKeyDown}
+      handleDragStart={handleDragStart}
       context={context}
-      aria-label="Drag to seek"
       {...props}
       style={style}
     />

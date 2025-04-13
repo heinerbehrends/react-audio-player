@@ -8,6 +8,7 @@ import { SetVolume } from "./SetVolume";
 import { useIndicatorStyles } from "../Slider/sliderHooks";
 import { getVolumeOffset } from "./volumeHooks";
 import { PlayerContext } from "../Player/PlayerContext";
+
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
 type VolumeContainerProps = HTMLAttributes<HTMLDivElement> & {

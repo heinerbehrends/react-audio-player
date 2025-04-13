@@ -52,8 +52,17 @@ export type DragAction =
       duration: number;
       sliderLength: number;
       sliderStart: number;
+    }
+  | {
+      type: "DRAG";
+      component: "playbackRate";
+      clientXY: number;
+      sliderLength: number;
+      sliderStart: number;
+      orientation: "horizontal" | "vertical";
+      minValue: number;
+      maxValue: number;
     };
-
 export type DragEndAction =
   | {
       type: "DRAG_END";

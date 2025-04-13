@@ -1,10 +1,11 @@
 import { useCallback, useContext, useMemo } from "react";
-import { TimelineContext, TimelineContextType } from "./TimelineContext";
+import { TimelineContext, type TimelineContextType } from "./TimelineContext";
 import { useOffset, getOffset, useDragStyles } from "../Slider/sliderHooks";
 import { PlayerContext } from "../Player/PlayerContext";
-import { VolumeContextType } from "../Volume/VolumeContext";
+import type { VolumeContextType } from "../Volume/VolumeContext";
 import { getClientXY } from "../Slider/useDrag";
-import { calculateTime } from "../Shared/sharedFunctions";
+import { calculateValue } from "../Shared/sharedFunctions";
+import type { PlaybackRateContextType } from "../PlaybackRate/PlaybackRateContext";
 
 export function useHandleDragStartTimeline() {
   const { handleTimelineAction } = useContext(TimelineContext);
@@ -66,16 +67,15 @@ export function useHandleSeek() {
   const { duration } = getPlayerState();
   const { sliderStart, sliderLength, handleTimelineAction, orientation } =
     context;
-
   return useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const xyOffset =
         orientation === "horizontal" ? event.clientX : event.clientY;
-      const value = calculateTime({
+      const value = calculateValue({
         xyOffset,
         sliderStart,
         sliderLength,
-        duration,
+        maxValue: duration,
       });
 
       handleTimelineAction({
@@ -89,7 +89,7 @@ export function useHandleSeek() {
 }
 
 export type UseDragStylesArgs = {
-  context: TimelineContextType | VolumeContextType;
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
   style: React.CSSProperties;
 };
 
@@ -133,8 +133,15 @@ export function useTimelineIndicatorStyles({
   );
 }
 
-export function useTimelineDragProps(style: React.CSSProperties) {
-  const context = useContext(TimelineContext);
+type UseTimelineDragPropsArgs = {
+  style: React.CSSProperties;
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
+};
+
+export function useTimelineDragProps({
+  style,
+  context,
+}: UseTimelineDragPropsArgs) {
   return {
     handleDragStart: useHandleDragStartTimeline(),
     handleDragEnd: useHandleDragEndTimeline(),

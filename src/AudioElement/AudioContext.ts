@@ -27,7 +27,7 @@ export type StopAudioAction = {
 
 export type ChangeValueAction = {
   type: "CHANGE_VALUE";
-  component: "timeline" | "volume";
+  component: "timeline" | "volume" | "playbackRate";
   value: number;
 };
 

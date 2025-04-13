@@ -1,10 +1,11 @@
 import { calculateValue } from "../Shared/sharedFunctions";
-import { TimelineContextType, TimelineContextAction } from "./TimelineContext";
+import { TimelineContextAction } from "../Timeline/TimelineContext";
+import { PlaybackRateContextType } from "./PlaybackRateContext";
 
-export function timelineReducer(
-  state: TimelineContextType,
+export function playbackRateReducer(
+  state: PlaybackRateContextType,
   action: TimelineContextAction
-): TimelineContextType {
+): PlaybackRateContextType {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
       return { ...state, value: action.value };

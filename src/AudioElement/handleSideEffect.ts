@@ -1,5 +1,4 @@
-import { areNumbersClose, calculateVolume } from "../Shared/sharedFunctions";
-import { calculateTime } from "../Shared/sharedFunctions";
+import { areNumbersClose, calculateValue } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./AudioContext";
 
 export function handleSideEffect(
@@ -35,17 +34,17 @@ export function handleSideEffect(
     }
     case "DRAG_END": {
       if (action.component === "timeline") {
-        const time = calculateTime({
+        const time = calculateValue({
           xyOffset: action.clientXY,
           sliderLength: action.sliderLength,
-          duration: action.duration,
+          maxValue: action.duration,
           sliderStart: action.sliderStart,
         });
         const limitedTime = Math.min(Math.max(time, 0), audioElement.duration);
         audioElement.currentTime = limitedTime;
       }
       if (action.component === "volume") {
-        const volume = calculateVolume({
+        const volume = calculateValue({
           xyOffset: action.clientXY,
           sliderLength: action.sliderLength,
           sliderStart: action.sliderStart,
@@ -78,7 +77,7 @@ export function handleSideEffect(
       if (action.component === "timeline") {
         return;
       }
-      const volume = calculateVolume({
+      const volume = calculateValue({
         xyOffset: action.clientXY,
         sliderLength: action.sliderLength,
         sliderStart: action.sliderStart,

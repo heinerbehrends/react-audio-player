@@ -29,9 +29,7 @@ type TimelineComponent = React.FC<
 export const Timeline = Object.assign(
   ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <TimelineProvider>
-      <Container {...props} data-type="timeline">
-        {children}
-      </Container>
+      <Container {...props}>{children}</Container>
     </TimelineProvider>
   ),
   {

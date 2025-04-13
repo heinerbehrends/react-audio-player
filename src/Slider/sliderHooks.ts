@@ -3,9 +3,10 @@ import { PlayerContext } from "../Player/PlayerContext";
 import type { TimelineContextType } from "../Timeline/TimelineContext";
 import type { VolumeContextType } from "../Volume/VolumeContext";
 import type { GetVolumeOffsetArgs } from "../Volume/volumeHooks";
-
+import type { PlaybackRateContextType } from "../PlaybackRate/PlaybackRateContext";
+import { getClientXY } from "./useDrag";
 type UseOffsetArgs = {
-  context: VolumeContextType | TimelineContextType;
+  context: VolumeContextType | TimelineContextType | PlaybackRateContextType;
   getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
 };
 
@@ -70,6 +71,7 @@ export function getOffset({
   }
   const range = maxValue - minValue;
   const progress = (value - minValue) / range;
+
   if (orientation === "horizontal") {
     return progress * sliderLength;
   }
@@ -80,7 +82,7 @@ export function getOffset({
 }
 
 export function useOnPointerCancel(
-  context: TimelineContextType | VolumeContextType
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType
 ) {
   const { handleTimelineAction } = context;
 
@@ -91,7 +93,9 @@ export function useOnPointerCancel(
   }, [handleTimelineAction]);
 }
 
-export function useHandleRef(context: TimelineContextType | VolumeContextType) {
+export function useHandleRef(
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType
+) {
   const { handleTimelineAction, orientation } = context;
   const observerRef = useRef<ResizeObserver>();
 
@@ -130,7 +134,7 @@ export function useHandleRef(context: TimelineContextType | VolumeContextType) {
 }
 
 type UseDragStylesArgs = {
-  context: TimelineContextType | VolumeContextType;
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
   style: React.CSSProperties;
 };
 
@@ -163,7 +167,6 @@ type UseIndicatorStylesArgs = {
   type?: "volume" | "timeline";
   getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
   dragState: "dragging" | "idle";
-  // orientation?: "horizontal" | "vertical";
 };
 
 export function useIndicatorStyles({
@@ -197,5 +200,74 @@ export function useIndicatorStyles({
       ...style,
     }),
     [progress, orientation, style]
+  );
+}
+
+type UseHandleDragArgs = {
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
+  type: "timeline" | "volume" | "playbackRate";
+  maxValue?: number;
+  minValue?: number;
+};
+
+export function useHandleDrag({
+  context,
+  type,
+  maxValue = 1,
+  minValue = 0,
+}: UseHandleDragArgs) {
+  const { handleTimelineAction, orientation, sliderLength, sliderStart } =
+    context;
+
+  return useCallback(
+    (event: PointerEvent | TouchEvent) => {
+      const clientXY = getClientXY(event, orientation);
+
+      // Create component-specific actions
+      if (type === "timeline") {
+        handleTimelineAction({
+          type: "DRAG",
+          component: "timeline",
+          clientXY,
+          duration: maxValue,
+          sliderLength,
+          sliderStart,
+        });
+        return;
+      }
+      if (type === "volume") {
+        handleTimelineAction({
+          type: "DRAG",
+          component: "volume",
+          clientXY,
+          sliderLength,
+          sliderStart,
+          orientation,
+        });
+        return;
+      }
+      if (type === "playbackRate") {
+        handleTimelineAction({
+          type: "DRAG",
+          component: "playbackRate",
+          clientXY,
+          sliderLength,
+          sliderStart,
+          orientation,
+          minValue,
+          maxValue,
+        });
+        return;
+      }
+    },
+    [
+      handleTimelineAction,
+      type,
+      orientation,
+      sliderLength,
+      sliderStart,
+      maxValue,
+      minValue,
+    ]
   );
 }

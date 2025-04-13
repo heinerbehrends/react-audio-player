@@ -3,7 +3,7 @@ import { VolumeContext, type VolumeContextType } from "./VolumeContext";
 import { PlayerContext } from "../Player/PlayerContext";
 import { getOffset, type GetOffsetArgs } from "../Slider/sliderHooks";
 import { getClientXY } from "../Slider/useDrag";
-import { calculateVolume } from "../Shared/sharedFunctions";
+import { calculateValue } from "../Shared/sharedFunctions";
 
 export function useHandleVolumeDragStart() {
   const { handlePlayerAction, getPlayerState } = useContext(PlayerContext);
@@ -19,8 +19,6 @@ export function useHandleVolumeDragStart() {
       unmuteVolume: getPlayerState().volume,
     });
 
-    // If this is from a pointer event, use its position
-    // Otherwise, calculate from current volume
     const clientXY = getOffset({
       value: getPlayerState().volume,
       sliderLength: context.sliderLength,
@@ -83,7 +81,7 @@ export function useHandleSetVolume(context: VolumeContextType) {
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const xyOffset =
         orientation === "horizontal" ? event.clientX : event.clientY;
-      const value = calculateVolume({
+      const value = calculateValue({
         xyOffset,
         sliderLength,
         sliderStart,

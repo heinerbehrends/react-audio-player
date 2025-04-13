@@ -35,6 +35,7 @@ export const TimelineProvider = memo(function TimelineProvider({
     ...initialState,
     minValue: 0,
     maxValue: duration,
+    orientation: "horizontal",
   });
   const handleTimelineAction = useCallback(
     (action: TimelineProviderAction) => {

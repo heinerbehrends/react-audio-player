@@ -2,18 +2,21 @@ import { useContext, useEffect } from "react";
 import { TimelineContextType } from "../Timeline/TimelineContext";
 import { VolumeContextType } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
+import { PlaybackRateContextType } from "../PlaybackRate/PlaybackRateContext";
+
+type UseDragProps = {
+  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
+  onPointerUp: (event: PointerEvent | TouchEvent) => void;
+  onPointerMove: (event: PointerEvent | TouchEvent) => void;
+  onPointerCancel: () => void;
+};
 
 export function useDrag({
   context,
   onPointerUp,
   onPointerMove,
   onPointerCancel,
-}: {
-  context: TimelineContextType | VolumeContextType;
-  onPointerUp: (event: PointerEvent | TouchEvent) => void;
-  onPointerMove: (event: PointerEvent | TouchEvent) => void;
-  onPointerCancel: () => void;
-}) {
+}: UseDragProps) {
   const { dragState } = context;
   const {
     audioElementRef: { current: audioElement },
