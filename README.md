@@ -7,7 +7,7 @@ An accessible headless audio player component for React applications.
 - 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume)
 - ⏱️ Playback rate adjustment
 - 📝 Caption/subtitle support
-- ⌨️ Complete keyboard navigation and screen reader support
+- ⌨️ Keyboard navigation and screen reader support
 - 🧩 Composable component architecture
 - 📱 Responsive design with support for horizontal and vertical layouts
 
