@@ -94,6 +94,7 @@ The root component that provides context to all child components.
 - `<Time.Elapsed>` - Display current playback time
 - `<Time.Remaining>` - Display remaining time
 - `<Time.Duration>` - Display total duration
+- `<Time.Toggle>` - Toggle between elapsed and remaining
 
 ### Playback Rate Components
 
