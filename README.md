@@ -1,5 +1,6 @@
 # React Audio Player
 
+In development:
 A fully accessible, customizable audio player component for React applications.
 
 ## Features
