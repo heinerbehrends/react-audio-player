@@ -109,7 +109,13 @@ The root component that provides context to all child components.
 
 - `<Error>` - Displays a customizable message on error
 
+## Roadmap
 
+- Improve testing
+- Finish stepped playback rate slider
+- Initial beta release
+- Add playlist components and skip and loop
+- Add multi-language support
 
 ## Testing
 
