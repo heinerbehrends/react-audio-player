@@ -12,16 +12,6 @@ A fully accessible, customizable audio player component for React applications.
 - 🧩 Composable component architecture
 - 📱 Responsive design with support for horizontal and vertical layouts
 
-## Installation
-
-```bash
-npm install react-audio-player
-# or
-yarn add react-audio-player
-# or
-pnpm add react-audio-player
-```
-
 ## Basic Usage
 
 ```jsx
