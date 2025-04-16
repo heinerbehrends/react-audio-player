@@ -1,15 +1,15 @@
 # React Audio Player (in development)
 
-An accessible headless audio player component for React applications.
+An accessible headless audio player component for React applications inspired by the Radix UI library.
 
 ## Features
 
-- 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume)
-- ⏱️ Playback rate adjustment
-- 📝 Caption/subtitle support
-- ⌨️ Keyboard navigation and screen reader support
+- 🎨 Style the components any way you want
 - 🧩 Composable component architecture
-- 📱 Responsive design with support for horizontal and vertical layouts
+- 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume, playbackRate)
+- ⌨️ Keyboard navigation and screen reader support
+- 📝 Caption/subtitle support
+- ✔️ No dependencies except React 16.8+
 
 ## Basic Usage
 
@@ -117,7 +117,7 @@ npm run test:unit
 npm run test:e2e
 ```
 
-## Browser Support
+## Requrements and 
 
 - Chrome, Firefox, Safari, Edge
 - React 16.8+ (requires Hooks)
