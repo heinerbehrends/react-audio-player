@@ -1,54 +1,137 @@
-# React + TypeScript + Vite
+# React Audio Player
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fully accessible, customizable audio player component for React applications.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume)
+- ⏱️ Playback rate adjustment
+- 📝 Caption/subtitle support
+- ⌨️ Complete keyboard navigation and screen reader support
+- 🧩 Composable component architecture
+- 📱 Responsive design with support for horizontal and vertical layouts
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install react-audio-player
+# or
+yarn add react-audio-player
+# or
+pnpm add react-audio-player
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Basic Usage
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```jsx
+import { AudioPlayer, PlayButton, Timeline, Volume } from "react-audio-player";
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+function App() {
+  return (
+    <AudioPlayer
+      audioFiles={[{ src: "audio-file.mp3", captionSrc: "captions.vtt" }]}
+    >
+      <Timeline>
+        <Timeline.Seek>
+          <Timeline.Progress />
+        </Timeline.Seek>
+        <Timeline.Drag />
+      </Timeline>
+
+      <PlayButton>
+        <PlayButton.Playing>Pause</PlayButton.Playing>
+        <PlayButton.Paused>Play</PlayButton.Paused>
+      </PlayButton>
+
+      <Volume>
+        <Volume.Set>
+          <Volume.Progress />
+        </Volume.Set>
+        <Volume.Drag />
+      </Volume>
+    </AudioPlayer>
+  );
+}
 ```
+
+## Components
+
+### `<AudioPlayer>`
+
+The root component that provides context to all child components.
+
+```jsx
+<AudioPlayer
+  audioFiles={[
+    { src: "audio.mp3", type: "audio/mpeg", captionSrc: "captions.vtt" },
+  ]}
+>
+  {/* Player UI components */}
+</AudioPlayer>
+```
+
+### Timeline Components
+
+- `<Timeline>` - Container for timeline components
+- `<Timeline.Seek>` - Clickable area for seeking
+- `<Timeline.Progress>` - Visual progress indicator
+- `<Timeline.Drag>` - Draggable control for seeking
+
+### Playback Control Components
+
+- `<PlayButton>` - Toggle play/pause
+- `<MuteButton>` - Toggle mute
+- `<Seek amount={10}>` - Skip forward/backward by amount in seconds
+
+### Volume Components
+
+- `<Volume orientation="horizontal|vertical">` - Volume control container
+- `<Volume.Set>` - Clickable area for volume adjustment
+- `<Volume.Progress>` - Visual volume level indicator
+- `<Volume.Drag>` - Draggable control for volume
+
+### Time Display Components
+
+- `<Time.Elapsed>` - Display current playback time
+- `<Time.Remaining>` - Display remaining time
+- `<Time.Duration>` - Display total duration
+
+### Playback Rate Components
+
+- `<PlaybackRate.Display>` - Shows current playback rate
+- `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
+- `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
+
+### Caption Components
+
+- `<Captions>` - Display synchronized captions/subtitles
+
+## Accessibility
+
+This player fully supports:
+
+- Keyboard navigation
+- ARIA attributes
+- Screen reader announcements
+- Focus management
+
+## Testing
+
+```bash
+# Run unit tests (JSDOM)
+npm test
+# or
+npm run test:unit
+
+# Run end-to-end tests (Playwright)
+npm run test:e2e
+```
+
+## Browser Support
+
+- Chrome, Firefox, Safari, Edge
+- React 16.8+ (requires Hooks)
+
+## License
+
+MIT
