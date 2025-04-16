@@ -44,6 +44,15 @@ function App() {
 }
 ```
 
+## Accessibility
+
+This player fully supports:
+
+- Keyboard navigation
+- ARIA attributes
+- Screen reader announcements
+- Focus management
+
 ## Components
 
 ### `<AudioPlayer>`
@@ -92,18 +101,15 @@ The root component that provides context to all child components.
 - `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
 - `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
 
-### Caption Components
+### Caption Component
 
 - `<Captions>` - Display synchronized captions/subtitles
 
-## Accessibility
+### Error Component
 
-This player fully supports:
+- `<Error>` - Displays a customizable message on error
 
-- Keyboard navigation
-- ARIA attributes
-- Screen reader announcements
-- Focus management
+
 
 ## Testing
 
