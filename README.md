@@ -30,7 +30,7 @@ import { AudioPlayer, PlayButton, Timeline, Volume } from "react-audio-player";
 function App() {
   return (
     <AudioPlayer
-      audioFiles={[{ src: "audio-file.mp3", captionSrc: "captions.vtt" }]}
+      audioFiles={[{ src: "audio-file.mp3" }]}
     >
       <Timeline>
         <Timeline.Seek>
