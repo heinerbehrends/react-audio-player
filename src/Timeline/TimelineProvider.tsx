@@ -33,7 +33,7 @@ export const TimelineProvider = memo(function TimelineProvider({
   const { duration } = getPlayerState();
   const [state, dispatch] = useReducer(timelineReducer, {
     ...initialState,
-    minValue: 0,
+    value: 0,
     maxValue: duration,
     orientation: "horizontal",
   });

@@ -37,7 +37,7 @@ function App() {
             border: "none",
           }}
         />
-        {/* <Debug type="timeline" /> */}
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>

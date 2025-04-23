@@ -7,7 +7,7 @@ export function useSetPlaybackRate() {
   const {
     sliderStart,
     sliderLength,
-    handleTimelineAction,
+    handleSliderAction,
     minValue,
     maxValue,
     orientation,
@@ -23,15 +23,14 @@ export function useSetPlaybackRate() {
         minValue,
         maxValue,
       });
-      console.log("useSetPlaybackRate", value);
-      handleTimelineAction({
+      handleSliderAction({
         type: "CHANGE_VALUE",
         value,
         component: "playbackRate",
       });
     },
     [
-      handleTimelineAction,
+      handleSliderAction,
       minValue,
       maxValue,
       orientation,

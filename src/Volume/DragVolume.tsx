@@ -8,7 +8,6 @@ import { useDragProps } from "../Slider/sliderHooks";
 
 export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(VolumeContext);
-  console.log("VolumeDragButton", context);
   const { handleDragStart, handleDragEnd, handleDrag } = useDragProps({
     context,
     component: "volume",

@@ -61,7 +61,6 @@ export function RateDisplay({ ...props }: RateDisplayProps) {
 function useSetPlaybackRate(rate: number) {
   const { handlePlayerAction } = useContext(PlayerContext);
   const setPlaybackRate = useCallback(() => {
-    console.log("setPlaybackRate", rate);
     handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
   }, [handlePlayerAction, rate]);
   return setPlaybackRate;

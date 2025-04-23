@@ -13,9 +13,14 @@ import { AudioContext } from "../AudioElement/AudioContext";
 type UseOffsetArgs = {
   context: SliderContext;
   getOffset: (args: GetOffsetArgs) => number;
+  isStepped?: boolean;
 };
 
-export function useOffset({ context, getOffset }: UseOffsetArgs) {
+export function useOffset({
+  context,
+  getOffset,
+  isStepped = false,
+}: UseOffsetArgs) {
   const {
     xyOffset,
     dragState,
@@ -37,6 +42,7 @@ export function useOffset({ context, getOffset }: UseOffsetArgs) {
       dragState,
       orientation,
       volumeState,
+      isStepped,
     });
   }, [
     value,
@@ -48,6 +54,7 @@ export function useOffset({ context, getOffset }: UseOffsetArgs) {
     minValue,
     maxValue,
     getOffset,
+    isStepped,
   ]);
 }
 
@@ -60,6 +67,7 @@ export type GetOffsetArgs = {
   dragState: "dragging" | "idle";
   orientation?: "horizontal" | "vertical";
   volumeState?: "muted" | "low" | "high";
+  isStepped?: boolean;
 };
 
 export function getOffset({
@@ -70,8 +78,9 @@ export function getOffset({
   maxValue = 1,
   dragState,
   orientation = "horizontal",
+  isStepped = false,
 }: GetOffsetArgs): number {
-  if (dragState === "dragging") {
+  if (dragState === "dragging" && !isStepped) {
     return xyOffset;
   }
   const range = maxValue - minValue;
@@ -137,14 +146,16 @@ export function useHandleRef(context: SliderContext) {
 type UseDragStylesArgs = {
   context: SliderContext;
   style: React.CSSProperties;
+  isStepped?: boolean;
 };
 
 export function useDragStyles({
   context,
   style,
+  isStepped = false,
 }: UseDragStylesArgs): React.CSSProperties {
   const { orientation } = context;
-  const offset = useOffset({ context, getOffset });
+  const offset = useOffset({ context, getOffset, isStepped });
   return useMemo(
     () => ({
       position: "absolute",
@@ -167,6 +178,7 @@ type UseHandleDragArgs = {
   type: SliderTypes;
   maxValue?: number;
   minValue?: number;
+  step?: number;
 };
 
 export function useHandleDrag({
@@ -174,8 +186,8 @@ export function useHandleDrag({
   type,
   maxValue = 1,
   minValue = 0,
+  step = 0,
 }: UseHandleDragArgs) {
-  console.log("useHandleDrag called with type:", type, "context:", context);
   const {
     handleSliderAction,
     orientation,
@@ -186,7 +198,6 @@ export function useHandleDrag({
 
   return useCallback(
     (event: SliderEvent) => {
-      console.log("drag handler executed for type:", type);
       const clientXY = getClientXY(event, orientation);
       if (dragState !== "dragging") {
         return;
@@ -224,6 +235,7 @@ export function useHandleDrag({
           orientation,
           minValue,
           maxValue,
+          step,
         });
         return;
       }
@@ -237,6 +249,7 @@ export function useHandleDrag({
       maxValue,
       minValue,
       dragState,
+      step,
     ]
   );
 }
@@ -262,8 +275,14 @@ export function useHandleDragEnd({
   component: SliderTypes;
 }) {
   const { getPlayerState } = useContext(PlayerContext);
-  const { handleSliderAction, orientation, sliderLength, sliderStart } =
-    context;
+  const {
+    handleSliderAction,
+    orientation,
+    sliderLength,
+    sliderStart,
+    minValue,
+    maxValue,
+  } = context;
   const { duration } = getPlayerState();
 
   return useCallback(
@@ -273,7 +292,8 @@ export function useHandleDragEnd({
         type: "DRAG_END",
         component,
         clientXY,
-        duration,
+        minValue,
+        maxValue: component === "timeline" ? duration : maxValue,
         sliderLength,
         sliderStart,
         orientation,
@@ -286,6 +306,8 @@ export function useHandleDragEnd({
       sliderStart,
       orientation,
       component,
+      minValue,
+      maxValue,
     ]
   );
 }
@@ -381,17 +403,31 @@ type UseSliderDragPropsArgs = {
   style: React.CSSProperties;
   context: SliderContext;
   component: SliderTypes;
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
+  isStepped?: boolean;
 };
 
 export function useDragProps({
   style,
   context,
   component,
+  minValue = 0,
+  maxValue = 1,
+  step = 0,
+  isStepped = false,
 }: UseSliderDragPropsArgs) {
   const handleDragStart = useHandleDragStart(context);
   const handleDragEnd = useHandleDragEnd({ context, component });
-  const handleDrag = useHandleDrag({ context, type: component });
-  const dragStyles = useDragStyles({ context, style });
+  const handleDrag = useHandleDrag({
+    context,
+    type: component,
+    minValue,
+    maxValue,
+    step,
+  });
+  const dragStyles = useDragStyles({ context, style, isStepped });
 
   return useMemo(
     () => ({

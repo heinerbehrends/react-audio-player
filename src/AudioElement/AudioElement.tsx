@@ -66,7 +66,6 @@ function useHandleVolumeChange() {
   const { handlePlayerAction, isMuted } = useContext(PlayerContext);
   const { audioElementRef, volumeCallbackRef } = useContext(AudioContext);
   return useCallback(() => {
-    console.log("useHandleVolumeChange", isMuted);
     if (isMuted) return;
     const volume = audioElementRef.current?.volume ?? 0;
     const volumeState = areNumbersClose(volume, 0)
@@ -120,11 +119,6 @@ function usePlayerCallbacks() {
 
 function useHandlePlaybackRateChange() {
   const { audioElementRef, playbackRateCallbackRef } = useContext(AudioContext);
-  console.log(
-    "useHandlePlaybackRateChange",
-    audioElementRef.current?.playbackRate,
-    playbackRateCallbackRef?.current?.handlePlaybackRateAction
-  );
   return useCallback(() => {
     if (playbackRateCallbackRef?.current?.handlePlaybackRateAction) {
       playbackRateCallbackRef.current.handlePlaybackRateAction({

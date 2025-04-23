@@ -8,7 +8,6 @@ import { useDragProps } from "../Slider/sliderHooks";
 
 export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(TimelineContext);
-  console.log("TimelineDragButton", context);
   const { handleDragStart, handleDragEnd, handleDrag, style } = useDragProps({
     style: props.style ?? {},
     context,

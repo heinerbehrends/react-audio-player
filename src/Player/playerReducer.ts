@@ -14,6 +14,7 @@ export function playerReducer(
       }
       return state;
     }
+
     case "TOGGLE_PLAY": {
       if (state.playerState === "playing") {
         return {
@@ -29,6 +30,7 @@ export function playerReducer(
       }
       return state;
     }
+
     case "TOGGLE_MUTE": {
       const newVolumeState = state.isMuted ? state.volumeState : "muted";
       return {
@@ -37,6 +39,7 @@ export function playerReducer(
         volumeState: newVolumeState,
       };
     }
+
     case "SET_PLAYBACK_RATE": {
       const limitedRate = Math.min(Math.max(action.playbackRate, 0.5), 4);
       return {
@@ -44,12 +47,14 @@ export function playerReducer(
         playbackRate: limitedRate,
       };
     }
+
     case "AUDIO_FILE_ENDED": {
       return {
         ...state,
         playerState: "paused" as const,
       };
     }
+
     case "TOGGLE_TIME_DISPLAY": {
       return {
         ...state,
@@ -59,28 +64,34 @@ export function playerReducer(
             : ("elapsed" as const),
       };
     }
+
     case "AUDIO_FILE_ERROR": {
       return { ...state, playerState: "error" as const };
     }
+
     case "CAPTION_CUE_CHANGE": {
       return {
         ...state,
         cues: action.cues as VTTCue[],
       };
     }
+
     case "SET_VOLUME_STATE": {
       return {
         ...state,
         volumeState: action.volumeState,
       };
     }
+
     case "UNMUTE": {
       if (!state.isMuted) return state;
       return { ...state, isMuted: false };
     }
+
     case "PAUSE": {
       return { ...state, playerState: "paused" as const };
     }
+
     default: {
       return state;
     }

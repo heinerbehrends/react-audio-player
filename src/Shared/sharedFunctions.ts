@@ -9,6 +9,7 @@ type CalculateValueArgs = {
   orientation?: "horizontal" | "vertical";
   minValue?: number;
   maxValue?: number;
+  step?: number;
 };
 
 export function calculateValue({
@@ -27,4 +28,22 @@ export function calculateValue({
   const mappedValue = minValue + normalizedProgress * valueRange;
 
   return Math.max(minValue, Math.min(maxValue, mappedValue));
+}
+
+type CalculateSteppedValueArgs = {
+  value: number;
+  minValue: number;
+  maxValue: number;
+  step: number;
+};
+
+export function calculateSteppedValue({
+  value,
+  minValue,
+  maxValue,
+  step,
+}: CalculateSteppedValueArgs): number {
+  const stepsFromMin = Math.round((value - minValue) / step);
+  const steppedValue = minValue + stepsFromMin * step;
+  return Math.min(Math.max(steppedValue, minValue), maxValue);
 }

@@ -35,7 +35,7 @@ export function Debug({
         borderRadius: "4px",
         position: "absolute",
         top: 80,
-        left: type === "playbackRate" ? 60 : 400,
+        left: type === "timeline" ? 60 : 400,
       }}
     >
       <h3>Player</h3>

@@ -13,6 +13,7 @@ export function timelineReducer(
       if (action.component !== "timeline") return state;
       return { ...state, value: action.value };
     }
+
     case "SLIDER_LOADED": {
       return {
         ...state,
@@ -20,6 +21,7 @@ export function timelineReducer(
         sliderLength: action.sliderLength,
       };
     }
+
     case "DRAG_START": {
       if (state.dragState === "dragging") {
         return state;
@@ -30,6 +32,7 @@ export function timelineReducer(
         xyOffset: action.clientXY,
       };
     }
+
     case "DRAG": {
       if (state.dragState !== "dragging") {
         return state;
@@ -41,12 +44,13 @@ export function timelineReducer(
         Math.max(action.clientXY, state.sliderStart),
         state.sliderStart + state.sliderLength
       );
-      const xOffset = restrictedClientXY - state.sliderStart;
+      const xyOffset = restrictedClientXY - state.sliderStart;
       return {
         ...state,
-        xyOffset: xOffset,
+        xyOffset,
       };
     }
+
     case "DRAG_END": {
       if (state.dragState !== "dragging") {
         return state;
@@ -57,10 +61,10 @@ export function timelineReducer(
       const time = calculateValue({
         xyOffset: action.clientXY,
         sliderLength: state.sliderLength,
-        maxValue: action.duration,
+        maxValue: action.maxValue,
         sliderStart: state.sliderStart,
       });
-      const limitedTime = Math.min(Math.max(time, 0), action.duration);
+      const limitedTime = Math.min(Math.max(time, 0), action.maxValue);
       return {
         ...state,
         dragState: "idle" as const,
@@ -68,6 +72,7 @@ export function timelineReducer(
         value: limitedTime,
       };
     }
+
     case "CANCEL_DRAG": {
       return {
         ...state,
@@ -75,6 +80,7 @@ export function timelineReducer(
         xyOffset: 0,
       };
     }
+
     default: {
       return state;
     }

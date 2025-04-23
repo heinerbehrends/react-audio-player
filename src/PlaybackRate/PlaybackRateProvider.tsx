@@ -49,7 +49,6 @@ export function PlaybackRateProvider({
 
   const handlePlaybackRateAction = useCallback(
     (action: SliderProviderAction) => {
-      console.log("handlePlaybackRateAction", action);
       if (isSliderSideEffect(action)) {
         handleSideEffect(action, audioElement);
       }

@@ -1,4 +1,3 @@
-import { calculateValue } from "../Shared/sharedFunctions";
 import type {
   SliderContext,
   SliderContextAction,
@@ -8,7 +7,6 @@ export function volumeReducer(
   state: SliderContext,
   action: SliderContextAction
 ): SliderContext {
-  console.log("volumeReducer", action);
   switch (action.type) {
     case "SLIDER_LOADED": {
       return {
@@ -17,6 +15,7 @@ export function volumeReducer(
         sliderLength: action.sliderLength,
       };
     }
+
     case "DRAG_START": {
       if (state.dragState === "dragging") {
         return state;
@@ -27,6 +26,7 @@ export function volumeReducer(
         xyOffset: action.clientXY,
       };
     }
+
     case "DRAG": {
       if (state.dragState !== "dragging") {
         return state;
@@ -40,40 +40,28 @@ export function volumeReducer(
       );
       const xOffset = restrictedClientXY - state.sliderStart;
 
-      const volume =
-        state.orientation === "horizontal"
-          ? xOffset / state.sliderLength
-          : 1 - xOffset / state.sliderLength;
-      const limitedValue = Math.min(Math.max(volume, 0), 1);
-
       return {
         ...state,
         xyOffset: xOffset,
-        value: limitedValue,
       };
     }
+
     case "DRAG_END": {
       if (state.dragState !== "dragging") return state;
       if (action.component !== "volume") return state;
-      const volume = calculateValue({
-        xyOffset: action.clientXY,
-        sliderLength: state.sliderLength,
-        sliderStart: state.sliderStart,
-        orientation: state.orientation,
-      });
-      const limitedValue = Math.min(Math.max(volume, 0), 1);
       return {
         ...state,
         dragState: "idle" as const,
         xyOffset: 0,
-        value: limitedValue,
       };
     }
+
     case "UPDATE_UI_VALUE": {
       if (action.component !== "volume") return state;
       const limitedValue = Math.min(Math.max(action.value, 0), 1);
       return { ...state, value: limitedValue };
     }
+
     case "CANCEL_DRAG": {
       return {
         ...state,
@@ -81,6 +69,7 @@ export function volumeReducer(
         xyOffset: 0,
       };
     }
+
     default: {
       return state;
     }

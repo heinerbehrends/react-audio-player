@@ -52,7 +52,7 @@ export type DragEndAction =
   | {
       type: "DRAG_END";
       clientXY: number;
-      duration: number;
+      maxValue: number;
       component: "timeline";
       sliderLength: number;
       sliderStart: number;
@@ -131,7 +131,7 @@ export type SliderContext = {
 export const initialState: SliderContext = {
   sliderStart: 0,
   sliderLength: 0,
-  value: 0,
+  value: 1,
   minValue: 0,
   maxValue: 1,
   xyOffset: 0,
