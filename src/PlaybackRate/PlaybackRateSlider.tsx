@@ -1,47 +1,45 @@
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
-import { Container } from "../Timeline/TimelineContainer";
+import { Container } from "../Slider/Container";
+import { Indicator } from "../Slider/Indicator";
+import { SetRelativeButton } from "../Slider/SetRelativeButton";
 import { DragPlaybackRate } from "./DragPlaybackRate";
 import { useContext } from "react";
 import { PlaybackRateContext } from "./PlaybackRateContext";
-import { Indicator } from "../Slider/Indicator";
-import {
-  useHandleSeek,
-  useTimelineIndicatorStyles,
-} from "../Timeline/timelineHooks";
-import { SetRelativeButton } from "../Slider/SetRelativeButton";
+import { useIndicatorStyles, useSetValue } from "../Slider/sliderHooks";
 import { useHandleRef } from "../Slider/sliderHooks";
 
-type PlaybackRateSlider = React.FC<
+type PlaybackRateSliderComponent = React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
     children: React.ReactNode;
-  } & {
-    Progress: typeof PlaybackRateProgress;
-    SetPlaybackRate: typeof SetPlaybackRate;
-    Drag: typeof DragPlaybackRate;
   }
->;
+> & {
+  Progress: typeof Progress;
+  Set: typeof Set;
+  Drag: typeof DragPlaybackRate;
+};
 
-function SetPlaybackRate({ children }: React.HTMLAttributes<HTMLDivElement>) {
+function Progress(props: React.HTMLAttributes<HTMLDivElement>) {
   const context = useContext(PlaybackRateContext);
-  const handleRef = useHandleRef(context);
-  const handlePointerDown = useHandleSeek();
-  return (
-    <SetRelativeButton
-      handleRef={handleRef}
-      handlePointerDown={handlePointerDown}
-    >
-      {children}
-    </SetRelativeButton>
-  );
-}
-
-function PlaybackRateProgress(props: React.HTMLAttributes<HTMLDivElement>) {
-  const context = useContext(PlaybackRateContext);
-  const style = useTimelineIndicatorStyles({
+  const style = useIndicatorStyles({
     context,
     style: props.style ?? {},
   });
   return <Indicator {...props} style={style} />;
+}
+
+function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
+  const context = useContext(PlaybackRateContext);
+  const handleRef = useHandleRef(context);
+  const handlePointerDown = useSetValue({ context, component: "playbackRate" });
+  return (
+    <SetRelativeButton
+      handleRef={handleRef}
+      handlePointerDown={handlePointerDown}
+      {...props}
+    >
+      {children}
+    </SetRelativeButton>
+  );
 }
 
 export const PlaybackRateSlider = Object.assign(
@@ -53,8 +51,8 @@ export const PlaybackRateSlider = Object.assign(
     );
   },
   {
-    Progress: PlaybackRateProgress,
-    Set: SetPlaybackRate,
+    Progress,
+    Set,
     Drag: DragPlaybackRate,
   }
-) as PlaybackRateSlider;
+) as PlaybackRateSliderComponent;

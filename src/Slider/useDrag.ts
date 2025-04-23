@@ -1,22 +1,19 @@
 import { useContext, useEffect } from "react";
-import { TimelineContextType } from "../Timeline/TimelineContext";
-import { VolumeContextType } from "../Volume/VolumeContext";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { PlaybackRateContextType } from "../PlaybackRate/PlaybackRateContext";
-
-type UseDragProps = {
-  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
-  onPointerUp: (event: PointerEvent | TouchEvent) => void;
-  onPointerMove: (event: PointerEvent | TouchEvent) => void;
-  onPointerCancel: () => void;
-};
+import { SliderContext } from "./SliderContext";
+import { SliderEvent } from "./sliderHooks";
 
 export function useDrag({
   context,
   onPointerUp,
   onPointerMove,
   onPointerCancel,
-}: UseDragProps) {
+}: {
+  context: SliderContext;
+  onPointerUp: (event: PointerEvent | TouchEvent) => void;
+  onPointerMove: (event: PointerEvent | TouchEvent) => void;
+  onPointerCancel: () => void;
+}) {
   const { dragState } = context;
   const {
     audioElementRef: { current: audioElement },
@@ -29,28 +26,37 @@ export function useDrag({
       return;
     }
 
+    function handlePointerMove(event: PointerEvent | TouchEvent) {
+      if (dragState !== "dragging") {
+        return;
+      }
+      onPointerMove(event);
+    }
+
     window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointercancel", onPointerCancel);
-    window.addEventListener("touchmove", onPointerMove);
+    window.addEventListener("touchmove", handlePointerMove);
     window.addEventListener("touchcancel", onPointerCancel);
 
     return () => {
       window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointercancel", onPointerCancel);
-      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchmove", handlePointerMove);
       window.removeEventListener("touchcancel", onPointerCancel);
     };
   }, [dragState, onPointerUp, onPointerMove, onPointerCancel, audioElement]);
 }
 
-function isTouchEvent(event: PointerEvent | TouchEvent): event is TouchEvent {
+function isTouchEvent(
+  event: SliderEvent
+): event is React.TouchEvent<HTMLButtonElement> {
   return "touches" in event;
 }
 
 export function getClientXY(
-  event: PointerEvent | TouchEvent,
+  event: SliderEvent,
   orientation: "horizontal" | "vertical"
 ): number {
   if (isTouchEvent(event)) {

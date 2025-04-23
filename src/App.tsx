@@ -11,6 +11,7 @@ import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { Debug } from "./Debug";
 import { useEffect, useState } from "react";
+import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 
 function App() {
   const searchParams = useUrlParams();
@@ -36,7 +37,7 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="timeline" />
+        {/* <Debug type="timeline" /> */}
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -81,8 +82,15 @@ function App() {
             border: "none",
           }}
         />
-        {/* <Debug type="volume" /> */}
+        <Debug type="volume" />
       </Volume>
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Set>
+          <PlaybackRateSlider.Progress />
+        </PlaybackRateSlider.Set>
+        <PlaybackRateSlider.Drag />
+        <Debug type="playbackRate" />
+      </PlaybackRateSlider>
       <PlaybackRate.Display />
       <PlaybackRate.Set rate={0.5}>
         <PlaybackRate.Current rate={0.5}>*</PlaybackRate.Current>

@@ -6,13 +6,14 @@ import {
   useContext,
   useEffect,
 } from "react";
-import { VolumeContext, initialState } from "./VolumeContext";
 import {
-  isTimelineAction,
-  isTimelineSideEffect,
-  TimelineContextType,
-  type TimelineProviderAction,
-} from "../Timeline/TimelineContext";
+  isSliderAction,
+  isSliderSideEffect,
+  initialState,
+  type SliderProviderAction,
+  type SliderContext,
+} from "../Slider/SliderContext";
+import { VolumeContext } from "./VolumeContext";
 import { volumeReducer } from "./volumeReducer";
 import { AudioContext } from "../AudioElement/AudioContext";
 
@@ -39,12 +40,12 @@ export const VolumeProvider = memo(function VolumeProvider({
     volumeCallbackRef,
   } = useContext(AudioContext);
 
-  const handleTimelineAction = useCallback(
-    (action: TimelineProviderAction) => {
-      if (isTimelineSideEffect(action)) {
+  const handleVolumeAction = useCallback(
+    (action: SliderProviderAction) => {
+      if (isSliderSideEffect(action)) {
         handleSideEffect(action, audioElement);
       }
-      if (isTimelineAction(action)) {
+      if (isSliderAction(action)) {
         dispatch(action);
       }
     },
@@ -55,13 +56,11 @@ export const VolumeProvider = memo(function VolumeProvider({
     if (!volumeCallbackRef.current) {
       return;
     }
-    volumeCallbackRef.current.handleVolumeAction = handleTimelineAction;
-  }, [handleTimelineAction, volumeCallbackRef]);
+    volumeCallbackRef.current.handleVolumeAction = handleVolumeAction;
+  }, [handleVolumeAction, volumeCallbackRef]);
 
   const value = useMemo(() => {
-    const result: TimelineContextType & {
-      orientation: "horizontal" | "vertical";
-    } = {
+    const result: SliderContext = {
       sliderStart: state.sliderStart,
       sliderLength: state.sliderLength,
       value: state.value,
@@ -69,11 +68,12 @@ export const VolumeProvider = memo(function VolumeProvider({
       maxValue: state.maxValue,
       xyOffset: state.xyOffset,
       dragState: state.dragState,
-      handleTimelineAction,
+      handleSliderAction: handleVolumeAction,
       orientation,
+      step: state.step,
     };
     return result;
-  }, [state, handleTimelineAction, orientation]);
+  }, [state, handleVolumeAction, orientation]);
 
   return (
     <VolumeContext.Provider value={value}>{children}</VolumeContext.Provider>

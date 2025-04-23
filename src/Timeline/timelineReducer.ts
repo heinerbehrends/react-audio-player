@@ -1,12 +1,16 @@
 import { calculateValue } from "../Shared/sharedFunctions";
-import { TimelineContextType, TimelineContextAction } from "./TimelineContext";
+import type {
+  SliderContext,
+  SliderContextAction,
+} from "../Slider/SliderContext";
 
 export function timelineReducer(
-  state: TimelineContextType,
-  action: TimelineContextAction
-): TimelineContextType {
+  state: SliderContext,
+  action: SliderContextAction
+): SliderContext {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
+      if (action.component !== "timeline") return state;
       return { ...state, value: action.value };
     }
     case "SLIDER_LOADED": {

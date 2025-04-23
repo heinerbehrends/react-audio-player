@@ -1,20 +1,7 @@
 import { createContext } from "react";
-import { TimelineContextAction } from "../Timeline/TimelineContext";
+import { SliderContext } from "../Slider/SliderContext";
 
-export type PlaybackRateContextType = {
-  sliderStart: number;
-  sliderLength: number;
-  value: number;
-  minValue: number;
-  maxValue: number;
-  step: number;
-  xyOffset: number;
-  dragState: "idle" | "dragging";
-  orientation: "horizontal" | "vertical";
-  handleTimelineAction: (action: TimelineContextAction) => void;
-};
-
-export const PlaybackRateContext = createContext<PlaybackRateContextType>({
+export const PlaybackRateContext = createContext<SliderContext>({
   sliderStart: 0,
   sliderLength: 0,
   value: 0,
@@ -24,5 +11,5 @@ export const PlaybackRateContext = createContext<PlaybackRateContextType>({
   xyOffset: 0,
   dragState: "idle",
   orientation: "horizontal",
-  handleTimelineAction: () => {},
+  handleSliderAction: () => {},
 });

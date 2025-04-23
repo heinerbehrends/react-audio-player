@@ -1,13 +1,15 @@
 import { calculateValue } from "../Shared/sharedFunctions";
-import { TimelineContextAction } from "../Timeline/TimelineContext";
-import { PlaybackRateContextType } from "./PlaybackRateContext";
+import { SliderProviderAction } from "../Slider/SliderContext";
+import { SliderContext } from "../Slider/SliderContext";
 
 export function playbackRateReducer(
-  state: PlaybackRateContextType,
-  action: TimelineContextAction
-): PlaybackRateContextType {
+  state: SliderContext,
+  action: SliderProviderAction
+): SliderContext {
+  console.log("playbackRateReducer", action);
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
+      if (action.component !== "playbackRate") return state;
       return { ...state, value: action.value };
     }
     case "SLIDER_LOADED": {
@@ -31,7 +33,7 @@ export function playbackRateReducer(
       if (state.dragState !== "dragging") {
         return state;
       }
-      if (action.component !== "timeline") {
+      if (action.component !== "playbackRate") {
         return state;
       }
       const restrictedClientXY = Math.min(
@@ -48,21 +50,22 @@ export function playbackRateReducer(
       if (state.dragState !== "dragging") {
         return state;
       }
-      if (action.component !== "timeline") {
+      if (action.component !== "playbackRate") {
         return state;
       }
-      const time = calculateValue({
+      const value = calculateValue({
         xyOffset: action.clientXY,
         sliderLength: state.sliderLength,
-        maxValue: action.duration,
+        maxValue: action.maxValue,
+        minValue: action.minValue,
         sliderStart: state.sliderStart,
       });
-      const limitedTime = Math.min(Math.max(time, 0), action.duration);
+      const limitedValue = Math.min(Math.max(value, 0), action.maxValue);
       return {
         ...state,
         dragState: "idle" as const,
         xyOffset: 0,
-        value: limitedTime,
+        value: limitedValue,
       };
     }
     case "CANCEL_DRAG": {

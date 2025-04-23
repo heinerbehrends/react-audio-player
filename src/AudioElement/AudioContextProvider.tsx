@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import {
   AudioContext,
+  PlaybackRateProviderRef,
   VolumeProviderRef,
   type TimelineProviderRef,
 } from "./AudioContext";
@@ -19,6 +20,9 @@ export function AudioContextProvider({ children }: TimelineProviderProps) {
   const volumeCallbackRef = useRef<VolumeProviderRef>({
     handleVolumeAction: null,
   });
+  const playbackRateCallbackRef = useRef<PlaybackRateProviderRef>({
+    handlePlaybackRateAction: null,
+  });
 
   return (
     <AudioContext.Provider
@@ -27,6 +31,7 @@ export function AudioContextProvider({ children }: TimelineProviderProps) {
         handleSideEffect,
         timelineCallbackRef,
         volumeCallbackRef,
+        playbackRateCallbackRef,
       }}
     >
       {children}

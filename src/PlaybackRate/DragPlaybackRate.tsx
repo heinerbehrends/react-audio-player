@@ -1,23 +1,31 @@
 import { useContext } from "react";
 import { PlaybackRateContext } from "./PlaybackRateContext";
-import { useTimelineDragProps } from "../Timeline/timelineHooks";
 import { DragButton } from "../Slider/DragButton";
 import { useDrag } from "../Slider/useDrag";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useDragProps } from "../Slider/sliderHooks";
 
 export function DragPlaybackRate(
   props: React.HTMLAttributes<HTMLButtonElement>
 ) {
   const context = useContext(PlaybackRateContext);
-  const { handleDragStart, handleDragEnd, handleDrag, style } =
-    useTimelineDragProps({ style: props.style ?? {}, context });
+  console.log("DragPlaybackRate", context);
+  const { handleDragStart, handleDragEnd, handleDrag, style } = useDragProps({
+    style: props.style ?? {},
+    context,
+    component: "playbackRate",
+  });
   const handleDragCancel = useOnPointerCancel(context);
   const handleKeyDown = useHandleMediaKeys("playbackRate");
   useDrag({
     context,
-    onPointerUp: handleDragEnd,
-    onPointerMove: handleDrag,
+    onPointerUp: handleDragEnd as unknown as (
+      event: PointerEvent | TouchEvent
+    ) => void,
+    onPointerMove: handleDrag as unknown as (
+      event: PointerEvent | TouchEvent
+    ) => void,
     onPointerCancel: handleDragCancel,
   });
 

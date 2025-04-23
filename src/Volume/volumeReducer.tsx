@@ -1,13 +1,14 @@
 import { calculateValue } from "../Shared/sharedFunctions";
 import type {
-  TimelineContextType,
-  TimelineContextAction,
-} from "../Timeline/TimelineContext";
+  SliderContext,
+  SliderContextAction,
+} from "../Slider/SliderContext";
 
 export function volumeReducer(
-  state: TimelineContextType,
-  action: TimelineContextAction
-): TimelineContextType {
+  state: SliderContext,
+  action: SliderContextAction
+): SliderContext {
+  console.log("volumeReducer", action);
   switch (action.type) {
     case "SLIDER_LOADED": {
       return {
@@ -69,6 +70,7 @@ export function volumeReducer(
       };
     }
     case "UPDATE_UI_VALUE": {
+      if (action.component !== "volume") return state;
       const limitedValue = Math.min(Math.max(action.value, 0), 1);
       return { ...state, value: limitedValue };
     }

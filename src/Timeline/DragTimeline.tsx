@@ -4,19 +4,27 @@ import { DragButton } from "../Slider/DragButton";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useDrag } from "../Slider/useDrag";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useTimelineDragProps } from "./timelineHooks";
+import { useDragProps } from "../Slider/sliderHooks";
 
 export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(TimelineContext);
-  const { handleDragStart, handleDragEnd, handleDrag, style } =
-    useTimelineDragProps({ style: props.style ?? {}, context });
+  console.log("TimelineDragButton", context);
+  const { handleDragStart, handleDragEnd, handleDrag, style } = useDragProps({
+    style: props.style ?? {},
+    context,
+    component: "timeline",
+  });
   const handleKeyDown = useHandleMediaKeys("timeline");
   const handleDragCancel = useOnPointerCancel(context);
 
   useDrag({
     context,
-    onPointerUp: handleDragEnd,
-    onPointerMove: handleDrag,
+    onPointerUp: handleDragEnd as unknown as (
+      event: PointerEvent | TouchEvent
+    ) => void,
+    onPointerMove: handleDrag as unknown as (
+      event: PointerEvent | TouchEvent
+    ) => void,
     onPointerCancel: handleDragCancel,
   });
 

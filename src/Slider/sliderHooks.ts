@@ -1,13 +1,18 @@
 import { useCallback, useMemo, useRef, useEffect, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import type { TimelineContextType } from "../Timeline/TimelineContext";
-import type { VolumeContextType } from "../Volume/VolumeContext";
-import type { GetVolumeOffsetArgs } from "../Volume/volumeHooks";
-import type { PlaybackRateContextType } from "../PlaybackRate/PlaybackRateContext";
 import { getClientXY } from "./useDrag";
+import { calculateValue } from "../Shared/sharedFunctions";
+import {
+  isSliderAction,
+  isSliderSideEffect,
+  type SliderProviderAction,
+  type SliderContext,
+} from "./SliderContext";
+import { handleSideEffect } from "../AudioElement/handleSideEffect";
+import { AudioContext } from "../AudioElement/AudioContext";
 type UseOffsetArgs = {
-  context: VolumeContextType | TimelineContextType | PlaybackRateContextType;
-  getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
+  context: SliderContext;
+  getOffset: (args: GetOffsetArgs) => number;
 };
 
 export function useOffset({ context, getOffset }: UseOffsetArgs) {
@@ -81,22 +86,18 @@ export function getOffset({
   return 0;
 }
 
-export function useOnPointerCancel(
-  context: TimelineContextType | VolumeContextType | PlaybackRateContextType
-) {
-  const { handleTimelineAction } = context;
+export function useOnPointerCancel(context: SliderContext) {
+  const { handleSliderAction } = context;
 
   return useCallback(() => {
-    handleTimelineAction({
+    handleSliderAction({
       type: "CANCEL_DRAG",
     });
-  }, [handleTimelineAction]);
+  }, [handleSliderAction]);
 }
 
-export function useHandleRef(
-  context: TimelineContextType | VolumeContextType | PlaybackRateContextType
-) {
-  const { handleTimelineAction, orientation } = context;
+export function useHandleRef(context: SliderContext) {
+  const { handleSliderAction, orientation } = context;
   const observerRef = useRef<ResizeObserver>();
 
   const handleRef = useCallback(
@@ -107,7 +108,7 @@ export function useHandleRef(
 
       observerRef.current = new ResizeObserver(() => {
         const rect = element.getBoundingClientRect();
-        handleTimelineAction({
+        handleSliderAction({
           type: "SLIDER_LOADED",
           sliderStart: orientation === "horizontal" ? rect.left : rect.top,
           sliderLength: orientation === "horizontal" ? rect.width : rect.height,
@@ -115,7 +116,7 @@ export function useHandleRef(
       });
 
       const rect = element.getBoundingClientRect();
-      handleTimelineAction({
+      handleSliderAction({
         type: "SLIDER_LOADED",
         sliderStart: orientation === "horizontal" ? rect.left : rect.top,
         sliderLength: orientation === "horizontal" ? rect.width : rect.height,
@@ -123,7 +124,7 @@ export function useHandleRef(
 
       observerRef.current.observe(element);
     },
-    [handleTimelineAction, orientation]
+    [handleSliderAction, orientation]
   );
 
   useEffect(() => {
@@ -134,7 +135,7 @@ export function useHandleRef(
 }
 
 type UseDragStylesArgs = {
-  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
+  context: SliderContext;
   style: React.CSSProperties;
 };
 
@@ -161,51 +162,9 @@ export function useDragStyles({
   );
 }
 
-type UseIndicatorStylesArgs = {
-  context: TimelineContextType | VolumeContextType;
-  style: React.CSSProperties;
-  type?: "volume" | "timeline";
-  getOffset: (args: GetOffsetArgs | GetVolumeOffsetArgs) => number;
-  dragState: "dragging" | "idle";
-};
-
-export function useIndicatorStyles({
-  context,
-  style,
-  type,
-  getOffset,
-  dragState,
-}: UseIndicatorStylesArgs): React.CSSProperties {
-  const { orientation } = context;
-  const offset = useOffset({ context, getOffset });
-  let progress = offset / context.sliderLength;
-
-  if (
-    type === "volume" &&
-    orientation === "vertical" &&
-    dragState === "dragging"
-  ) {
-    progress = 1 - progress;
-  }
-
-  return useMemo(
-    () => ({
-      transform:
-        orientation === "horizontal"
-          ? `scaleX(${progress})`
-          : `scaleY(${progress})`,
-      width: "100%",
-      height: "100%",
-      transformOrigin: orientation === "horizontal" ? "left" : "bottom",
-      ...style,
-    }),
-    [progress, orientation, style]
-  );
-}
-
 type UseHandleDragArgs = {
-  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
-  type: "timeline" | "volume" | "playbackRate";
+  context: SliderContext;
+  type: SliderTypes;
   maxValue?: number;
   minValue?: number;
 };
@@ -216,16 +175,25 @@ export function useHandleDrag({
   maxValue = 1,
   minValue = 0,
 }: UseHandleDragArgs) {
-  const { handleTimelineAction, orientation, sliderLength, sliderStart } =
-    context;
+  console.log("useHandleDrag called with type:", type, "context:", context);
+  const {
+    handleSliderAction,
+    orientation,
+    sliderLength,
+    sliderStart,
+    dragState,
+  } = context;
 
   return useCallback(
-    (event: PointerEvent | TouchEvent) => {
+    (event: SliderEvent) => {
+      console.log("drag handler executed for type:", type);
       const clientXY = getClientXY(event, orientation);
-
+      if (dragState !== "dragging") {
+        return;
+      }
       // Create component-specific actions
       if (type === "timeline") {
-        handleTimelineAction({
+        handleSliderAction({
           type: "DRAG",
           component: "timeline",
           clientXY,
@@ -236,7 +204,7 @@ export function useHandleDrag({
         return;
       }
       if (type === "volume") {
-        handleTimelineAction({
+        handleSliderAction({
           type: "DRAG",
           component: "volume",
           clientXY,
@@ -247,7 +215,7 @@ export function useHandleDrag({
         return;
       }
       if (type === "playbackRate") {
-        handleTimelineAction({
+        handleSliderAction({
           type: "DRAG",
           component: "playbackRate",
           clientXY,
@@ -261,13 +229,195 @@ export function useHandleDrag({
       }
     },
     [
-      handleTimelineAction,
+      handleSliderAction,
       type,
       orientation,
       sliderLength,
       sliderStart,
       maxValue,
       minValue,
+      dragState,
     ]
   );
+}
+
+export type SliderTypes = "timeline" | "volume" | "playbackRate";
+export type SliderEvent =
+  | React.PointerEvent<HTMLButtonElement>
+  | React.TouchEvent<HTMLButtonElement>;
+
+export function useHandleDragStart(context: SliderContext) {
+  const { handleSliderAction: handleTimelineAction } = context;
+  const offset = useOffset({ context, getOffset });
+  return useCallback(() => {
+    handleTimelineAction({ type: "DRAG_START", clientXY: offset });
+  }, [handleTimelineAction, offset]);
+}
+
+export function useHandleDragEnd({
+  context,
+  component,
+}: {
+  context: SliderContext;
+  component: SliderTypes;
+}) {
+  const { getPlayerState } = useContext(PlayerContext);
+  const { handleSliderAction, orientation, sliderLength, sliderStart } =
+    context;
+  const { duration } = getPlayerState();
+
+  return useCallback(
+    (event: SliderEvent) => {
+      const clientXY = getClientXY(event, orientation);
+      handleSliderAction({
+        type: "DRAG_END",
+        component,
+        clientXY,
+        duration,
+        sliderLength,
+        sliderStart,
+        orientation,
+      });
+    },
+    [
+      handleSliderAction,
+      duration,
+      sliderLength,
+      sliderStart,
+      orientation,
+      component,
+    ]
+  );
+}
+
+export function useSetValue({
+  context,
+  component,
+}: {
+  context: SliderContext;
+  component: SliderTypes;
+}) {
+  const {
+    sliderStart,
+    sliderLength,
+    handleSliderAction,
+    orientation,
+    minValue,
+    maxValue,
+  } = context;
+  return useCallback(
+    (event: SliderEvent) => {
+      const xyOffset = getClientXY(event, orientation);
+      const value = calculateValue({
+        xyOffset,
+        sliderStart,
+        sliderLength,
+        minValue,
+        maxValue,
+        orientation,
+      });
+
+      handleSliderAction({
+        type: "CHANGE_VALUE",
+        value,
+        component,
+      });
+    },
+    [
+      handleSliderAction,
+      sliderStart,
+      sliderLength,
+      orientation,
+      minValue,
+      maxValue,
+      component,
+    ]
+  );
+}
+
+type UseIndicatorStylesArgs = {
+  context: SliderContext;
+  style: React.CSSProperties;
+  type?: SliderTypes;
+};
+
+export function useIndicatorStyles({
+  context,
+  style,
+  type = "timeline",
+}: UseIndicatorStylesArgs): React.CSSProperties {
+  const progress = useProgress({ context, getOffset, type });
+  return useMemo(
+    () => ({
+      transform: `scaleX(${progress})`,
+      width: "100%",
+      height: "100%",
+      transformOrigin: "left",
+      ...style,
+    }),
+    [progress, style]
+  );
+}
+
+type UseProgressArgs = {
+  context: SliderContext;
+  getOffset: (args: GetOffsetArgs) => number;
+  type?: SliderTypes;
+};
+
+function useProgress({
+  context,
+  getOffset,
+  type = "timeline",
+}: UseProgressArgs): number {
+  const { orientation } = context;
+  const isVerticalVolume = type === "volume" && orientation === "vertical";
+  const offset = useOffset({ context, getOffset });
+  const progress = offset / context.sliderLength;
+  return isVerticalVolume ? 1 - progress : progress;
+}
+
+type UseSliderDragPropsArgs = {
+  style: React.CSSProperties;
+  context: SliderContext;
+  component: SliderTypes;
+};
+
+export function useDragProps({
+  style,
+  context,
+  component,
+}: UseSliderDragPropsArgs) {
+  const handleDragStart = useHandleDragStart(context);
+  const handleDragEnd = useHandleDragEnd({ context, component });
+  const handleDrag = useHandleDrag({ context, type: component });
+  const dragStyles = useDragStyles({ context, style });
+
+  return useMemo(
+    () => ({
+      handleDragStart,
+      handleDragEnd,
+      handleDrag,
+      style: dragStyles,
+    }),
+    [handleDragStart, handleDragEnd, handleDrag, dragStyles]
+  );
+}
+
+export function useHandleAction({
+  dispatch,
+  action,
+}: {
+  dispatch: React.Dispatch<SliderProviderAction>;
+  action: SliderProviderAction;
+}) {
+  const {
+    audioElementRef: { current: audioElement },
+  } = useContext(AudioContext);
+  if (isSliderSideEffect(action)) {
+    handleSideEffect(action, audioElement);
+  }
+  if (isSliderAction(action)) {
+    dispatch(action);
+  }
 }

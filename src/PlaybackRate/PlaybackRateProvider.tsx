@@ -1,12 +1,15 @@
-import { useCallback, useMemo, useReducer } from "react";
-import { TimelineContextAction } from "../Timeline/TimelineContext";
+import { useCallback, useContext, useEffect, useMemo, useReducer } from "react";
 import {
-  PlaybackRateContext,
-  PlaybackRateContextType,
-} from "./PlaybackRateContext";
+  type SliderProviderAction,
+  isSliderSideEffect,
+  isSliderAction,
+  SliderContext,
+} from "../Slider/SliderContext";
+import { PlaybackRateContext } from "./PlaybackRateContext";
 import { playbackRateReducer } from "./playbackRateReducer";
+import { AudioContext } from "../AudioElement/AudioContext";
 
-const initialState: PlaybackRateContextType = {
+const initialState: SliderContext = {
   sliderStart: 0,
   sliderLength: 0,
   value: 1,
@@ -16,7 +19,7 @@ const initialState: PlaybackRateContextType = {
   orientation: "horizontal",
   xyOffset: 0,
   dragState: "idle",
-  handleTimelineAction: () => {},
+  handleSliderAction: () => {},
 };
 
 type PlaybackRateProviderProps = {
@@ -38,16 +41,37 @@ export function PlaybackRateProvider({
     maxValue,
     step,
   });
+  const {
+    audioElementRef: { current: audioElement },
+    handleSideEffect,
+    playbackRateCallbackRef,
+  } = useContext(AudioContext);
+
   const handlePlaybackRateAction = useCallback(
-    (action: TimelineContextAction) => {
-      dispatch(action);
+    (action: SliderProviderAction) => {
+      console.log("handlePlaybackRateAction", action);
+      if (isSliderSideEffect(action)) {
+        handleSideEffect(action, audioElement);
+      }
+      if (isSliderAction(action)) {
+        dispatch(action);
+      }
     },
-    [dispatch]
+    [audioElement, handleSideEffect]
   );
+
+  useEffect(() => {
+    if (!playbackRateCallbackRef?.current) {
+      return;
+    }
+    playbackRateCallbackRef.current.handlePlaybackRateAction =
+      handlePlaybackRateAction;
+  }, [handlePlaybackRateAction, playbackRateCallbackRef]);
+
   const value = useMemo(() => {
-    const result: PlaybackRateContextType = {
+    const result: SliderContext = {
       ...state,
-      handleTimelineAction: handlePlaybackRateAction,
+      handleSliderAction: handlePlaybackRateAction,
     };
     return result;
   }, [state, handlePlaybackRateAction]);

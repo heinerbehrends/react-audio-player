@@ -1,9 +1,7 @@
-import { PlaybackRateContextType } from "../PlaybackRate/PlaybackRateContext";
-import { TimelineContextType } from "../Timeline/TimelineContext";
-import { VolumeContextType } from "../Volume/VolumeContext";
+import { SliderContext } from "./SliderContext";
 
 type DragButtonProps = React.HTMLAttributes<HTMLButtonElement> & {
-  context: TimelineContextType | VolumeContextType | PlaybackRateContextType;
+  context: SliderContext;
   handleKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
   handleDragStart: () => void;
   style: React.CSSProperties;

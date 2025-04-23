@@ -3,16 +3,21 @@ import { PlayerContext } from "./Player/PlayerContext";
 import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
 import { AudioContext } from "./AudioElement/AudioContext";
+import { PlaybackRateContext } from "./PlaybackRate/PlaybackRateContext";
 
 const mapContext = {
   timeline: TimelineContext,
   volume: VolumeContext,
+  playbackRate: PlaybackRateContext,
 };
 
-export function Debug({ type }: { type: "timeline" | "volume" }) {
+export function Debug({
+  type,
+}: {
+  type: "timeline" | "volume" | "playbackRate";
+}) {
   const {
     playerState: state,
-    cues,
     volumeState,
     unmuteVolumeRef: { current: unmuteVolume },
   } = useContext(PlayerContext);
@@ -30,15 +35,15 @@ export function Debug({ type }: { type: "timeline" | "volume" }) {
         borderRadius: "4px",
         position: "absolute",
         top: 80,
-        left: 60,
+        left: type === "playbackRate" ? 60 : 400,
       }}
     >
       <h3>Player</h3>
       <p>State: {state}</p>
       <p>Element: {audioElement?.src}</p>
-      <p>Cue Text: {cues[0]?.text}</p>
+      {/* <p>Cue Text: {cues[0]?.text}</p> */}
       <h3> {type}</h3>
-      <p>Time: {context.value.toFixed(2)}</p>
+      <p>Value: {context.value.toFixed(2)}</p>
       <p>Left: {context.sliderStart}</p>
       <p>Width: {context.sliderLength}</p>
       <p>Drag State: {context.dragState}</p>

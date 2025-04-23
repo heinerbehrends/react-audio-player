@@ -6,17 +6,17 @@ import {
   memo,
   useEffect,
 } from "react";
-import {
-  TimelineContext,
-  initialState,
-  isTimelineSideEffect,
-  isTimelineAction,
-  type TimelineContextType,
-  type TimelineProviderAction,
-} from "./TimelineContext";
+import { TimelineContext } from "./TimelineContext";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { timelineReducer } from "./timelineReducer";
 import { PlayerContext } from "../Player/PlayerContext";
+import {
+  initialState,
+  isSliderSideEffect,
+  isSliderAction,
+  type SliderContext,
+  type SliderProviderAction,
+} from "../Slider/SliderContext";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
@@ -38,11 +38,11 @@ export const TimelineProvider = memo(function TimelineProvider({
     orientation: "horizontal",
   });
   const handleTimelineAction = useCallback(
-    (action: TimelineProviderAction) => {
-      if (isTimelineSideEffect(action)) {
+    (action: SliderProviderAction) => {
+      if (isSliderSideEffect(action)) {
         handleSideEffect(action, audioElement);
       }
-      if (isTimelineAction(action)) {
+      if (isSliderAction(action)) {
         dispatch(action);
       }
     },
@@ -56,8 +56,8 @@ export const TimelineProvider = memo(function TimelineProvider({
     timelineCallbackRef.current.handleTimelineAction = handleTimelineAction;
   }, [handleTimelineAction, timelineCallbackRef]);
 
-  const value: TimelineContextType = useMemo(() => {
-    const result: TimelineContextType = {
+  const value: SliderContext = useMemo(() => {
+    const result: SliderContext = {
       sliderStart: state.sliderStart,
       sliderLength: state.sliderLength,
       value: state.value,
@@ -66,7 +66,8 @@ export const TimelineProvider = memo(function TimelineProvider({
       xyOffset: state.xyOffset,
       dragState: state.dragState,
       orientation: state.orientation,
-      handleTimelineAction,
+      handleSliderAction: handleTimelineAction,
+      step: state.step,
     };
     return result;
   }, [
@@ -79,6 +80,7 @@ export const TimelineProvider = memo(function TimelineProvider({
     state.orientation,
     handleTimelineAction,
     duration,
+    state.step,
   ]);
 
   return (

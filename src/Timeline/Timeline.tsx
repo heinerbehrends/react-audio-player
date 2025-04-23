@@ -5,13 +5,13 @@ import { TimelineProvider } from "./TimelineProvider";
 import { TimelineContext } from "./TimelineContext";
 import { TimelineDragButton } from "./DragTimeline";
 import { SeekTime } from "./SeekTime";
-import { useTimelineIndicatorStyles } from "./timelineHooks";
+import { useIndicatorStyles } from "../Slider/sliderHooks";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
 function TimelineProgress(props: ProgressProps) {
   const context = useContext(TimelineContext);
-  const style = useTimelineIndicatorStyles({
+  const style = useIndicatorStyles({
     context,
     style: props.style ?? {},
   });

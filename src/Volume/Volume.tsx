@@ -6,8 +6,6 @@ import { VolumeContext } from "./VolumeContext";
 import { VolumeDragButton } from "./DragVolume";
 import { SetVolume } from "./SetVolume";
 import { useIndicatorStyles } from "../Slider/sliderHooks";
-import { getVolumeOffset } from "./volumeHooks";
-import { PlayerContext } from "../Player/PlayerContext";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -32,13 +30,10 @@ function VolumeContainer({
 
 function VolumeProgress(props: ProgressProps) {
   const context = useContext(VolumeContext);
-  const { volumeState } = useContext(PlayerContext);
   const style = useIndicatorStyles({
     context,
     style: props.style ?? {},
-    getOffset: getVolumeOffset(volumeState),
     type: "volume",
-    dragState: context.dragState,
   });
   return <Indicator {...props} style={style} />;
 }

@@ -6,24 +6,34 @@ import { areNumbersClose } from "../Shared/sharedFunctions";
 
 export const AudioElement = memo(function AudioElement() {
   const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);
-  const { audioElementRef, timelineCallbackRef, volumeCallbackRef } =
-    useContext(AudioContext);
+  const {
+    audioElementRef,
+    timelineCallbackRef,
+    volumeCallbackRef,
+    playbackRateCallbackRef,
+  } = useContext(AudioContext);
   const { src, captionSrc } = audioFiles?.[0] || {};
   const handleTimeUpdate = useHandleTimeUpdate();
   const handleVolumeChange = useHandleVolumeChange();
+  const handlePlaybackRateChange = useHandlePlaybackRateChange();
+
   const { handleEnded, handleError, handleLoadedMetadata, handlePause } =
     usePlayerCallbacks();
 
   const hasTimelineCallback =
     !!timelineCallbackRef?.current?.handleTimelineAction;
   const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
-
+  const hasPlaybackRateCallback =
+    !!playbackRateCallbackRef?.current?.handlePlaybackRateAction;
   return (
     <audio
       aria-label="audio player"
       ref={audioElementRef}
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
+      onRateChange={
+        hasPlaybackRateCallback ? handlePlaybackRateChange : undefined
+      }
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
       onEnded={handleEnded}
       onError={handleError}
@@ -46,6 +56,7 @@ function useHandleTimeUpdate() {
       timelineCallbackRef.current.handleTimelineAction({
         type: "UPDATE_UI_VALUE",
         value: audioElementRef.current?.currentTime ?? 0,
+        component: "timeline",
       });
     }
   }, [timelineCallbackRef, audioElementRef]);
@@ -55,6 +66,7 @@ function useHandleVolumeChange() {
   const { handlePlayerAction, isMuted } = useContext(PlayerContext);
   const { audioElementRef, volumeCallbackRef } = useContext(AudioContext);
   return useCallback(() => {
+    console.log("useHandleVolumeChange", isMuted);
     if (isMuted) return;
     const volume = audioElementRef.current?.volume ?? 0;
     const volumeState = areNumbersClose(volume, 0)
@@ -71,6 +83,7 @@ function useHandleVolumeChange() {
       volumeCallbackRef.current.handleVolumeAction({
         type: "UPDATE_UI_VALUE",
         value: audioElementRef.current?.volume ?? 0,
+        component: "volume",
       });
     }
   }, [volumeCallbackRef, audioElementRef, isMuted, handlePlayerAction]);
@@ -103,4 +116,22 @@ function usePlayerCallbacks() {
     handleLoadedMetadata,
     handlePause,
   };
+}
+
+function useHandlePlaybackRateChange() {
+  const { audioElementRef, playbackRateCallbackRef } = useContext(AudioContext);
+  console.log(
+    "useHandlePlaybackRateChange",
+    audioElementRef.current?.playbackRate,
+    playbackRateCallbackRef?.current?.handlePlaybackRateAction
+  );
+  return useCallback(() => {
+    if (playbackRateCallbackRef?.current?.handlePlaybackRateAction) {
+      playbackRateCallbackRef.current.handlePlaybackRateAction({
+        type: "UPDATE_UI_VALUE",
+        value: audioElementRef.current?.playbackRate ?? 1,
+        component: "playbackRate",
+      });
+    }
+  }, [playbackRateCallbackRef, audioElementRef]);
 }

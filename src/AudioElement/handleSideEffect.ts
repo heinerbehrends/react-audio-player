@@ -71,20 +71,25 @@ export function handleSideEffect(
         }
         audioElement.volume = limitedVolume;
       }
+      if (action.component === "playbackRate") {
+        audioElement.playbackRate = action.value;
+      }
       break;
     }
     case "DRAG": {
       if (action.component === "timeline") {
         return;
       }
-      const volume = calculateValue({
-        xyOffset: action.clientXY,
-        sliderLength: action.sliderLength,
-        sliderStart: action.sliderStart,
-        orientation: action.orientation,
-      });
-      const limitedVolume = Math.min(Math.max(volume, 0), 1);
-      audioElement.volume = limitedVolume;
+      if (action.component === "volume") {
+        const volume = calculateValue({
+          xyOffset: action.clientXY,
+          sliderLength: action.sliderLength,
+          sliderStart: action.sliderStart,
+          orientation: action.orientation,
+        });
+        const limitedVolume = Math.min(Math.max(volume, 0), 1);
+        audioElement.volume = limitedVolume;
+      }
       break;
     }
     case "SET_PLAYBACK_RATE": {

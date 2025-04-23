@@ -3,26 +3,29 @@ import { useDragStyles, useOnPointerCancel } from "../Slider/sliderHooks";
 import { VolumeContext } from "./VolumeContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useDrag } from "../Slider/useDrag";
-import {
-  useHandleDragEndVolume,
-  useHandleDragVolume,
-  useHandleVolumeDragStart,
-} from "./volumeHooks";
 import { DragButton } from "../Slider/DragButton";
+import { useDragProps } from "../Slider/sliderHooks";
 
 export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(VolumeContext);
-  const handleDragStart = useHandleVolumeDragStart();
-  const handleDragEnd = useHandleDragEndVolume();
-  const handleDragMove = useHandleDragVolume(context);
+  console.log("VolumeDragButton", context);
+  const { handleDragStart, handleDragEnd, handleDrag } = useDragProps({
+    context,
+    component: "volume",
+    style: props.style ?? {},
+  });
   const handleDragCancel = useOnPointerCancel(context);
   const handleKeyDown = useHandleMediaKeys("volume");
   const style = useDragStyles({ context, style: props.style ?? {} });
   useDrag({
     context,
-    onPointerUp: handleDragEnd,
-    onPointerMove: handleDragMove,
-    onPointerCancel: handleDragCancel,
+    onPointerUp: handleDragEnd as unknown as (
+      event: PointerEvent | TouchEvent
+    ) => void,
+    onPointerMove: handleDrag as unknown as (
+      event: PointerEvent | TouchEvent
+    ) => void,
+    onPointerCancel: handleDragCancel as unknown as () => void,
   });
   return (
     <DragButton

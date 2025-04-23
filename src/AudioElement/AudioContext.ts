@@ -10,15 +10,19 @@ import type {
 import type {
   DragEndAction,
   DragAction,
-  TimelineContextAction,
+  SliderContextAction,
 } from "../Timeline/TimelineContext";
 
 export type TimelineProviderRef = {
-  handleTimelineAction: ((action: TimelineContextAction) => void) | null;
+  handleTimelineAction: ((action: SliderContextAction) => void) | null;
 };
 
 export type VolumeProviderRef = {
-  handleVolumeAction: ((action: TimelineContextAction) => void) | null;
+  handleVolumeAction: ((action: SliderContextAction) => void) | null;
+};
+
+export type PlaybackRateProviderRef = {
+  handlePlaybackRateAction: ((action: SliderContextAction) => void) | null;
 };
 
 export type StopAudioAction = {
@@ -50,6 +54,7 @@ export type AudioContextType = {
   ) => void;
   timelineCallbackRef: React.MutableRefObject<TimelineProviderRef>;
   volumeCallbackRef: React.MutableRefObject<VolumeProviderRef>;
+  playbackRateCallbackRef: React.MutableRefObject<PlaybackRateProviderRef>;
 };
 
 export const AudioContext = createContext<AudioContextType>({
@@ -57,4 +62,5 @@ export const AudioContext = createContext<AudioContextType>({
   handleSideEffect,
   timelineCallbackRef: { current: { handleTimelineAction: null } },
   volumeCallbackRef: { current: { handleVolumeAction: null } },
+  playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
 });
