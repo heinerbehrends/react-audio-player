@@ -1,25 +1,15 @@
-# React Audio Player
+# React Audio Player (in development)
 
-A fully accessible, customizable audio player component for React applications.
+An accessible headless audio player component for React applications inspired by the Radix UI library.
 
 ## Features
 
-- 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume)
-- ⏱️ Playback rate adjustment
-- 📝 Caption/subtitle support
-- ⌨️ Complete keyboard navigation and screen reader support
+- 🎨 Style the components any way you want
 - 🧩 Composable component architecture
-- 📱 Responsive design with support for horizontal and vertical layouts
-
-## Installation
-
-```bash
-npm install react-audio-player
-# or
-yarn add react-audio-player
-# or
-pnpm add react-audio-player
-```
+- 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume, playbackRate)
+- ⌨️ Keyboard navigation and screen reader support
+- 📝 Caption/subtitle support
+- ✔️ No dependencies except React 16.8+
 
 ## Basic Usage
 
@@ -28,9 +18,7 @@ import { AudioPlayer, PlayButton, Timeline, Volume } from "react-audio-player";
 
 function App() {
   return (
-    <AudioPlayer
-      audioFiles={[{ src: "audio-file.mp3", captionSrc: "captions.vtt" }]}
-    >
+    <AudioPlayer audioFiles={[{ src: "audio-file.mp3" }]}>
       <Timeline>
         <Timeline.Seek>
           <Timeline.Progress />
@@ -53,6 +41,15 @@ function App() {
   );
 }
 ```
+
+## Accessibility
+
+This player fully supports:
+
+- Keyboard navigation
+- ARIA attributes
+- Screen reader announcements
+- Focus management
 
 ## Components
 
@@ -95,6 +92,7 @@ The root component that provides context to all child components.
 - `<Time.Elapsed>` - Display current playback time
 - `<Time.Remaining>` - Display remaining time
 - `<Time.Duration>` - Display total duration
+- `<Time.Toggle>` - Toggle between elapsed and remaining
 
 ### Playback Rate Components
 
@@ -102,18 +100,21 @@ The root component that provides context to all child components.
 - `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
 - `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
 
-### Caption Components
+### Caption Component
 
 - `<Captions>` - Display synchronized captions/subtitles
 
-## Accessibility
+### Error Component
 
-This player fully supports:
+- `<Error>` - Displays a customizable message on error
 
-- Keyboard navigation
-- ARIA attributes
-- Screen reader announcements
-- Focus management
+## Roadmap
+
+- Improve testing
+- Finish stepped playback rate slider
+- Initial beta release
+- Add playlist components and skip and loop
+- Add multi-language support
 
 ## Testing
 
@@ -127,7 +128,7 @@ npm run test:unit
 npm run test:e2e
 ```
 
-## Browser Support
+## Requrements and
 
 - Chrome, Firefox, Safari, Edge
 - React 16.8+ (requires Hooks)
