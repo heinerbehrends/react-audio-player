@@ -96,17 +96,17 @@ export function getOffset({
 }
 
 export function useOnPointerCancel(context: SliderContext) {
-  const { handleSliderAction } = context;
+  const { handleSliderAction: handleTimelineAction } = context;
 
   return useCallback(() => {
-    handleSliderAction({
+    handleTimelineAction({
       type: "CANCEL_DRAG",
     });
-  }, [handleSliderAction]);
+  }, [handleTimelineAction]);
 }
 
 export function useHandleRef(context: SliderContext) {
-  const { handleSliderAction, orientation } = context;
+  const { handleSliderAction: handleTimelineAction, orientation } = context;
   const observerRef = useRef<ResizeObserver>();
 
   const handleRef = useCallback(
@@ -117,7 +117,7 @@ export function useHandleRef(context: SliderContext) {
 
       observerRef.current = new ResizeObserver(() => {
         const rect = element.getBoundingClientRect();
-        handleSliderAction({
+        handleTimelineAction({
           type: "SLIDER_LOADED",
           sliderStart: orientation === "horizontal" ? rect.left : rect.top,
           sliderLength: orientation === "horizontal" ? rect.width : rect.height,
@@ -125,7 +125,7 @@ export function useHandleRef(context: SliderContext) {
       });
 
       const rect = element.getBoundingClientRect();
-      handleSliderAction({
+      handleTimelineAction({
         type: "SLIDER_LOADED",
         sliderStart: orientation === "horizontal" ? rect.left : rect.top,
         sliderLength: orientation === "horizontal" ? rect.width : rect.height,
@@ -133,7 +133,7 @@ export function useHandleRef(context: SliderContext) {
 
       observerRef.current.observe(element);
     },
-    [handleSliderAction, orientation]
+    [handleTimelineAction, orientation]
   );
 
   useEffect(() => {
@@ -197,13 +197,12 @@ export function useHandleDrag({ context, type }: UseHandleDragArgs) {
       if (dragState !== "dragging") {
         return;
       }
-      // Create component-specific actions
       if (type === "timeline") {
         handleSliderAction({
           type: "DRAG",
           component: "timeline",
           clientXY,
-          duration: maxValue,
+          maxValue,
           sliderLength,
           sliderStart,
         });
@@ -255,11 +254,11 @@ export type SliderEvent =
   | React.TouchEvent<HTMLButtonElement>;
 
 export function useHandleDragStart(context: SliderContext) {
-  const { handleSliderAction: handleSliderAction } = context;
+  const { handleSliderAction: handleTimelineAction } = context;
   const offset = useOffset({ context, getOffset });
   return useCallback(() => {
-    handleSliderAction({ type: "DRAG_START", clientXY: offset });
-  }, [handleSliderAction, offset]);
+    handleTimelineAction({ type: "DRAG_START", clientXY: offset });
+  }, [handleTimelineAction, offset]);
 }
 
 export function useHandleDragEnd({
@@ -269,7 +268,6 @@ export function useHandleDragEnd({
   context: SliderContext;
   component: SliderTypes;
 }) {
-  const { getPlayerState } = useContext(PlayerContext);
   const {
     handleSliderAction,
     orientation,
@@ -278,7 +276,6 @@ export function useHandleDragEnd({
     minValue,
     maxValue,
   } = context;
-  const { duration } = getPlayerState();
 
   return useCallback(
     (event: SliderEvent) => {
@@ -288,7 +285,7 @@ export function useHandleDragEnd({
         component,
         clientXY,
         minValue,
-        maxValue: component === "timeline" ? duration : maxValue,
+        maxValue,
         sliderLength,
         sliderStart,
         orientation,
@@ -296,7 +293,6 @@ export function useHandleDragEnd({
     },
     [
       handleSliderAction,
-      duration,
       sliderLength,
       sliderStart,
       orientation,
@@ -317,7 +313,7 @@ export function useSetValue({ context, component, step = 0 }: UseSetValueArgs) {
   const {
     sliderStart,
     sliderLength,
-    handleSliderAction,
+    handleSliderAction: handleTimelineAction,
     orientation,
     minValue,
     maxValue,
@@ -348,14 +344,14 @@ export function useSetValue({ context, component, step = 0 }: UseSetValueArgs) {
             orientation,
           });
 
-      handleSliderAction({
+      handleTimelineAction({
         type: "CHANGE_VALUE",
         value,
         component,
       });
     },
     [
-      handleSliderAction,
+      handleTimelineAction,
       sliderStart,
       sliderLength,
       orientation,

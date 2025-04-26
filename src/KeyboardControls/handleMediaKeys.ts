@@ -25,7 +25,7 @@ export function handleMediaKeys({
   slider,
   playbackRate,
   volumeState,
-}: Omit<HandleKeyDownProps, "handleSliderAction" | "type"> & {
+}: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
   slider?: "timeline" | "volume" | "playbackRate" | undefined;
   playbackRate: number;
   volumeState: VolumeState;

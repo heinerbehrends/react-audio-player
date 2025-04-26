@@ -15,7 +15,7 @@ export function AudioContextProvider({ children }: TimelineProviderProps) {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   const timelineCallbackRef = useRef<TimelineProviderRef>({
-    handleSliderAction: null,
+    handleTimelineAction: null,
   });
   const volumeCallbackRef = useRef<VolumeProviderRef>({
     handleVolumeAction: null,

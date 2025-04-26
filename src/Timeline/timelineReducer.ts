@@ -64,7 +64,7 @@ export function timelineReducer(
         maxValue: action.maxValue,
         sliderStart: state.sliderStart,
       });
-      const limitedTime = Math.min(Math.max(time, 0), action.maxValue);
+      const limitedTime = Math.min(Math.max(time, 0), action.maxValue ?? 1);
       return {
         ...state,
         dragState: "idle" as const,

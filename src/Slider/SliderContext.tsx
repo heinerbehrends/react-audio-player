@@ -12,52 +12,29 @@ export type DragStartAction = {
   clientXY: number;
 };
 
-export type DragAction =
-  | {
-      type: "DRAG";
-      component: "volume";
-      clientXY: number;
-      sliderLength: number;
-      sliderStart: number;
-      orientation: "horizontal" | "vertical";
-    }
-  | {
-      type: "DRAG";
-      component: "timeline";
-      clientXY: number;
-      duration: number;
-      sliderLength: number;
-      sliderStart: number;
-    }
-  | {
-      type: "DRAG";
-      component: "playbackRate";
-      clientXY: number;
-      sliderLength: number;
-      sliderStart: number;
-      minValue: number;
-      maxValue: number;
-      step: number;
-    };
+export type DragAction = {
+  type: "DRAG";
+  component: SliderTypes;
+  clientXY: number;
+  sliderLength: number;
+  sliderStart: number;
+  orientation?: "horizontal" | "vertical";
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
+};
 
-export type DragEndAction =
-  | {
-      type: "DRAG_END";
-      clientXY: number;
-      component: "volume";
-      sliderLength: number;
-      sliderStart: number;
-      orientation: "horizontal" | "vertical";
-    }
-  | {
-      type: "DRAG_END";
-      clientXY: number;
-      maxValue: number;
-      component: "timeline";
-      sliderLength: number;
-      sliderStart: number;
-      orientation: "horizontal" | "vertical";
-    };
+export type DragEndAction = {
+  type: "DRAG_END";
+  clientXY: number;
+  component: SliderTypes;
+  sliderLength: number;
+  sliderStart: number;
+  maxValue: number;
+  minValue?: number;
+  orientation?: "horizontal" | "vertical";
+  step?: number;
+};
 
 type CancelDragAction = {
   type: "CANCEL_DRAG";

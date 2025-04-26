@@ -11,10 +11,10 @@ import type {
   DragEndAction,
   DragAction,
   SliderContextAction,
-} from "../Timeline/TimelineContext";
+} from "../Slider/SliderContext";
 
 export type TimelineProviderRef = {
-  handleSliderAction: ((action: SliderContextAction) => void) | null;
+  handleTimelineAction: ((action: SliderContextAction) => void) | null;
 };
 
 export type VolumeProviderRef = {
@@ -60,7 +60,7 @@ export type AudioContextType = {
 export const AudioContext = createContext<AudioContextType>({
   audioElementRef: { current: null },
   handleSideEffect,
-  timelineCallbackRef: { current: { handleSliderAction: null } },
+  timelineCallbackRef: { current: { handleTimelineAction: null } },
   volumeCallbackRef: { current: { handleVolumeAction: null } },
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
 });

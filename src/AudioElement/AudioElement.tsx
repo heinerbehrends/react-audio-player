@@ -21,7 +21,7 @@ export const AudioElement = memo(function AudioElement() {
     usePlayerCallbacks();
 
   const hasTimelineCallback =
-    !!timelineCallbackRef?.current?.handleSliderAction;
+    !!timelineCallbackRef?.current?.handleTimelineAction;
   const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
   const hasPlaybackRateCallback =
     !!playbackRateCallbackRef?.current?.handlePlaybackRateAction;
@@ -52,8 +52,8 @@ export const AudioElement = memo(function AudioElement() {
 function useHandleTimeUpdate() {
   const { audioElementRef, timelineCallbackRef } = useContext(AudioContext);
   return useCallback(() => {
-    if (timelineCallbackRef?.current?.handleSliderAction) {
-      timelineCallbackRef.current.handleSliderAction({
+    if (timelineCallbackRef?.current?.handleTimelineAction) {
+      timelineCallbackRef.current.handleTimelineAction({
         type: "UPDATE_UI_VALUE",
         value: audioElementRef.current?.currentTime ?? 0,
         component: "timeline",

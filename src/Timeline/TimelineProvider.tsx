@@ -37,7 +37,7 @@ export const TimelineProvider = memo(function TimelineProvider({
     maxValue: duration ?? Infinity,
     orientation: "horizontal",
   });
-  const handleSliderAction = useCallback(
+  const handleTimelineAction = useCallback(
     (action: SliderProviderAction) => {
       if (isSliderSideEffect(action)) {
         handleSideEffect(action, audioElement);
@@ -53,8 +53,8 @@ export const TimelineProvider = memo(function TimelineProvider({
     if (!timelineCallbackRef.current) {
       return;
     }
-    timelineCallbackRef.current.handleSliderAction = handleSliderAction;
-  }, [handleSliderAction, timelineCallbackRef]);
+    timelineCallbackRef.current.handleTimelineAction = handleTimelineAction;
+  }, [handleTimelineAction, timelineCallbackRef]);
 
   const value: SliderContext = useMemo(() => {
     const result: SliderContext = {
@@ -66,7 +66,7 @@ export const TimelineProvider = memo(function TimelineProvider({
       xyOffset: state.xyOffset,
       dragState: state.dragState,
       orientation: state.orientation,
-      handleSliderAction: handleSliderAction,
+      handleSliderAction: handleTimelineAction,
       step: state.step,
     };
     return result;
@@ -78,7 +78,7 @@ export const TimelineProvider = memo(function TimelineProvider({
     state.xyOffset,
     state.dragState,
     state.orientation,
-    handleSliderAction,
+    handleTimelineAction,
     duration,
     state.step,
   ]);

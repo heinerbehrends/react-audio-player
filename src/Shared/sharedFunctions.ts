@@ -6,9 +6,9 @@ type CalculateValueArgs = {
   xyOffset: number;
   sliderLength: number;
   sliderStart: number;
-  orientation?: "horizontal" | "vertical";
-  minValue?: number;
-  maxValue?: number;
+  orientation?: "horizontal" | "vertical" | undefined;
+  minValue?: number | undefined;
+  maxValue: number;
 };
 
 export function calculateValue({
