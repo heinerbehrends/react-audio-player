@@ -1,16 +1,22 @@
+import { useContext } from "react";
+import { PlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { Container } from "../Slider/Container";
 import { Indicator } from "../Slider/Indicator";
 import { SetRelativeButton } from "../Slider/SetRelativeButton";
+import {
+  useIndicatorStyles,
+  useSetValue,
+  useHandleRef,
+} from "../Slider/sliderHooks";
 import { DragPlaybackRate } from "./DragPlaybackRate";
-import { useContext } from "react";
-import { PlaybackRateContext } from "./PlaybackRateContext";
-import { useIndicatorStyles, useSetValue } from "../Slider/sliderHooks";
-import { useHandleRef } from "../Slider/sliderHooks";
 
 type PlaybackRateSliderComponent = React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
     children: React.ReactNode;
+    maxValue?: number;
+    minValue?: number;
+    step?: number;
   }
 > & {
   Progress: typeof Progress;
@@ -30,7 +36,11 @@ function Progress(props: React.HTMLAttributes<HTMLDivElement>) {
 function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(PlaybackRateContext);
   const handleRef = useHandleRef(context);
-  const handlePointerDown = useSetValue({ context, component: "playbackRate" });
+  const handlePointerDown = useSetValue({
+    context,
+    component: "playbackRate",
+    step: context.step,
+  });
   return (
     <SetRelativeButton
       handleRef={handleRef}
@@ -42,10 +52,22 @@ function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
   );
 }
 
+type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
+  maxValue?: number;
+  minValue?: number;
+  step?: number;
+};
+
 export const PlaybackRateSlider = Object.assign(
-  ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  ({
+    children,
+    maxValue,
+    minValue,
+    step,
+    ...props
+  }: PlaybackRateSliderProps) => {
     return (
-      <PlaybackRateProvider>
+      <PlaybackRateProvider maxValue={maxValue} minValue={minValue} step={step}>
         <Container {...props}>{children}</Container>
       </PlaybackRateProvider>
     );

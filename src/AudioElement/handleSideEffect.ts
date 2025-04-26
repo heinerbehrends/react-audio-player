@@ -57,34 +57,6 @@ export function handleSideEffect(
         const limitedVolume = Math.min(Math.max(volume, 0), 1);
         audioElement.volume = limitedVolume;
       }
-      if (action.component === "playbackRate") {
-        // First calculate raw value between minValue and maxValue
-        const value = calculateValue({
-          xyOffset: action.clientXY,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-          minValue: action.minValue,
-          maxValue: action.maxValue,
-        });
-        const minValue = action.minValue || 0.5;
-        const maxValue = action.maxValue || 4;
-        const step = action.step || 0.25;
-        // Calculate how many steps from minValue
-        const valueRange = maxValue - minValue;
-        const totalSteps = valueRange / step;
-        // Calculate which step we're closest to (as a percentage of total steps)
-        const percentageAlongSlider = (value - minValue) / valueRange;
-        const stepIndex = Math.round(percentageAlongSlider * totalSteps);
-        // Convert back to an actual value
-        const steppedValue = minValue + stepIndex * step;
-        const limitedValue = Math.min(
-          Math.max(steppedValue, minValue),
-          maxValue
-        );
-
-        audioElement.playbackRate = limitedValue;
-      }
       break;
     }
     case "CHANGE_VALUE": {
@@ -119,8 +91,7 @@ export function handleSideEffect(
           sliderStart: action.sliderStart,
           orientation: action.orientation,
         });
-        const limitedVolume = Math.min(Math.max(volume, 0), 1);
-        audioElement.volume = limitedVolume;
+        audioElement.volume = volume;
       }
       if (action.component === "playbackRate") {
         const value = calculateValue({
@@ -133,15 +104,20 @@ export function handleSideEffect(
         });
         const step = action.step || 0.25;
         const minValue = action.minValue || 0.5;
-        const limitedValue = calculateSteppedValue({
+        const maxValue = action.maxValue || 4;
+        const playbackRate = calculateSteppedValue({
           value,
           minValue,
-          maxValue: action.maxValue,
+          maxValue,
           step,
         });
 
-        audioElement.playbackRate = limitedValue;
+        audioElement.playbackRate = playbackRate;
       }
+      break;
+    }
+    case "SET_PLAYBACK_RATE": {
+      audioElement.playbackRate = action.playbackRate;
       break;
     }
   }

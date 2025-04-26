@@ -24,9 +24,9 @@ const initialState: SliderContext = {
 
 type PlaybackRateProviderProps = {
   children: React.ReactNode;
-  minValue?: number;
-  maxValue?: number;
-  step?: number;
+  minValue: number | undefined;
+  maxValue: number | undefined;
+  step: number | undefined;
 };
 
 export function PlaybackRateProvider({

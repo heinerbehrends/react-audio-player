@@ -34,10 +34,10 @@ export const TimelineProvider = memo(function TimelineProvider({
   const [state, dispatch] = useReducer(timelineReducer, {
     ...initialState,
     value: 0,
-    maxValue: duration,
+    maxValue: duration ?? Infinity,
     orientation: "horizontal",
   });
-  const handleTimelineAction = useCallback(
+  const handleSliderAction = useCallback(
     (action: SliderProviderAction) => {
       if (isSliderSideEffect(action)) {
         handleSideEffect(action, audioElement);
@@ -53,8 +53,8 @@ export const TimelineProvider = memo(function TimelineProvider({
     if (!timelineCallbackRef.current) {
       return;
     }
-    timelineCallbackRef.current.handleTimelineAction = handleTimelineAction;
-  }, [handleTimelineAction, timelineCallbackRef]);
+    timelineCallbackRef.current.handleSliderAction = handleSliderAction;
+  }, [handleSliderAction, timelineCallbackRef]);
 
   const value: SliderContext = useMemo(() => {
     const result: SliderContext = {
@@ -66,7 +66,7 @@ export const TimelineProvider = memo(function TimelineProvider({
       xyOffset: state.xyOffset,
       dragState: state.dragState,
       orientation: state.orientation,
-      handleSliderAction: handleTimelineAction,
+      handleSliderAction: handleSliderAction,
       step: state.step,
     };
     return result;
@@ -78,7 +78,7 @@ export const TimelineProvider = memo(function TimelineProvider({
     state.xyOffset,
     state.dragState,
     state.orientation,
-    handleTimelineAction,
+    handleSliderAction,
     duration,
     state.step,
   ]);

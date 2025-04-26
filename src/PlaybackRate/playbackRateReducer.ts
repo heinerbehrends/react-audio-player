@@ -8,6 +8,7 @@ export function playbackRateReducer(
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
       if (action.component !== "playbackRate") return state;
+      console.log("action.value", action.value);
       return { ...state, value: action.value };
     }
 

@@ -21,7 +21,7 @@ export const AudioElement = memo(function AudioElement() {
     usePlayerCallbacks();
 
   const hasTimelineCallback =
-    !!timelineCallbackRef?.current?.handleTimelineAction;
+    !!timelineCallbackRef?.current?.handleSliderAction;
   const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
   const hasPlaybackRateCallback =
     !!playbackRateCallbackRef?.current?.handlePlaybackRateAction;
@@ -52,8 +52,8 @@ export const AudioElement = memo(function AudioElement() {
 function useHandleTimeUpdate() {
   const { audioElementRef, timelineCallbackRef } = useContext(AudioContext);
   return useCallback(() => {
-    if (timelineCallbackRef?.current?.handleTimelineAction) {
-      timelineCallbackRef.current.handleTimelineAction({
+    if (timelineCallbackRef?.current?.handleSliderAction) {
+      timelineCallbackRef.current.handleSliderAction({
         type: "UPDATE_UI_VALUE",
         value: audioElementRef.current?.currentTime ?? 0,
         component: "timeline",
@@ -119,6 +119,7 @@ function usePlayerCallbacks() {
 
 function useHandlePlaybackRateChange() {
   const { audioElementRef, playbackRateCallbackRef } = useContext(AudioContext);
+  const { handlePlayerAction } = useContext(PlayerContext);
   return useCallback(() => {
     if (playbackRateCallbackRef?.current?.handlePlaybackRateAction) {
       playbackRateCallbackRef.current.handlePlaybackRateAction({
@@ -127,5 +128,9 @@ function useHandlePlaybackRateChange() {
         component: "playbackRate",
       });
     }
-  }, [playbackRateCallbackRef, audioElementRef]);
+    handlePlayerAction({
+      type: "SET_PLAYBACK_RATE",
+      playbackRate: audioElementRef.current?.playbackRate ?? 1,
+    });
+  }, [playbackRateCallbackRef, audioElementRef, handlePlayerAction]);
 }

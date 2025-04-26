@@ -9,7 +9,6 @@ type CalculateValueArgs = {
   orientation?: "horizontal" | "vertical";
   minValue?: number;
   maxValue?: number;
-  step?: number;
 };
 
 export function calculateValue({

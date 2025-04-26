@@ -9,7 +9,7 @@ import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
-import { Debug } from "./Debug";
+// import { Debug } from "./Debug";
 import { useEffect, useState } from "react";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 
@@ -37,7 +37,7 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="timeline" />
+        {/* <Debug type="timeline" /> */}
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -82,14 +82,14 @@ function App() {
             border: "none",
           }}
         />
-        <Debug type="volume" />
+        {/* <Debug type="volume" /> */}
       </Volume>
-      <PlaybackRateSlider>
+      <PlaybackRateSlider maxValue={2} minValue={0.5} step={0.1}>
         <PlaybackRateSlider.Set>
           <PlaybackRateSlider.Progress />
         </PlaybackRateSlider.Set>
         <PlaybackRateSlider.Drag />
-        <Debug type="playbackRate" />
+        {/* <Debug type="playbackRate" /> */}
       </PlaybackRateSlider>
       <PlaybackRate.Display />
       <PlaybackRate.Set rate={0.5}>
