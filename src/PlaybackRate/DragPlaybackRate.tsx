@@ -4,7 +4,7 @@ import { DragButton } from "../Slider/DragButton";
 import { useDrag } from "../Slider/useDrag";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useDragProps } from "../Slider/sliderHooks";
+import { useDragProps } from "../Slider/dragHooks";
 
 export function DragPlaybackRate(
   props: React.HTMLAttributes<HTMLButtonElement>

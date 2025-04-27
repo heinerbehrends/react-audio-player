@@ -1,10 +1,11 @@
 import { HTMLAttributes, useContext } from "react";
-import { useDragStyles, useOnPointerCancel } from "../Slider/sliderHooks";
+import { useOnPointerCancel } from "../Slider/sliderHooks";
+import { useDragStyles } from "../Slider/styleHooks";
+import { useDragProps } from "../Slider/dragHooks";
 import { VolumeContext } from "./VolumeContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useDrag } from "../Slider/useDrag";
 import { DragButton } from "../Slider/DragButton";
-import { useDragProps } from "../Slider/sliderHooks";
 
 export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(VolumeContext);

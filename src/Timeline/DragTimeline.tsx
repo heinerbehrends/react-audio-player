@@ -4,7 +4,7 @@ import { DragButton } from "../Slider/DragButton";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useDrag } from "../Slider/useDrag";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useDragProps } from "../Slider/sliderHooks";
+import { useDragProps } from "../Slider/dragHooks";
 
 export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(TimelineContext);

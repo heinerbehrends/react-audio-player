@@ -1,6 +1,9 @@
 import { useMemo, useCallback } from "react";
 import { SliderContext } from "./SliderContext";
-import { SliderTypes as SliderComponents, SliderEvent } from "./sliderHooks";
+import {
+  SliderComponent as SliderComponents,
+  SliderEvent,
+} from "./sliderHooks";
 import { useDragStyles, useOffset } from "./styleHooks";
 import { getClientXY } from "./useDrag";
 

@@ -1,5 +1,5 @@
 import { SideEffectAction } from "../AudioElement/AudioContext";
-import { SliderTypes } from "./sliderHooks";
+import { SliderComponent } from "./sliderHooks";
 
 export type SliderLoadedAction = {
   type: "SLIDER_LOADED";
@@ -14,7 +14,7 @@ export type DragStartAction = {
 
 export type DragAction = {
   type: "DRAG";
-  component: SliderTypes;
+  component: SliderComponent;
   clientXY: number;
   sliderLength: number;
   sliderStart: number;
@@ -27,7 +27,7 @@ export type DragAction = {
 export type DragEndAction = {
   type: "DRAG_END";
   clientXY: number;
-  component: SliderTypes;
+  component: SliderComponent;
   sliderLength: number;
   sliderStart: number;
   maxValue: number;
@@ -43,7 +43,7 @@ type CancelDragAction = {
 export type UpdateUiValueAction = {
   type: "UPDATE_UI_VALUE";
   value: number;
-  component: SliderTypes;
+  component: SliderComponent;
 };
 
 export type SliderContextAction =

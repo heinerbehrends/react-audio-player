@@ -4,11 +4,8 @@ import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { Container } from "../Slider/Container";
 import { Indicator } from "../Slider/Indicator";
 import { SetRelativeButton } from "../Slider/SetRelativeButton";
-import {
-  useIndicatorStyles,
-  useSetValue,
-  useHandleRef,
-} from "../Slider/sliderHooks";
+import { useSetValue, useHandleRef } from "../Slider/sliderHooks";
+import { useIndicatorStyles } from "../Slider/styleHooks";
 import { DragPlaybackRate } from "./DragPlaybackRate";
 
 type PlaybackRateSliderComponent = React.FC<

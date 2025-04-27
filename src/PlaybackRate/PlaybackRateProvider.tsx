@@ -1,13 +1,8 @@
-import { useCallback, useContext, useEffect, useMemo, useReducer } from "react";
-import {
-  type SliderProviderAction,
-  isSliderSideEffect,
-  isSliderAction,
-  SliderContext,
-} from "../Slider/SliderContext";
+import { useMemo, useReducer } from "react";
+import { SliderContext } from "../Slider/SliderContext";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { playbackRateReducer } from "./playbackRateReducer";
-import { AudioContext } from "../AudioElement/AudioContext";
+import { useAttachSliderCallback } from "../Slider/sliderHooks";
 
 const initialState: SliderContext = {
   sliderStart: 0,
@@ -41,31 +36,11 @@ export function PlaybackRateProvider({
     maxValue,
     step,
   });
-  const {
-    audioElementRef: { current: audioElement },
-    handleSideEffect,
-    playbackRateCallbackRef,
-  } = useContext(AudioContext);
 
-  const handlePlaybackRateAction = useCallback(
-    (action: SliderProviderAction) => {
-      if (isSliderSideEffect(action)) {
-        handleSideEffect(action, audioElement);
-      }
-      if (isSliderAction(action)) {
-        dispatch(action);
-      }
-    },
-    [audioElement, handleSideEffect]
-  );
-
-  useEffect(() => {
-    if (!playbackRateCallbackRef?.current) {
-      return;
-    }
-    playbackRateCallbackRef.current.handlePlaybackRateAction =
-      handlePlaybackRateAction;
-  }, [handlePlaybackRateAction, playbackRateCallbackRef]);
+  const handlePlaybackRateAction = useAttachSliderCallback({
+    component: "playbackRate",
+    dispatch,
+  });
 
   const value = useMemo(() => {
     const result: SliderContext = {

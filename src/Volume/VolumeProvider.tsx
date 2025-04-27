@@ -1,21 +1,8 @@
-import {
-  useMemo,
-  useReducer,
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-} from "react";
-import {
-  isSliderAction,
-  isSliderSideEffect,
-  initialState,
-  type SliderProviderAction,
-  type SliderContext,
-} from "../Slider/SliderContext";
+import { useMemo, useReducer, memo } from "react";
+import { initialState, type SliderContext } from "../Slider/SliderContext";
 import { VolumeContext } from "./VolumeContext";
 import { volumeReducer } from "./volumeReducer";
-import { AudioContext } from "../AudioElement/AudioContext";
+import { useAttachSliderCallback } from "../Slider/sliderHooks";
 
 type VolumeProviderProps = {
   children: React.ReactNode;
@@ -34,43 +21,15 @@ export const VolumeProvider = memo(function VolumeProvider({
       orientation,
     })
   );
-  const {
-    audioElementRef: { current: audioElement },
-    handleSideEffect,
-    volumeCallbackRef,
-  } = useContext(AudioContext);
-
-  const handleVolumeAction = useCallback(
-    (action: SliderProviderAction) => {
-      if (isSliderSideEffect(action)) {
-        handleSideEffect(action, audioElement);
-      }
-      if (isSliderAction(action)) {
-        dispatch(action);
-      }
-    },
-    [audioElement, handleSideEffect]
-  );
-
-  useEffect(() => {
-    if (!volumeCallbackRef.current) {
-      return;
-    }
-    volumeCallbackRef.current.handleVolumeAction = handleVolumeAction;
-  }, [handleVolumeAction, volumeCallbackRef]);
-
+  const handleVolumeAction = useAttachSliderCallback({
+    component: "volume",
+    dispatch,
+  });
   const value = useMemo(() => {
     const result: SliderContext = {
-      sliderStart: state.sliderStart,
-      sliderLength: state.sliderLength,
-      value: state.value,
-      minValue: state.minValue,
-      maxValue: state.maxValue,
-      xyOffset: state.xyOffset,
-      dragState: state.dragState,
-      handleSliderAction: handleVolumeAction,
+      ...state,
       orientation,
-      step: state.step,
+      handleSliderAction: handleVolumeAction,
     };
     return result;
   }, [state, handleVolumeAction, orientation]);

@@ -25,6 +25,10 @@ export type PlaybackRateProviderRef = {
   handlePlaybackRateAction: ((action: SliderContextAction) => void) | null;
 };
 
+export type SliderProviderRef = {
+  handleSliderAction: ((action: SliderContextAction) => void) | null;
+};
+
 export type StopAudioAction = {
   type: "STOP_AUDIO";
 };

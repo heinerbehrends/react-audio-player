@@ -5,7 +5,7 @@ import { TimelineProvider } from "./TimelineProvider";
 import { TimelineContext } from "./TimelineContext";
 import { TimelineDragButton } from "./DragTimeline";
 import { SeekTime } from "./SeekTime";
-import { useIndicatorStyles } from "../Slider/sliderHooks";
+import { useIndicatorStyles } from "../Slider/styleHooks";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 

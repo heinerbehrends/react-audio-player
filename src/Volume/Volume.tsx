@@ -5,7 +5,7 @@ import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
 import { VolumeDragButton } from "./DragVolume";
 import { SetVolume } from "./SetVolume";
-import { useIndicatorStyles } from "../Slider/sliderHooks";
+import { useIndicatorStyles } from "../Slider/styleHooks";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 

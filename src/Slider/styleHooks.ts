@@ -1,7 +1,7 @@
 import { useContext, useMemo } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { SliderContext } from "./SliderContext";
-import { SliderTypes } from "./sliderHooks";
+import { SliderComponent } from "./sliderHooks";
 
 type UseOffsetArgs = {
   context: SliderContext;
@@ -113,7 +113,7 @@ export function useDragStyles({
 type UseIndicatorStylesArgs = {
   context: SliderContext;
   style: React.CSSProperties;
-  type?: SliderTypes;
+  type?: SliderComponent;
 };
 
 export function useIndicatorStyles({
@@ -136,7 +136,7 @@ export function useIndicatorStyles({
 
 type UseProgressArgs = {
   context: SliderContext;
-  type?: SliderTypes;
+  type?: SliderComponent;
 };
 
 function useProgress({ context, type = "timeline" }: UseProgressArgs): number {
