@@ -8,7 +8,7 @@ type CalculateValueArgs = {
   sliderStart: number;
   orientation?: "horizontal" | "vertical" | undefined;
   minValue?: number | undefined;
-  maxValue: number;
+  maxValue?: number | undefined;
 };
 
 export function calculateValue({
