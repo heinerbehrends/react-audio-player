@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect, useContext } from "react";
-import { getClientXY } from "./useDrag";
+import { getClientXY } from "../Shared/sharedFunctions";
 import {
   isSliderAction,
   isSliderSideEffect,
@@ -22,7 +22,7 @@ export function useOnPointerCancel(context: SliderContext) {
 
 export function useHandleRef(context: SliderContext) {
   const { handleSliderAction: handleTimelineAction, orientation } = context;
-  const observerRef = useRef<ResizeObserver>();
+  const observerRef = useRef<ResizeObserver>(null);
 
   const handleRef = useCallback(
     (element: HTMLButtonElement | null) => {
@@ -66,43 +66,21 @@ export type SliderEvent =
 type UseSetValueArgs = {
   context: SliderContext;
   component: SliderComponent;
-  step?: number;
 };
 
-export function useSetValue({ context, component, step = 0 }: UseSetValueArgs) {
-  const {
-    sliderStart,
-    sliderLength,
-    handleSliderAction: handleTimelineAction,
-    orientation,
-    minValue,
-    maxValue,
-  } = context;
+export function useSetValue({ context, component }: UseSetValueArgs) {
+  const { handleSliderAction: handleTimelineAction } = context;
   return useCallback(
     (event: SliderEvent) => {
-      const clientXY = getClientXY(event, orientation);
+      const clientXY = getClientXY(event, context.orientation);
       handleTimelineAction({
         type: "SET_SLIDER_VALUE",
         component,
+        ...context,
         clientXY,
-        sliderLength,
-        sliderStart,
-        orientation,
-        minValue,
-        maxValue,
-        step,
       });
     },
-    [
-      handleTimelineAction,
-      sliderStart,
-      sliderLength,
-      orientation,
-      minValue,
-      maxValue,
-      component,
-      step,
-    ]
+    [handleTimelineAction, context]
   );
 }
 

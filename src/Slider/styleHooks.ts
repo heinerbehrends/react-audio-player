@@ -11,41 +11,15 @@ export function useOffset({ context }: UseOffsetArgs) {
   const { volumeState } = useContext(PlayerContext);
 
   return useMemo(() => {
-    const {
-      clientXY: xyOffset,
-      dragState,
-      sliderLength,
-      value,
-      orientation,
-      minValue,
-      maxValue,
-      step,
-    } = context;
-    const isStepped = step !== 0;
-
-    return getOffset({
-      value,
-      sliderLength,
-      clientXY: xyOffset,
-      minValue,
-      maxValue,
-      dragState,
-      orientation,
-      volumeState,
-      isStepped,
-    });
+    return getOffset(context);
   }, [context, volumeState]);
 }
 
 type UseDragStylesArgs = {
   context: SliderContext;
-  style: React.CSSProperties;
 };
 
-export function useDragStyles({
-  context,
-  style,
-}: UseDragStylesArgs): React.CSSProperties {
+export function useDragStyle({ context }: UseDragStylesArgs): React.CSSProperties {
   const { orientation } = context;
   const offset = useOffset({ context });
   return useMemo(
@@ -59,9 +33,8 @@ export function useDragStyles({
           ? `translate(calc(${offset}px - 20px), 0)`
           : `translate(0, calc(${offset}px - 20px))`,
       touchAction: "none",
-      ...style,
     }),
-    [offset, orientation, style]
+    [offset, orientation]
   );
 }
 
@@ -73,7 +46,6 @@ type UseIndicatorStylesArgs = {
 
 export function useIndicatorStyles({
   context,
-  style,
   type = "timeline",
 }: UseIndicatorStylesArgs): React.CSSProperties {
   const progress = useProgress({ context, type });
@@ -81,9 +53,8 @@ export function useIndicatorStyles({
     () => ({
       transform: `scaleX(${progress})`,
       transformOrigin: "left",
-      ...style,
     }),
-    [progress, style]
+    [progress]
   );
 }
 
@@ -99,3 +70,10 @@ function useProgress({ context, type = "timeline" }: UseProgressArgs): number {
   const progress = offset / context.sliderLength;
   return isVerticalVolume ? 1 - progress : progress;
 }
+
+export const progressStyles = {
+  gridColumn: "1 / 1",
+  gridRow: "1 / 1",
+  width: "100%",
+  height: "100%",
+};  

@@ -1,24 +1,34 @@
-import { HTMLAttributes, useContext } from "react";
+import { useContext } from "react";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
-import { useDragStyles } from "../Slider/styleHooks";
-import { useDragProps } from "../Slider/dragHooks";
+import {
+  useHandleDrag,
+  useHandleDragEnd,
+  useHandleDragStart,
+} from "../Slider/dragHooks";
 import { VolumeContext } from "./VolumeContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useDrag } from "../Slider/useDrag";
-import { DragButton } from "../Slider/DragButton";
+import { useDragStyle } from "../Slider/styleHooks";
 
-export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
+export function VolumeDragButton(
+  props: React.HTMLAttributes<HTMLButtonElement>
+) {
   const context = useContext(VolumeContext);
-  const { handleDragStart, handleDragEnd, handleDrag } = useDragProps({
+  const handleDragStart = useHandleDragStart({
     context,
     component: "volume",
-    style: props.style ?? {},
   });
+  const handleDragEnd = useHandleDragEnd({
+    context,
+    component: "volume",
+  });
+  const handleDrag = useHandleDrag({ context, component: "volume" });
+  const style = useDragStyle({ context });
   const handleDragCancel = useOnPointerCancel(context);
   const handleKeyDown = useHandleMediaKeys("volume");
-  const style = useDragStyles({ context, style: props.style ?? {} });
+
   useDrag({
-    context,
+    dragState: context.dragState,
     onPointerUp: handleDragEnd as unknown as (
       event: PointerEvent | TouchEvent
     ) => void,
@@ -28,12 +38,15 @@ export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
     onPointerCancel: handleDragCancel as unknown as () => void,
   });
   return (
-    <DragButton
-      handleDragStart={handleDragStart}
-      handleKeyDown={handleKeyDown}
+    <button
+      onKeyDown={handleKeyDown}
+      onPointerDown={handleDragStart}
+      onPointerUp={handleDragEnd}
+      onPointerMove={handleDrag}
+      onPointerCancel={handleDragCancel}
       aria-label="Drag to adjust volume"
       {...props}
-      style={style}
+      style={{ ...style, ...props.style }}
     />
   );
 }

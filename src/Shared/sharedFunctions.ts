@@ -1,3 +1,6 @@
+import { SliderContext } from "../Slider/SliderContext";
+import { SliderEvent } from "../Slider/sliderHooks";
+
 export function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.001;
 }
@@ -79,30 +82,18 @@ export function calculateSliderValue({
   return value;
 }
 
-export type GetOffsetArgs = {
-  value: number;
-  sliderLength: number;
-  clientXY: number;
-  minValue?: number;
-  maxValue?: number;
-  dragState: "dragging" | "idle";
-  orientation?: "horizontal" | "vertical";
-  volumeState?: "muted" | "low" | "high";
-  isStepped?: boolean;
-};
-
 export function getOffset({
   value,
   sliderLength,
-  clientXY: xyOffset,
+  clientXY,
   minValue = 0,
   maxValue = 1,
   dragState,
   orientation = "horizontal",
-  isStepped = false,
-}: GetOffsetArgs): number {
-  if (dragState === "dragging" && !isStepped) {
-    return xyOffset;
+  step = 0,
+}: SliderContext): number {
+  if (dragState === "dragging" && !step) {
+    return clientXY;
   }
   const range = maxValue - minValue;
   const progress = (value - minValue) / range;
@@ -114,4 +105,22 @@ export function getOffset({
     return sliderLength - progress * sliderLength;
   }
   return 0;
+}
+
+export function getClientXY(
+  event: SliderEvent,
+  orientation: "horizontal" | "vertical"
+): number {
+  if (isTouchEvent(event)) {
+    return orientation === "horizontal"
+      ? event.touches[0]?.clientX ?? 0
+      : event.touches[0]?.clientY ?? 0;
+  }
+  return orientation === "horizontal" ? event.clientX : event.clientY;
+}
+
+function isTouchEvent(
+  event: SliderEvent
+): event is React.TouchEvent<HTMLButtonElement> {
+  return "touches" in event;
 }

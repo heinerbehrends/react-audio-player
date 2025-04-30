@@ -1,11 +1,10 @@
 import { useContext } from "react";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
-import { Container } from "../Slider/Container";
-import { IndicatorBackground } from "../Slider/Indicator";
 import { SetRelativeButton } from "../Slider/SetRelativeButton";
 import { useSetValue, useHandleRef } from "../Slider/sliderHooks";
 import { DragPlaybackRate } from "./DragPlaybackRate";
+import { progressStyles } from "../Slider/styleHooks";
 
 type PlaybackRateSliderComponent = React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
@@ -15,7 +14,7 @@ type PlaybackRateSliderComponent = React.FC<
     step?: number;
   }
 > & {
-  Background: typeof IndicatorBackground;
+  Background: typeof PlaybackRateBackground;
   Set: typeof Set;
   Drag: typeof DragPlaybackRate;
 };
@@ -45,6 +44,18 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   step?: number;
 };
 
+function PlaybackRateBackground(props: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      {...props}
+      style={{
+        ...progressStyles,
+        ...props.style,
+      }}
+    />
+  );
+}
+
 export const PlaybackRateSlider = Object.assign(
   ({
     children,
@@ -55,12 +66,23 @@ export const PlaybackRateSlider = Object.assign(
   }: PlaybackRateSliderProps) => {
     return (
       <PlaybackRateProvider maxValue={maxValue} minValue={minValue} step={step}>
-        <Container {...props}>{children}</Container>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gridTemplateRows: "1fr",
+            width: "100%",
+            alignItems: "center",
+            ...props.style,
+          }}
+        >
+          {children}
+        </div>
       </PlaybackRateProvider>
     );
   },
   {
-    Background: IndicatorBackground,
+    Background: PlaybackRateBackground,
     Set,
     Drag: DragPlaybackRate,
   }

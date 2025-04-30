@@ -1,23 +1,34 @@
-import { type HTMLAttributes, useContext } from "react";
+import { useContext } from "react";
 import { TimelineContext } from "./TimelineContext";
-import { DragButton } from "../Slider/DragButton";
 import { useOnPointerCancel } from "../Slider/sliderHooks";
 import { useDrag } from "../Slider/useDrag";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useDragProps } from "../Slider/dragHooks";
+import {
+  useHandleDrag,
+  useHandleDragEnd,
+  useHandleDragStart,
+} from "../Slider/dragHooks";
+import { useDragStyle } from "../Slider/styleHooks";
 
-export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
+export function TimelineDragButton(
+  props: React.HTMLAttributes<HTMLButtonElement>
+) {
   const context = useContext(TimelineContext);
-  const { handleDragStart, handleDragEnd, handleDrag, style } = useDragProps({
-    style: props.style ?? {},
+  const handleDragStart = useHandleDragStart({
     context,
     component: "timeline",
   });
+  const handleDragEnd = useHandleDragEnd({
+    context,
+    component: "timeline",
+  });
+  const handleDrag = useHandleDrag({ context, component: "timeline" });
   const handleKeyDown = useHandleMediaKeys("timeline");
   const handleDragCancel = useOnPointerCancel(context);
+  const style = useDragStyle({ context });
 
   useDrag({
-    context,
+    dragState: context.dragState,
     onPointerUp: handleDragEnd as unknown as (
       event: PointerEvent | TouchEvent
     ) => void,
@@ -28,12 +39,15 @@ export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
   });
 
   return (
-    <DragButton
-      handleDragStart={handleDragStart}
-      handleKeyDown={handleKeyDown}
+    <button
+      onKeyDown={handleKeyDown}
+      onPointerDown={handleDragStart}
+      onPointerUp={handleDragEnd}
+      onPointerMove={handleDrag}
+      onPointerCancel={handleDragCancel}
       aria-label="Drag to seek"
       {...props}
-      style={style}
+      style={{ ...style, ...props.style }}
     />
   );
 }

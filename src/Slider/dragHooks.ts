@@ -1,41 +1,10 @@
-import { useMemo, useCallback, useContext } from "react";
+import { useCallback, useContext } from "react";
 import { SliderContext } from "./SliderContext";
 import { SliderComponent, SliderEvent } from "./sliderHooks";
-import { useDragStyles } from "./styleHooks";
-import { getClientXY } from "./useDrag";
+import { getClientXY } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
 
-type UseSliderDragPropsArgs = {
-  style: React.CSSProperties;
-  context: SliderContext;
-  component: SliderComponent;
-};
-
-export function useDragProps({
-  style,
-  context,
-  component,
-}: UseSliderDragPropsArgs) {
-  const handleDragStart = useHandleDragStart({ context, component });
-  const handleDragEnd = useHandleDragEnd({ context, component });
-  const handleDrag = useHandleDrag({
-    context,
-    component: component,
-  });
-  const dragStyles = useDragStyles({ context, style });
-
-  return useMemo(
-    () => ({
-      handleDragStart,
-      handleDragEnd,
-      handleDrag,
-      style: dragStyles,
-    }),
-    [handleDragStart, handleDragEnd, handleDrag, dragStyles]
-  );
-}
-
-function useHandleDragEnd({
+export function useHandleDragEnd({
   context,
   component,
 }: {
@@ -49,20 +18,15 @@ function useHandleDragEnd({
       handleSliderAction({
         type: "DRAG_END",
         component,
+        ...context,
         clientXY,
-        minValue: context.minValue,
-        maxValue: context.maxValue,
-        sliderLength: context.sliderLength,
-        sliderStart: context.sliderStart,
-        orientation: context.orientation,
-        step: context.step,
       });
     },
     [context, component]
   );
 }
 
-function useHandleDragStart({
+export function useHandleDragStart({
   context,
   component,
 }: {
@@ -81,13 +45,8 @@ function useHandleDragStart({
       const clientXY = getClientXY(event, context.orientation);
       handleTimelineAction({
         type: "DRAG_START",
+        ...context,
         clientXY,
-        sliderLength: context.sliderLength,
-        sliderStart: context.sliderStart,
-        orientation: context.orientation,
-        minValue: context.minValue,
-        maxValue: context.maxValue,
-        step: context.step,
       });
     },
     [context, component, unmuteVolumeRef]
@@ -99,7 +58,7 @@ type UseHandleDragArgs = {
   component: SliderComponent;
 };
 
-function useHandleDrag({ context, component }: UseHandleDragArgs) {
+export function useHandleDrag({ context, component }: UseHandleDragArgs) {
   return useCallback(
     (event: SliderEvent) => {
       const { handleSliderAction } = context;
@@ -110,13 +69,8 @@ function useHandleDrag({ context, component }: UseHandleDragArgs) {
       handleSliderAction({
         type: "DRAG",
         component,
+        ...context,
         clientXY,
-        maxValue: context.maxValue,
-        sliderLength: context.sliderLength,
-        sliderStart: context.sliderStart,
-        orientation: context.orientation,
-        minValue: context.minValue,
-        step: context.step,
       });
     },
     [context, component]

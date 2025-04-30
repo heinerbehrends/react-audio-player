@@ -1,20 +1,18 @@
 import { useContext, useEffect } from "react";
 import { AudioContext } from "../AudioElement/AudioContext";
 import { SliderContext } from "./SliderContext";
-import { SliderEvent } from "./sliderHooks";
 
 export function useDrag({
-  context,
+  dragState,
   onPointerUp,
   onPointerMove,
   onPointerCancel,
 }: {
-  context: SliderContext;
+  dragState: SliderContext["dragState"];
   onPointerUp: (event: PointerEvent | TouchEvent) => void;
   onPointerMove: (event: PointerEvent | TouchEvent) => void;
   onPointerCancel: () => void;
 }) {
-  const { dragState } = context;
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
@@ -49,20 +47,3 @@ export function useDrag({
   }, [dragState, onPointerUp, onPointerMove, onPointerCancel, audioElement]);
 }
 
-function isTouchEvent(
-  event: SliderEvent
-): event is React.TouchEvent<HTMLButtonElement> {
-  return "touches" in event;
-}
-
-export function getClientXY(
-  event: SliderEvent,
-  orientation: "horizontal" | "vertical"
-): number {
-  if (isTouchEvent(event)) {
-    return orientation === "horizontal"
-      ? event.touches[0]?.clientX ?? 0
-      : event.touches[0]?.clientY ?? 0;
-  }
-  return orientation === "horizontal" ? event.clientX : event.clientY;
-}

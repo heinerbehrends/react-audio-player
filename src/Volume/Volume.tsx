@@ -1,11 +1,9 @@
 import { useContext, type HTMLAttributes } from "react";
-import { Indicator, IndicatorBackground } from "../Slider/Indicator";
-import { Container } from "../Slider/Container";
 import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
 import { VolumeDragButton } from "./DragVolume";
 import { SetVolume } from "./SetVolume";
-import { useIndicatorStyles } from "../Slider/styleHooks";
+import { useIndicatorStyles, progressStyles } from "../Slider/styleHooks";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -21,21 +19,34 @@ function VolumeContainer({
 }: VolumeContainerProps) {
   return (
     <VolumeProvider orientation={orientation}>
-      <Container {...props} data-type="volume" data-orientation={orientation}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gridTemplateRows: "1fr",
+          width: "100%",
+          alignItems: "center",
+          ...props.style,
+        }}
+      >
         {children}
-      </Container>
+      </div>
     </VolumeProvider>
   );
 }
 
 function VolumeProgress(props: ProgressProps) {
   const context = useContext(VolumeContext);
-  const style = useIndicatorStyles({
-    context,
-    style: props.style ?? {},
-    type: "volume",
-  });
-  return <Indicator {...props} style={style} />;
+  const style = {
+    ...progressStyles,
+    ...useIndicatorStyles({
+      context,
+      style: props.style ?? {},
+      type: "volume",
+    }),
+    ...props.style,
+  };
+  return <div {...props} style={style} />;
 }
 
 type VolumeComponent = React.FC<
@@ -49,9 +60,13 @@ type VolumeComponent = React.FC<
   Drag: typeof VolumeDragButton;
 };
 
+function VolumeBackground(props: React.HTMLAttributes<HTMLDivElement>) {
+  return <div {...props} style={{ ...progressStyles, ...props.style }} />;
+}
+
 export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
   Progress: VolumeProgress,
-  Background: IndicatorBackground,
+  Background: VolumeBackground,
   Set: SetVolume,
   Drag: VolumeDragButton,
 });

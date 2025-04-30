@@ -21,7 +21,7 @@ export type HandleMediaKeysArgs = {
 export function handleMediaKeys({
   event,
   handlePlayerAction,
-  component = "timeline",
+  component,
   playbackRate,
   volumeState,
   duration,
@@ -124,20 +124,13 @@ export function handleMediaKeys({
     return true;
   }
   if (isNumericKey(event.key)) {
-    if (component !== "timeline") return;
-    const value = getNumericKeyValue({
-      duration,
-      key: event.key,
-    });
-    if (!areNumbersClose(value, 0)) {
-      handlePlayerAction({
-        type: "UNMUTE",
-      });
-    }
     handlePlayerAction({
       type: "CHANGE_VALUE",
-      value,
-      component,
+      value: getNumericKeyValue({
+        duration,
+        key: event.key,
+      }),
+      component: "timeline",
     });
     event.preventDefault();
     return true;
