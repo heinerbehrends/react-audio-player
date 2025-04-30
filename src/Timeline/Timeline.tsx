@@ -1,5 +1,5 @@
 import { useContext, type HTMLAttributes } from "react";
-import { Indicator } from "../Slider/Indicator";
+import { Indicator, IndicatorBackground } from "../Slider/Indicator";
 import { Container } from "../Slider/Container";
 import { TimelineProvider } from "./TimelineProvider";
 import { TimelineContext } from "./TimelineContext";
@@ -19,9 +19,10 @@ function TimelineProgress(props: ProgressProps) {
 }
 
 type TimelineComponent = React.FC<
-  HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }
+  HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }
 > & {
   Progress: typeof TimelineProgress;
+  Background: typeof IndicatorBackground;
   Seek: typeof SeekTime;
   Drag: typeof TimelineDragButton;
 };
@@ -36,5 +37,6 @@ export const Timeline = Object.assign(
     Progress: TimelineProgress,
     Seek: SeekTime,
     Drag: TimelineDragButton,
+    Background: IndicatorBackground,
   }
 ) as TimelineComponent;

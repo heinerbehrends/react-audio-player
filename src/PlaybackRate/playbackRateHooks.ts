@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
 import { PlaybackRateContext } from "./PlaybackRateContext";
-import { calculateValue } from "../Shared/sharedFunctions";
+import { calculateSliderValue } from "../Shared/sharedFunctions";
 
 export function useSetPlaybackRate() {
   const context = useContext(PlaybackRateContext);
@@ -14,10 +14,10 @@ export function useSetPlaybackRate() {
   } = context;
   return useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
-      const xyOffset =
+      const clientXY =
         orientation === "horizontal" ? event.clientX : event.clientY;
-      const value = calculateValue({
-        xyOffset,
+      const value = calculateSliderValue({
+        clientXY,
         sliderStart,
         sliderLength,
         minValue,

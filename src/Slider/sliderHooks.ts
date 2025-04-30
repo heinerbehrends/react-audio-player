@@ -1,15 +1,11 @@
 import { useCallback, useRef, useEffect, useContext } from "react";
 import { getClientXY } from "./useDrag";
 import {
-  calculateSteppedValue,
-  calculateValue,
-} from "../Shared/sharedFunctions";
-import {
   isSliderAction,
   isSliderSideEffect,
   type SliderProviderAction,
   type SliderContext,
-  SliderContextAction,
+  type SliderContextAction,
 } from "./SliderContext";
 import { handleSideEffect } from "../AudioElement/handleSideEffect";
 import { AudioContext } from "../AudioElement/AudioContext";
@@ -84,34 +80,17 @@ export function useSetValue({ context, component, step = 0 }: UseSetValueArgs) {
   } = context;
   return useCallback(
     (event: SliderEvent) => {
-      const xyOffset = getClientXY(event, orientation);
-      const value = step
-        ? calculateSteppedValue({
-            value: calculateValue({
-              xyOffset,
-              sliderStart,
-              sliderLength,
-              minValue,
-              maxValue,
-              orientation,
-            }),
-            minValue,
-            maxValue,
-            step,
-          })
-        : calculateValue({
-            xyOffset,
-            sliderStart,
-            sliderLength,
-            minValue,
-            maxValue,
-            orientation,
-          });
-
+      const clientXY = getClientXY(event, orientation);
       handleTimelineAction({
-        type: "CHANGE_VALUE",
-        value,
+        type: "SET_SLIDER_VALUE",
         component,
+        clientXY,
+        sliderLength,
+        sliderStart,
+        orientation,
+        minValue,
+        maxValue,
+        step,
       });
     },
     [
@@ -127,13 +106,12 @@ export function useSetValue({ context, component, step = 0 }: UseSetValueArgs) {
   );
 }
 
-export function useHandleAction({
-  dispatch,
-  action,
-}: {
+type UseHandleActionArgs = {
   dispatch: React.Dispatch<SliderProviderAction>;
   action: SliderProviderAction;
-}) {
+};
+
+export function useHandleAction({ dispatch, action }: UseHandleActionArgs) {
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);

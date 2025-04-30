@@ -2,10 +2,9 @@ import { useContext } from "react";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { Container } from "../Slider/Container";
-import { Indicator } from "../Slider/Indicator";
+import { IndicatorBackground } from "../Slider/Indicator";
 import { SetRelativeButton } from "../Slider/SetRelativeButton";
 import { useSetValue, useHandleRef } from "../Slider/sliderHooks";
-import { useIndicatorStyles } from "../Slider/styleHooks";
 import { DragPlaybackRate } from "./DragPlaybackRate";
 
 type PlaybackRateSliderComponent = React.FC<
@@ -16,19 +15,10 @@ type PlaybackRateSliderComponent = React.FC<
     step?: number;
   }
 > & {
-  Progress: typeof Progress;
+  Background: typeof IndicatorBackground;
   Set: typeof Set;
   Drag: typeof DragPlaybackRate;
 };
-
-function Progress(props: React.HTMLAttributes<HTMLDivElement>) {
-  const context = useContext(PlaybackRateContext);
-  const style = useIndicatorStyles({
-    context,
-    style: props.style ?? {},
-  });
-  return <Indicator {...props} style={style} />;
-}
 
 function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(PlaybackRateContext);
@@ -70,7 +60,7 @@ export const PlaybackRateSlider = Object.assign(
     );
   },
   {
-    Progress,
+    Background: IndicatorBackground,
     Set,
     Drag: DragPlaybackRate,
   }

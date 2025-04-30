@@ -1,8 +1,9 @@
-import { calculateValue } from "../Shared/sharedFunctions";
+import { calculateSliderValue } from "../Shared/sharedFunctions";
 import type {
   SliderContext,
   SliderContextAction,
 } from "../Slider/SliderContext";
+import { getOffset } from "../Shared/sharedFunctions";
 
 export function timelineReducer(
   state: SliderContext,
@@ -10,10 +11,14 @@ export function timelineReducer(
 ): SliderContext {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
-      if (action.component !== "timeline") return state;
-      return { ...state, value: action.value };
+      if (action.component !== "timeline") {
+        return state;
+      }
+      return {
+        ...state,
+        value: action.value,
+      };
     }
-
     case "SLIDER_LOADED": {
       return {
         ...state,
@@ -26,10 +31,18 @@ export function timelineReducer(
       if (state.dragState === "dragging") {
         return state;
       }
+      const offset = getOffset({
+        value: state.value,
+        sliderLength: state.sliderLength,
+        clientXY: action.clientXY,
+        minValue: state.minValue,
+        maxValue: state.maxValue,
+        dragState: state.dragState,
+      });
       return {
         ...state,
         dragState: "dragging" as const,
-        xyOffset: action.clientXY,
+        clientXY: offset,
       };
     }
 
@@ -44,10 +57,10 @@ export function timelineReducer(
         Math.max(action.clientXY, state.sliderStart),
         state.sliderStart + state.sliderLength
       );
-      const xyOffset = restrictedClientXY - state.sliderStart;
+      const clientXY = restrictedClientXY - state.sliderStart;
       return {
         ...state,
-        xyOffset,
+        clientXY,
       };
     }
 
@@ -58,18 +71,17 @@ export function timelineReducer(
       if (action.component !== "timeline") {
         return state;
       }
-      const time = calculateValue({
-        xyOffset: action.clientXY,
+      const time = calculateSliderValue({
+        clientXY: action.clientXY,
         sliderLength: state.sliderLength,
         maxValue: action.maxValue,
         sliderStart: state.sliderStart,
       });
-      const limitedTime = Math.min(Math.max(time, 0), action.maxValue ?? 1);
       return {
         ...state,
         dragState: "idle" as const,
-        xyOffset: 0,
-        value: limitedTime,
+        clientXY: 0,
+        value: time,
       };
     }
 
@@ -77,7 +89,7 @@ export function timelineReducer(
       return {
         ...state,
         dragState: "idle" as const,
-        xyOffset: 0,
+        clientXY: 0,
       };
     }
 

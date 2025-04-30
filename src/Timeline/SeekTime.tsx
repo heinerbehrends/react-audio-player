@@ -6,7 +6,7 @@ import { useTimelineAriaAttributes } from "../Timeline/timelineHooks";
 import { useSetValue } from "../Slider/sliderHooks";
 
 type SeekTimeProps = HTMLAttributes<HTMLButtonElement> & {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 };
 
 export function SeekTime({ children, ...props }: SeekTimeProps) {
@@ -15,13 +15,15 @@ export function SeekTime({ children, ...props }: SeekTimeProps) {
   const handleRef = useHandleRef(context);
   const handlePointerDown = useSetValue({ context, component: "timeline" });
   return (
-    <SetRelativeButton
-      {...ariaAttributes}
-      {...props}
-      handleRef={handleRef}
-      handlePointerDown={handlePointerDown}
-    >
-      {children}
-    </SetRelativeButton>
+    <>
+      <SetRelativeButton
+        {...ariaAttributes}
+        {...props}
+        handleRef={handleRef}
+        handlePointerDown={handlePointerDown}
+      >
+        {children}
+      </SetRelativeButton>
+    </>
   );
 }

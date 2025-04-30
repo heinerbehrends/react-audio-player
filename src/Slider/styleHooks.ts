@@ -2,29 +2,31 @@ import { useContext, useMemo } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { SliderContext } from "./SliderContext";
 import { SliderComponent } from "./sliderHooks";
+import { getOffset } from "../Shared/sharedFunctions";
 
 type UseOffsetArgs = {
   context: SliderContext;
 };
 export function useOffset({ context }: UseOffsetArgs) {
-  const {
-    xyOffset,
-    dragState,
-    sliderLength,
-    value,
-    orientation,
-    minValue,
-    maxValue,
-    step,
-  } = context;
   const { volumeState } = useContext(PlayerContext);
-  const isStepped = step !== 0;
 
   return useMemo(() => {
+    const {
+      clientXY: xyOffset,
+      dragState,
+      sliderLength,
+      value,
+      orientation,
+      minValue,
+      maxValue,
+      step,
+    } = context;
+    const isStepped = step !== 0;
+
     return getOffset({
       value,
       sliderLength,
-      xyOffset,
+      clientXY: xyOffset,
       minValue,
       maxValue,
       dragState,
@@ -32,54 +34,7 @@ export function useOffset({ context }: UseOffsetArgs) {
       volumeState,
       isStepped,
     });
-  }, [
-    value,
-    sliderLength,
-    xyOffset,
-    dragState,
-    orientation,
-    volumeState,
-    minValue,
-    maxValue,
-    isStepped,
-  ]);
-}
-
-export type GetOffsetArgs = {
-  value: number;
-  sliderLength: number;
-  xyOffset: number;
-  minValue?: number;
-  maxValue?: number;
-  dragState: "dragging" | "idle";
-  orientation?: "horizontal" | "vertical";
-  volumeState?: "muted" | "low" | "high";
-  isStepped?: boolean;
-};
-
-export function getOffset({
-  value,
-  sliderLength,
-  xyOffset,
-  minValue = 0,
-  maxValue = 1,
-  dragState,
-  orientation = "horizontal",
-  isStepped = false,
-}: GetOffsetArgs): number {
-  if (dragState === "dragging" && !isStepped) {
-    return xyOffset;
-  }
-  const range = maxValue - minValue;
-  const progress = (value - minValue) / range;
-
-  if (orientation === "horizontal") {
-    return progress * sliderLength;
-  }
-  if (orientation === "vertical") {
-    return sliderLength - progress * sliderLength;
-  }
-  return 0;
+  }, [context, volumeState]);
 }
 
 type UseDragStylesArgs = {
@@ -125,8 +80,6 @@ export function useIndicatorStyles({
   return useMemo(
     () => ({
       transform: `scaleX(${progress})`,
-      width: "100%",
-      height: "100%",
       transformOrigin: "left",
       ...style,
     }),

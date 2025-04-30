@@ -8,11 +8,11 @@ export function Container({
     <div
       {...props}
       style={{
-        position: "relative",
         display: "grid",
         gridTemplateColumns: "1fr",
         gridTemplateRows: "1fr",
         width: "100%",
+        alignItems: "center",
         ...props.style,
       }}
     >

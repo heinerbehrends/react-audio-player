@@ -47,12 +47,13 @@ export function Debug({
       <p>Left: {context.sliderStart}</p>
       <p>Width: {context.sliderLength}</p>
       <p>Drag State: {context.dragState}</p>
-      <p>X Offset: {context.xyOffset}</p>
+      <p>X Offset: {context.clientXY}</p>
       <p>Orientation: {context.orientation}</p>
       <p>Unmute Volume: {unmuteVolume}</p>
       <p>Volume state: {volumeState}</p>
       <p>Min Value: {context.minValue}</p>
       <p>Max Value: {context.maxValue}</p>
+      <p>Audio Element muted: {audioElement?.muted}</p>
     </div>
   );
 }

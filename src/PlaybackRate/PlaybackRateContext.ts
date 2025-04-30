@@ -8,7 +8,7 @@ export const PlaybackRateContext = createContext<SliderContext>({
   minValue: 0.5,
   maxValue: 4,
   step: 0.25,
-  xyOffset: 0,
+  clientXY: 0,
   dragState: "idle",
   orientation: "horizontal",
   handleSliderAction: () => {},

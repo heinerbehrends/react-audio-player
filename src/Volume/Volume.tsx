@@ -1,5 +1,5 @@
 import { useContext, type HTMLAttributes } from "react";
-import { Indicator } from "../Slider/Indicator";
+import { Indicator, IndicatorBackground } from "../Slider/Indicator";
 import { Container } from "../Slider/Container";
 import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
@@ -51,6 +51,7 @@ type VolumeComponent = React.FC<
 
 export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
   Progress: VolumeProgress,
+  Background: IndicatorBackground,
   Set: SetVolume,
   Drag: VolumeDragButton,
 });

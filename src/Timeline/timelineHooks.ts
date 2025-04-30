@@ -12,7 +12,7 @@ export function useTimelineAriaAttributes() {
   };
 
   return {
-    "aria-label": "Seek audio",
+    "aria-label": "Click timeline to seek",
     "aria-valuemin": 0,
     "aria-valuemax": duration,
     "aria-valuenow": currentTime,

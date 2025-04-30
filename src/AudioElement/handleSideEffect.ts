@@ -1,7 +1,6 @@
 import {
   areNumbersClose,
-  calculateSteppedValue,
-  calculateValue,
+  calculateSliderValue,
 } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./AudioContext";
 
@@ -36,44 +35,50 @@ export function handleSideEffect(
       audioElement.muted = false;
       break;
     }
+    case "SET_SLIDER_VALUE":
     case "DRAG_END": {
       if (action.component === "timeline") {
-        const time = calculateValue({
-          xyOffset: action.clientXY,
+        const time = calculateSliderValue({
+          clientXY: action.clientXY,
           sliderLength: action.sliderLength,
           maxValue: action.maxValue,
           sliderStart: action.sliderStart,
         });
-        const limitedTime = Math.min(Math.max(time, 0), action.maxValue);
-        audioElement.currentTime = limitedTime;
+        audioElement.currentTime = time;
       }
       if (action.component === "volume") {
-        const volume = calculateValue({
-          xyOffset: action.clientXY,
+        const volume = calculateSliderValue({
+          clientXY: action.clientXY,
           sliderLength: action.sliderLength,
           sliderStart: action.sliderStart,
           orientation: action.orientation,
         });
-        const limitedVolume = Math.min(Math.max(volume, 0), 1);
-        audioElement.volume = limitedVolume;
+        audioElement.volume = volume;
+      }
+      if (action.component === "playbackRate") {
+        if (action.type === "DRAG_END") return;
+        const playbackRate = calculateSliderValue({
+          clientXY: action.clientXY,
+          sliderLength: action.sliderLength,
+          sliderStart: action.sliderStart,
+          minValue: action.minValue,
+          maxValue: action.maxValue,
+          step: action.step,
+        });
+        audioElement.playbackRate = playbackRate;
       }
       break;
     }
     case "CHANGE_VALUE": {
       if (action.component === "timeline") {
-        const limitedTime = Math.min(
-          Math.max(action.value, 0),
-          audioElement.duration
-        );
-        audioElement.currentTime = limitedTime;
+        audioElement.currentTime = action.value;
       }
       if (action.component === "volume") {
-        const limitedVolume = Math.min(Math.max(action.value, 0), 1);
-        const isCloseToZero = areNumbersClose(limitedVolume, 0);
+        const isCloseToZero = areNumbersClose(action.value, 0);
         if (audioElement.muted && !isCloseToZero) {
           audioElement.muted = false;
         }
-        audioElement.volume = limitedVolume;
+        audioElement.volume = action.value;
       }
       if (action.component === "playbackRate") {
         audioElement.playbackRate = action.value;
@@ -85,8 +90,8 @@ export function handleSideEffect(
         return;
       }
       if (action.component === "volume") {
-        const volume = calculateValue({
-          xyOffset: action.clientXY,
+        const volume = calculateSliderValue({
+          clientXY: action.clientXY,
           sliderLength: action.sliderLength,
           sliderStart: action.sliderStart,
           orientation: action.orientation,
@@ -94,22 +99,16 @@ export function handleSideEffect(
         audioElement.volume = volume;
       }
       if (action.component === "playbackRate") {
-        const value = calculateValue({
-          xyOffset: action.clientXY,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-          minValue: action.minValue,
-          maxValue: action.maxValue,
-        });
         const step = action.step || 0.25;
         const minValue = action.minValue || 0.5;
         const maxValue = action.maxValue || 4;
-        const playbackRate = calculateSteppedValue({
-          value,
+        const playbackRate = calculateSliderValue({
           minValue,
           maxValue,
           step,
+          sliderLength: action.sliderLength,
+          sliderStart: action.sliderStart,
+          clientXY: action.clientXY,
         });
 
         audioElement.playbackRate = playbackRate;

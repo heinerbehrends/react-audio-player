@@ -1,4 +1,5 @@
 import "./App.css";
+import { useEffect, useState } from "react";
 import { PlayButton } from "./Player/PlayButton";
 import { Timeline } from "./Timeline/Timeline";
 import { MuteButton } from "./Player/MuteButton";
@@ -9,9 +10,8 @@ import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
-// import { Debug } from "./Debug";
-import { useEffect, useState } from "react";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
+// import { Debug } from "./Debug";
 
 function App() {
   const searchParams = useUrlParams();
@@ -23,18 +23,24 @@ function App() {
     <AudioPlayer
       audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
     >
-      <Timeline style={{ height: "40px", backgroundColor: "lightgray" }}>
+      <Timeline style={{ height: "40px" }}>
         <Timeline.Seek
-          style={{ padding: 0, margin: 0, border: "none", background: "none" }}
+          style={{
+            border: "none",
+            background: "none",
+            padding: "12px 0",
+            boxSizing: "border-box",
+          }}
         >
           <Timeline.Progress style={{ backgroundColor: "darkgray" }} />
+          <Timeline.Background style={{ backgroundColor: "lightgray" }} />
         </Timeline.Seek>
         <Timeline.Drag
           style={{
             height: "40px",
             width: "40px",
             borderRadius: "50%",
-            border: "none",
+            border: "solid 1px darkgray",
           }}
         />
         {/* <Debug type="timeline" /> */}
@@ -61,34 +67,52 @@ function App() {
         style={{
           width: volumeOrientation === "horizontal" ? undefined : "40px",
           height: volumeOrientation === "horizontal" ? "40px" : "400px",
-          backgroundColor: "gray",
         }}
       >
         <Volume.Set
           style={{
-            padding: 0,
+            padding: "12px 0",
             margin: 0,
             border: "none",
             background: "none",
           }}
         >
           <Volume.Progress style={{ backgroundColor: "darkgray" }} />
+          <Volume.Background style={{ backgroundColor: "lightgray" }} />
         </Volume.Set>
         <Volume.Drag
           style={{
             height: "40px",
             width: "40px",
             borderRadius: "50%",
-            border: "none",
+            border: "solid 1px darkgray",
           }}
         />
         {/* <Debug type="volume" /> */}
       </Volume>
-      <PlaybackRateSlider maxValue={2} minValue={0.5} step={0.1}>
-        <PlaybackRateSlider.Set>
-          <PlaybackRateSlider.Progress />
+      <PlaybackRateSlider
+        style={{ height: "40px" }}
+        maxValue={2}
+        minValue={0.5}
+        step={0.1}
+      >
+        <PlaybackRateSlider.Set
+          style={{
+            padding: "12px 0",
+          }}
+        >
+          <PlaybackRateSlider.Background
+            style={{ backgroundColor: "lightgray" }}
+          />
         </PlaybackRateSlider.Set>
-        <PlaybackRateSlider.Drag />
+        <PlaybackRateSlider.Drag
+          style={{
+            height: "40px",
+            width: "40px",
+            borderRadius: "50%",
+            border: "solid 1px darkgray",
+          }}
+        />
         {/* <Debug type="playbackRate" /> */}
       </PlaybackRateSlider>
       <PlaybackRate.Display />

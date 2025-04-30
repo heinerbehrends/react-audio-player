@@ -7,33 +7,18 @@ export type SliderLoadedAction = {
   sliderLength: number;
 };
 
-export type DragStartAction = {
+export type DragStartAction = SliderData & {
   type: "DRAG_START";
-  clientXY: number;
 };
 
-export type DragAction = {
+export type DragAction = SliderData & {
   type: "DRAG";
   component: SliderComponent;
-  clientXY: number;
-  sliderLength: number;
-  sliderStart: number;
-  orientation?: "horizontal" | "vertical";
-  minValue?: number;
-  maxValue?: number;
-  step?: number;
 };
 
-export type DragEndAction = {
+export type DragEndAction = SliderData & {
   type: "DRAG_END";
-  clientXY: number;
   component: SliderComponent;
-  sliderLength: number;
-  sliderStart: number;
-  maxValue: number;
-  minValue?: number;
-  orientation?: "horizontal" | "vertical";
-  step?: number;
 };
 
 type CancelDragAction = {
@@ -69,6 +54,7 @@ const SLIDER_SIDE_EFFECT_MAP: Record<SliderSideEffectAction, boolean> = {
   AUDIO_FILE_ENDED: true,
   STOP_AUDIO: true,
   SET_PLAYBACK_RATE: true,
+  SET_SLIDER_VALUE: true,
 };
 
 const SLIDER_DISPATCH_MAP: Record<SliderActionType, true> = {
@@ -92,16 +78,19 @@ export function isSliderAction(
   return SLIDER_DISPATCH_MAP[action.type as SliderActionType] === true;
 }
 
-export type SliderContext = {
+export type SliderData = {
+  clientXY: number;
   sliderStart: number;
   sliderLength: number;
-  value: number;
   minValue: number;
   maxValue: number;
-  xyOffset: number;
-  dragState: "idle" | "dragging";
   orientation: "horizontal" | "vertical";
   step: number;
+};
+
+export type SliderContext = SliderData & {
+  value: number;
+  dragState: "idle" | "dragging";
   handleSliderAction: (action: SliderProviderAction) => void;
 };
 
@@ -111,7 +100,7 @@ export const initialState: SliderContext = {
   value: 1,
   minValue: 0,
   maxValue: 1,
-  xyOffset: 0,
+  clientXY: 0,
   dragState: "idle",
   orientation: "horizontal",
   handleSliderAction: () => {},

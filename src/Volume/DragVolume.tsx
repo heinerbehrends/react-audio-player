@@ -31,7 +31,6 @@ export function VolumeDragButton(props: HTMLAttributes<HTMLButtonElement>) {
     <DragButton
       handleDragStart={handleDragStart}
       handleKeyDown={handleKeyDown}
-      context={context}
       aria-label="Drag to adjust volume"
       {...props}
       style={style}

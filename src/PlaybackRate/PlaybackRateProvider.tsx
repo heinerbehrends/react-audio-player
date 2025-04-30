@@ -1,4 +1,4 @@
-import { useMemo, useReducer } from "react";
+import { useMemo, useReducer, memo } from "react";
 import { SliderContext } from "../Slider/SliderContext";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { playbackRateReducer } from "./playbackRateReducer";
@@ -12,7 +12,7 @@ const initialState: SliderContext = {
   maxValue: 4,
   step: 0.25,
   orientation: "horizontal",
-  xyOffset: 0,
+  clientXY: 0,
   dragState: "idle",
   handleSliderAction: () => {},
 };
@@ -24,7 +24,7 @@ type PlaybackRateProviderProps = {
   step: number | undefined;
 };
 
-export function PlaybackRateProvider({
+export const PlaybackRateProvider = memo(function PlaybackRateProvider({
   children,
   minValue = 0.5,
   maxValue = 4,
@@ -54,4 +54,4 @@ export function PlaybackRateProvider({
       {children}
     </PlaybackRateContext.Provider>
   );
-}
+});

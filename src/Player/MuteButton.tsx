@@ -56,6 +56,7 @@ function useToggleMute() {
     volumeCallback.handleVolumeAction({
       type: "UPDATE_UI_VALUE",
       value: nextVolume,
+      component: "volume",
     });
   }, [handlePlayerAction, isMuted, volume, volumeCallback, unmuteVolumeRef]);
 }

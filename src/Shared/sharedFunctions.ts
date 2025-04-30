@@ -3,7 +3,7 @@ export function areNumbersClose(a: number, b: number): boolean {
 }
 
 type CalculateValueArgs = {
-  xyOffset: number;
+  clientXY: number;
   sliderLength: number;
   sliderStart: number;
   orientation?: "horizontal" | "vertical" | undefined;
@@ -12,7 +12,7 @@ type CalculateValueArgs = {
 };
 
 export function calculateValue({
-  xyOffset,
+  clientXY,
   sliderLength,
   sliderStart,
   orientation = "horizontal",
@@ -21,8 +21,8 @@ export function calculateValue({
 }: CalculateValueArgs): number {
   const normalizedProgress =
     orientation === "horizontal"
-      ? (xyOffset - sliderStart) / sliderLength
-      : 1 - (xyOffset - sliderStart) / sliderLength;
+      ? (clientXY - sliderStart) / sliderLength
+      : 1 - (clientXY - sliderStart) / sliderLength;
   const valueRange = maxValue - minValue;
   const mappedValue = minValue + normalizedProgress * valueRange;
 
@@ -45,4 +45,73 @@ export function calculateSteppedValue({
   const stepsFromMin = Math.round((value - minValue) / step);
   const steppedValue = minValue + stepsFromMin * step;
   return Math.min(Math.max(steppedValue, minValue), maxValue);
+}
+
+type CalculateUiValueArgs = CalculateValueArgs & {
+  step?: number | undefined;
+};
+
+export function calculateSliderValue({
+  minValue = 0,
+  maxValue = 1,
+  step = 0,
+  orientation = "horizontal",
+  sliderLength,
+  sliderStart,
+  clientXY,
+}: CalculateUiValueArgs): number {
+  const value = calculateValue({
+    minValue,
+    maxValue,
+    orientation,
+    sliderLength,
+    sliderStart,
+    clientXY,
+  });
+  if (step) {
+    return calculateSteppedValue({
+      value,
+      minValue,
+      maxValue,
+      step,
+    });
+  }
+  return value;
+}
+
+export type GetOffsetArgs = {
+  value: number;
+  sliderLength: number;
+  clientXY: number;
+  minValue?: number;
+  maxValue?: number;
+  dragState: "dragging" | "idle";
+  orientation?: "horizontal" | "vertical";
+  volumeState?: "muted" | "low" | "high";
+  isStepped?: boolean;
+};
+
+export function getOffset({
+  value,
+  sliderLength,
+  clientXY: xyOffset,
+  minValue = 0,
+  maxValue = 1,
+  dragState,
+  orientation = "horizontal",
+  isStepped = false,
+}: GetOffsetArgs): number {
+  if (dragState === "dragging" && !isStepped) {
+    return xyOffset;
+  }
+  const range = maxValue - minValue;
+  const progress = (value - minValue) / range;
+
+  if (orientation === "horizontal") {
+    return progress * sliderLength;
+  }
+  if (orientation === "vertical") {
+    return sliderLength - progress * sliderLength;
+  }
+  return 0;
 }

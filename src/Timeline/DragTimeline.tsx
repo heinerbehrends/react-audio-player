@@ -31,7 +31,6 @@ export function TimelineDragButton(props: HTMLAttributes<HTMLButtonElement>) {
     <DragButton
       handleDragStart={handleDragStart}
       handleKeyDown={handleKeyDown}
-      context={context}
       aria-label="Drag to seek"
       {...props}
       style={style}

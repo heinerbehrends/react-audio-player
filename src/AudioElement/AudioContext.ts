@@ -11,6 +11,7 @@ import type {
   DragEndAction,
   DragAction,
   SliderContextAction,
+  SliderData,
 } from "../Slider/SliderContext";
 
 export type TimelineProviderRef = {
@@ -39,6 +40,11 @@ export type ChangeValueAction = {
   value: number;
 };
 
+type SetSliderValueAction = SliderData & {
+  type: "SET_SLIDER_VALUE";
+  component: "timeline" | "volume" | "playbackRate";
+};
+
 export type SideEffectAction =
   | TogglePlayAction
   | ToggleMuteAction
@@ -48,7 +54,8 @@ export type SideEffectAction =
   | AudioFileEndedAction
   | StopAudioAction
   | SetPlaybackRateAction
-  | UnmuteAction;
+  | UnmuteAction
+  | SetSliderValueAction;
 
 export type AudioContextType = {
   audioElementRef: React.MutableRefObject<HTMLAudioElement | null>;

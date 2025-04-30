@@ -1,5 +1,6 @@
 import { SliderProviderAction } from "../Slider/SliderContext";
 import { SliderContext } from "../Slider/SliderContext";
+import { getOffset } from "../Shared/sharedFunctions";
 
 export function playbackRateReducer(
   state: SliderContext,
@@ -7,11 +8,14 @@ export function playbackRateReducer(
 ): SliderContext {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
-      if (action.component !== "playbackRate") return state;
-      console.log("action.value", action.value);
-      return { ...state, value: action.value };
+      if (action.component !== "playbackRate") {
+        return state;
+      }
+      return {
+        ...state,
+        value: action.value,
+      };
     }
-
     case "SLIDER_LOADED": {
       return {
         ...state,
@@ -24,10 +28,19 @@ export function playbackRateReducer(
       if (state.dragState === "dragging") {
         return state;
       }
+      const offset = getOffset({
+        value: state.value,
+        sliderLength: state.sliderLength,
+        clientXY: action.clientXY,
+        minValue: state.minValue,
+        maxValue: state.maxValue,
+        dragState: state.dragState,
+        isStepped: state.step !== 0,
+      });
       return {
         ...state,
         dragState: "dragging" as const,
-        xyOffset: action.clientXY,
+        clientXY: offset,
       };
     }
 
@@ -45,7 +58,7 @@ export function playbackRateReducer(
       return {
         ...state,
         dragState: "idle" as const,
-        xyOffset: 0,
+        clientXY: 0,
       };
     }
 
@@ -53,7 +66,7 @@ export function playbackRateReducer(
       return {
         ...state,
         dragState: "idle" as const,
-        xyOffset: 0,
+        clientXY: 0,
       };
     }
 

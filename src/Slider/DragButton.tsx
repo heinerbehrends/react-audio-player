@@ -1,9 +1,8 @@
-import { SliderContext } from "./SliderContext";
+import { SliderEvent } from "./sliderHooks";
 
 type DragButtonProps = React.HTMLAttributes<HTMLButtonElement> & {
-  context: SliderContext;
   handleKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
-  handleDragStart: () => void;
+  handleDragStart: (event: SliderEvent) => void;
   style: React.CSSProperties;
 };
 

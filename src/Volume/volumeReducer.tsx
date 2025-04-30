@@ -2,12 +2,23 @@ import type {
   SliderContext,
   SliderContextAction,
 } from "../Slider/SliderContext";
+import { getOffset } from "../Shared/sharedFunctions";
 
 export function volumeReducer(
   state: SliderContext,
   action: SliderContextAction
 ): SliderContext {
   switch (action.type) {
+    case "UPDATE_UI_VALUE": {
+      if (action.component !== "volume") {
+        return state;
+      }
+      return {
+        ...state,
+        value: action.value,
+      };
+    }
+
     case "SLIDER_LOADED": {
       return {
         ...state,
@@ -20,10 +31,18 @@ export function volumeReducer(
       if (state.dragState === "dragging") {
         return state;
       }
+      const offset = getOffset({
+        value: state.value,
+        sliderLength: state.sliderLength,
+        clientXY: action.clientXY,
+        minValue: state.minValue,
+        maxValue: state.maxValue,
+        dragState: state.dragState,
+      });
       return {
         ...state,
         dragState: "dragging" as const,
-        xyOffset: action.clientXY,
+        clientXY: offset,
       };
     }
 
@@ -42,7 +61,7 @@ export function volumeReducer(
 
       return {
         ...state,
-        xyOffset: xOffset,
+        clientXY: xOffset,
       };
     }
 
@@ -52,21 +71,15 @@ export function volumeReducer(
       return {
         ...state,
         dragState: "idle" as const,
-        xyOffset: 0,
+        clientXY: 0,
       };
-    }
-
-    case "UPDATE_UI_VALUE": {
-      if (action.component !== "volume") return state;
-      const limitedValue = Math.min(Math.max(action.value, 0), 1);
-      return { ...state, value: limitedValue };
     }
 
     case "CANCEL_DRAG": {
       return {
         ...state,
         dragState: "idle" as const,
-        xyOffset: 0,
+        clientXY: 0,
       };
     }
 

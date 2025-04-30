@@ -10,15 +10,10 @@ export function DragPlaybackRate(
   props: React.HTMLAttributes<HTMLButtonElement>
 ) {
   const context = useContext(PlaybackRateContext);
-  const { minValue, maxValue, step } = context;
   const { handleDragStart, handleDragEnd, handleDrag, style } = useDragProps({
     style: props.style ?? {},
     context,
     component: "playbackRate",
-    minValue,
-    maxValue,
-    step,
-    isStepped: true,
   });
   const handleDragCancel = useOnPointerCancel(context);
   const handleKeyDown = useHandleMediaKeys("playbackRate");
@@ -38,7 +33,6 @@ export function DragPlaybackRate(
     <DragButton
       handleKeyDown={handleKeyDown}
       handleDragStart={handleDragStart}
-      context={context}
       {...props}
       style={style}
     />

@@ -1,42 +1,35 @@
 import { useContext, useCallback } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import {
-  PlayerProviderAction,
-  PlayerState,
-  VolumeState,
-} from "../Player/PlayerContext";
+import { PlayerProviderAction, VolumeState } from "../Player/PlayerContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
+import { SliderComponent } from "../Slider/sliderHooks";
 
-type ActionHandler<T> = (action: T) => void;
+type ActionHandler<Action> = (action: Action) => void;
 
-export type HandleKeyDownProps = {
+export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   handlePlayerAction: ActionHandler<PlayerProviderAction>;
-  getPlayerState: () => PlayerState;
+  duration: number;
+  currentTime: number;
+  volume: number;
+  unmuteVolume: number;
   playbackRate: number;
   volumeState: VolumeState;
-  type?: "timeline" | "volume" | "playbackRate" | undefined;
+  component?: SliderComponent | undefined;
 };
 
 export function handleMediaKeys({
   event,
   handlePlayerAction,
-  getPlayerState,
-  slider,
+  component = "timeline",
   playbackRate,
   volumeState,
-}: Omit<HandleKeyDownProps, "handleTimelineAction" | "type"> & {
-  slider?: "timeline" | "volume" | "playbackRate" | undefined;
-  playbackRate: number;
-  volumeState: VolumeState;
-}) {
-  const {
-    duration,
-    currentTime,
-    volume,
-    unmuteVolumeRef: unmuteVolume,
-  } = getPlayerState();
-  if (slider) {
+  duration,
+  currentTime,
+  volume,
+  unmuteVolume,
+}: HandleMediaKeysArgs) {
+  if (component) {
     if (["Enter", " "].includes(event.key)) {
       handlePlayerAction({ type: "TOGGLE_PLAY" });
       event.preventDefault();
@@ -44,9 +37,7 @@ export function handleMediaKeys({
     }
   }
   if (["m", "MediaMute"].includes(event.key.toLowerCase())) {
-    const nextVolume = areNumbersClose(volume, 0)
-      ? unmuteVolume.current
-      : volume;
+    const nextVolume = areNumbersClose(volume, 0) ? unmuteVolume : volume;
     handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextVolume });
     event.preventDefault();
     return true;
@@ -66,7 +57,7 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key === "ArrowRight") {
-    if (slider === "volume") return;
+    if (component === "volume") return;
     handlePlayerAction({
       type: "CHANGE_VALUE",
       value: currentTime + 5,
@@ -76,7 +67,7 @@ export function handleMediaKeys({
     return true;
   }
   if (event.key === "ArrowLeft") {
-    if (slider === "volume") return;
+    if (component === "volume") return;
     handlePlayerAction({
       type: "CHANGE_VALUE",
       value: currentTime - 5,
@@ -133,8 +124,8 @@ export function handleMediaKeys({
     return true;
   }
   if (isNumericKey(event.key)) {
+    if (component !== "timeline") return;
     const value = getNumericKeyValue({
-      type: slider ?? "timeline",
       duration,
       key: event.key,
     });
@@ -146,7 +137,7 @@ export function handleMediaKeys({
     handlePlayerAction({
       type: "CHANGE_VALUE",
       value,
-      component: slider ?? "timeline",
+      component,
     });
     event.preventDefault();
     return true;
@@ -181,70 +172,60 @@ function isNumericKey(key: string): key is NumericKey {
 
 type NumericKey = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
-type getNumericKeyValueProps = {
-  type: "timeline" | "volume" | "playbackRate";
-  duration: number;
+type GetNumericKeyValueArgs = {
   key: NumericKey;
+  duration: number;
 };
 
-function getNumericKeyValue({ type, duration, key }: getNumericKeyValueProps) {
+function getNumericKeyValue({ duration, key }: GetNumericKeyValueArgs) {
   const keyToTimeMap = {
-    timeline: {
-      "0": 0,
-      "1": duration * 0.1,
-      "2": duration * 0.2,
-      "3": duration * 0.3,
-      "4": duration * 0.4,
-      "5": duration * 0.5,
-      "6": duration * 0.6,
-      "7": duration * 0.7,
-      "8": duration * 0.8,
-      "9": duration * 0.9,
-    },
-    volume: {
-      "0": 0,
-      "1": 0.1,
-      "2": 0.2,
-      "3": 0.3,
-      "4": 0.4,
-      "5": 0.5,
-      "6": 0.6,
-      "7": 0.7,
-      "8": 0.8,
-      "9": 0.9,
-    },
-    playbackRate: {
-      "0": 0.5,
-      "1": 0.75,
-      "2": 1,
-      "3": 1.25,
-      "4": 1.5,
-      "5": 1.75,
-      "6": 2,
-      "7": 2.25,
-      "8": 2.5,
-      "9": 2.75,
-    },
+    "0": 0,
+    "1": duration * 0.1,
+    "2": duration * 0.2,
+    "3": duration * 0.3,
+    "4": duration * 0.4,
+    "5": duration * 0.5,
+    "6": duration * 0.6,
+    "7": duration * 0.7,
+    "8": duration * 0.8,
+    "9": duration * 0.9,
   };
-  return keyToTimeMap[type][key];
+
+  return keyToTimeMap[key];
 }
 
-export function useHandleMediaKeys(
-  slider?: "timeline" | "volume" | "playbackRate"
-) {
+export function useHandleMediaKeys(component?: SliderComponent) {
   const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
     useContext(PlayerContext);
+  const {
+    duration,
+    currentTime,
+    volume,
+    unmuteVolumeRef: { current: unmuteVolume },
+  } = getPlayerState();
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       handleMediaKeys({
         event,
         handlePlayerAction,
-        getPlayerState,
         playbackRate,
         volumeState,
-        slider,
+        duration,
+        currentTime,
+        volume,
+        unmuteVolume,
+        component,
       });
     },
-    [handlePlayerAction, getPlayerState, playbackRate, volumeState, slider]
+    [
+      handlePlayerAction,
+      playbackRate,
+      volumeState,
+      component,
+      duration,
+      currentTime,
+      volume,
+      unmuteVolume,
+    ]
   );
 }

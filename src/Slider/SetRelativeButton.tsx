@@ -16,9 +16,15 @@ export function SetRelativeButton({
     () => ({
       gridColumn: "1 / 1",
       gridRow: "1 / 1",
-      ...props.style,
       width: "100%",
       height: "100%",
+      border: "none",
+      background: "none",
+      gridTemplateColumns: "1fr",
+      gridTemplateRows: "1fr",
+      display: "grid",
+      padding: 0,
+      ...props.style,
     }),
     [props.style]
   );

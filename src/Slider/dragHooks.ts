@@ -1,38 +1,26 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useContext } from "react";
 import { SliderContext } from "./SliderContext";
-import {
-  SliderComponent as SliderComponents,
-  SliderEvent,
-} from "./sliderHooks";
-import { useDragStyles, useOffset } from "./styleHooks";
+import { SliderComponent, SliderEvent } from "./sliderHooks";
+import { useDragStyles } from "./styleHooks";
 import { getClientXY } from "./useDrag";
+import { PlayerContext } from "../Player/PlayerContext";
 
 type UseSliderDragPropsArgs = {
   style: React.CSSProperties;
   context: SliderContext;
-  component: SliderComponents;
-  minValue?: number;
-  maxValue?: number;
-  step?: number;
-  isStepped?: boolean;
+  component: SliderComponent;
 };
 
 export function useDragProps({
   style,
   context,
   component,
-  minValue = 0,
-  maxValue = 1,
-  step = 0,
 }: UseSliderDragPropsArgs) {
-  const handleDragStart = useHandleDragStart(context);
+  const handleDragStart = useHandleDragStart({ context, component });
   const handleDragEnd = useHandleDragEnd({ context, component });
   const handleDrag = useHandleDrag({
     context,
     component: component,
-    minValue,
-    maxValue,
-    step,
   });
   const dragStyles = useDragStyles({ context, style });
 
@@ -52,99 +40,85 @@ function useHandleDragEnd({
   component,
 }: {
   context: SliderContext;
-  component: SliderComponents;
+  component: SliderComponent;
 }) {
-  const {
-    handleSliderAction,
-    orientation,
-    sliderLength,
-    sliderStart,
-    minValue,
-    maxValue,
-  } = context;
-
   return useCallback(
     (event: SliderEvent) => {
-      const clientXY = getClientXY(event, orientation);
+      const { handleSliderAction } = context;
+      const clientXY = getClientXY(event, context.orientation);
       handleSliderAction({
         type: "DRAG_END",
         component,
         clientXY,
-        minValue,
-        maxValue,
-        sliderLength,
-        sliderStart,
-        orientation,
+        minValue: context.minValue,
+        maxValue: context.maxValue,
+        sliderLength: context.sliderLength,
+        sliderStart: context.sliderStart,
+        orientation: context.orientation,
+        step: context.step,
       });
     },
-    [
-      handleSliderAction,
-      sliderLength,
-      sliderStart,
-      orientation,
-      component,
-      minValue,
-      maxValue,
-    ]
+    [context, component]
   );
 }
 
-function useHandleDragStart(context: SliderContext) {
-  const { handleSliderAction: handleTimelineAction } = context;
-  const offset = useOffset({ context });
-  return useCallback(() => {
-    handleTimelineAction({ type: "DRAG_START", clientXY: offset });
-  }, [handleTimelineAction, offset]);
+function useHandleDragStart({
+  context,
+  component,
+}: {
+  context: SliderContext;
+  component: SliderComponent;
+}) {
+  const { getPlayerState } = useContext(PlayerContext);
+  const { unmuteVolumeRef } = getPlayerState();
+
+  return useCallback(
+    (event: SliderEvent) => {
+      const { handleSliderAction: handleTimelineAction } = context;
+      if (component === "volume") {
+        unmuteVolumeRef.current = context.value;
+      }
+      const clientXY = getClientXY(event, context.orientation);
+      handleTimelineAction({
+        type: "DRAG_START",
+        clientXY,
+        sliderLength: context.sliderLength,
+        sliderStart: context.sliderStart,
+        orientation: context.orientation,
+        minValue: context.minValue,
+        maxValue: context.maxValue,
+        step: context.step,
+      });
+    },
+    [context, component, unmuteVolumeRef]
+  );
 }
 
 type UseHandleDragArgs = {
   context: SliderContext;
-  component: SliderComponents;
-  maxValue?: number;
-  minValue?: number;
-  step?: number;
+  component: SliderComponent;
 };
 
 function useHandleDrag({ context, component }: UseHandleDragArgs) {
-  const {
-    handleSliderAction,
-    orientation,
-    sliderLength,
-    sliderStart,
-    dragState,
-    maxValue,
-    minValue,
-    step,
-  } = context;
-
   return useCallback(
     (event: SliderEvent) => {
-      const clientXY = getClientXY(event, orientation);
-      if (dragState !== "dragging") {
+      const { handleSliderAction } = context;
+      const clientXY = getClientXY(event, context.orientation);
+      if (context.dragState !== "dragging") {
         return;
       }
       handleSliderAction({
         type: "DRAG",
         component,
         clientXY,
-        maxValue,
-        sliderLength,
-        sliderStart,
-        orientation,
-        minValue,
-        step,
+        maxValue: context.maxValue,
+        sliderLength: context.sliderLength,
+        sliderStart: context.sliderStart,
+        orientation: context.orientation,
+        minValue: context.minValue,
+        step: context.step,
       });
     },
-    [
-      handleSliderAction,
-      component,
-      orientation,
-      sliderLength,
-      sliderStart,
-      maxValue,
-      minValue,
-      dragState,
-      step,
-    ]
+    [context, component]
   );
 }
