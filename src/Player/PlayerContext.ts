@@ -83,6 +83,7 @@ export const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
   STOP_AUDIO: true,
   SET_PLAYBACK_RATE: true,
   UNMUTE: true,
+  SET_SLIDER_VALUE: true,
 };
 
 export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, boolean> = {
@@ -106,6 +107,8 @@ export type PlayerState = {
   duration: number;
   currentTime: number;
   volume: number;
+  playbackRate: number;
+  volumeState: VolumeState;
   unmuteVolumeRef: React.MutableRefObject<number>;
 };
 
@@ -135,6 +138,7 @@ export const initialState: PlayerContextType = {
     currentTime: 0,
     volume: 1,
     playbackRate: 1,
+    volumeState: "high",
     unmuteVolumeRef: { current: 1 } as React.MutableRefObject<number>,
   }),
   getDuration: () => 0,

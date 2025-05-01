@@ -13,13 +13,13 @@ export function ChangePlaybackRate({
   children,
   ...props
 }: IncreaseDecreaseProps) {
-  const handleClick = useHandleClick(amount);
+  const handleChangePlaybackRate = useChangePlaybackRate(amount);
   const handleMediaKeys = useHandleMediaKeys();
   const isDisabled = useIsDisabled();
 
   return (
     <button
-      onClick={handleClick}
+      onClick={handleChangePlaybackRate}
       onKeyDown={handleMediaKeys}
       aria-label={
         amount > 0
@@ -34,7 +34,7 @@ export function ChangePlaybackRate({
   );
 }
 
-function useHandleClick(amount: number) {
+function useChangePlaybackRate(amount: number) {
   const { handlePlayerAction, playbackRate } = useContext(PlayerContext);
   return useCallback(() => {
     const newRate = playbackRate + amount;

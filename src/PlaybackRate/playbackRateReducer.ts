@@ -35,7 +35,8 @@ export function playbackRateReducer(
         minValue: state.minValue,
         maxValue: state.maxValue,
         dragState: state.dragState,
-        isStepped: state.step !== 0,
+        step: state.step,
+        component: state.component,
       });
       return {
         ...state,

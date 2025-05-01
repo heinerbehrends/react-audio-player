@@ -86,6 +86,7 @@ export type SliderData = {
   maxValue: number;
   orientation: "horizontal" | "vertical";
   step: number;
+  component: SliderComponent;
 };
 
 export type SliderContext = SliderData & {
@@ -105,4 +106,5 @@ export const initialState: SliderContext = {
   orientation: "horizontal",
   handleSliderAction: () => {},
   step: 0,
+  component: "timeline",
 };

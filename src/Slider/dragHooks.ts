@@ -1,45 +1,32 @@
 import { useCallback, useContext } from "react";
 import { SliderContext } from "./SliderContext";
-import { SliderComponent, SliderEvent } from "./sliderHooks";
+import type { SliderEvent } from "./sliderHooks";
 import { getClientXY } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
 
-export function useHandleDragEnd({
-  context,
-  component,
-}: {
-  context: SliderContext;
-  component: SliderComponent;
-}) {
+export function useHandleDragEnd(context: SliderContext) {
   return useCallback(
     (event: SliderEvent) => {
       const { handleSliderAction } = context;
       const clientXY = getClientXY(event, context.orientation);
       handleSliderAction({
         type: "DRAG_END",
-        component,
         ...context,
         clientXY,
       });
     },
-    [context, component]
+    [context]
   );
 }
 
-export function useHandleDragStart({
-  context,
-  component,
-}: {
-  context: SliderContext;
-  component: SliderComponent;
-}) {
+export function useHandleDragStart(context: SliderContext) {
   const { getPlayerState } = useContext(PlayerContext);
   const { unmuteVolumeRef } = getPlayerState();
 
   return useCallback(
     (event: SliderEvent) => {
       const { handleSliderAction: handleTimelineAction } = context;
-      if (component === "volume") {
+      if (context.component === "volume") {
         unmuteVolumeRef.current = context.value;
       }
       const clientXY = getClientXY(event, context.orientation);
@@ -49,16 +36,11 @@ export function useHandleDragStart({
         clientXY,
       });
     },
-    [context, component, unmuteVolumeRef]
+    [context, unmuteVolumeRef]
   );
 }
 
-type UseHandleDragArgs = {
-  context: SliderContext;
-  component: SliderComponent;
-};
-
-export function useHandleDrag({ context, component }: UseHandleDragArgs) {
+export function useHandleDrag(context: SliderContext) {
   return useCallback(
     (event: SliderEvent) => {
       const { handleSliderAction } = context;
@@ -68,11 +50,10 @@ export function useHandleDrag({ context, component }: UseHandleDragArgs) {
       }
       handleSliderAction({
         type: "DRAG",
-        component,
         ...context,
         clientXY,
       });
     },
-    [context, component]
+    [context]
   );
 }

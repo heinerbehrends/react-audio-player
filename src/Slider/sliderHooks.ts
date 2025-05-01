@@ -22,7 +22,7 @@ export function useOnPointerCancel(context: SliderContext) {
 
 export function useHandleRef(context: SliderContext) {
   const { handleSliderAction: handleTimelineAction, orientation } = context;
-  const observerRef = useRef<ResizeObserver>(null);
+  const observerRef = useRef<ResizeObserver>();
 
   const handleRef = useCallback(
     (element: HTMLButtonElement | null) => {
@@ -63,19 +63,13 @@ export type SliderEvent =
   | React.PointerEvent<HTMLButtonElement>
   | React.TouchEvent<HTMLButtonElement>;
 
-type UseSetValueArgs = {
-  context: SliderContext;
-  component: SliderComponent;
-};
-
-export function useSetValue({ context, component }: UseSetValueArgs) {
+export function useSetValue(context: SliderContext) {
   const { handleSliderAction: handleTimelineAction } = context;
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
       handleTimelineAction({
         type: "SET_SLIDER_VALUE",
-        component,
         ...context,
         clientXY,
       });

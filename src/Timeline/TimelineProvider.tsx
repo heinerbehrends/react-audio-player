@@ -14,25 +14,26 @@ export const TimelineProvider = memo(function TimelineProvider({
 }: TimelineProviderProps) {
   const { getPlayerState } = useContext(PlayerContext);
   const { duration } = getPlayerState();
+  const component = "timeline";
   const [state, dispatch] = useReducer(timelineReducer, {
     ...initialState,
     value: 0,
-    maxValue: duration ?? Infinity,
+    maxValue: duration ?? 1,
     orientation: "horizontal",
+    component,
   });
+
   const handleTimelineAction = useAttachSliderCallback({
-    component: "timeline",
+    component,
     dispatch,
   });
 
   const value: SliderContext = useMemo(() => {
-    const result: SliderContext = {
+    return {
       ...state,
-      maxValue: duration,
       handleSliderAction: handleTimelineAction,
     };
-    return result;
-  }, [state, handleTimelineAction, duration]);
+  }, [state, handleTimelineAction]);
 
   return (
     <TimelineContext.Provider value={value}>

@@ -1,9 +1,36 @@
 import { useContext, type HTMLAttributes } from "react";
 import { TimelineProvider } from "./TimelineProvider";
 import { TimelineContext } from "./TimelineContext";
-import { TimelineDragButton } from "./DragTimeline";
-import { SeekTime } from "./SeekTime";
-import { useIndicatorStyles, progressStyles } from "../Slider/styleHooks";
+import {
+  useIndicatorStyles,
+  progressStyles,
+  containerStyles,
+} from "../Slider/styleHooks";
+import { DragButton } from "../Slider/DragButton";
+import { SetSliderValue } from "../Slider/SetSliderValue";
+
+function DragTimeline(props: React.HTMLAttributes<HTMLButtonElement>) {
+  const timelineContext = useContext(TimelineContext);
+  return (
+    <DragButton
+      sliderContext={timelineContext}
+      ariaLabel="Drag to seek"
+      {...props}
+    />
+  );
+}
+
+function SeekTime({
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLButtonElement>) {
+  const timelineContext = useContext(TimelineContext);
+  return (
+    <SetSliderValue sliderContext={timelineContext} {...props}>
+      {children}
+    </SetSliderValue>
+  );
+}
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -11,10 +38,7 @@ function TimelineProgress(props: ProgressProps) {
   const context = useContext(TimelineContext);
   const style = {
     ...progressStyles,
-    ...useIndicatorStyles({
-      context,
-      style: props.style ?? {},
-    }),
+    ...useIndicatorStyles(context),
     ...props.style,
   };
   return <div {...props} style={style} />;
@@ -26,7 +50,7 @@ type TimelineComponent = React.FC<
   Progress: typeof TimelineProgress;
   Background: typeof TimelineBackground;
   Seek: typeof SeekTime;
-  Drag: typeof TimelineDragButton;
+  Drag: typeof DragTimeline;
 };
 
 function TimelineBackground(props: React.HTMLAttributes<HTMLDivElement>) {
@@ -46,11 +70,7 @@ export const Timeline = Object.assign(
     <TimelineProvider>
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gridTemplateRows: "1fr",
-          width: "100%",
-          alignItems: "center",
+          ...containerStyles,
           ...props.style,
         }}
       >
@@ -61,7 +81,7 @@ export const Timeline = Object.assign(
   {
     Progress: TimelineProgress,
     Seek: SeekTime,
-    Drag: TimelineDragButton,
+    Drag: DragTimeline,
     Background: TimelineBackground,
   }
 ) as TimelineComponent;

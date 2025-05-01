@@ -82,6 +82,8 @@ export function calculateSliderValue({
   return value;
 }
 
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
 export function getOffset({
   value,
   sliderLength,
@@ -91,7 +93,10 @@ export function getOffset({
   dragState,
   orientation = "horizontal",
   step = 0,
-}: SliderContext): number {
+}: Optional<
+  Omit<SliderContext, "handleSliderAction" | "sliderStart">,
+  "step" | "minValue" | "maxValue" | "orientation"
+>): number {
   if (dragState === "dragging" && !step) {
     return clientXY;
   }

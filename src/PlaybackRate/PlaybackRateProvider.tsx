@@ -4,16 +4,14 @@ import { PlaybackRateContext } from "./PlaybackRateContext";
 import { playbackRateReducer } from "./playbackRateReducer";
 import { useAttachSliderCallback } from "../Slider/sliderHooks";
 
-const initialState: SliderContext = {
+const initialState: Omit<SliderContext, "step" | "minValue" | "maxValue"> = {
   sliderStart: 0,
   sliderLength: 0,
   value: 1,
-  minValue: 0.5,
-  maxValue: 4,
-  step: 0.25,
   orientation: "horizontal",
   clientXY: 0,
   dragState: "idle",
+  component: "playbackRate",
   handleSliderAction: () => {},
 };
 
@@ -43,11 +41,10 @@ export const PlaybackRateProvider = memo(function PlaybackRateProvider({
   });
 
   const value = useMemo(() => {
-    const result: SliderContext = {
+    return {
       ...state,
       handleSliderAction: handlePlaybackRateAction,
     };
-    return result;
   }, [state, handlePlaybackRateAction]);
   return (
     <PlaybackRateContext.Provider value={value}>

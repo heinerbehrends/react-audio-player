@@ -38,6 +38,7 @@ export function timelineReducer(
         minValue: state.minValue,
         maxValue: state.maxValue,
         dragState: state.dragState,
+        component: state.component,
       });
       return {
         ...state,

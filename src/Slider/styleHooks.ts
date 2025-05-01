@@ -1,27 +1,16 @@
-import { useContext, useMemo } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
+import { useMemo } from "react";
 import { SliderContext } from "./SliderContext";
-import { SliderComponent } from "./sliderHooks";
 import { getOffset } from "../Shared/sharedFunctions";
 
-type UseOffsetArgs = {
-  context: SliderContext;
-};
-export function useOffset({ context }: UseOffsetArgs) {
-  const { volumeState } = useContext(PlayerContext);
-
+export function useOffset(context: SliderContext) {
   return useMemo(() => {
     return getOffset(context);
-  }, [context, volumeState]);
+  }, [context]);
 }
 
-type UseDragStylesArgs = {
-  context: SliderContext;
-};
-
-export function useDragStyle({ context }: UseDragStylesArgs): React.CSSProperties {
+export function useDragStyle(context: SliderContext): React.CSSProperties {
   const { orientation } = context;
-  const offset = useOffset({ context });
+  const offset = useOffset(context);
   return useMemo(
     () => ({
       position: "absolute",
@@ -38,17 +27,10 @@ export function useDragStyle({ context }: UseDragStylesArgs): React.CSSPropertie
   );
 }
 
-type UseIndicatorStylesArgs = {
-  context: SliderContext;
-  style: React.CSSProperties;
-  type?: SliderComponent;
-};
-
-export function useIndicatorStyles({
-  context,
-  type = "timeline",
-}: UseIndicatorStylesArgs): React.CSSProperties {
-  const progress = useProgress({ context, type });
+export function useIndicatorStyles(
+  context: SliderContext
+): React.CSSProperties {
+  const progress = useProgress(context);
   return useMemo(
     () => ({
       transform: `scaleX(${progress})`,
@@ -58,15 +40,11 @@ export function useIndicatorStyles({
   );
 }
 
-type UseProgressArgs = {
-  context: SliderContext;
-  type?: SliderComponent;
-};
-
-function useProgress({ context, type = "timeline" }: UseProgressArgs): number {
+function useProgress(context: SliderContext): number {
   const { orientation } = context;
-  const isVerticalVolume = type === "volume" && orientation === "vertical";
-  const offset = useOffset({ context });
+  const isVerticalVolume =
+    context.component === "volume" && orientation === "vertical";
+  const offset = useOffset(context);
   const progress = offset / context.sliderLength;
   return isVerticalVolume ? 1 - progress : progress;
 }
@@ -76,4 +54,18 @@ export const progressStyles = {
   gridRow: "1 / 1",
   width: "100%",
   height: "100%",
-};  
+} satisfies React.CSSProperties;
+
+export const containerStyles = {
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gridTemplateRows: "1fr",
+  width: "100%",
+  position: "relative",
+} satisfies React.CSSProperties;
+
+export const buttonStyles = {
+  border: "none",
+  background: "none",
+  padding: 0,
+} satisfies React.CSSProperties;

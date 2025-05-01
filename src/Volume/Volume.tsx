@@ -1,9 +1,9 @@
 import { useContext, type HTMLAttributes } from "react";
 import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
-import { VolumeDragButton } from "./DragVolume";
-import { SetVolume } from "./SetVolume";
+import { DragVolume } from "./DragVolume";
 import { useIndicatorStyles, progressStyles } from "../Slider/styleHooks";
+import { SetSliderValue } from "../Slider/SetSliderValue";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -39,14 +39,23 @@ function VolumeProgress(props: ProgressProps) {
   const context = useContext(VolumeContext);
   const style = {
     ...progressStyles,
-    ...useIndicatorStyles({
-      context,
-      style: props.style ?? {},
-      type: "volume",
-    }),
+    ...useIndicatorStyles(context),
     ...props.style,
   };
   return <div {...props} style={style} />;
+}
+
+type SetVolumeProps = React.HTMLAttributes<HTMLButtonElement> & {
+  children: React.ReactNode;
+};
+
+function SetVolume({ children, ...props }: SetVolumeProps) {
+  const context = useContext(VolumeContext);
+  return (
+    <SetSliderValue sliderContext={context} {...props}>
+      {children}
+    </SetSliderValue>
+  );
 }
 
 type VolumeComponent = React.FC<
@@ -57,7 +66,7 @@ type VolumeComponent = React.FC<
 > & {
   Progress: typeof VolumeProgress;
   Set: typeof SetVolume;
-  Drag: typeof VolumeDragButton;
+  Drag: typeof DragVolume;
 };
 
 function VolumeBackground(props: React.HTMLAttributes<HTMLDivElement>) {
@@ -68,5 +77,5 @@ export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
   Progress: VolumeProgress,
   Background: VolumeBackground,
   Set: SetVolume,
-  Drag: VolumeDragButton,
+  Drag: DragVolume,
 });
