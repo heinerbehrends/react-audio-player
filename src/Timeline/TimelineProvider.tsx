@@ -1,6 +1,5 @@
-import { useReducer, useMemo, useContext, memo } from "react";
+import { useReducer, useMemo, memo } from "react";
 import { timelineReducer } from "./timelineReducer";
-import { PlayerContext } from "../Player/PlayerContext";
 import { initialState, type SliderContext } from "../Slider/SliderContext";
 import { useAttachSliderCallback } from "../Slider/hooks/useAttachSliderCallback";
 import { TimelineContext } from "./TimelineContext";
@@ -12,16 +11,8 @@ type TimelineProviderProps = {
 export const TimelineProvider = memo(function TimelineProvider({
   children,
 }: TimelineProviderProps) {
-  const { getPlayerState } = useContext(PlayerContext);
-  const { duration } = getPlayerState();
   const component = "timeline";
-  const [state, dispatch] = useReducer(timelineReducer, {
-    ...initialState,
-    value: 0,
-    maxValue: duration ?? 1,
-    orientation: "horizontal",
-    component,
-  });
+  const [state, dispatch] = useReducer(timelineReducer, initialState);
 
   const handleTimelineAction = useAttachSliderCallback({
     component,
