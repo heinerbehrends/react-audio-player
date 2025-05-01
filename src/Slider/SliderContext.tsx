@@ -1,5 +1,9 @@
 import { SideEffectAction } from "../AudioElement/AudioContext";
-import { SliderComponent } from "./sliderHooks";
+
+export type SliderComponent = "timeline" | "volume" | "playbackRate";
+export type SliderEvent =
+  | React.PointerEvent<HTMLButtonElement>
+  | React.TouchEvent<HTMLButtonElement>;
 
 export type SliderLoadedAction = {
   type: "SLIDER_LOADED";

@@ -2,7 +2,7 @@ import { useMemo, useReducer, memo } from "react";
 import { SliderContext } from "../Slider/SliderContext";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { playbackRateReducer } from "./playbackRateReducer";
-import { useAttachSliderCallback } from "../Slider/sliderHooks";
+import { useAttachSliderCallback } from "../Slider/hooks/useAttachSliderCallback";
 
 const initialState: Omit<SliderContext, "step" | "minValue" | "maxValue"> = {
   sliderStart: 0,

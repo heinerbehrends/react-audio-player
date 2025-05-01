@@ -2,10 +2,10 @@ import { useContext, type HTMLAttributes } from "react";
 import { TimelineProvider } from "./TimelineProvider";
 import { TimelineContext } from "./TimelineContext";
 import {
-  useIndicatorStyles,
+  calculateProgressStyle,
   progressStyles,
   containerStyles,
-} from "../Slider/styleHooks";
+} from "../Slider/calculateStyle";
 import { DragButton } from "../Slider/DragButton";
 import { SetSliderValue } from "../Slider/SetSliderValue";
 
@@ -38,7 +38,7 @@ function TimelineProgress(props: ProgressProps) {
   const context = useContext(TimelineContext);
   const style = {
     ...progressStyles,
-    ...useIndicatorStyles(context),
+    ...calculateProgressStyle(context),
     ...props.style,
   };
   return <div {...props} style={style} />;

@@ -2,7 +2,7 @@ import { useContext, useCallback } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { PlayerProviderAction, VolumeState } from "../Player/PlayerContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
-import { SliderComponent } from "../Slider/sliderHooks";
+import { SliderComponent } from "../Slider/SliderContext";
 
 type ActionHandler<Action> = (action: Action) => void;
 

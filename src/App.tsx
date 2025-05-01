@@ -11,7 +11,7 @@ import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
-// import { Debug } from "./Debug";
+import { Debug } from "./Debug";
 
 function App() {
   const searchParams = useUrlParams();
@@ -71,7 +71,7 @@ function App() {
       >
         <Volume.Set
           style={{
-            padding: "12px 0",
+            padding: volumeOrientation === "horizontal" ? "12px 0" : "0 12px",
             margin: 0,
             border: "none",
             background: "none",
@@ -88,7 +88,7 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        {/* <Debug type="volume" /> */}
+        <Debug type="volume" />
       </Volume>
       <PlaybackRateSlider
         style={{ height: "40px" }}

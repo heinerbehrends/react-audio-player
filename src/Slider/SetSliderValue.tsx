@@ -1,9 +1,13 @@
 import { useMemo } from "react";
-import { useHandleRef } from "./sliderHooks";
+import { useHandleRef } from "./hooks/useHandleRef";
 import { useTimelineAriaAttributes } from "../Timeline/timelineHooks";
-import { useSetValue } from "./sliderHooks";
+import { useSetValue } from "./hooks/dragHooks";
 import { SliderContext } from "./SliderContext";
-import { progressStyles, containerStyles, buttonStyles } from "./styleHooks";
+import {
+  progressStyles,
+  containerStyles,
+  buttonStyles,
+} from "./calculateStyle";
 
 type SetSliderValueProps = React.HTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;

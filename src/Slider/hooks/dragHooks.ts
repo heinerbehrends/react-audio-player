@@ -1,8 +1,7 @@
 import { useCallback, useContext } from "react";
-import { SliderContext } from "./SliderContext";
-import type { SliderEvent } from "./sliderHooks";
-import { getClientXY } from "../Shared/sharedFunctions";
-import { PlayerContext } from "../Player/PlayerContext";
+import type { SliderContext, SliderEvent } from "../SliderContext";
+import { getClientXY } from "../../Shared/sharedFunctions";
+import { PlayerContext } from "../../Player/PlayerContext";
 
 export function useHandleDragEnd(context: SliderContext) {
   return useCallback(
@@ -55,5 +54,30 @@ export function useHandleDrag(context: SliderContext) {
       });
     },
     [context]
+  );
+}
+
+export function useOnPointerCancel(context: SliderContext) {
+  const { handleSliderAction: handleTimelineAction } = context;
+
+  return useCallback(() => {
+    handleTimelineAction({
+      type: "CANCEL_DRAG",
+    });
+  }, [handleTimelineAction]);
+}
+
+export function useSetValue(context: SliderContext) {
+  const { handleSliderAction: handleTimelineAction } = context;
+  return useCallback(
+    (event: SliderEvent) => {
+      const clientXY = getClientXY(event, context.orientation);
+      handleTimelineAction({
+        type: "SET_SLIDER_VALUE",
+        ...context,
+        clientXY,
+      });
+    },
+    [handleTimelineAction, context]
   );
 }

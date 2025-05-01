@@ -38,6 +38,7 @@ export function volumeReducer(
         minValue: state.minValue,
         maxValue: state.maxValue,
         dragState: state.dragState,
+        orientation: state.orientation,
         component: state.component,
       });
       return {

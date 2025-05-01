@@ -2,7 +2,7 @@ import { useReducer, useMemo, useContext, memo } from "react";
 import { timelineReducer } from "./timelineReducer";
 import { PlayerContext } from "../Player/PlayerContext";
 import { initialState, type SliderContext } from "../Slider/SliderContext";
-import { useAttachSliderCallback } from "../Slider/sliderHooks";
+import { useAttachSliderCallback } from "../Slider/hooks/useAttachSliderCallback";
 import { TimelineContext } from "./TimelineContext";
 
 type TimelineProviderProps = {

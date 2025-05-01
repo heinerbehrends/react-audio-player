@@ -3,7 +3,7 @@ import { PlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { SetSliderValue } from "../Slider/SetSliderValue";
 import { DragPlaybackRate } from "./DragPlaybackRate";
-import { progressStyles } from "../Slider/styleHooks";
+import { progressStyles } from "../Slider/calculateStyle";
 
 type PlaybackRateSliderComponent = React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
@@ -61,7 +61,6 @@ export const PlaybackRateSlider = Object.assign(
             gridTemplateColumns: "1fr",
             gridTemplateRows: "1fr",
             width: "100%",
-            alignItems: "center",
             ...props.style,
           }}
         >

@@ -1,12 +1,12 @@
-import { useOnPointerCancel } from "../Slider/sliderHooks";
-import { useDrag } from "../Slider/useDrag";
+import { useOnPointerCancel } from "../Slider/hooks/dragHooks";
+import { useDrag } from "./hooks/useDrag";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import {
   useHandleDrag,
   useHandleDragEnd,
   useHandleDragStart,
-} from "../Slider/dragHooks";
-import { useDragStyle } from "../Slider/styleHooks";
+} from "./hooks/dragHooks";
+import { calculateDragStyle } from "./calculateStyle";
 import { SliderContext } from "./SliderContext";
 
 interface DragButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
@@ -24,7 +24,7 @@ export function DragButton({
   const handleDrag = useHandleDrag(sliderContext);
   const handleKeyDown = useHandleMediaKeys(sliderContext.component);
   const handleDragCancel = useOnPointerCancel(sliderContext);
-  const style = useDragStyle(sliderContext);
+  const style = calculateDragStyle(sliderContext);
 
   useDrag({
     dragState: sliderContext.dragState,

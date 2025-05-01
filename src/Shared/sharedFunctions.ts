@@ -1,18 +1,15 @@
-import { SliderContext } from "../Slider/SliderContext";
-import { SliderEvent } from "../Slider/sliderHooks";
-
+import type { SliderContext, SliderEvent } from "../Slider/SliderContext";
 export function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.001;
 }
 
-type CalculateValueArgs = {
-  clientXY: number;
-  sliderLength: number;
-  sliderStart: number;
-  orientation?: "horizontal" | "vertical" | undefined;
-  minValue?: number | undefined;
-  maxValue?: number | undefined;
-};
+type CalculateValueArgs = Optional<
+  Omit<
+    SliderContext,
+    "handleSliderAction" | "step" | "component" | "value" | "dragState"
+  >,
+  "orientation" | "minValue" | "maxValue"
+>;
 
 export function calculateValue({
   clientXY,
@@ -32,12 +29,16 @@ export function calculateValue({
   return Math.max(minValue, Math.min(maxValue, mappedValue));
 }
 
-type CalculateSteppedValueArgs = {
-  value: number;
-  minValue: number;
-  maxValue: number;
-  step: number;
-};
+type CalculateSteppedValueArgs = Omit<
+  SliderContext,
+  | "handleSliderAction"
+  | "component"
+  | "dragState"
+  | "sliderStart"
+  | "sliderLength"
+  | "orientation"
+  | "clientXY"
+>;
 
 export function calculateSteppedValue({
   value,
@@ -88,9 +89,9 @@ export function getOffset({
   value,
   sliderLength,
   clientXY,
+  dragState,
   minValue = 0,
   maxValue = 1,
-  dragState,
   orientation = "horizontal",
   step = 0,
 }: Optional<

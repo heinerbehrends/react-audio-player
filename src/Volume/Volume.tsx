@@ -2,7 +2,10 @@ import { useContext, type HTMLAttributes } from "react";
 import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
 import { DragVolume } from "./DragVolume";
-import { useIndicatorStyles, progressStyles } from "../Slider/styleHooks";
+import {
+  calculateProgressStyle,
+  progressStyles,
+} from "../Slider/calculateStyle";
 import { SetSliderValue } from "../Slider/SetSliderValue";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
@@ -25,7 +28,6 @@ function VolumeContainer({
           gridTemplateColumns: "1fr",
           gridTemplateRows: "1fr",
           width: "100%",
-          alignItems: "center",
           ...props.style,
         }}
       >
@@ -39,7 +41,7 @@ function VolumeProgress(props: ProgressProps) {
   const context = useContext(VolumeContext);
   const style = {
     ...progressStyles,
-    ...useIndicatorStyles(context),
+    ...calculateProgressStyle(context),
     ...props.style,
   };
   return <div {...props} style={style} />;

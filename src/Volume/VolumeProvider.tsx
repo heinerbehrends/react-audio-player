@@ -1,7 +1,7 @@
 import { useMemo, useReducer, memo } from "react";
 import { VolumeContext } from "./VolumeContext";
 import { volumeReducer } from "./volumeReducer";
-import { useAttachSliderCallback } from "../Slider/sliderHooks";
+import { useAttachSliderCallback } from "../Slider/hooks/useAttachSliderCallback";
 import { initialState } from "../Slider/SliderContext";
 
 type VolumeProviderProps = {
