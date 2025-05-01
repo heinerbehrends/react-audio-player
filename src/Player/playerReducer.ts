@@ -65,6 +65,13 @@ export function playerReducer(
       };
     }
 
+    case "TOGGLE_CAPTIONS": {
+      return {
+        ...state,
+        showCaptions: !state.showCaptions,
+      };
+    }
+
     case "AUDIO_FILE_ERROR": {
       return { ...state, playerState: "error" as const };
     }

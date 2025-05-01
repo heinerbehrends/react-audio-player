@@ -9,11 +9,9 @@ type ChildrenProps = {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Toggle = memo(function Toggle({ children, ...props }: ChildrenProps) {
-  const { handlePlayerAction, timeDisplay } = useContext(PlayerContext);
+  const { timeDisplay } = useContext(PlayerContext);
 
-  const handleClick = useCallback(() => {
-    handlePlayerAction({ type: "TOGGLE_TIME_DISPLAY" });
-  }, [handlePlayerAction]);
+  const handleClick = useToggleTimeDisplay();
   const isDisabled = useIsDisabled();
   const handleMediaKeys = useHandleMediaKeys();
 
@@ -30,6 +28,14 @@ const Toggle = memo(function Toggle({ children, ...props }: ChildrenProps) {
     </button>
   );
 });
+
+function useToggleTimeDisplay() {
+  const { handlePlayerAction } = useContext(PlayerContext);
+
+  return useCallback(() => {
+    handlePlayerAction({ type: "TOGGLE_TIME_DISPLAY" });
+  }, [handlePlayerAction]);
+}
 
 const Elapsed = memo(function Elapsed() {
   const { playerState: player, timeDisplay } = useContext(PlayerContext);

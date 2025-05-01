@@ -43,6 +43,8 @@ export function handleSideEffect(
           sliderLength: action.sliderLength,
           maxValue: action.maxValue,
           sliderStart: action.sliderStart,
+          orientation: action.orientation,
+          step: action.step,
         });
         audioElement.currentTime = time;
       }

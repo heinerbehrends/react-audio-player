@@ -66,6 +66,7 @@ export function timelineReducer(
     }
 
     case "DRAG_END": {
+      console.log("DRAG_END", action);
       if (state.dragState !== "dragging") {
         return state;
       }
@@ -77,6 +78,9 @@ export function timelineReducer(
         sliderLength: state.sliderLength,
         maxValue: action.maxValue,
         sliderStart: state.sliderStart,
+        minValue: state.minValue,
+        orientation: state.orientation,
+        step: state.step,
       });
       return {
         ...state,

@@ -54,6 +54,10 @@ export type SetUnmuteVolumeAction = {
   unmuteVolume: number;
 };
 
+export type ToggleCaptionsAction = {
+  type: "TOGGLE_CAPTIONS";
+};
+
 export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
@@ -66,7 +70,8 @@ export type PlayerContextAction =
   | SetVolumeStateAction
   | UnmuteAction
   | PauseAction
-  | SetUnmuteVolumeAction;
+  | SetUnmuteVolumeAction
+  | ToggleCaptionsAction;
 
 type SideEffectActionType = SideEffectAction["type"];
 export type PlayerContextActionType = PlayerContextAction["type"];
@@ -99,6 +104,7 @@ export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, boolean> = {
   UNMUTE: true,
   PAUSE: true,
   SET_UNMUTE_VOLUME: false,
+  TOGGLE_CAPTIONS: true,
 };
 
 export type VolumeState = "muted" | "low" | "high";
@@ -115,6 +121,7 @@ export type PlayerState = {
 export type PlayerContextType = {
   handlePlayerAction: (action: PlayerProviderAction) => void;
   playerState: "loading" | "playing" | "paused" | "error";
+  showCaptions: boolean;
   isMuted: boolean;
   playbackRate: number;
   volumeState: VolumeState;
@@ -129,6 +136,7 @@ export type PlayerContextType = {
 export const initialState: PlayerContextType = {
   handlePlayerAction: () => {},
   playerState: "loading",
+  showCaptions: true,
   isMuted: false,
   playbackRate: 1,
   volumeState: "high",

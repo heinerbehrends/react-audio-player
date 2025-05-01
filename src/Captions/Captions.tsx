@@ -1,8 +1,12 @@
 import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
+import { ToggleCaptions } from "./ToggleCaptions";
 
-export const Captions = (props: React.HTMLAttributes<HTMLElement>) => {
-  const { cues } = useContext(PlayerContext);
+function CaptionsComponent(props: React.HTMLAttributes<HTMLElement>) {
+  const { cues, showCaptions } = useContext(PlayerContext);
+
+  if (!showCaptions) return null;
+
   return (
     <section
       aria-label="Captions"
@@ -18,4 +22,14 @@ export const Captions = (props: React.HTMLAttributes<HTMLElement>) => {
       ))}
     </section>
   );
+}
+
+type Captions = React.NamedExoticComponent<{
+  children: React.ReactNode;
+}> & {
+  Toggle: React.NamedExoticComponent;
 };
+
+export const Captions = Object.assign(CaptionsComponent, {
+  Toggle: ToggleCaptions,
+});
