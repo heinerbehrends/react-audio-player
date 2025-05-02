@@ -75,3 +75,5 @@ export const AudioContext = createContext<AudioContextType>({
   volumeCallbackRef: { current: { handleVolumeAction: null } },
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
 });
+
+AudioContext.displayName = "AudioContext";

@@ -1,8 +1,14 @@
 {
   "name": "react-audio-player",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "A headless React audio player library",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,6 +17,10 @@
     "testE2E": "playwright test",
     "test": "vitest",
     "type-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=16.3.0",
+    "react-dom": ">=16.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
