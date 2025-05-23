@@ -1,8 +1,9 @@
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PlayButton } from "../../src/Player/PlayButton";
 import { PlayerContext, PlayerState } from "../../src/Player/PlayerContext";
+import "@testing-library/jest-dom";
 
 describe("PlayButton", () => {
   const mockPlayerContext = {
@@ -38,31 +39,25 @@ describe("PlayButton", () => {
     );
   };
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe("PlayButtonComponent", () => {
-    it("renders with correct ARIA attributes when paused", () => {
-      renderWithContext("paused");
-      const button = screen.getByRole("button", { name: "Play audio" });
-      expect(button).toHaveAttribute("aria-pressed", "false");
-    });
+    it.each([
+      ["paused", "Play audio", "false", false],
+      ["playing", "Pause audio", "true", false],
+      ["loading", "Loading audio", "false", true],
+      ["error", "Error loading audio", "false", true],
+    ])("renders correctly in %s state", (state, name, pressed, disabled) => {
+      renderWithContext(state as PlayerState);
+      const button = screen.getByRole("button");
 
-    it("renders with correct ARIA attributes when playing", () => {
-      renderWithContext("playing");
-      const button = screen.getByRole("button", { name: "Pause audio" });
-      expect(button).toHaveAttribute("aria-pressed", "true");
-    });
-
-    it("renders with correct ARIA attributes when loading", () => {
-      renderWithContext("loading");
-      const button = screen.getByRole("button", { name: "Loading audio" });
-      expect(button).toBeDisabled();
-    });
-
-    it("renders with correct ARIA attributes when error", () => {
-      renderWithContext("error");
-      const button = screen.getByRole("button", {
-        name: "Error loading audio",
-      });
-      expect(button).toBeDisabled();
+      expect(button).toHaveAccessibleName(name);
+      expect(button).toHaveAttribute("aria-pressed", pressed);
+      if (disabled) {
+        expect(button).toBeDisabled();
+      }
     });
 
     it("handles click events", () => {

@@ -57,8 +57,9 @@ export const containerStyles = {
   gridTemplateColumns: "1fr",
   gridTemplateRows: "1fr",
   width: "100%",
+  height: "100%",
   position: "relative",
-} satisfies React.CSSProperties;
+} as const;
 
 export const buttonStyles = {
   border: "none",

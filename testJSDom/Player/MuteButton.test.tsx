@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MuteButton } from "../../src/Player/MuteButton";
-import { PlayerContext } from "../../src/Player/PlayerContext";
+import { PlayerContext, VolumeState } from "../../src/Player/PlayerContext";
 import { AudioContext } from "../../src/AudioElement/AudioContext";
 
 describe("MuteButton", () => {
@@ -17,6 +17,7 @@ describe("MuteButton", () => {
       currentTime: 0,
       playbackRate: 1,
       volumeState: "high" as const,
+      isMuted: false,
     })),
     playbackRate: 1,
     playerState: "playing" as const,
@@ -64,15 +65,43 @@ describe("MuteButton", () => {
   };
 
   describe("MuteButtonComponent", () => {
-    it("renders with correct ARIA attributes", () => {
-      renderWithContext();
-      const button = screen.getByRole("button", { name: "Mute" });
-      expect(button).toHaveAttribute("aria-pressed", "false");
+    it.each([
+      ["high", "Mute", "false", false],
+      ["low", "Mute", "false", false],
+      ["muted", "Unmute", "true", true],
+    ])("renders correctly in %s state", (state, name, pressed, isMuted) => {
+      const context = {
+        ...mockPlayerContext,
+        volumeState: state as VolumeState,
+        isMuted,
+        getPlayerState: vi.fn(() => ({
+          ...mockPlayerContext.getPlayerState(),
+          volumeState: state as VolumeState,
+          isMuted,
+        })),
+      };
+
+      render(
+        <PlayerContext.Provider value={context}>
+          <AudioContext.Provider value={mockAudioContext}>
+            <MuteButton>
+              <span>Mute Icon</span>
+            </MuteButton>
+          </AudioContext.Provider>
+        </PlayerContext.Provider>
+      );
+      const button = screen.getByRole("button");
+      console.log("Button attributes:", button.attributes);
+      console.log("Button content:", button.textContent);
+      console.log("Button aria-label:", button.getAttribute("aria-label"));
+      console.log("Button aria-pressed:", button.getAttribute("aria-pressed"));
+      expect(button).toHaveAccessibleName(name);
+      expect(button).toHaveAttribute("aria-pressed", pressed);
     });
 
     it("updates aria-pressed when muted", () => {
       renderWithContext();
-      const button = screen.getByRole("button", { name: "Mute" });
+      const button = screen.getByRole("button");
       fireEvent.click(button);
       expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
@@ -82,7 +111,7 @@ describe("MuteButton", () => {
 
     it("handles keyboard events", () => {
       renderWithContext();
-      const button = screen.getByRole("button", { name: "Mute" });
+      const button = screen.getByRole("button");
       fireEvent.keyDown(button, { key: "m" });
       expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalled();
     });

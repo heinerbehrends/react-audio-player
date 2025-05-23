@@ -9,5 +9,10 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./testJSDom/setup.ts"],
+    reporters: ["default", "json"],
+    outputFile: {
+      json: "./test-results.json",
+    },
+    slowTestThreshold: 100, // Tests taking more than 1s are considered slow
   },
 });

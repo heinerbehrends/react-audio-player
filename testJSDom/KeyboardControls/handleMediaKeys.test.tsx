@@ -44,8 +44,6 @@ describe("handleMediaKeys", () => {
         defaultArgs.event.key = key;
 
         const result = handleMediaKeys(defaultArgs);
-        console.log("key", key);
-        console.log("result", result);
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandlePlayerAction).toHaveBeenCalledWith({
@@ -121,7 +119,6 @@ describe("handleMediaKeys", () => {
       defaultArgs.volume = 0.001; // Nearly zero
 
       const result = handleMediaKeys(defaultArgs);
-      console.log("unmuteVolume", defaultArgs.unmuteVolume);
       expect(result).toBe(true);
       expect(mockHandlePlayerAction).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",

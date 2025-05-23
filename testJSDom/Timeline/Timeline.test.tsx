@@ -118,8 +118,13 @@ describe("Timeline", () => {
 
     const container = screen.getByRole("group");
     expect(container).toBeInTheDocument();
-    console.log("Container styles:", container.style.cssText);
-    // For now, just verify the element exists
-    expect(container).toBeInTheDocument();
+    expect(container).toHaveStyle({
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gridTemplateRows: "1fr",
+      width: "100%",
+      height: "100%",
+      position: "relative",
+    });
   });
 });

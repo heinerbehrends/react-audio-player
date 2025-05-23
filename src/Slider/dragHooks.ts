@@ -29,7 +29,7 @@ export function useHandleDragStart(context: SliderContext) {
         unmuteVolumeRef.current = context.value;
       }
       const clientXY = getClientXY(event, context.orientation);
-      console.log("clientXY", clientXY);
+
       handleTimelineAction({
         type: "DRAG_START",
         ...context,

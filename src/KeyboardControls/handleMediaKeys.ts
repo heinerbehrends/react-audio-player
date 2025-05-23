@@ -185,7 +185,6 @@ function handleToggleMute({
   | "volumeCallbackRef"
 >) {
   const nextUnmuteVolume = areNumbersClose(volume, 0) ? unmuteVolume : volume;
-  console.log("nextUnmuteVolume", nextUnmuteVolume);
   handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextUnmuteVolume });
 
   if (!volumeCallbackRef?.current?.handleVolumeAction) return false;
