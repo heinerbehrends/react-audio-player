@@ -19,11 +19,19 @@ export function timelineReducer(
         value: action.value,
       };
     }
+
     case "SLIDER_LOADED": {
       return {
         ...state,
         sliderStart: action.sliderStart,
         sliderLength: action.sliderLength,
+      };
+    }
+
+    case "SET_MAX_VALUE": {
+      return {
+        ...state,
+        maxValue: action.maxValue,
       };
     }
 
@@ -66,7 +74,6 @@ export function timelineReducer(
     }
 
     case "DRAG_END": {
-      console.log("DRAG_END", action);
       if (state.dragState !== "dragging") {
         return state;
       }

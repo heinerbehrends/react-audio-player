@@ -109,7 +109,7 @@ export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, boolean> = {
 
 export type VolumeState = "muted" | "low" | "high";
 
-export type PlayerState = {
+export type PlayerStateReturnType = {
   duration: number;
   currentTime: number;
   volume: number;
@@ -118,16 +118,16 @@ export type PlayerState = {
   unmuteVolumeRef: React.MutableRefObject<number>;
 };
 
+export type PlayerState = "loading" | "playing" | "paused" | "error";
 export type PlayerContextType = {
   handlePlayerAction: (action: PlayerProviderAction) => void;
-  playerState: "loading" | "playing" | "paused" | "error";
+  playerState: PlayerState;
   showCaptions: boolean;
   isMuted: boolean;
   playbackRate: number;
   volumeState: VolumeState;
   unmuteVolumeRef: React.MutableRefObject<number>;
-  getPlayerState: () => PlayerState;
-  getDuration: () => number;
+  getPlayerState: () => PlayerStateReturnType;
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
   cues: VTTCue[];
@@ -149,7 +149,6 @@ export const initialState: PlayerContextType = {
     volumeState: "high",
     unmuteVolumeRef: { current: 1 } as React.MutableRefObject<number>,
   }),
-  getDuration: () => 0,
   timeDisplay: "elapsed",
   audioFiles: [],
   cues: [],

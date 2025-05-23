@@ -1,6 +1,6 @@
 import type { SliderContext, SliderEvent } from "../Slider/SliderContext";
 export function areNumbersClose(a: number, b: number): boolean {
-  return Math.abs(a - b) < 0.001;
+  return Math.abs(a - b) <= 0.001;
 }
 
 type CalculateValueArgs = Optional<

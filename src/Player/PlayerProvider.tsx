@@ -15,7 +15,7 @@ import {
   type PlayerProviderAction,
   type PlayerContextType,
   PlayerContextActionType,
-  PlayerState,
+  PlayerStateReturnType,
 } from "./PlayerContext";
 import { playerReducer } from "./playerReducer";
 import {
@@ -48,7 +48,7 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
     handleSideEffect,
   } = useContext(AudioContext);
 
-  const getPlayerState = useCallback((): PlayerState => {
+  const getPlayerState = useCallback((): PlayerStateReturnType => {
     return {
       duration: audioElement?.duration ?? 0,
       currentTime: audioElement?.currentTime ?? 0,

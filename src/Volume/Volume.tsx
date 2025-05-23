@@ -1,12 +1,12 @@
 import { useContext, type HTMLAttributes } from "react";
 import { VolumeProvider } from "./VolumeProvider";
 import { VolumeContext } from "./VolumeContext";
-import { DragVolume } from "./DragVolume";
 import {
   calculateProgressStyle,
   progressStyles,
 } from "../Slider/calculateStyle";
 import { SetSliderValue } from "../Slider/SetSliderValue";
+import { DragButton } from "../Slider/DragButton";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -14,6 +14,17 @@ type VolumeContainerProps = HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
   orientation?: "horizontal" | "vertical";
 };
+
+function DragVolume(props: React.HTMLAttributes<HTMLButtonElement>) {
+  const volumeContext = useContext(VolumeContext);
+  return (
+    <DragButton
+      sliderContext={volumeContext}
+      ariaLabel="Drag to adjust volume"
+      {...props}
+    />
+  );
+}
 
 function VolumeContainer({
   children,

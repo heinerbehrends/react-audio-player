@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useCueChange } from "./useCueChange";
+import { useCueChange } from "./hooks/captionsHooks";
 import { PlayerProviderAction } from "../Player/PlayerContext";
 
 type TrackProps = {

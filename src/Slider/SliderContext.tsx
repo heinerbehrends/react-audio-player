@@ -11,6 +11,11 @@ export type SliderLoadedAction = {
   sliderLength: number;
 };
 
+export type SetMaxValueAction = {
+  type: "SET_MAX_VALUE";
+  maxValue: number;
+};
+
 export type DragStartAction = SliderData & {
   type: "DRAG_START";
 };
@@ -41,7 +46,8 @@ export type SliderContextAction =
   | DragAction
   | DragStartAction
   | DragEndAction
-  | CancelDragAction;
+  | CancelDragAction
+  | SetMaxValueAction;
 
 export type SliderProviderAction = SideEffectAction | SliderContextAction;
 
@@ -68,6 +74,7 @@ const SLIDER_DISPATCH_MAP: Record<SliderActionType, true> = {
   DRAG_END: true,
   UPDATE_UI_VALUE: true,
   CANCEL_DRAG: true,
+  SET_MAX_VALUE: true,
 };
 
 export function isSliderSideEffect(

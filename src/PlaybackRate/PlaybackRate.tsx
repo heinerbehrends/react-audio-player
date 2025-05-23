@@ -5,19 +5,15 @@ import {
   RateDisplay,
 } from "./SetPlaybackRate";
 
-type PlaybackComponent = {
-  Set: typeof SetPlaybackRate;
-  Change: typeof ChangePlaybackRate;
-  Current: typeof CurrentIndicator;
-  Display: typeof RateDisplay;
-};
+export function PlaybackRate({ children }: { children: React.ReactNode }) {
+  return (
+    <span role="group" aria-label="Playback rate options">
+      {children}
+    </span>
+  );
+}
 
-export const PlaybackRate: PlaybackComponent = Object.assign(
-  {},
-  {
-    Set: SetPlaybackRate,
-    Change: ChangePlaybackRate,
-    Current: CurrentIndicator,
-    Display: RateDisplay,
-  }
-);
+PlaybackRate.Set = SetPlaybackRate;
+PlaybackRate.Change = ChangePlaybackRate;
+PlaybackRate.Current = CurrentIndicator;
+PlaybackRate.Display = RateDisplay;

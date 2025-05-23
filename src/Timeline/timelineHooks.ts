@@ -1,7 +1,8 @@
 import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
+import { SliderContext } from "../Slider/SliderContext";
 
-export function useTimelineAriaAttributes() {
+export function useTimelineAriaAttributes(context: SliderContext) {
   const { getPlayerState } = useContext(PlayerContext);
   const { currentTime, duration } = getPlayerState();
 
@@ -10,14 +11,22 @@ export function useTimelineAriaAttributes() {
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
-
+  const ariaLabelMap = {
+    playbackRate: "Playback rate slider",
+    timeline: "Timeline slider",
+    volume: "Volume slider",
+  };
+  const ariaValueTextMap = {
+    playbackRate: `${context.value}x`,
+    timeline: `Position ${formatTime(currentTime)} of ${formatTime(duration)}`,
+    volume: `${Math.round(context.value * 100)}%`,
+  };
   return {
-    "aria-label": "Click timeline to seek",
-    "aria-valuemin": 0,
-    "aria-valuemax": duration,
-    "aria-valuenow": currentTime,
-    "aria-valuetext": `Position ${formatTime(currentTime)} of ${formatTime(
-      duration
-    )} (${Math.round((currentTime / duration) * 100)}% complete)`,
+    "aria-label": ariaLabelMap[context.component],
+    "aria-valuemin": context.minValue,
+    "aria-valuemax": context.maxValue,
+    "aria-valuenow": context.value,
+    "aria-valuetext": ariaValueTextMap[context.component],
+    "aria-orientation": context.orientation,
   };
 }

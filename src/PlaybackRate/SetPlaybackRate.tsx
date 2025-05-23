@@ -17,11 +17,14 @@ export function SetPlaybackRate({
   const setPlaybackRate = useSetPlaybackRate(rate);
   const handleKeyDown = useHandleMediaKeys();
   const isDisabled = useIsDisabled();
+  const isCurrent = useIsCurrent(rate);
+
   return (
     <button
       onClick={setPlaybackRate}
       onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
+      aria-current={isCurrent ? "true" : undefined}
       disabled={isDisabled}
       {...props}
     >

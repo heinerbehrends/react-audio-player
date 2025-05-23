@@ -2,7 +2,6 @@ import { useContext } from "react";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { SetSliderValue } from "../Slider/SetSliderValue";
-import { DragPlaybackRate } from "./DragPlaybackRate";
 import { progressStyles } from "../Slider/calculateStyle";
 
 type PlaybackRateSliderComponent = React.FC<
@@ -15,8 +14,21 @@ type PlaybackRateSliderComponent = React.FC<
 > & {
   Background: typeof PlaybackRateBackground;
   Set: typeof Set;
-  Drag: typeof DragPlaybackRate;
+  Drag: typeof Drag;
 };
+
+import { DragButton } from "../Slider/DragButton";
+
+function Drag(props: React.HTMLAttributes<HTMLButtonElement>) {
+  const playbackRateContext = useContext(PlaybackRateContext);
+  return (
+    <DragButton
+      sliderContext={playbackRateContext}
+      ariaLabel="Drag to seek"
+      {...props}
+    />
+  );
+}
 
 function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
   const context = useContext(PlaybackRateContext);
@@ -33,13 +45,16 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   step?: number;
 };
 
-function PlaybackRateBackground(props: React.HTMLAttributes<HTMLDivElement>) {
+function PlaybackRateBackground({
+  style,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       {...props}
       style={{
         ...progressStyles,
-        ...props.style,
+        ...style,
       }}
     />
   );
@@ -48,9 +63,10 @@ function PlaybackRateBackground(props: React.HTMLAttributes<HTMLDivElement>) {
 export const PlaybackRateSlider = Object.assign(
   ({
     children,
-    maxValue,
-    minValue,
-    step,
+    maxValue = 4,
+    minValue = 0.5,
+    step = 0.1,
+    style,
     ...props
   }: PlaybackRateSliderProps) => {
     return (
@@ -61,8 +77,9 @@ export const PlaybackRateSlider = Object.assign(
             gridTemplateColumns: "1fr",
             gridTemplateRows: "1fr",
             width: "100%",
-            ...props.style,
+            ...style,
           }}
+          {...props}
         >
           {children}
         </div>
@@ -72,6 +89,6 @@ export const PlaybackRateSlider = Object.assign(
   {
     Background: PlaybackRateBackground,
     Set,
-    Drag: DragPlaybackRate,
+    Drag,
   }
 ) as PlaybackRateSliderComponent;

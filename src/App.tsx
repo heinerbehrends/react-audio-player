@@ -116,22 +116,24 @@ function App() {
         {/* <Debug type="playbackRate" /> */}
       </PlaybackRateSlider>
       <PlaybackRate.Display />
-      <PlaybackRate.Set rate={0.5}>
-        <PlaybackRate.Current rate={0.5}>*</PlaybackRate.Current>
-        0.5x
-      </PlaybackRate.Set>
-      <PlaybackRate.Set rate={1}>
-        <PlaybackRate.Current rate={1}>*</PlaybackRate.Current>
-        1x
-      </PlaybackRate.Set>
-      <PlaybackRate.Set rate={1.5}>
-        <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
-        1.5x
-      </PlaybackRate.Set>
-      <PlaybackRate.Set rate={2}>
-        <PlaybackRate.Current rate={2}>*</PlaybackRate.Current>
-        2x
-      </PlaybackRate.Set>
+      <PlaybackRate>
+        <PlaybackRate.Set rate={0.5}>
+          <PlaybackRate.Current rate={0.5}>*</PlaybackRate.Current>
+          0.5x
+        </PlaybackRate.Set>
+        <PlaybackRate.Set rate={1}>
+          <PlaybackRate.Current rate={1}>*</PlaybackRate.Current>
+          1x
+        </PlaybackRate.Set>
+        <PlaybackRate.Set rate={1.5}>
+          <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
+          1.5x
+        </PlaybackRate.Set>
+        <PlaybackRate.Set rate={2}>
+          <PlaybackRate.Current rate={2}>*</PlaybackRate.Current>
+          2x
+        </PlaybackRate.Set>
+      </PlaybackRate>
       <PlaybackRate.Change amount={-0.1}>-0.1x</PlaybackRate.Change>
       <PlaybackRate.Change amount={0.1}>+0.1x</PlaybackRate.Change>
       <Captions.Toggle />

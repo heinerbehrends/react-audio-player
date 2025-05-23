@@ -1,6 +1,7 @@
-import { useContext, useCallback } from "react";
+import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useToggleCaptions } from "./hooks/captionsHooks";
 
 export function ToggleCaptions() {
   const { showCaptions } = useContext(PlayerContext);
@@ -16,11 +17,4 @@ export function ToggleCaptions() {
       Toggle Captions
     </button>
   );
-}
-
-function useToggleCaptions() {
-  const { handlePlayerAction } = useContext(PlayerContext);
-  return useCallback(() => {
-    handlePlayerAction({ type: "TOGGLE_CAPTIONS" });
-  }, [handlePlayerAction]);
 }

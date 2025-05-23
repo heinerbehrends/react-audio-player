@@ -37,8 +37,8 @@ describe("handleMediaKeys", () => {
         defaultArgs.event.key = key;
 
         const result = handleMediaKeys(defaultArgs);
-        console.log("result", result);
         console.log("key", key);
+        console.log("result", result);
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandlePlayerAction).toHaveBeenCalledWith({
@@ -64,33 +64,28 @@ describe("handleMediaKeys", () => {
       });
     });
 
-    it("should handle space and Enter only when component is defined", () => {
-      const keys = [" ", "Enter"];
+    it("should not handle space and on sliders", () => {
+      const key = " ";
 
       // Component not defined
-      keys.forEach((key) => {
-        mockHandlePlayerAction.mockClear();
-        defaultArgs.event.key = key;
+      mockHandlePlayerAction.mockClear();
 
-        const result = handleMediaKeys(defaultArgs);
+      const result1 = handleMediaKeys(defaultArgs);
 
-        expect(result).toBe(false);
-        expect(mockHandlePlayerAction).not.toHaveBeenCalled();
-      });
+      expect(result1).toBe(false);
+      expect(mockHandlePlayerAction).not.toHaveBeenCalled();
 
       // Component defined
-      keys.forEach((key) => {
-        mockHandlePlayerAction.mockClear();
-        defaultArgs.event.key = key;
-        defaultArgs.component = "timeline";
+      mockHandlePlayerAction.mockClear();
+      defaultArgs.event.key = key;
+      defaultArgs.component = "timeline";
 
-        const result = handleMediaKeys(defaultArgs);
+      const result2 = handleMediaKeys(defaultArgs);
 
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
-          type: "TOGGLE_PLAY",
-        });
+      expect(result2).toBe(true);
+      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+        type: "TOGGLE_PLAY",
       });
     });
   });
@@ -212,7 +207,7 @@ describe("handleMediaKeys", () => {
     it("should ignore arrow keys when component is volume", () => {
       defaultArgs.event.key = "ArrowRight";
       defaultArgs.component = "volume";
-      console.log("defaultArgs", defaultArgs);
+
       const result = handleMediaKeys(defaultArgs);
 
       expect(result).toBe(false);

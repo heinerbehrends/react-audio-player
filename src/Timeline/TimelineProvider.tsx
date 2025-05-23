@@ -15,6 +15,7 @@ export const TimelineProvider = memo(function TimelineProvider({
   const { getPlayerState } = useContext(PlayerContext);
   const { duration } = getPlayerState();
   const component = "timeline";
+
   const [state, dispatch] = useReducer(timelineReducer, {
     ...initialState,
     value: 0,

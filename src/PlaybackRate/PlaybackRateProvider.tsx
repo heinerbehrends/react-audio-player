@@ -17,9 +17,9 @@ const initialState: Omit<SliderContext, "step" | "minValue" | "maxValue"> = {
 
 type PlaybackRateProviderProps = {
   children: React.ReactNode;
-  minValue: number | undefined;
-  maxValue: number | undefined;
-  step: number | undefined;
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
 };
 
 export const PlaybackRateProvider = memo(function PlaybackRateProvider({

@@ -19,7 +19,7 @@ export function SetSliderValue({
   sliderContext,
   ...props
 }: SetSliderValueProps) {
-  const ariaAttributes = useTimelineAriaAttributes();
+  const ariaAttributes = useTimelineAriaAttributes(sliderContext);
   const handleRef = useHandleRef(sliderContext);
   const handlePointerDown = useSetValue(sliderContext);
   const style = useMemo(
