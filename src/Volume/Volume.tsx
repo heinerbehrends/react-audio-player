@@ -34,6 +34,8 @@ function VolumeContainer({
   return (
     <VolumeProvider orientation={orientation}>
       <div
+        role="group"
+        aria-label="Volume controls"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr",

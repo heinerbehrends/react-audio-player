@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { useHandleRef } from "./hooks/useHandleRef";
-import { useTimelineAriaAttributes } from "../Timeline/timelineHooks";
-import { useSetValue } from "./hooks/dragHooks";
+import { useHandleRef } from "./useHandleRef";
+import { useTimelineAriaAttributes } from "../Timeline/useTimelineAria";
+import { useSetValue } from "./dragHooks";
 import { SliderContext } from "./SliderContext";
 import {
   progressStyles,

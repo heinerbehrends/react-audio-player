@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useIsDisabled } from "../Shared/useIsDisabled";
-import { useToggleCaptions } from "./hooks/captionsHooks";
+import { useToggleCaptions } from "./captionsHooks";
 
 export function ToggleCaptions() {
   const { showCaptions } = useContext(PlayerContext);

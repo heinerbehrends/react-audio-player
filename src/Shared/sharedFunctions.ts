@@ -46,6 +46,9 @@ export function calculateSteppedValue({
   maxValue,
   step,
 }: CalculateSteppedValueArgs): number {
+  if (step === 0) {
+    return value;
+  }
   const stepsFromMin = Math.round((value - minValue) / step);
   const steppedValue = minValue + stepsFromMin * step;
   return Math.min(Math.max(steppedValue, minValue), maxValue);
@@ -118,10 +121,12 @@ export function getClientXY(
   orientation: "horizontal" | "vertical"
 ): number {
   if (isTouchEvent(event)) {
+    console.log("event.touches[0]", event.touches[0]);
     return orientation === "horizontal"
       ? event.touches[0]?.clientX ?? 0
       : event.touches[0]?.clientY ?? 0;
   }
+  console.log("event.clientX", event.clientX);
   return orientation === "horizontal" ? event.clientX : event.clientY;
 }
 

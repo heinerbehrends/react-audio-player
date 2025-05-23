@@ -71,6 +71,7 @@ const TimelineRoot: React.FC<HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <TimelineProvider>
     <div
+      role="group"
       style={{
         ...containerStyles,
         ...props.style,

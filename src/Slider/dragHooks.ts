@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
-import type { SliderContext, SliderEvent } from "../SliderContext";
-import { getClientXY } from "../../Shared/sharedFunctions";
-import { PlayerContext } from "../../Player/PlayerContext";
+import type { SliderContext, SliderEvent } from "./SliderContext";
+import { getClientXY } from "../Shared/sharedFunctions";
+import { PlayerContext } from "../Player/PlayerContext";
 
 export function useHandleDragEnd(context: SliderContext) {
   return useCallback(
@@ -29,6 +29,7 @@ export function useHandleDragStart(context: SliderContext) {
         unmuteVolumeRef.current = context.value;
       }
       const clientXY = getClientXY(event, context.orientation);
+      console.log("clientXY", clientXY);
       handleTimelineAction({
         type: "DRAG_START",
         ...context,

@@ -1,8 +1,8 @@
 import { useContext, useCallback } from "react";
-import { PlayerContext } from "../../Player/PlayerContext";
-import { AudioContext } from "../AudioContext";
-import { areNumbersClose } from "../../Shared/sharedFunctions";
-import { SliderContextAction } from "../../Slider/SliderContext";
+import { PlayerContext } from "../Player/PlayerContext";
+import { AudioContext } from "./AudioContext";
+import { areNumbersClose } from "../Shared/sharedFunctions";
+import { SliderContextAction } from "../Slider/SliderContext";
 
 export function useHandleTimeUpdate() {
   const { audioElementRef, timelineCallbackRef } = useContext(AudioContext);

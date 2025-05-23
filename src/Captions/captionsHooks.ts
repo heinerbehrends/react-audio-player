@@ -1,8 +1,5 @@
 import { useCallback, useContext, useEffect } from "react";
-import {
-  PlayerContext,
-  PlayerProviderAction,
-} from "../../Player/PlayerContext";
+import { PlayerContext, PlayerProviderAction } from "../Player/PlayerContext";
 
 export function useToggleCaptions() {
   const { handlePlayerAction } = useContext(PlayerContext);

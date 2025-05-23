@@ -5,9 +5,9 @@ import {
   useHandleVolumeChange,
   usePlayerCallbacks,
   useHandlePlaybackRateChange,
-} from "../../../src/AudioElement/hooks/audioElementHooks";
-import { PlayerContext } from "../../../src/Player/PlayerContext";
-import { AudioContext } from "../../../src/AudioElement/AudioContext";
+} from "../../src/AudioElement/audioElementHooks";
+import { PlayerContext } from "../../src/Player/PlayerContext";
+import { AudioContext } from "../../src/AudioElement/AudioContext";
 import React from "react";
 
 describe("audioElementHooks", () => {

@@ -5,10 +5,12 @@ export function useTimeDisplay() {
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
+
   const [displayTime, setDisplayTime] = useState({
     elapsed: 0,
     remaining: audioElement?.duration ?? 0,
   });
+
   const updateTime = useCallback(() => {
     setDisplayTime({
       elapsed: Math.floor(audioElement?.currentTime ?? 0),

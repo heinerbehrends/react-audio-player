@@ -7,7 +7,7 @@ import {
   useHandleVolumeChange,
   useHandlePlaybackRateChange,
   usePlayerCallbacks,
-} from "./hooks/audioElementHooks";
+} from "./audioElementHooks";
 
 export const AudioElement = memo(function AudioElement() {
   const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);

@@ -1,11 +1,11 @@
-import { useOnPointerCancel } from "../Slider/hooks/dragHooks";
-import { useDrag } from "./hooks/useDrag";
+import { useOnPointerCancel } from "./dragHooks";
+import { useDrag } from "./useDrag";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import {
   useHandleDrag,
   useHandleDragEnd,
   useHandleDragStart,
-} from "./hooks/dragHooks";
+} from "./dragHooks";
 import { calculateDragStyle } from "./calculateStyle";
 import { SliderContext } from "./SliderContext";
 

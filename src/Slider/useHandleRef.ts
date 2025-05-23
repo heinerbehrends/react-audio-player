@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from "react";
-import { SliderContext } from "../SliderContext";
+import { SliderContext } from "./SliderContext";
 
 export function useHandleRef(context: SliderContext) {
   const { handleSliderAction: handleTimelineAction, orientation } = context;

@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
-import { AudioContext } from "../../AudioElement/AudioContext";
-import { SliderContext } from "../SliderContext";
+import { AudioContext } from "../AudioElement/AudioContext";
+import { SliderContext } from "./SliderContext";
 
 export function useDrag({
   dragState,

@@ -4,9 +4,9 @@ import {
   SliderProviderAction,
   isSliderSideEffect,
   isSliderAction,
-} from "../SliderContext";
-import { SliderComponent } from "../SliderContext";
-import { AudioContext } from "../../AudioElement/AudioContext";
+} from "./SliderContext";
+import { SliderComponent } from "./SliderContext";
+import { AudioContext } from "../AudioElement/AudioContext";
 
 function useHandleSliderAction(dispatch: React.Dispatch<SliderContextAction>) {
   const {

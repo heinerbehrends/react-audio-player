@@ -1,8 +1,9 @@
-import { useContext, useCallback } from "react";
+import { useContext, useCallback, MutableRefObject } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
 import { PlayerProviderAction, VolumeState } from "../Player/PlayerContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { SliderComponent } from "../Slider/SliderContext";
+import { AudioContext, VolumeProviderRef } from "../AudioElement/AudioContext";
 
 type ActionHandler<Action> = (action: Action) => void;
 
@@ -16,6 +17,9 @@ export type HandleMediaKeysArgs = {
   playbackRate: number;
   volumeState: VolumeState;
   component?: SliderComponent | undefined;
+  volumeCallbackRef?: MutableRefObject<VolumeProviderRef>;
+  unmuteVolumeRef: { current: number };
+  isMuted: boolean;
 };
 
 // First define the action types
@@ -169,13 +173,30 @@ function handleTogglePlay({ event, handlePlayerAction }: KeyHandlerArgs) {
 function handleToggleMute({
   volume,
   unmuteVolume,
+  isMuted,
   handlePlayerAction,
+  volumeCallbackRef,
 }: Pick<
   HandleMediaKeysArgs,
-  "volume" | "unmuteVolume" | "handlePlayerAction"
+  | "volume"
+  | "unmuteVolume"
+  | "isMuted"
+  | "handlePlayerAction"
+  | "volumeCallbackRef"
 >) {
-  const nextVolume = areNumbersClose(volume, 0) ? unmuteVolume : volume;
-  handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextVolume });
+  const nextUnmuteVolume = areNumbersClose(volume, 0) ? unmuteVolume : volume;
+  console.log("nextUnmuteVolume", nextUnmuteVolume);
+  handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextUnmuteVolume });
+
+  if (!volumeCallbackRef?.current?.handleVolumeAction) return false;
+  const nextVolume = isMuted ? volume : 0;
+
+  volumeCallbackRef.current.handleVolumeAction({
+    type: "UPDATE_UI_VALUE",
+    value: nextVolume,
+    component: "volume",
+  });
+
   return true;
 }
 
@@ -295,29 +316,25 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 
   const action = defaultKeyToActionMap[event.key];
 
-  console.log("event.key", event.key);
-  console.log("args.event.key", args.event.key);
-  console.log("defaultKeyToActionMap", defaultKeyToActionMap);
-  console.log("action", action);
-
   if (!action || !(action in actionToFunctionMap)) return false;
   const handler = actionToFunctionMap[action];
-  console.log("handler", handler);
-  console.log("args", args);
+
   const isHandled = handler(args);
   if (isHandled) event.preventDefault();
   return isHandled;
 }
 
 export function useHandleMediaKeys(component?: SliderComponent) {
-  const { handlePlayerAction, getPlayerState, playbackRate, volumeState } =
-    useContext(PlayerContext);
   const {
-    duration,
-    currentTime,
-    volume,
-    unmuteVolumeRef: { current: unmuteVolume },
-  } = getPlayerState();
+    handlePlayerAction,
+    getPlayerState,
+    playbackRate,
+    volumeState,
+    isMuted,
+  } = useContext(PlayerContext);
+  const { volumeCallbackRef } = useContext(AudioContext);
+  const { duration, currentTime, volume, unmuteVolumeRef } = getPlayerState();
+
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       handleMediaKeys({
@@ -328,8 +345,11 @@ export function useHandleMediaKeys(component?: SliderComponent) {
         duration,
         currentTime,
         volume,
-        unmuteVolume,
+        unmuteVolume: unmuteVolumeRef.current,
         component,
+        volumeCallbackRef,
+        unmuteVolumeRef,
+        isMuted,
       });
     },
     [
@@ -340,7 +360,9 @@ export function useHandleMediaKeys(component?: SliderComponent) {
       duration,
       currentTime,
       volume,
-      unmuteVolume,
+      unmuteVolumeRef,
+      volumeCallbackRef,
+      isMuted,
     ]
   );
 }

@@ -25,6 +25,13 @@ describe("handleMediaKeys", () => {
       unmuteVolume: 0.7,
       playbackRate: 1,
       volumeState: "high" as const,
+      unmuteVolumeRef: { current: 0.7 },
+      isMuted: false,
+      volumeCallbackRef: {
+        current: {
+          handleVolumeAction: vi.fn(),
+        },
+      },
     };
   });
 
@@ -171,6 +178,76 @@ describe("handleMediaKeys", () => {
         type: "CHANGE_VALUE",
         value: 0, // clamped at 0
         component: "volume",
+      });
+    });
+
+    describe("Mute toggle behavior", () => {
+      it("should handle mute toggle with unmuteVolumeRef when volume is near zero", () => {
+        defaultArgs.event.key = "m";
+        defaultArgs.volume = 0.001;
+        defaultArgs.unmuteVolumeRef = { current: 0.7 };
+        defaultArgs.isMuted = false;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+          type: "TOGGLE_MUTE",
+          unmuteVolume: 0.7,
+        });
+      });
+
+      it("should handle mute toggle with current volume when volume is not near zero", () => {
+        defaultArgs.event.key = "m";
+        defaultArgs.volume = 0.5;
+        defaultArgs.unmuteVolumeRef = { current: 0.7 };
+        defaultArgs.isMuted = false;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+          type: "TOGGLE_MUTE",
+          unmuteVolume: 0.5,
+        });
+      });
+
+      it("should update UI value when muting", () => {
+        const mockHandleVolumeAction = vi.fn();
+        defaultArgs.event.key = "m";
+        defaultArgs.volume = 0.5;
+        defaultArgs.isMuted = false;
+        defaultArgs.volumeCallbackRef = {
+          current: { handleVolumeAction: mockHandleVolumeAction },
+        };
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(mockHandleVolumeAction).toHaveBeenCalledWith({
+          type: "UPDATE_UI_VALUE",
+          value: 0,
+          component: "volume",
+        });
+      });
+
+      it("should update UI value when unmuting", () => {
+        const mockHandleVolumeAction = vi.fn();
+        defaultArgs.event.key = "m";
+        defaultArgs.volume = 0.5;
+        defaultArgs.isMuted = true;
+        defaultArgs.volumeCallbackRef = {
+          current: { handleVolumeAction: mockHandleVolumeAction },
+        };
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(mockHandleVolumeAction).toHaveBeenCalledWith({
+          type: "UPDATE_UI_VALUE",
+          value: 0.5,
+          component: "volume",
+        });
       });
     });
   });

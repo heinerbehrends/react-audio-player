@@ -34,6 +34,9 @@ export function calculateProgressStyle(
 }
 
 function getProgress(context: SliderContext): number {
+  if (context.sliderLength === 0) {
+    return 0;
+  }
   const { orientation } = context;
   const isVerticalVolume =
     context.component === "volume" && orientation === "vertical";

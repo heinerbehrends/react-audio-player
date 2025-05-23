@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import { PlaybackRateProvider } from "../../src/PlaybackRate/PlaybackRateProvider";
 import { PlaybackRateContext } from "../../src/PlaybackRate/PlaybackRateContext";
 import React, { useContext } from "react";
-import * as attachSliderModule from "../../src/Slider/hooks/useAttachSliderCallback";
+import * as attachSliderModule from "../../src/Slider/useAttachSliderCallback";
 import { SliderContext } from "../../src/Slider/SliderContext";
 
 // Create a test component to access context values

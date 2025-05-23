@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { useCueChange } from "../../src/Captions/hooks/captionsHooks";
+import { useCueChange } from "../../src/Captions/captionsHooks";
 
 describe("useCueChange", () => {
   const mockHandlePlayerAction = vi.fn();

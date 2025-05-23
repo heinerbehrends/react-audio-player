@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { Track } from "../../src/Captions/Track";
 import React from "react";
-import * as cueChangeModule from "../../src/Captions/hooks/captionsHooks";
+import * as cueChangeModule from "../../src/Captions/captionsHooks";
 
 // Set up the spy before tests
 vi.spyOn(cueChangeModule, "useCueChange").mockImplementation(vi.fn());
