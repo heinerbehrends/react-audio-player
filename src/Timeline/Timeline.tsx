@@ -65,23 +65,24 @@ function TimelineBackground(props: React.HTMLAttributes<HTMLDivElement>) {
   );
 }
 
-export const Timeline = Object.assign(
-  ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => (
-    <TimelineProvider>
-      <div
-        style={{
-          ...containerStyles,
-          ...props.style,
-        }}
-      >
-        {children}
-      </div>
-    </TimelineProvider>
-  ),
-  {
-    Progress: TimelineProgress,
-    Seek: SeekTime,
-    Drag: DragTimeline,
-    Background: TimelineBackground,
-  }
-) as TimelineComponent;
+const TimelineRoot: React.FC<HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => (
+  <TimelineProvider>
+    <div
+      style={{
+        ...containerStyles,
+        ...props.style,
+      }}
+    >
+      {children}
+    </div>
+  </TimelineProvider>
+);
+
+export const Timeline: TimelineComponent = TimelineRoot as TimelineComponent;
+Timeline.Progress = TimelineProgress;
+Timeline.Seek = SeekTime;
+Timeline.Drag = DragTimeline;
+Timeline.Background = TimelineBackground;
