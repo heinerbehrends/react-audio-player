@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "testE2E": "playwright test",
-    "test": "vitest --reporter=p",
+    "test": "vitest",
     "type-check": "tsc --noEmit"
   },
   "peerDependencies": {

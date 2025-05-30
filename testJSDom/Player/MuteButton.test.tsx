@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MuteButton } from "../../src/Player/MuteButton";
 import { PlayerContext, VolumeState } from "../../src/Player/PlayerContext";
 import { AudioContext } from "../../src/AudioElement/AudioContext";
+import "@testing-library/jest-dom";
 
 describe("MuteButton", () => {
   const mockPlayerContext = {
@@ -91,10 +92,6 @@ describe("MuteButton", () => {
         </PlayerContext.Provider>
       );
       const button = screen.getByRole("button");
-      console.log("Button attributes:", button.attributes);
-      console.log("Button content:", button.textContent);
-      console.log("Button aria-label:", button.getAttribute("aria-label"));
-      console.log("Button aria-pressed:", button.getAttribute("aria-pressed"));
       expect(button).toHaveAccessibleName(name);
       expect(button).toHaveAttribute("aria-pressed", pressed);
     });

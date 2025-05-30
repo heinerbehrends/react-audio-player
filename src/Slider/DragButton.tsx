@@ -25,7 +25,6 @@ export function DragButton({
   const handleKeyDown = useHandleMediaKeys(sliderContext.component);
   const handleDragCancel = useOnPointerCancel(sliderContext);
   const style = calculateDragStyle(sliderContext);
-
   useDrag({
     dragState: sliderContext.dragState,
     onPointerUp: handleDragEnd as unknown as (

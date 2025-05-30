@@ -91,19 +91,13 @@ type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 export function getOffset({
   value,
   sliderLength,
-  clientXY,
-  dragState,
   minValue = 0,
   maxValue = 1,
   orientation = "horizontal",
-  step = 0,
 }: Optional<
   Omit<SliderContext, "handleSliderAction" | "sliderStart">,
   "step" | "minValue" | "maxValue" | "orientation"
 >): number {
-  if (dragState === "dragging" && !step) {
-    return clientXY;
-  }
   const range = maxValue - minValue;
   const progress = (value - minValue) / range;
 

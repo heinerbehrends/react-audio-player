@@ -15,7 +15,9 @@ export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
 
   return (
     <button
-      aria-label={`Seek ${amount}`}
+      aria-label={`Seek ${amount > 0 ? "forward" : "backward"} by ${Math.abs(
+        amount
+      )} seconds`}
       onKeyDown={handleMediaKeys}
       onClick={seekAmount}
       disabled={isDisabled}

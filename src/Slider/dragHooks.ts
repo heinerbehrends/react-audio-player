@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
 import type { SliderContext, SliderEvent } from "./SliderContext";
-import { getClientXY } from "../Shared/sharedFunctions";
+import { getClientXY, calculateValue } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
 
 export function useHandleDragEnd(context: SliderContext) {
@@ -42,12 +42,12 @@ export function useHandleDragStart(context: SliderContext) {
 
 export function useHandleDrag(context: SliderContext) {
   return useCallback(
-    (event: SliderEvent) => {
-      const { handleSliderAction } = context;
-      const clientXY = getClientXY(event, context.orientation);
+    function handleDrag(event: SliderEvent) {
       if (context.dragState !== "dragging") {
         return;
       }
+      const { handleSliderAction } = context;
+      const clientXY = getClientXY(event, context.orientation);
       handleSliderAction({
         type: "DRAG",
         ...context,
@@ -73,10 +73,20 @@ export function useSetValue(context: SliderContext) {
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
+      const value = calculateValue(context);
       handleTimelineAction({
         type: "SET_SLIDER_VALUE",
         ...context,
         clientXY,
+      });
+      handleTimelineAction({
+        type: "UPDATE_UI_VALUE",
+        component: "timeline",
+        value,
+      });
+      handleTimelineAction({
+        type: "DRAG_START",
+        ...context,
       });
     },
     [handleTimelineAction, context]

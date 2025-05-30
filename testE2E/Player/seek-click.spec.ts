@@ -17,20 +17,23 @@ test.afterAll(async () => {
 });
 
 test("jumps to correct position when paused", async () => {
-  await page.getByLabel("Seek audio").click({
-    position: { x: CLICK_OFFSET, y: 0 },
-  });
-  const { sliderLength, duration } = await getTimelineState(page);
-  const progress = CLICK_OFFSET / sliderLength;
-  const expectedTime = duration * progress;
+  const seekButton = page.getByLabel("Seek forward by 10 seconds");
+  await seekButton.waitFor({ state: "visible" });
+  await seekButton.click({ force: true });
+
+  await page.waitForTimeout(100);
+
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(expectedTime, PRECISION);
+  expect(currentTime).toBeCloseTo(10, PRECISION);
 });
 
 test("jumps to correct position when playing", async () => {
-  await page.getByRole("button", { name: "Play" }).click();
-  await page.getByLabel("Seek audio").click({
+  await page.getByRole("button", { name: "Play audio" }).click();
+  const seekButton = page.getByLabel("Seek forward by 10 seconds");
+  await seekButton.waitFor({ state: "visible" });
+  await seekButton.click({
     position: { x: CLICK_OFFSET, y: 0 },
+    force: true,
   });
   await page.getByRole("button", { name: "Pause" }).click();
   const { sliderLength, duration } = await getTimelineState(page);

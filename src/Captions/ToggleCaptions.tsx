@@ -14,7 +14,7 @@ export function ToggleCaptions() {
       onClick={handleClick}
       disabled={isDisabled}
     >
-      Toggle Captions
+      {showCaptions ? "Hide Captions" : "Show Captions"}
     </button>
   );
 }

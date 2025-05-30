@@ -14,7 +14,7 @@ function useHandleSliderAction(dispatch: React.Dispatch<SliderContextAction>) {
     handleSideEffect,
   } = useContext(AudioContext);
   return useCallback(
-    (action: SliderProviderAction) => {
+    function handleSliderAction(action: SliderProviderAction) {
       if (isSliderSideEffect(action)) {
         handleSideEffect(action, audioElement);
       }

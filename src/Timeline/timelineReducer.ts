@@ -67,9 +67,19 @@ export function timelineReducer(
         state.sliderStart + state.sliderLength
       );
       const clientXY = restrictedClientXY - state.sliderStart;
+      const value = calculateSliderValue({
+        clientXY: action.clientXY,
+        sliderLength: state.sliderLength,
+        maxValue: state.maxValue,
+        sliderStart: state.sliderStart,
+        minValue: state.minValue,
+        orientation: state.orientation,
+        step: state.step,
+      });
       return {
         ...state,
         clientXY,
+        value,
       };
     }
 
