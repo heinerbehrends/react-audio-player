@@ -35,8 +35,7 @@ export function handleSideEffect(
       audioElement.muted = false;
       break;
     }
-    case "SET_SLIDER_VALUE":
-    case "DRAG_END": {
+    case "SET_SLIDER_VALUE": {
       if (action.component === "timeline") {
         const time = calculateSliderValue({
           clientXY: action.clientXY,
@@ -58,7 +57,40 @@ export function handleSideEffect(
         audioElement.volume = volume;
       }
       if (action.component === "playbackRate") {
-        if (action.type === "DRAG_END") return;
+        const playbackRate = calculateSliderValue({
+          clientXY: action.clientXY,
+          sliderLength: action.sliderLength,
+          sliderStart: action.sliderStart,
+          minValue: action.minValue,
+          maxValue: action.maxValue,
+          step: action.step,
+        });
+        audioElement.playbackRate = playbackRate;
+      }
+      break;
+    }
+    case "DRAG_END": {
+      if (action.component === "timeline") {
+        const time = calculateSliderValue({
+          clientXY: action.clientXY - action.offsetFromMiddle,
+          sliderLength: action.sliderLength,
+          maxValue: action.maxValue,
+          sliderStart: action.sliderStart,
+          orientation: action.orientation,
+          step: action.step,
+        });
+        audioElement.currentTime = time;
+      }
+      if (action.component === "volume") {
+        const volume = calculateSliderValue({
+          clientXY: action.clientXY - action.offsetFromMiddle,
+          sliderLength: action.sliderLength,
+          sliderStart: action.sliderStart,
+          orientation: action.orientation,
+        });
+        audioElement.volume = volume;
+      }
+      if (action.component === "playbackRate") {
         const playbackRate = calculateSliderValue({
           clientXY: action.clientXY,
           sliderLength: action.sliderLength,
@@ -93,7 +125,7 @@ export function handleSideEffect(
       }
       if (action.component === "volume") {
         const volume = calculateSliderValue({
-          clientXY: action.clientXY,
+          clientXY: action.clientXY - action.offsetFromMiddle,
           sliderLength: action.sliderLength,
           sliderStart: action.sliderStart,
           orientation: action.orientation,

@@ -14,6 +14,9 @@ export function timelineReducer(
       if (action.component !== "timeline") {
         return state;
       }
+      if (state.dragState === "dragging") {
+        return state;
+      }
       return {
         ...state,
         value: action.value,
@@ -48,10 +51,12 @@ export function timelineReducer(
         dragState: state.dragState,
         component: state.component,
       });
+
       return {
         ...state,
         dragState: "dragging" as const,
         clientXY: offset,
+        offsetFromMiddle: action.offsetFromMiddle,
       };
     }
 
@@ -68,7 +73,7 @@ export function timelineReducer(
       );
       const clientXY = restrictedClientXY - state.sliderStart;
       const value = calculateSliderValue({
-        clientXY: action.clientXY,
+        clientXY: action.clientXY - state.offsetFromMiddle,
         sliderLength: state.sliderLength,
         maxValue: state.maxValue,
         sliderStart: state.sliderStart,
@@ -79,7 +84,7 @@ export function timelineReducer(
       return {
         ...state,
         clientXY,
-        value,
+        value: value,
       };
     }
 
@@ -91,7 +96,7 @@ export function timelineReducer(
         return state;
       }
       const time = calculateSliderValue({
-        clientXY: action.clientXY,
+        clientXY: action.clientXY - state.offsetFromMiddle,
         sliderLength: state.sliderLength,
         maxValue: action.maxValue,
         sliderStart: state.sliderStart,

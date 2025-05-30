@@ -18,15 +18,18 @@ export type SetMaxValueAction = {
 
 export type DragStartAction = SliderData & {
   type: "DRAG_START";
+  offsetFromMiddle: number;
 };
 
 export type DragAction = SliderData & {
   type: "DRAG";
+  offsetFromMiddle: number;
   component: SliderComponent;
 };
 
 export type DragEndAction = SliderData & {
   type: "DRAG_END";
+  offsetFromMiddle: number;
   component: SliderComponent;
 };
 
@@ -103,6 +106,7 @@ export type SliderData = {
 export type SliderContext = SliderData & {
   value: number;
   dragState: "idle" | "dragging";
+  offsetFromMiddle: number;
   handleSliderAction: (action: SliderProviderAction) => void;
 };
 
@@ -118,4 +122,5 @@ export const initialState: SliderContext = {
   handleSliderAction: () => {},
   step: 0,
   component: "timeline",
+  offsetFromMiddle: 0,
 };

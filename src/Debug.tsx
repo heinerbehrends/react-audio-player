@@ -34,7 +34,7 @@ export function Debug({
         backgroundColor: "#f5f5f5",
         borderRadius: "4px",
         position: "absolute",
-        top: 80,
+        top: 300,
         left: type === "timeline" ? 60 : 400,
       }}
     >
@@ -48,6 +48,7 @@ export function Debug({
       <p>Width: {context.sliderLength}</p>
       <p>Drag State: {context.dragState}</p>
       <p>X Offset: {context.clientXY}</p>
+      <p>Offset From Middle: {context.offsetFromMiddle}</p>
       <p>Orientation: {context.orientation}</p>
       <p>Unmute Volume: {unmuteVolume}</p>
       <p>Volume state: {volumeState}</p>

@@ -3,10 +3,14 @@ import { PlayerContext } from "../Player/PlayerContext";
 import { AudioContext } from "./AudioContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { SliderContextAction } from "../Slider/SliderContext";
+import { TimelineContext } from "../Timeline/TimelineContext";
 
 export function useHandleTimeUpdate() {
   const { audioElementRef, timelineCallbackRef } = useContext(AudioContext);
+  const { dragState } = useContext(TimelineContext);
+
   return useCallback(() => {
+    if (dragState === "dragging") return;
     if (timelineCallbackRef?.current?.handleTimelineAction) {
       timelineCallbackRef.current.handleTimelineAction({
         type: "UPDATE_UI_VALUE",
@@ -14,7 +18,7 @@ export function useHandleTimeUpdate() {
         component: "timeline",
       });
     }
-  }, [timelineCallbackRef, audioElementRef]);
+  }, [timelineCallbackRef, audioElementRef, dragState]);
 }
 
 export function useHandleVolumeChange() {

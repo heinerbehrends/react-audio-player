@@ -45,6 +45,7 @@ export function volumeReducer(
         ...state,
         dragState: "dragging" as const,
         clientXY: offset,
+        offsetFromMiddle: action.offsetFromMiddle,
       };
     }
 
@@ -59,7 +60,8 @@ export function volumeReducer(
         Math.max(action.clientXY, state.sliderStart),
         state.sliderStart + state.sliderLength
       );
-      const xOffset = restrictedClientXY - state.sliderStart;
+      const xOffset =
+        restrictedClientXY - state.sliderStart - state.offsetFromMiddle;
 
       return {
         ...state,

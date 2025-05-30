@@ -6,7 +6,12 @@ export function areNumbersClose(a: number, b: number): boolean {
 type CalculateValueArgs = Optional<
   Omit<
     SliderContext,
-    "handleSliderAction" | "step" | "component" | "value" | "dragState"
+    | "handleSliderAction"
+    | "step"
+    | "component"
+    | "value"
+    | "dragState"
+    | "offsetFromMiddle"
   >,
   "orientation" | "minValue" | "maxValue"
 >;
@@ -38,6 +43,7 @@ type CalculateSteppedValueArgs = Omit<
   | "sliderLength"
   | "orientation"
   | "clientXY"
+  | "offsetFromMiddle"
 >;
 
 export function calculateSteppedValue({
@@ -96,7 +102,7 @@ export function getOffset({
   orientation = "horizontal",
 }: Optional<
   Omit<SliderContext, "handleSliderAction" | "sliderStart">,
-  "step" | "minValue" | "maxValue" | "orientation"
+  "step" | "minValue" | "maxValue" | "orientation" | "offsetFromMiddle"
 >): number {
   const range = maxValue - minValue;
   const progress = (value - minValue) / range;

@@ -253,7 +253,7 @@ function handleVolumeUp({
   volume,
   handlePlayerAction,
 }: Pick<HandleMediaKeysArgs, "volume" | "handlePlayerAction">) {
-  handlePlayerAction({ type: "UNMUTE" });
+  // handlePlayerAction({ type: "UNMUTE" });
   handlePlayerAction({
     type: "CHANGE_VALUE",
     value: volume + 0.025,
@@ -286,11 +286,11 @@ function handleVolumeDown({
       unmuteVolume: 0.025,
     });
   }
-  if (!areNumbersClose(restrictedVolume, 0)) {
-    handlePlayerAction({
-      type: "UNMUTE",
-    });
-  }
+  // if (!areNumbersClose(restrictedVolume, 0)) {
+  //   handlePlayerAction({
+  //     type: "UNMUTE",
+  //   });
+  // }
   handlePlayerAction({
     type: "CHANGE_VALUE",
     value: restrictedVolume,

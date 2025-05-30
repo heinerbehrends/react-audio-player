@@ -6,12 +6,13 @@ import { PlayerContext } from "../Player/PlayerContext";
 export function useHandleDragEnd(context: SliderContext) {
   return useCallback(
     (event: SliderEvent) => {
-      const { handleSliderAction } = context;
+      const { handleSliderAction, offsetFromMiddle } = context;
       const clientXY = getClientXY(event, context.orientation);
       handleSliderAction({
         type: "DRAG_END",
         ...context,
         clientXY,
+        offsetFromMiddle,
       });
     },
     [context]
@@ -29,11 +30,18 @@ export function useHandleDragStart(context: SliderContext) {
         unmuteVolumeRef.current = context.value;
       }
       const clientXY = getClientXY(event, context.orientation);
+      const buttonElement = event.currentTarget;
+      const buttonRect = buttonElement.getBoundingClientRect();
+      const offsetFromMiddle =
+        context.orientation === "horizontal"
+          ? clientXY - buttonRect.left - buttonRect.width / 2
+          : clientXY - buttonRect.top - buttonRect.height / 2;
 
       handleTimelineAction({
         type: "DRAG_START",
         ...context,
         clientXY,
+        offsetFromMiddle,
       });
     },
     [context, unmuteVolumeRef]
@@ -70,6 +78,7 @@ export function useOnPointerCancel(context: SliderContext) {
 
 export function useSetValue(context: SliderContext) {
   const { handleSliderAction: handleTimelineAction } = context;
+  const { handlePlayerAction } = useContext(PlayerContext);
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
@@ -88,7 +97,12 @@ export function useSetValue(context: SliderContext) {
         type: "DRAG_START",
         ...context,
       });
+      if (context.component === "volume") {
+        handlePlayerAction({
+          type: "UNMUTE",
+        });
+      }
     },
-    [handleTimelineAction, context]
+    [handleTimelineAction, context, handlePlayerAction]
   );
 }

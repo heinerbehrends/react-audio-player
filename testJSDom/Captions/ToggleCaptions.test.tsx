@@ -46,7 +46,7 @@ describe("ToggleCaptions", () => {
 
     const button = screen.getByRole("button", { name: /toggle captions/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveTextContent("Toggle Captions");
+    expect(button).toHaveTextContent("Show Captions");
   });
 
   it("has correct ARIA attributes when captions are off", () => {
