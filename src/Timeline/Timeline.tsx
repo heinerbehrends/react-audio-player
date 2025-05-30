@@ -14,7 +14,7 @@ function DragTimeline(props: React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <DragButton
       sliderContext={timelineContext}
-      ariaLabel="Drag to seek"
+      ariaLabel="Drag or use left and right arrow keys to seek"
       {...props}
     />
   );

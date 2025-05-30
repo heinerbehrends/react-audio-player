@@ -20,7 +20,7 @@ function DragVolume(props: React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <DragButton
       sliderContext={volumeContext}
-      ariaLabel="Drag to adjust volume"
+      ariaLabel="Drag or use up and down arrow keys to adjust volume"
       {...props}
     />
   );

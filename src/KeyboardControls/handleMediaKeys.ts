@@ -72,8 +72,8 @@ const defaultKeyToActionMap: KeyToActionMap = {
   ArrowLeft: "SET_TIME_BACKWARD",
   MediaVolumeUp: "INCREASE_VOLUME",
   ArrowUp: "INCREASE_VOLUME",
-  MediaVolumeDown: "DECREASE_VOLUME",
   ArrowDown: "DECREASE_VOLUME",
+  MediaVolumeDown: "DECREASE_VOLUME",
   j: "SET_TIME_BACKWARD_FAST",
   J: "SET_TIME_BACKWARD_FAST",
   ">": "INCREASE_PLAYBACK_RATE",
@@ -228,15 +228,11 @@ function handleChangeValue({ value }: { value: number }) {
 }
 
 function handleSetTime({ value }: { value: number }) {
-  return function handleSetTime({
-    handlePlayerAction,
-    component,
-  }: ChangeValueArgs) {
-    if (component === "volume") return false;
+  return function handleSetTime({ handlePlayerAction }: ChangeValueArgs) {
     handlePlayerAction({
       type: "CHANGE_VALUE",
       value,
-      component: component || "timeline",
+      component: "timeline",
     });
     return true;
   };
@@ -286,11 +282,11 @@ function handleVolumeDown({
       unmuteVolume: 0.025,
     });
   }
-  // if (!areNumbersClose(restrictedVolume, 0)) {
-  //   handlePlayerAction({
-  //     type: "UNMUTE",
-  //   });
-  // }
+  if (!areNumbersClose(restrictedVolume, 0)) {
+    handlePlayerAction({
+      type: "UNMUTE",
+    });
+  }
   handlePlayerAction({
     type: "CHANGE_VALUE",
     value: restrictedVolume,

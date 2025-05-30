@@ -24,7 +24,7 @@ function Drag(props: React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <DragButton
       sliderContext={playbackRateContext}
-      ariaLabel="Drag to seek"
+      ariaLabel="Drag or use > and < and ] and [ keys to adjust playback rate"
       {...props}
     />
   );
