@@ -16,11 +16,11 @@ describe("ChangePlaybackRate", () => {
     vi.clearAllMocks();
     // Mock useHandleMediaKeys
     vi.spyOn(mediaKeysModule, "useHandleMediaKeys").mockReturnValue(
-      mockHandleMediaKeys
+      mockHandleMediaKeys,
     );
     // Mock useIsDisabled
     vi.spyOn(isDisabledModule, "useIsDisabled").mockImplementation(
-      () => mockIsDisabled
+      () => mockIsDisabled,
     );
   });
 
@@ -43,7 +43,7 @@ describe("ChangePlaybackRate", () => {
     return render(
       <PlayerContext.Provider value={playerContext}>
         <ChangePlaybackRate amount={amount}>Change Rate</ChangePlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 
@@ -59,7 +59,7 @@ describe("ChangePlaybackRate", () => {
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute(
       "aria-label",
-      "Increase playback rate by 0.25x"
+      "Increase playback rate by 0.25x",
     );
   });
 
@@ -68,7 +68,7 @@ describe("ChangePlaybackRate", () => {
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute(
       "aria-label",
-      "Decrease playback rate by 0.25x"
+      "Decrease playback rate by 0.25x",
     );
   });
 
@@ -102,7 +102,7 @@ describe("ChangePlaybackRate", () => {
     render(
       <PlayerContext.Provider value={playerContext}>
         <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
     const button = screen.getByRole("button");
 
@@ -157,7 +157,7 @@ describe("ChangePlaybackRate", () => {
         >
           Change Rate
         </ChangePlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -191,7 +191,7 @@ describe("ChangePlaybackRate", () => {
         }}
       >
         <ChangePlaybackRate amount={0.5}>Change Rate</ChangePlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");

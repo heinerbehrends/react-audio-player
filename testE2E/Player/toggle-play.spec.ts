@@ -45,7 +45,7 @@ test("toggle play button has correct name and aria attributes and works", async 
 test("The play button receives focus and can be used with keyboard", async () => {
   await page.evaluate(() => {
     const playButton = document.querySelector(
-      'button[aria-label="Play audio"]'
+      'button[aria-label="Play audio"]',
     );
     if (playButton instanceof HTMLElement) {
       playButton.focus();

@@ -13,6 +13,7 @@ const initialState: Omit<SliderContext, "step" | "minValue" | "maxValue"> = {
   dragState: "idle",
   component: "playbackRate",
   handleSliderAction: () => {},
+  offsetFromMiddle: 0,
 };
 
 type PlaybackRateProviderProps = {

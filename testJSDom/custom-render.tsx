@@ -12,7 +12,7 @@ interface CustomRenderOptions extends RenderOptions {
 
 function customRender(
   ui: React.ReactElement,
-  options?: CustomRenderOptions
+  options?: CustomRenderOptions,
 ): RenderResult {
   const { audioFiles = defaultAudioFiles, ...renderOptions } = options || {};
 

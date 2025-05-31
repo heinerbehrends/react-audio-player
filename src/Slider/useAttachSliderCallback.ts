@@ -22,7 +22,7 @@ function useHandleSliderAction(dispatch: React.Dispatch<SliderContextAction>) {
         dispatch(action);
       }
     },
-    [audioElement, handleSideEffect, dispatch]
+    [audioElement, handleSideEffect, dispatch],
   );
 }
 

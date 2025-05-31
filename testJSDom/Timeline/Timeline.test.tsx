@@ -32,7 +32,7 @@ describe("Timeline", () => {
       render(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Progress data-testid="progress" />
-        </TimelineContext.Provider>
+        </TimelineContext.Provider>,
       );
 
       const progress = screen.getByTestId("progress");
@@ -51,7 +51,7 @@ describe("Timeline", () => {
       render(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Background data-testid="background" />
-        </TimelineContext.Provider>
+        </TimelineContext.Provider>,
       );
 
       const background = screen.getByTestId("background");
@@ -68,7 +68,7 @@ describe("Timeline", () => {
       render(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Seek data-testid="seek">Seek</Timeline.Seek>
-        </TimelineContext.Provider>
+        </TimelineContext.Provider>,
       );
 
       const seek = screen.getByTestId("seek");
@@ -80,7 +80,7 @@ describe("Timeline", () => {
       render(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Drag data-testid="drag" />
-        </TimelineContext.Provider>
+        </TimelineContext.Provider>,
       );
 
       const drag = screen.getByTestId("drag");
@@ -98,7 +98,7 @@ describe("Timeline", () => {
           <Timeline.Seek data-testid="seek">Seek</Timeline.Seek>
           <Timeline.Drag data-testid="drag" />
         </Timeline>
-      </TimelineContext.Provider>
+      </TimelineContext.Provider>,
     );
 
     expect(screen.getByTestId("background")).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe("Timeline", () => {
         <Timeline>
           <div data-testid="timeline-child">Content</div>
         </Timeline>
-      </TimelineContext.Provider>
+      </TimelineContext.Provider>,
     );
 
     const container = screen.getByRole("group");

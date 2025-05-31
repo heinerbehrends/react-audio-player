@@ -42,7 +42,7 @@ describe("AudioPlayer", () => {
     render(
       <AudioPlayer audioFiles={mockAudioFiles}>
         <div data-testid="child-content">Test Content</div>
-      </AudioPlayer>
+      </AudioPlayer>,
     );
 
     expect(screen.getByTestId("audio-context-provider")).toBeInTheDocument();
@@ -55,13 +55,13 @@ describe("AudioPlayer", () => {
     render(
       <AudioPlayer audioFiles={mockAudioFiles}>
         <div>Test Content</div>
-      </AudioPlayer>
+      </AudioPlayer>,
     );
 
     const provider = screen.getByTestId("player-context-provider");
     expect(provider).toHaveAttribute(
       "data-audio-files",
-      mockAudioFiles.length.toString()
+      mockAudioFiles.length.toString(),
     );
   });
 
@@ -70,7 +70,7 @@ describe("AudioPlayer", () => {
       <AudioPlayer audioFiles={mockAudioFiles}>
         <div data-testid="child-1">Child 1</div>
         <div data-testid="child-2">Child 2</div>
-      </AudioPlayer>
+      </AudioPlayer>,
     );
 
     const provider = screen.getByTestId("player-context-provider");
@@ -85,7 +85,7 @@ describe("AudioPlayer", () => {
     render(
       <AudioPlayer audioFiles={[]}>
         <div>Test Content</div>
-      </AudioPlayer>
+      </AudioPlayer>,
     );
 
     const provider = screen.getByTestId("player-context-provider");

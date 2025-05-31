@@ -15,7 +15,7 @@ export function useHandleDragEnd(context: SliderContext) {
         offsetFromMiddle,
       });
     },
-    [context]
+    [context],
   );
 }
 
@@ -44,7 +44,7 @@ export function useHandleDragStart(context: SliderContext) {
         offsetFromMiddle,
       });
     },
-    [context, unmuteVolumeRef]
+    [context, unmuteVolumeRef],
   );
 }
 
@@ -62,7 +62,7 @@ export function useHandleDrag(context: SliderContext) {
         clientXY,
       });
     },
-    [context]
+    [context],
   );
 }
 
@@ -103,6 +103,6 @@ export function useSetValue(context: SliderContext) {
         });
       }
     },
-    [handleTimelineAction, context, handlePlayerAction]
+    [handleTimelineAction, context, handlePlayerAction],
   );
 }

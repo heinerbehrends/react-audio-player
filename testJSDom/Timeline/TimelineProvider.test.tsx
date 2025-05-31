@@ -31,7 +31,7 @@ describe("TimelineProvider", () => {
     render(
       <TimelineProvider>
         <TestComponent />
-      </TimelineProvider>
+      </TimelineProvider>,
     );
 
     expect(screen.getByTestId("component")).toHaveTextContent("timeline");
@@ -42,7 +42,7 @@ describe("TimelineProvider", () => {
     render(
       <TimelineProvider>
         <TestComponent />
-      </TimelineProvider>
+      </TimelineProvider>,
     );
 
     const button = screen.getByTestId("action-button");
@@ -57,14 +57,14 @@ describe("TimelineProvider", () => {
     const { rerender } = render(
       <TimelineProvider>
         <TestComponent />
-      </TimelineProvider>
+      </TimelineProvider>,
     );
 
     const firstValue = screen.getByTestId("value").textContent;
     rerender(
       <TimelineProvider>
         <TestComponent />
-      </TimelineProvider>
+      </TimelineProvider>,
     );
 
     const secondValue = screen.getByTestId("value").textContent;

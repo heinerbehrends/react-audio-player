@@ -6,7 +6,7 @@ import { getOffset } from "../Shared/sharedFunctions";
 
 export function volumeReducer(
   state: SliderContext,
-  action: SliderContextAction
+  action: SliderContextAction,
 ): SliderContext {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
@@ -58,11 +58,10 @@ export function volumeReducer(
       }
       const restrictedClientXY = Math.min(
         Math.max(action.clientXY, state.sliderStart),
-        state.sliderStart + state.sliderLength
+        state.sliderStart + state.sliderLength,
       );
       const xOffset =
         restrictedClientXY - state.sliderStart - state.offsetFromMiddle;
-
       return {
         ...state,
         clientXY: xOffset,

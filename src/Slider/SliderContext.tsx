@@ -81,13 +81,13 @@ const SLIDER_DISPATCH_MAP: Record<SliderActionType, true> = {
 };
 
 export function isSliderSideEffect(
-  action: SliderProviderAction
+  action: SliderProviderAction,
 ): action is SideEffectAction {
   return SLIDER_SIDE_EFFECT_MAP[action.type as SliderSideEffectAction] === true;
 }
 
 export function isSliderAction(
-  action: SliderProviderAction
+  action: SliderProviderAction,
 ): action is SliderContextAction {
   return SLIDER_DISPATCH_MAP[action.type as SliderActionType] === true;
 }
@@ -110,7 +110,7 @@ export type SliderContext = SliderData & {
   handleSliderAction: (action: SliderProviderAction) => void;
 };
 
-export const initialState: SliderContext = {
+export const initialSliderState: SliderContext = {
   sliderStart: 0,
   sliderLength: 0,
   value: 1,

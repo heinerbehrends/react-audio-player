@@ -61,7 +61,7 @@ describe("MuteButton", () => {
             <span>Mute Icon</span>
           </MuteButton>
         </AudioContext.Provider>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 
@@ -89,7 +89,7 @@ describe("MuteButton", () => {
               <span>Mute Icon</span>
             </MuteButton>
           </AudioContext.Provider>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       const button = screen.getByRole("button");
       expect(button).toHaveAccessibleName(name);
@@ -123,7 +123,7 @@ describe("MuteButton", () => {
           <MuteButton.Muted>
             <span>Muted Icon</span>
           </MuteButton.Muted>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(screen.getByText("Muted Icon")).toBeInTheDocument();
     });
@@ -136,7 +136,7 @@ describe("MuteButton", () => {
           <MuteButton.Muted>
             <span>Muted Icon</span>
           </MuteButton.Muted>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(container).toBeEmptyDOMElement();
     });
@@ -151,7 +151,7 @@ describe("MuteButton", () => {
           <MuteButton.LowVolume>
             <span>Low Volume Icon</span>
           </MuteButton.LowVolume>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(screen.getByText("Low Volume Icon")).toBeInTheDocument();
     });
@@ -164,7 +164,7 @@ describe("MuteButton", () => {
           <MuteButton.LowVolume>
             <span>Low Volume Icon</span>
           </MuteButton.LowVolume>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(container).toBeEmptyDOMElement();
     });
@@ -179,7 +179,7 @@ describe("MuteButton", () => {
           <MuteButton.HighVolume>
             <span>High Volume Icon</span>
           </MuteButton.HighVolume>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(screen.getByText("High Volume Icon")).toBeInTheDocument();
     });
@@ -192,7 +192,7 @@ describe("MuteButton", () => {
           <MuteButton.HighVolume>
             <span>High Volume Icon</span>
           </MuteButton.HighVolume>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(container).toBeEmptyDOMElement();
     });
@@ -210,7 +210,7 @@ describe("MuteButton", () => {
         unmuteVolume: 0.5,
       });
       expect(
-        mockAudioContext.volumeCallbackRef.current.handleVolumeAction
+        mockAudioContext.volumeCallbackRef.current.handleVolumeAction,
       ).toHaveBeenCalledWith({
         type: "UPDATE_UI_VALUE",
         value: 0,
@@ -228,7 +228,7 @@ describe("MuteButton", () => {
       fireEvent.click(button);
 
       expect(
-        mockAudioContext.volumeCallbackRef.current.handleVolumeAction
+        mockAudioContext.volumeCallbackRef.current.handleVolumeAction,
       ).toHaveBeenCalledWith({
         type: "UPDATE_UI_VALUE",
         value: 0,

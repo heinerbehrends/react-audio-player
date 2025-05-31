@@ -29,7 +29,7 @@ export function SetSliderValue({
       ...buttonStyles,
       ...props.style,
     }),
-    [props.style]
+    [props.style],
   ) satisfies React.CSSProperties;
 
   return (

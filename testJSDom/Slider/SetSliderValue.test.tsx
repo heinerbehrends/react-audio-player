@@ -23,7 +23,7 @@ describe("SetSliderValue", () => {
   it("renders with correct role and attributes", () => {
     const context = createSliderContext();
     const { container } = render(
-      <SetSliderValue sliderContext={context}>Test</SetSliderValue>
+      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -36,7 +36,7 @@ describe("SetSliderValue", () => {
   it("handles pointer down event", async () => {
     const context = createSliderContext();
     const { container } = render(
-      <SetSliderValue sliderContext={context}>Test</SetSliderValue>
+      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
     );
     const button = getByRole(container, "slider");
 
@@ -59,7 +59,7 @@ describe("SetSliderValue", () => {
     const { container } = render(
       <SetSliderValue sliderContext={context} style={customStyle}>
         Test
-      </SetSliderValue>
+      </SetSliderValue>,
     );
     const button = getByRole(container, "slider");
 
@@ -76,7 +76,7 @@ describe("SetSliderValue", () => {
         className="custom-class"
       >
         Test
-      </SetSliderValue>
+      </SetSliderValue>,
     );
     const button = getByRole(container, "slider");
 

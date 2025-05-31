@@ -133,7 +133,7 @@ export type PlayerContextType = {
   cues: VTTCue[];
 };
 
-export const initialState: PlayerContextType = {
+export const initialPlayerState: PlayerContextType = {
   handlePlayerAction: () => {},
   playerState: "loading",
   showCaptions: true,
@@ -154,4 +154,5 @@ export const initialState: PlayerContextType = {
   cues: [],
 };
 
-export const PlayerContext = createContext<PlayerContextType>(initialState);
+export const PlayerContext =
+  createContext<PlayerContextType>(initialPlayerState);

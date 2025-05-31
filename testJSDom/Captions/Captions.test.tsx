@@ -36,7 +36,7 @@ describe("Captions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <Captions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const captionsSection = screen.getByRole("region", { name: /captions/i });
@@ -54,7 +54,7 @@ describe("Captions", () => {
     render(
       <PlayerContext.Provider value={contextWithoutCaptions}>
         <Captions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     expect(screen.queryByRole("region")).not.toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("Captions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <Captions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const captionsSection = screen.getByRole("region");
@@ -80,7 +80,7 @@ describe("Captions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <Captions className="custom-class" data-testid="captions" />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const captionsSection = screen.getByRole("region");
@@ -97,7 +97,7 @@ describe("Captions", () => {
     render(
       <PlayerContext.Provider value={contextWithoutCues}>
         <Captions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const captionsSection = screen.getByRole("region");
@@ -118,7 +118,7 @@ describe("Captions", () => {
         <Captions>
           <div data-testid="custom-child">Custom Child</div>
         </Captions>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     // Should still render captions text

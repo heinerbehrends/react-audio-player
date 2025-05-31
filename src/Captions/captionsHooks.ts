@@ -31,7 +31,7 @@ export function useCueChange({
         cues: cuesArray as VTTCue[],
       });
     },
-    [handlePlayerAction]
+    [handlePlayerAction],
   );
 
   useEffect(() => {

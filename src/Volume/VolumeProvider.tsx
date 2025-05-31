@@ -2,7 +2,7 @@ import { useMemo, useReducer, memo } from "react";
 import { VolumeContext } from "./VolumeContext";
 import { volumeReducer } from "./volumeReducer";
 import { useAttachSliderCallback } from "../Slider/useAttachSliderCallback";
-import { initialState } from "../Slider/SliderContext";
+import { initialSliderState } from "../Slider/SliderContext";
 
 type VolumeProviderProps = {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export const VolumeProvider = memo(function VolumeProvider({
 }: VolumeProviderProps) {
   const component = "volume";
   const [state, dispatch] = useReducer(volumeReducer, {
-    ...initialState,
+    ...initialSliderState,
     component,
     orientation,
   });

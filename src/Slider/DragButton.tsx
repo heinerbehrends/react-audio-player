@@ -28,10 +28,10 @@ export function DragButton({
   useDrag({
     dragState: sliderContext.dragState,
     onPointerUp: handleDragEnd as unknown as (
-      event: PointerEvent | TouchEvent
+      event: PointerEvent | TouchEvent,
     ) => void,
     onPointerMove: handleDrag as unknown as (
-      event: PointerEvent | TouchEvent
+      event: PointerEvent | TouchEvent,
     ) => void,
     onPointerCancel: handleDragCancel,
   });

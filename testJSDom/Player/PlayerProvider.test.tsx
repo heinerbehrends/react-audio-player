@@ -85,7 +85,7 @@ describe("PlayerContextProvider", () => {
         <PlayerContextProvider audioFiles={audioFiles}>
           <TestConsumer />
         </PlayerContextProvider>
-      </AudioContext.Provider>
+      </AudioContext.Provider>,
     );
   };
 
@@ -93,16 +93,16 @@ describe("PlayerContextProvider", () => {
     it("initializes with correct default values", () => {
       renderWithProvider();
       expect(screen.getByTestId("test-value-player-state")).toHaveTextContent(
-        "loading"
+        "loading",
       );
       expect(screen.getByTestId("test-value-volume-state")).toHaveTextContent(
-        "high"
+        "high",
       );
       expect(screen.getByTestId("test-value-playback-rate")).toHaveTextContent(
-        "1"
+        "1",
       );
       expect(screen.getByTestId("test-value-unmute-volume")).toHaveTextContent(
-        "1"
+        "1",
       );
     });
 
@@ -128,7 +128,7 @@ describe("PlayerContextProvider", () => {
               }}
             />
           </PlayerContextProvider>
-        </AudioContext.Provider>
+        </AudioContext.Provider>,
       );
 
       expect(contextValue).toBeDefined();
@@ -159,7 +159,7 @@ describe("PlayerContextProvider", () => {
               }}
             />
           </PlayerContextProvider>
-        </AudioContext.Provider>
+        </AudioContext.Provider>,
       );
 
       expect(contextValue).toBeDefined();
@@ -181,7 +181,7 @@ describe("PlayerContextProvider", () => {
       fireEvent.click(screen.getByText("Toggle Play"));
       expect(mockHandleSideEffect).toHaveBeenCalledWith(
         { type: "TOGGLE_PLAY" },
-        mockAudioElement
+        mockAudioElement,
       );
     });
   });
@@ -201,7 +201,7 @@ describe("PlayerContextProvider", () => {
           <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
             <ContextTracker />
           </PlayerContextProvider>
-        </AudioContext.Provider>
+        </AudioContext.Provider>,
       );
 
       const firstContext = renderSpy.mock.calls[0][0];
@@ -211,7 +211,7 @@ describe("PlayerContextProvider", () => {
           <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
             <ContextTracker />
           </PlayerContextProvider>
-        </AudioContext.Provider>
+        </AudioContext.Provider>,
       );
 
       const secondContext = renderSpy.mock.calls[1][0];
@@ -223,14 +223,14 @@ describe("PlayerContextProvider", () => {
     it("handles missing audio files gracefully", () => {
       renderWithProvider([]);
       expect(screen.getByTestId("test-value-player-state")).toHaveTextContent(
-        "loading"
+        "loading",
       );
     });
 
     it("handles invalid audio file format gracefully", () => {
       renderWithProvider([{ src: "" }]);
       expect(screen.getByTestId("test-value-player-state")).toHaveTextContent(
-        "loading"
+        "loading",
       );
     });
   });

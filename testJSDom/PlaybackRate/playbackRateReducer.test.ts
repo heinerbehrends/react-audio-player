@@ -249,7 +249,7 @@ describe("playbackRateReducer", () => {
 
       const newState = playbackRateReducer(
         defaultState,
-        action as unknown as SliderProviderAction
+        action as unknown as SliderProviderAction,
       );
 
       expect(newState).toEqual(defaultState);

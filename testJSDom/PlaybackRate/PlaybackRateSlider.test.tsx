@@ -35,14 +35,14 @@ describe("PlaybackRateSlider", () => {
     render(
       <PlaybackRateSlider>
         <div data-testid="child">Test</div>
-      </PlaybackRateSlider>
+      </PlaybackRateSlider>,
     );
 
     expect(screen.getByTestId("child")).toBeInTheDocument();
     expect(screen.getByTestId("mock-provider")).toBeInTheDocument();
 
     const providerProps = JSON.parse(
-      screen.getByTestId("mock-provider").getAttribute("data-props") || "{}"
+      screen.getByTestId("mock-provider").getAttribute("data-props") || "{}",
     );
     expect(providerProps.maxValue).toBe(4);
     expect(providerProps.minValue).toBe(0.5);
@@ -53,11 +53,11 @@ describe("PlaybackRateSlider", () => {
     render(
       <PlaybackRateSlider maxValue={8} minValue={1} step={0.5}>
         <div>Test</div>
-      </PlaybackRateSlider>
+      </PlaybackRateSlider>,
     );
 
     const providerProps = JSON.parse(
-      screen.getByTestId("mock-provider").getAttribute("data-props") || "{}"
+      screen.getByTestId("mock-provider").getAttribute("data-props") || "{}",
     );
     expect(providerProps.maxValue).toBe(8);
     expect(providerProps.minValue).toBe(1);
@@ -72,7 +72,7 @@ describe("PlaybackRateSlider", () => {
         style={{ backgroundColor: "red", margin: "10px" }}
       >
         Test
-      </PlaybackRateSlider>
+      </PlaybackRateSlider>,
     );
 
     // Check that the parent div was rendered
@@ -101,7 +101,7 @@ describe("PlaybackRateSlider", () => {
         <PlaybackRateSlider.Background
           data-testid="background"
           style={{ backgroundColor: "blue" }}
-        />
+        />,
       );
 
       const background = screen.getByTestId("background");
@@ -129,7 +129,7 @@ describe("PlaybackRateSlider", () => {
       render(
         <PlaybackRateSlider.Set data-testid="set-button">
           1.5x
-        </PlaybackRateSlider.Set>
+        </PlaybackRateSlider.Set>,
       );
 
       expect(screen.getByTestId("set-button")).toBeInTheDocument();
@@ -146,7 +146,7 @@ describe("PlaybackRateSlider", () => {
       expect(screen.getByTestId("drag-button")).toBeInTheDocument();
       expect(screen.getByTestId("drag-button")).toHaveAttribute(
         "aria-label",
-        "Drag to seek"
+        "Drag to seek",
       );
     });
   });
@@ -161,13 +161,13 @@ describe("PlaybackRateSlider", () => {
         <PlaybackRateSlider.Background data-testid="background" />
         <PlaybackRateSlider.Set data-testid="set">1.0x</PlaybackRateSlider.Set>
         <PlaybackRateSlider.Drag data-testid="drag" />
-      </PlaybackRateSlider>
+      </PlaybackRateSlider>,
     );
 
     expect(screen.getByRole("slider")).toBeInTheDocument();
     expect(screen.getByRole("slider")).toHaveAttribute(
       "aria-label",
-      "Playback rate slider"
+      "Playback rate slider",
     );
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuemin", "0.5");
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuemax", "4");
@@ -175,7 +175,7 @@ describe("PlaybackRateSlider", () => {
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuetext", "0x");
     expect(screen.getByRole("slider")).toHaveAttribute(
       "aria-orientation",
-      "horizontal"
+      "horizontal",
     );
     expect(screen.getByTestId("background")).toBeInTheDocument();
     expect(screen.getByTestId("set")).toBeInTheDocument();

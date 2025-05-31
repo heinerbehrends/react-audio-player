@@ -118,18 +118,18 @@ export function getOffset({
 
 export function getClientXY(
   event: SliderEvent,
-  orientation: "horizontal" | "vertical"
+  orientation: "horizontal" | "vertical",
 ): number {
   if (isTouchEvent(event)) {
     return orientation === "horizontal"
-      ? event.touches[0]?.clientX ?? 0
-      : event.touches[0]?.clientY ?? 0;
+      ? (event.touches[0]?.clientX ?? 0)
+      : (event.touches[0]?.clientY ?? 0);
   }
   return orientation === "horizontal" ? event.clientX : event.clientY;
 }
 
 function isTouchEvent(
-  event: SliderEvent
+  event: SliderEvent,
 ): event is React.TouchEvent<HTMLButtonElement> {
   return "touches" in event;
 }

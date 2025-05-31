@@ -99,7 +99,7 @@ test("drag button cannot move beyond timeline bounds", async ({
   } else {
     expect(buttonBox?.x).toBeCloseTo(
       sliderStart + sliderLength - BUTTON_OFFSET,
-      1
+      1,
     );
   }
 });

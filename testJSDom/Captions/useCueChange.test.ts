@@ -38,12 +38,12 @@ describe("useCueChange", () => {
       useCueChange({
         trackRef,
         handlePlayerAction: mockHandlePlayerAction,
-      })
+      }),
     );
 
     expect(mockTrackElement.addEventListener).toHaveBeenCalledWith(
       "cuechange",
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -52,14 +52,14 @@ describe("useCueChange", () => {
       useCueChange({
         trackRef,
         handlePlayerAction: mockHandlePlayerAction,
-      })
+      }),
     );
 
     unmount();
 
     expect(mockTrackElement.removeEventListener).toHaveBeenCalledWith(
       "cuechange",
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -71,7 +71,7 @@ describe("useCueChange", () => {
       useCueChange({
         trackRef,
         handlePlayerAction: mockHandlePlayerAction,
-      })
+      }),
     );
 
     // No listeners should be added since ref is null
@@ -83,7 +83,7 @@ describe("useCueChange", () => {
       useCueChange({
         trackRef,
         handlePlayerAction: mockHandlePlayerAction,
-      })
+      }),
     );
 
     // Get the cuechange handler
@@ -119,7 +119,7 @@ describe("useCueChange", () => {
       useCueChange({
         trackRef,
         handlePlayerAction: mockHandlePlayerAction,
-      })
+      }),
     );
 
     // Get the cuechange handler

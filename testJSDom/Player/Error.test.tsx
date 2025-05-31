@@ -23,12 +23,12 @@ describe("Error", () => {
 
   const renderWithContext = (
     playerState: PlayerState,
-    children: React.ReactNode
+    children: React.ReactNode,
   ) => {
     return render(
       <PlayerContext.Provider value={{ ...mockPlayerContext, playerState }}>
         <Error>{children}</Error>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 

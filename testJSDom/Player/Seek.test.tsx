@@ -48,7 +48,7 @@ describe("Seek", () => {
         <AudioContext.Provider value={defaultAudioContext}>
           <Seek amount={amount}>Seek {amount}</Seek>
         </AudioContext.Provider>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 

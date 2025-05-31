@@ -9,7 +9,7 @@ import {
 import {
   PLAYER_DISPATCH_MAP,
   PLAYER_SIDE_EFFECT_MAP,
-  initialState,
+  initialPlayerState,
   PlayerContext,
   type PlayerContextAction,
   type PlayerProviderAction,
@@ -38,10 +38,10 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
   audioFiles,
 }: PlayerContextProviderProps) {
   const [state, dispatch] = useReducer(playerReducer, {
-    ...initialState,
+    ...initialPlayerState,
     audioFiles,
   });
-  const unmuteVolumeRef = useRef(initialState.unmuteVolumeRef.current);
+  const unmuteVolumeRef = useRef(initialPlayerState.unmuteVolumeRef.current);
 
   const {
     audioElementRef: { current: audioElement },
@@ -70,7 +70,7 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
         dispatch(action);
       }
     },
-    [audioElement, handleSideEffect]
+    [audioElement, handleSideEffect],
   );
 
   const value = useMemo(
@@ -80,8 +80,8 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
         handlePlayerAction,
         getPlayerState,
         unmuteVolumeRef,
-      } satisfies PlayerContextType),
-    [state, handlePlayerAction, getPlayerState]
+      }) satisfies PlayerContextType,
+    [state, handlePlayerAction, getPlayerState],
   );
 
   return (
@@ -90,13 +90,13 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
 });
 
 function isSideEffectAction(
-  action: PlayerProviderAction
+  action: PlayerProviderAction,
 ): action is SideEffectAction {
   return action.type in PLAYER_SIDE_EFFECT_MAP;
 }
 
 function isPlayerContextAction(
-  action: PlayerProviderAction
+  action: PlayerProviderAction,
 ): action is PlayerContextAction {
   return PLAYER_DISPATCH_MAP[action.type as PlayerContextActionType];
 }

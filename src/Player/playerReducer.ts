@@ -2,7 +2,7 @@ import type { PlayerContextAction, PlayerContextType } from "./PlayerContext";
 
 export function playerReducer(
   state: PlayerContextType,
-  action: PlayerContextAction
+  action: PlayerContextAction,
 ): PlayerContextType {
   switch (action.type) {
     case "AUDIO_FILE_LOADED": {

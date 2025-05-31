@@ -80,7 +80,7 @@ describe("PlayerContext", () => {
           }}
         >
           <TestComponent />
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
 
       expect(screen.getByTestId("player-state")).toHaveTextContent("playing");
@@ -98,7 +98,7 @@ describe("PlayerContext", () => {
           }}
         >
           <TestComponent />
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
 
       fireEvent.click(screen.getByText("Toggle Play"));
@@ -117,7 +117,7 @@ describe("PlayerContext", () => {
           }}
         >
           <TestComponent />
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
 
       const state = mockGetPlayerState();

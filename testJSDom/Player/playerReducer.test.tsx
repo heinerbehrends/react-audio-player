@@ -94,8 +94,8 @@ describe("playerReducer", () => {
       expect(
         playerReducer(
           { ...baseState, timeDisplay: "remaining" as const },
-          action
-        ).timeDisplay
+          action,
+        ).timeDisplay,
       ).toBe("elapsed");
     });
   });
@@ -105,7 +105,8 @@ describe("playerReducer", () => {
       const action = { type: "TOGGLE_CAPTIONS" as const };
       expect(playerReducer(baseState, action).showCaptions).toBe(true);
       expect(
-        playerReducer({ ...baseState, showCaptions: true }, action).showCaptions
+        playerReducer({ ...baseState, showCaptions: true }, action)
+          .showCaptions,
       ).toBe(false);
     });
   });

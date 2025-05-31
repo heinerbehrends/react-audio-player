@@ -98,7 +98,7 @@ type ActionToFunctionMap = {
 };
 
 function createActionToFunctionMap(
-  args: HandleMediaKeysArgs
+  args: HandleMediaKeysArgs,
 ): ActionToFunctionMap {
   return {
     TOGGLE_PLAY: handleTogglePlay,
@@ -358,6 +358,6 @@ export function useHandleMediaKeys(component?: SliderComponent) {
       unmuteVolumeRef,
       volumeCallbackRef,
       isMuted,
-    ]
+    ],
   );
 }

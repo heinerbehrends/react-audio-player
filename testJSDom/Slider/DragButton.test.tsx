@@ -7,7 +7,7 @@ import React from "react";
 
 describe("DragButton", () => {
   const createSliderContext = (
-    overrides: Partial<SliderContext> = {}
+    overrides: Partial<SliderContext> = {},
   ): SliderContext => ({
     value: 0.5,
     minValue: 0,
@@ -26,7 +26,7 @@ describe("DragButton", () => {
   it("renders with correct aria label", () => {
     const context = createSliderContext();
     const { getByLabelText } = render(
-      <DragButton ariaLabel="Test Label" sliderContext={context} />
+      <DragButton ariaLabel="Test Label" sliderContext={context} />,
     );
     expect(getByLabelText("Test Label")).toBeDefined();
   });
@@ -34,7 +34,7 @@ describe("DragButton", () => {
   it("applies correct styles", () => {
     const context = createSliderContext();
     const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />
+      <DragButton ariaLabel="Test" sliderContext={context} />,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -48,7 +48,7 @@ describe("DragButton", () => {
   it("handles pointer down event", async () => {
     const context = createSliderContext();
     const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />
+      <DragButton ariaLabel="Test" sliderContext={context} />,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -68,7 +68,7 @@ describe("DragButton", () => {
   it("handles pointer up event", async () => {
     const context = createSliderContext();
     const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />
+      <DragButton ariaLabel="Test" sliderContext={context} />,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -95,7 +95,7 @@ describe("DragButton", () => {
   it("handles key down event", () => {
     const context = createSliderContext();
     const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />
+      <DragButton ariaLabel="Test" sliderContext={context} />,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -111,7 +111,7 @@ describe("DragButton", () => {
         ariaLabel="Test"
         sliderContext={context}
         style={customStyle}
-      />
+      />,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -127,7 +127,7 @@ describe("DragButton", () => {
         sliderContext={context}
         data-testid="drag-button"
         className="custom-class"
-      />
+      />,
     );
     const button = container.firstChild as HTMLElement;
 

@@ -61,7 +61,7 @@ export type AudioContextType = {
   audioElementRef: React.MutableRefObject<HTMLAudioElement | null>;
   handleSideEffect: (
     action: SideEffectAction,
-    audioElement: HTMLAudioElement | null
+    audioElement: HTMLAudioElement | null,
   ) => void;
   timelineCallbackRef: React.MutableRefObject<TimelineProviderRef>;
   volumeCallbackRef: React.MutableRefObject<VolumeProviderRef>;

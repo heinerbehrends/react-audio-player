@@ -1,4 +1,4 @@
 import { createContext } from "react";
-import { SliderContext, initialState } from "../Slider/SliderContext";
+import { SliderContext, initialSliderState } from "../Slider/SliderContext";
 
-export const VolumeContext = createContext<SliderContext>(initialState);
+export const VolumeContext = createContext<SliderContext>(initialSliderState);

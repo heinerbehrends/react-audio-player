@@ -10,7 +10,7 @@ import type { SliderContext } from "../../src/Slider/SliderContext";
 
 describe("calculateStyle", () => {
   const createSliderContext = (
-    overrides: Partial<SliderContext> = {}
+    overrides: Partial<SliderContext> = {},
   ): SliderContext => ({
     value: 0.5,
     minValue: 0,

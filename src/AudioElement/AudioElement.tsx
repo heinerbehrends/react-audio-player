@@ -45,7 +45,7 @@ export const AudioElement = memo(function AudioElement() {
       onPause={handlePause}
       onLoadedMetadata={() => {
         handleLoadedMetadata(
-          timelineCallbackRef?.current?.handleTimelineAction
+          timelineCallbackRef?.current?.handleTimelineAction,
         );
       }}
       src={src}

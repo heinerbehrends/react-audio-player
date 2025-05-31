@@ -41,7 +41,7 @@ describe("ToggleCaptions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button", { name: /toggle captions/i });
@@ -53,7 +53,7 @@ describe("ToggleCaptions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -70,7 +70,7 @@ describe("ToggleCaptions", () => {
     render(
       <PlayerContext.Provider value={contextWithCaptions}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -81,7 +81,7 @@ describe("ToggleCaptions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -99,7 +99,7 @@ describe("ToggleCaptions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -113,7 +113,7 @@ describe("ToggleCaptions", () => {
     render(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -124,7 +124,7 @@ describe("ToggleCaptions", () => {
     const { rerender } = render(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const initialButton = screen.getByRole("button");
@@ -134,7 +134,7 @@ describe("ToggleCaptions", () => {
     rerender(
       <PlayerContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const updatedButton = screen.getByRole("button");

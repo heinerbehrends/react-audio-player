@@ -49,7 +49,7 @@ describe("PlaybackRateProvider", () => {
     vi.clearAllMocks();
     // Only mock the external hook that's used by the component
     vi.spyOn(attachSliderModule, "useAttachSliderCallback").mockReturnValue(
-      mockHandleAction
+      mockHandleAction,
     );
   });
 
@@ -57,7 +57,7 @@ describe("PlaybackRateProvider", () => {
     render(
       <PlaybackRateProvider minValue={0.5} maxValue={4} step={0.25}>
         <div data-testid="child">Child content</div>
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     expect(screen.getByTestId("child")).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe("PlaybackRateProvider", () => {
     render(
       <PlaybackRateProvider>
         <TestConsumer testId="default" />
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     // Check rendered values
@@ -76,7 +76,7 @@ describe("PlaybackRateProvider", () => {
     expect(screen.getByTestId("default-maxValue")).toHaveTextContent("4");
     expect(screen.getByTestId("default-step")).toHaveTextContent("0.25");
     expect(screen.getByTestId("default-component")).toHaveTextContent(
-      "playbackRate"
+      "playbackRate",
     );
   });
 
@@ -84,7 +84,7 @@ describe("PlaybackRateProvider", () => {
     render(
       <PlaybackRateProvider minValue={0.2} maxValue={3} step={0.1}>
         <TestConsumer testId="custom" />
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     // Check rendered values
@@ -97,7 +97,7 @@ describe("PlaybackRateProvider", () => {
     render(
       <PlaybackRateProvider>
         <TestConsumer />
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     expect(attachSliderModule.useAttachSliderCallback).toHaveBeenCalledWith({
@@ -110,7 +110,7 @@ describe("PlaybackRateProvider", () => {
     render(
       <PlaybackRateProvider>
         <TestConsumer />
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     // Trigger the action
@@ -139,7 +139,7 @@ describe("PlaybackRateProvider", () => {
     const { rerender } = render(
       <PlaybackRateProvider>
         <ContextTracker />
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     expect(renderSpy).toHaveBeenCalledTimes(1);
@@ -149,7 +149,7 @@ describe("PlaybackRateProvider", () => {
     rerender(
       <PlaybackRateProvider>
         <ContextTracker />
-      </PlaybackRateProvider>
+      </PlaybackRateProvider>,
     );
 
     expect(renderSpy).toHaveBeenCalledTimes(2);
@@ -162,7 +162,7 @@ describe("PlaybackRateProvider", () => {
     // handleSliderAction should be the same function reference
     // This verifies useMemo is working correctly
     expect(secondContext.handleSliderAction).toBe(
-      firstContext.handleSliderAction
+      firstContext.handleSliderAction,
     );
   });
 });

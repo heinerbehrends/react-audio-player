@@ -11,7 +11,7 @@ describe("MuteButton", () => {
         <MuteButton.Muted>Muted</MuteButton.Muted>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
         <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
-      </MuteButton>
+      </MuteButton>,
     );
 
     // Get the button element
@@ -28,7 +28,7 @@ describe("MuteButton", () => {
         <MuteButton.Muted>Muted</MuteButton.Muted>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
         <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
-      </MuteButton>
+      </MuteButton>,
     );
 
     // By default, the volumeState should be "high"

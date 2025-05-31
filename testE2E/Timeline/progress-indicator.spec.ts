@@ -31,7 +31,7 @@ test("progress indicator updates on audio playback", async () => {
   });
   await expect(progressIndicator).toHaveAttribute(
     "aria-valuemax",
-    (duration ?? "").toString()
+    (duration ?? "").toString(),
   );
 
   const progressValue = await progressIndicator.getAttribute("aria-valuenow");

@@ -13,4 +13,5 @@ export const PlaybackRateContext = createContext<SliderContext>({
   orientation: "horizontal",
   component: "playbackRate",
   handleSliderAction: () => {},
+  offsetFromMiddle: 0,
 });

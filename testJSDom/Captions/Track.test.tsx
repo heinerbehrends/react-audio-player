@@ -18,7 +18,7 @@ describe("Track", () => {
 
   it("renders a track element with correct attributes", () => {
     const { container } = render(
-      <Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />
+      <Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />,
     );
 
     // Use container.querySelector to find the track element
@@ -64,7 +64,7 @@ describe("Track", () => {
           src="captions2.vtt"
           handlePlayerAction={mockHandlePlayerAction}
         />
-      </>
+      </>,
     );
 
     const useCueChangeMock = vi.mocked(cueChangeModule.useCueChange);
@@ -79,7 +79,7 @@ describe("Track", () => {
 
   it("updates properly when src changes", () => {
     const { rerender, container } = render(
-      <Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />
+      <Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />,
     );
 
     // Initial track element
@@ -89,7 +89,7 @@ describe("Track", () => {
     // Change the src prop
     const newSrc = "new-captions.vtt";
     rerender(
-      <Track src={newSrc} handlePlayerAction={mockHandlePlayerAction} />
+      <Track src={newSrc} handlePlayerAction={mockHandlePlayerAction} />,
     );
 
     // Same element should now have the new src

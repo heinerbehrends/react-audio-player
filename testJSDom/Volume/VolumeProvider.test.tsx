@@ -32,7 +32,7 @@ describe("VolumeProvider", () => {
     render(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
-      </VolumeProvider>
+      </VolumeProvider>,
     );
 
     expect(screen.getByTestId("component")).toHaveTextContent("volume");
@@ -44,7 +44,7 @@ describe("VolumeProvider", () => {
     render(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
-      </VolumeProvider>
+      </VolumeProvider>,
     );
 
     const button = screen.getByTestId("action-button");
@@ -59,14 +59,14 @@ describe("VolumeProvider", () => {
     const { rerender } = render(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
-      </VolumeProvider>
+      </VolumeProvider>,
     );
 
     const firstValue = screen.getByTestId("value").textContent;
     rerender(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
-      </VolumeProvider>
+      </VolumeProvider>,
     );
 
     const secondValue = screen.getByTestId("value").textContent;
@@ -77,7 +77,7 @@ describe("VolumeProvider", () => {
     render(
       <VolumeProvider orientation="vertical">
         <TestComponent />
-      </VolumeProvider>
+      </VolumeProvider>,
     );
 
     expect(screen.getByTestId("orientation")).toHaveTextContent("vertical");

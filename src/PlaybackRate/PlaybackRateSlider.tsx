@@ -90,5 +90,5 @@ export const PlaybackRateSlider = Object.assign(
     Background: PlaybackRateBackground,
     Set,
     Drag,
-  }
+  },
 ) as PlaybackRateSliderComponent;

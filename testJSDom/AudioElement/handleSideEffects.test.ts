@@ -53,7 +53,7 @@ describe("handleSideEffect", () => {
         type: "TOGGLE_MUTE",
         unmuteVolume: 0.5,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.muted).toBe(true);
 
@@ -62,7 +62,7 @@ describe("handleSideEffect", () => {
         type: "TOGGLE_MUTE",
         unmuteVolume: 0.5,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.muted).toBe(false);
     expect(audioElement.volume).toBe(0.5);
@@ -78,7 +78,7 @@ describe("handleSideEffect", () => {
     audioElement.muted = true;
     handleSideEffect(
       { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
-      audioElement
+      audioElement,
     );
     expect(audioElement.muted).toBe(false);
     expect(audioElement.volume).toBe(0.5);
@@ -91,7 +91,7 @@ describe("handleSideEffect", () => {
         component: "volume",
         value: 0.7,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.volume).toBe(0.7);
   });
@@ -109,7 +109,7 @@ describe("handleSideEffect", () => {
         minValue: 0,
         step: 0,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.currentTime).toBe(100); // 50% of maxValue 200
   });
@@ -126,7 +126,7 @@ describe("handleSideEffect", () => {
         minValue: 0,
         step: 0,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.volume).toBe(0.5);
   });
@@ -144,7 +144,7 @@ describe("handleSideEffect", () => {
         minValue: 0.5,
         step: 0.25,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.playbackRate).toBe(1);
     handleSideEffect(
@@ -159,7 +159,7 @@ describe("handleSideEffect", () => {
         minValue: 0.5,
         step: 0.25,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });
@@ -176,7 +176,7 @@ describe("handleSideEffect", () => {
         minValue: 0,
         step: 0,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.currentTime).toBe(100); // 50% of maxValue 200
   });
@@ -194,7 +194,7 @@ describe("handleSideEffect", () => {
         minValue: 0,
         step: 0,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.volume).toBe(0.5); // 50% of maxValue 1
   });
@@ -212,7 +212,7 @@ describe("handleSideEffect", () => {
         minValue: 0.5,
         step: 0.1,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.playbackRate).toBe(1); // the playback rate should not change
   });
@@ -220,7 +220,7 @@ describe("handleSideEffect", () => {
   it("should change the current time on CHANGE_VALUE action for timeline", () => {
     handleSideEffect(
       { type: "CHANGE_VALUE", component: "timeline", value: 10 },
-      audioElement
+      audioElement,
     );
     expect(audioElement.currentTime).toBe(10);
   });
@@ -228,14 +228,14 @@ describe("handleSideEffect", () => {
   it("should change the volume on CHANGE_VALUE action for volume", () => {
     handleSideEffect(
       { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
-      audioElement
+      audioElement,
     );
     expect(audioElement.volume).toBe(0.5);
   });
   it("should change the playback rate on CHANGE_VALUE action for playback rate", () => {
     handleSideEffect(
       { type: "CHANGE_VALUE", component: "playbackRate", value: 1.5 },
-      audioElement
+      audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });
@@ -252,7 +252,7 @@ describe("handleSideEffect", () => {
         minValue: 0,
         step: 0,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.currentTime).toBe(0);
   });
@@ -269,7 +269,7 @@ describe("handleSideEffect", () => {
         minValue: 0,
         step: 0,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.volume).toBe(0.5);
   });
@@ -287,7 +287,7 @@ describe("handleSideEffect", () => {
         minValue: 0.5,
         step: 0.25,
       },
-      audioElement
+      audioElement,
     );
     // 0.95 rounded to nearest 0.25 is 1.0
     expect(audioElement.playbackRate).toBe(1);
@@ -303,14 +303,14 @@ describe("handleSideEffect", () => {
         minValue: 0.5,
         step: 0.25,
       },
-      audioElement
+      audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });
   it("should handle SET_PLAYBACK_RATE action", () => {
     handleSideEffect(
       { type: "SET_PLAYBACK_RATE", playbackRate: 1.5 },
-      audioElement
+      audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });

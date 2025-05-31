@@ -15,7 +15,7 @@ export function useTimeDisplay() {
     setDisplayTime({
       elapsed: Math.floor(audioElement?.currentTime ?? 0),
       remaining: Math.floor(
-        audioElement?.duration ?? 0 - (audioElement?.currentTime ?? 0)
+        audioElement?.duration ?? 0 - (audioElement?.currentTime ?? 0),
       ),
     });
   }, [audioElement]);
@@ -25,7 +25,7 @@ export function useTimeDisplay() {
     setDisplayTime({
       elapsed: Math.floor(audioElement?.currentTime ?? 0),
       remaining: Math.floor(
-        audioElement?.duration ?? 0 - (audioElement?.currentTime ?? 0)
+        audioElement?.duration ?? 0 - (audioElement?.currentTime ?? 0),
       ),
     });
     audioElement.addEventListener("timeupdate", updateTime);

@@ -30,12 +30,11 @@ describe("useTimelineAriaAttributes", () => {
 
   const createWrapper =
     (playerContext) =>
-    ({ children }) =>
-      (
-        <PlayerContext.Provider value={playerContext}>
-          {children}
-        </PlayerContext.Provider>
-      );
+    ({ children }) => (
+      <PlayerContext.Provider value={playerContext}>
+        {children}
+      </PlayerContext.Provider>
+    );
 
   it("should return correct aria attributes for timeline", () => {
     const playerContext = createPlayerContext();
@@ -43,7 +42,7 @@ describe("useTimelineAriaAttributes", () => {
 
     const { result } = renderHook(
       () => useTimelineAriaAttributes(sliderContext),
-      { wrapper: createWrapper(playerContext) }
+      { wrapper: createWrapper(playerContext) },
     );
 
     expect(result.current).toEqual({
@@ -65,7 +64,7 @@ describe("useTimelineAriaAttributes", () => {
 
     const { result } = renderHook(
       () => useTimelineAriaAttributes(sliderContext),
-      { wrapper: createWrapper(playerContext) }
+      { wrapper: createWrapper(playerContext) },
     );
 
     expect(result.current).toEqual({
@@ -87,7 +86,7 @@ describe("useTimelineAriaAttributes", () => {
 
     const { result } = renderHook(
       () => useTimelineAriaAttributes(sliderContext),
-      { wrapper: createWrapper(playerContext) }
+      { wrapper: createWrapper(playerContext) },
     );
 
     expect(result.current).toEqual({
@@ -109,7 +108,7 @@ describe("useTimelineAriaAttributes", () => {
 
     const { result } = renderHook(
       () => useTimelineAriaAttributes(sliderContext),
-      { wrapper: createWrapper(playerContext) }
+      { wrapper: createWrapper(playerContext) },
     );
 
     expect(result.current["aria-valuetext"]).toBe("Position 2:05 of 3:00");

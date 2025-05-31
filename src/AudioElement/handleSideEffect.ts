@@ -6,7 +6,7 @@ import type { SideEffectAction } from "./AudioContext";
 
 export function handleSideEffect(
   action: SideEffectAction,
-  audioElement: HTMLAudioElement | null
+  audioElement: HTMLAudioElement | null,
 ) {
   if (!audioElement) return;
   switch (action.type) {

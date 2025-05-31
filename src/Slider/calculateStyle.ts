@@ -2,7 +2,7 @@ import { SliderContext } from "./SliderContext";
 import { getOffset } from "../Shared/sharedFunctions";
 
 export function calculateDragStyle(
-  context: SliderContext
+  context: SliderContext,
 ): React.CSSProperties {
   const { orientation } = context;
   const offset = getOffset(context);
@@ -20,7 +20,7 @@ export function calculateDragStyle(
 }
 
 export function calculateProgressStyle(
-  context: SliderContext
+  context: SliderContext,
 ): React.CSSProperties {
   const { orientation } = context;
   const progress = getProgress(context);

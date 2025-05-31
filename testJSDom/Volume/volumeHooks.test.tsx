@@ -14,12 +14,11 @@ describe("useVolumeAriaAttributes", () => {
 
   const createWrapper =
     (contextValue) =>
-    ({ children }) =>
-      (
-        <PlayerContext.Provider value={contextValue}>
-          {children}
-        </PlayerContext.Provider>
-      );
+    ({ children }) => (
+      <PlayerContext.Provider value={contextValue}>
+        {children}
+      </PlayerContext.Provider>
+    );
 
   it("should return correct aria attributes for volume", () => {
     const playerContext = createPlayerContext();

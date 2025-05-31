@@ -35,7 +35,7 @@ describe("PlayButton", () => {
         <PlayButton>
           <span>Play Icon</span>
         </PlayButton>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 
@@ -86,7 +86,7 @@ describe("PlayButton", () => {
           <PlayButton.Playing>
             <span>Playing Icon</span>
           </PlayButton.Playing>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(screen.getByText("Playing Icon")).toBeInTheDocument();
     });
@@ -99,7 +99,7 @@ describe("PlayButton", () => {
           <PlayButton.Playing>
             <span>Playing Icon</span>
           </PlayButton.Playing>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(container).toBeEmptyDOMElement();
     });
@@ -114,7 +114,7 @@ describe("PlayButton", () => {
           <PlayButton.Paused>
             <span>Paused Icon</span>
           </PlayButton.Paused>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(screen.getByText("Paused Icon")).toBeInTheDocument();
     });
@@ -127,7 +127,7 @@ describe("PlayButton", () => {
           <PlayButton.Paused>
             <span>Paused Icon</span>
           </PlayButton.Paused>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
       expect(container).toBeEmptyDOMElement();
     });

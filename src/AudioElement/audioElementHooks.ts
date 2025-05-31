@@ -30,8 +30,8 @@ export function useHandleVolumeChange() {
     const volumeState = areNumbersClose(volume, 0)
       ? "muted"
       : volume < 0.5
-      ? "low"
-      : "high";
+        ? "low"
+        : "high";
     handlePlayerAction({
       type: "SET_VOLUME_STATE",
       volumeState,
@@ -67,7 +67,7 @@ export function usePlayerCallbacks() {
         maxValue: audioElementRef.current?.duration ?? 1,
       });
     },
-    [handlePlayerAction, audioElementRef]
+    [handlePlayerAction, audioElementRef],
   );
 
   const handlePause = useCallback(() => {

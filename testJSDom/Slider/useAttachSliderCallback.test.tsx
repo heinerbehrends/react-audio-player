@@ -30,12 +30,11 @@ describe("useAttachSliderCallback", () => {
 
   const createWrapper =
     (contextValue: AudioContextType) =>
-    ({ children }) =>
-      (
-        <AudioContext.Provider value={contextValue}>
-          {children}
-        </AudioContext.Provider>
-      );
+    ({ children }) => (
+      <AudioContext.Provider value={contextValue}>
+        {children}
+      </AudioContext.Provider>
+    );
 
   it("attaches timeline callback", () => {
     const dispatch = vi.fn();
@@ -43,7 +42,7 @@ describe("useAttachSliderCallback", () => {
 
     renderHook(
       () => useAttachSliderCallback({ dispatch, component: "timeline" }),
-      { wrapper: createWrapper(context) }
+      { wrapper: createWrapper(context) },
     );
 
     const action = { type: "DRAG_START" };
@@ -58,7 +57,7 @@ describe("useAttachSliderCallback", () => {
 
     renderHook(
       () => useAttachSliderCallback({ dispatch, component: "volume" }),
-      { wrapper: createWrapper(context) }
+      { wrapper: createWrapper(context) },
     );
 
     const action = { type: "DRAG_START" };
@@ -73,7 +72,7 @@ describe("useAttachSliderCallback", () => {
 
     renderHook(
       () => useAttachSliderCallback({ dispatch, component: "playbackRate" }),
-      { wrapper: createWrapper(context) }
+      { wrapper: createWrapper(context) },
     );
 
     const action = { type: "DRAG_START" };
@@ -89,7 +88,7 @@ describe("useAttachSliderCallback", () => {
     const { result } = renderHook(
       () =>
         useAttachSliderCallback({ dispatch, component: "timeline" as const }),
-      { wrapper: createWrapper(context) }
+      { wrapper: createWrapper(context) },
     );
 
     const action = { type: "DRAG" as const, ...actionContext };
@@ -97,7 +96,7 @@ describe("useAttachSliderCallback", () => {
 
     expect(context.handleSideEffect).toHaveBeenCalledWith(
       action,
-      context.audioElementRef.current
+      context.audioElementRef.current,
     );
   });
 
@@ -111,7 +110,7 @@ describe("useAttachSliderCallback", () => {
 
     renderHook(
       () => useAttachSliderCallback({ dispatch, component: "timeline" }),
-      { wrapper: createWrapper(context) }
+      { wrapper: createWrapper(context) },
     );
 
     expect(dispatch).not.toHaveBeenCalled();

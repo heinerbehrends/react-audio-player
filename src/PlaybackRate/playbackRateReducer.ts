@@ -4,7 +4,7 @@ import { getOffset } from "../Shared/sharedFunctions";
 
 export function playbackRateReducer(
   state: SliderContext,
-  action: SliderProviderAction
+  action: SliderProviderAction,
 ): SliderContext {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {

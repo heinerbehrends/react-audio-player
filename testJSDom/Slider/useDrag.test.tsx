@@ -16,7 +16,7 @@ describe("useDrag", () => {
           onPointerMove,
           onPointerCancel,
         }),
-      { initialProps: { dragState: "dragging" } }
+      { initialProps: { dragState: "dragging" } },
     );
 
     // Test active drag state

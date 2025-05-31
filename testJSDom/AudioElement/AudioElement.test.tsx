@@ -46,14 +46,14 @@ describe("AudioElement", () => {
 
   const renderWithContexts = (
     playerCtx = defaultPlayerContextValue,
-    audioCtx = defaultAudioContextValue
+    audioCtx = defaultAudioContextValue,
   ) => {
     return render(
       <PlayerContext.Provider value={playerCtx}>
         <AudioContext.Provider value={audioCtx}>
           <AudioElement />
         </AudioContext.Provider>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 
@@ -105,7 +105,7 @@ describe("AudioElement", () => {
 
     const { rerender } = renderWithContexts(
       defaultPlayerContextValue,
-      contextWithRef
+      contextWithRef,
     );
 
     // Get initial handler references
@@ -119,7 +119,7 @@ describe("AudioElement", () => {
         <AudioContext.Provider value={contextWithRef}>
           <AudioElement />
         </AudioContext.Provider>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     // Verify handlers are the same objects (memoized correctly)

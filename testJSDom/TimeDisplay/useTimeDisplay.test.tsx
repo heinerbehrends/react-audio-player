@@ -20,12 +20,11 @@ describe("useTimeDisplay", () => {
 
   const createWrapper =
     (contextValue) =>
-    ({ children }) =>
-      (
-        <AudioContext.Provider value={contextValue}>
-          {children}
-        </AudioContext.Provider>
-      );
+    ({ children }) => (
+      <AudioContext.Provider value={contextValue}>
+        {children}
+      </AudioContext.Provider>
+    );
 
   it("sets up timeupdate event listener", () => {
     const context = createAudioContext();
@@ -34,7 +33,7 @@ describe("useTimeDisplay", () => {
     });
 
     expect(
-      context.audioElementRef.current.addEventListener
+      context.audioElementRef.current.addEventListener,
     ).toHaveBeenCalledWith("timeupdate", expect.any(Function));
   });
 
@@ -47,7 +46,7 @@ describe("useTimeDisplay", () => {
     unmount();
 
     expect(
-      context.audioElementRef.current.removeEventListener
+      context.audioElementRef.current.removeEventListener,
     ).toHaveBeenCalledWith("timeupdate", expect.any(Function));
   });
 });

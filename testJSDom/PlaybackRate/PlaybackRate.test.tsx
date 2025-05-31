@@ -42,7 +42,7 @@ describe("PlaybackRate", () => {
           <PlaybackRate.Set rate={1.5} data-testid="set-button">
             1.5x
           </PlaybackRate.Set>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
 
       const button = screen.getByTestId("set-button");
@@ -57,7 +57,7 @@ describe("PlaybackRate", () => {
           <PlaybackRate.Change amount={0.25} data-testid="change-button">
             Faster
           </PlaybackRate.Change>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
 
       const button = screen.getByTestId("change-button");
@@ -71,7 +71,7 @@ describe("PlaybackRate", () => {
           value={{ ...mockPlayerContext, playbackRate: 1.5 }}
         >
           <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
-        </PlayerContext.Provider>
+        </PlayerContext.Provider>,
       );
 
       expect(screen.getByText("*")).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe("PlaybackRate", () => {
           </PlaybackRate.Set>
           <PlaybackRate.Display />
         </PlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByLabelText("Set playback rate to 2x");
@@ -100,7 +100,7 @@ describe("PlaybackRate", () => {
     render(
       <PlaybackRate>
         <div data-testid="playback-rate-child">Content</div>
-      </PlaybackRate>
+      </PlaybackRate>,
     );
 
     // Check that the container is rendered with the correct content
@@ -113,7 +113,7 @@ describe("PlaybackRate", () => {
 
     // Verify children are rendered inside the container
     expect(container).toContainElement(
-      screen.getByTestId("playback-rate-child")
+      screen.getByTestId("playback-rate-child"),
     );
   });
 });

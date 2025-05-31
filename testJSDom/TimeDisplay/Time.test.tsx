@@ -34,8 +34,9 @@ function createPlayerContext(overrides = {}): PlayerContextType {
 
 const createWrapper =
   (context: PlayerContextType) =>
-  ({ children }) =>
-    <PlayerContext.Provider value={context}>{children}</PlayerContext.Provider>;
+  ({ children }) => (
+    <PlayerContext.Provider value={context}>{children}</PlayerContext.Provider>
+  );
 
 describe("Time", () => {
   it("hides when showing remaining time", () => {
@@ -52,7 +53,7 @@ describe("Time", () => {
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute(
       "aria-label",
-      "Toggle elapsed and remaining time"
+      "Toggle elapsed and remaining time",
     );
     expect(button).toHaveAttribute("aria-pressed", "true");
   });

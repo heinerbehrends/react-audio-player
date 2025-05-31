@@ -32,7 +32,7 @@ describe("Volume", () => {
       render(
         <VolumeContext.Provider value={mockVolumeContext}>
           <Volume.Progress data-testid="progress" />
-        </VolumeContext.Provider>
+        </VolumeContext.Provider>,
       );
 
       const progress = screen.getByTestId("progress");
@@ -51,7 +51,7 @@ describe("Volume", () => {
       render(
         <VolumeContext.Provider value={mockVolumeContext}>
           <Volume.Background data-testid="background" />
-        </VolumeContext.Provider>
+        </VolumeContext.Provider>,
       );
 
       const background = screen.getByTestId("background");
@@ -68,7 +68,7 @@ describe("Volume", () => {
       render(
         <VolumeContext.Provider value={mockVolumeContext}>
           <Volume.Set data-testid="set">Set</Volume.Set>
-        </VolumeContext.Provider>
+        </VolumeContext.Provider>,
       );
 
       const set = screen.getByTestId("set");
@@ -80,7 +80,7 @@ describe("Volume", () => {
       render(
         <VolumeContext.Provider value={mockVolumeContext}>
           <Volume.Drag data-testid="drag" />
-        </VolumeContext.Provider>
+        </VolumeContext.Provider>,
       );
 
       const drag = screen.getByTestId("drag");
@@ -98,7 +98,7 @@ describe("Volume", () => {
           <Volume.Set data-testid="set">Set</Volume.Set>
           <Volume.Drag data-testid="drag" />
         </Volume>
-      </VolumeContext.Provider>
+      </VolumeContext.Provider>,
     );
 
     expect(screen.getByTestId("background")).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe("Volume", () => {
         <Volume>
           <div data-testid="volume-child">Content</div>
         </Volume>
-      </VolumeContext.Provider>
+      </VolumeContext.Provider>,
     );
 
     const container = screen.getByRole("group");

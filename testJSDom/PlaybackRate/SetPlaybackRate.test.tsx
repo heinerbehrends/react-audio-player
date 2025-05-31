@@ -33,10 +33,10 @@ describe("SetPlaybackRate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(mediaKeysModule, "useHandleMediaKeys").mockReturnValue(
-      mockHandleKeyDown
+      mockHandleKeyDown,
     );
     vi.spyOn(isDisabledModule, "useIsDisabled").mockImplementation(
-      () => mockIsDisabled
+      () => mockIsDisabled,
     );
   });
 
@@ -50,7 +50,7 @@ describe("SetPlaybackRate", () => {
     return render(
       <PlayerContext.Provider value={playerContext}>
         <SetPlaybackRate rate={rate}>{rate}x</SetPlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
   };
 
@@ -115,7 +115,7 @@ describe("SetPlaybackRate", () => {
         >
           1.5x
         </SetPlaybackRate>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -135,7 +135,7 @@ describe("CurrentIndicator", () => {
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
         </CurrentIndicator>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const indicator = screen.getByTestId("indicator");
@@ -150,7 +150,7 @@ describe("CurrentIndicator", () => {
         <CurrentIndicator rate={2}>
           <span data-testid="indicator">Current</span>
         </CurrentIndicator>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const indicator = screen.getByTestId("indicator");
@@ -170,7 +170,7 @@ describe("CurrentIndicator", () => {
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
         </CurrentIndicator>
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const indicator = screen.getByTestId("indicator");
@@ -188,7 +188,7 @@ describe("RateDisplay", () => {
         }}
       >
         <RateDisplay />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const display = screen.getByLabelText("Current playback rate");
@@ -204,7 +204,7 @@ describe("RateDisplay", () => {
         }}
       >
         <RateDisplay />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const display = screen.getByLabelText("Current playback rate");
@@ -220,7 +220,7 @@ describe("RateDisplay", () => {
         }}
       >
         <RateDisplay data-testid="rate-display" className="custom-display" />
-      </PlayerContext.Provider>
+      </PlayerContext.Provider>,
     );
 
     const display = screen.getByLabelText("Current playback rate");

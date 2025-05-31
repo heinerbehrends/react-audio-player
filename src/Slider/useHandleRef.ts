@@ -29,7 +29,7 @@ export function useHandleRef(context: SliderContext) {
 
       observerRef.current.observe(element);
     },
-    [handleTimelineAction, orientation]
+    [handleTimelineAction, orientation],
   );
 
   useEffect(() => {
