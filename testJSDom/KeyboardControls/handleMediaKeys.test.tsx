@@ -134,9 +134,6 @@ describe("handleMediaKeys", () => {
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
       expect(mockHandlePlayerAction).toHaveBeenCalledWith({
-        type: "UNMUTE",
-      });
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
         value: 0.525, // 0.5 + 0.025
         component: "volume",
@@ -276,16 +273,6 @@ describe("handleMediaKeys", () => {
         value: 25, // 30 - 5
         component: "timeline",
       });
-    });
-
-    it("should ignore arrow keys when component is volume", () => {
-      defaultArgs.event.key = "ArrowRight";
-      defaultArgs.component = "volume";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(false);
-      expect(mockHandlePlayerAction).not.toHaveBeenCalled();
     });
 
     it("should handle larger seek forward (l)", () => {

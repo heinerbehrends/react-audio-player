@@ -27,6 +27,7 @@
   ],
   "scripts": {
     "dev": "tsup --watch",
+    "vite": "vite dev",
     "build": "tsup",
     "lint": "eslint .",
     "preview": "vite preview",

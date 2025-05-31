@@ -175,6 +175,7 @@ describe("handleSideEffect", () => {
         maxValue: 200,
         minValue: 0,
         step: 0,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -193,6 +194,7 @@ describe("handleSideEffect", () => {
         maxValue: 1,
         minValue: 0,
         step: 0,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -211,6 +213,7 @@ describe("handleSideEffect", () => {
         maxValue: 2,
         minValue: 0.5,
         step: 0.1,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -251,6 +254,7 @@ describe("handleSideEffect", () => {
         maxValue: 200,
         minValue: 0,
         step: 0,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -268,6 +272,7 @@ describe("handleSideEffect", () => {
         maxValue: 1,
         minValue: 0,
         step: 0,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -286,6 +291,7 @@ describe("handleSideEffect", () => {
         maxValue: 2,
         minValue: 0.5,
         step: 0.25,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -302,6 +308,7 @@ describe("handleSideEffect", () => {
         maxValue: 2,
         minValue: 0.5,
         step: 0.25,
+        offsetFromMiddle: 0,
       },
       audioElement,
     );

@@ -24,7 +24,7 @@ export function useWaveform(nrOfPoints: number) {
     window.AudioContext = window.AudioContext ?? window.webkitAudioContext;
     const audioContext = new AudioContext({
       latencyHint: "interactive",
-      sampleRate: 3000,
+      sampleRate: 8000,
     });
     audioContextRef.current = audioContext;
     const duration = audioElement?.duration ?? 1;

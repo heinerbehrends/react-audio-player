@@ -23,6 +23,7 @@ describe("dragHooks", () => {
     dragState: "idle" as const,
     component: "timeline" as const,
     handleSliderAction: vi.fn(),
+    offsetFromMiddle: 0,
     ...overrides,
   });
 

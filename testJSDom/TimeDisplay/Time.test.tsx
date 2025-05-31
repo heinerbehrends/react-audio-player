@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { Time } from "../../src/TimeDisplay/Time";
+import { Time } from "../../src/TimeDisplay/TimeDisplay";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 import {
   PlayerContext,
   PlayerContextType,
 } from "../../src/Player/PlayerContext";
+import "@testing-library/jest-dom";
 
 function createPlayerContext(overrides = {}): PlayerContextType {
   return {
