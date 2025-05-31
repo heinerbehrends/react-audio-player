@@ -82,24 +82,10 @@ export function handleSideEffect(
         audioElement.currentTime = time;
       }
       if (action.component === "volume") {
-        const volume = calculateSliderValue({
-          clientXY: action.clientXY - action.offsetFromMiddle,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-        });
-        audioElement.volume = volume;
+        return;
       }
       if (action.component === "playbackRate") {
-        const playbackRate = calculateSliderValue({
-          clientXY: action.clientXY,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          minValue: action.minValue,
-          maxValue: action.maxValue,
-          step: action.step,
-        });
-        audioElement.playbackRate = playbackRate;
+        return;
       }
       break;
     }

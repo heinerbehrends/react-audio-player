@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { volumeReducer } from "../../src/Volume/volumeReducer";
-import { initialState } from "../../src/Slider/SliderContext";
+import { initialSliderState } from "../../src/Slider/SliderContext";
 
 describe("volumeReducer", () => {
   const baseState = {
-    ...initialState,
+    ...initialSliderState,
     component: "volume" as const,
     sliderStart: 100,
     sliderLength: 200,
@@ -69,6 +69,7 @@ describe("volumeReducer", () => {
       orientation: "horizontal" as const,
       step: 0,
       component: "volume" as const,
+      offsetFromMiddle: 0,
     };
 
     const newState = volumeReducer(baseState, action);
@@ -88,6 +89,7 @@ describe("volumeReducer", () => {
       maxValue: 1,
       orientation: "horizontal" as const,
       step: 0,
+      offsetFromMiddle: 0,
     };
 
     const newState = volumeReducer(state, action);
@@ -110,6 +112,7 @@ describe("volumeReducer", () => {
       minValue: 0,
       orientation: "horizontal" as const,
       step: 0,
+      offsetFromMiddle: 0,
     };
 
     const newState = volumeReducer(state, action);

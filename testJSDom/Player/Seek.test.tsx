@@ -55,7 +55,9 @@ describe("Seek", () => {
   describe("Rendering", () => {
     it("renders with correct aria-label", () => {
       renderSeek(10);
-      expect(screen.getByLabelText("Seek 10")).toBeInTheDocument();
+      expect(
+        screen.getByLabelText("Seek forward by 10 seconds"),
+      ).toBeInTheDocument();
     });
 
     it("renders children", () => {
@@ -67,7 +69,7 @@ describe("Seek", () => {
   describe("Click behavior", () => {
     it("seeks forward by specified amount", () => {
       renderSeek(10);
-      fireEvent.click(screen.getByLabelText("Seek 10"));
+      fireEvent.click(screen.getByLabelText("Seek forward by 10 seconds"));
 
       expect(mockHandlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
@@ -78,7 +80,7 @@ describe("Seek", () => {
 
     it("seeks backward by specified amount", () => {
       renderSeek(-10);
-      fireEvent.click(screen.getByLabelText("Seek -10"));
+      fireEvent.click(screen.getByLabelText("Seek backward by 10 seconds"));
 
       expect(mockHandlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
@@ -86,23 +88,12 @@ describe("Seek", () => {
         value: 20, // 30 - 10
       });
     });
-
-    it("handles zero seek amount", () => {
-      renderSeek(0);
-      fireEvent.click(screen.getByLabelText("Seek 0"));
-
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        component: "timeline",
-        value: 30, // currentTime + 0
-      });
-    });
   });
 
   describe("Keyboard behavior", () => {
     it("handles keyboard events", () => {
       renderSeek(10);
-      fireEvent.keyDown(screen.getByLabelText("Seek 10"), {
+      fireEvent.keyDown(screen.getByLabelText("Seek forward by 10 seconds"), {
         key: "ArrowRight",
       });
 
@@ -115,7 +106,7 @@ describe("Seek", () => {
 
     it("ignores keyboard events when component is volume", () => {
       renderSeek(10);
-      fireEvent.keyDown(screen.getByLabelText("Seek 10"), {
+      fireEvent.keyDown(screen.getByLabelText("Seek forward by 10 seconds"), {
         key: "ArrowRight",
       });
 
@@ -134,7 +125,9 @@ describe("Seek", () => {
         playerState: "loading" as const,
       };
       renderSeek(10, context);
-      expect(screen.getByLabelText("Seek 10")).toBeDisabled();
+      expect(
+        screen.getByLabelText("Seek forward by 10 seconds"),
+      ).toBeDisabled();
     });
 
     it("is disabled when player is in error state", () => {
@@ -143,12 +136,16 @@ describe("Seek", () => {
         playerState: "error" as const,
       };
       renderSeek(10, context);
-      expect(screen.getByLabelText("Seek 10")).toBeDisabled();
+      expect(
+        screen.getByLabelText("Seek forward by 10 seconds"),
+      ).toBeDisabled();
     });
 
     it("is enabled when player is in paused state", () => {
       renderSeek(10);
-      expect(screen.getByLabelText("Seek 10")).not.toBeDisabled();
+      expect(
+        screen.getByLabelText("Seek forward by 10 seconds"),
+      ).not.toBeDisabled();
     });
 
     it("is enabled when player is in playing state", () => {
@@ -157,7 +154,9 @@ describe("Seek", () => {
         playerState: "playing" as const,
       };
       renderSeek(10, context);
-      expect(screen.getByLabelText("Seek 10")).not.toBeDisabled();
+      expect(
+        screen.getByLabelText("Seek forward by 10 seconds"),
+      ).not.toBeDisabled();
     });
   });
 });

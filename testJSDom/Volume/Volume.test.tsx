@@ -17,6 +17,7 @@ const mockVolumeContext = {
   dragState: "idle" as const,
   component: "volume" as const,
   handleSliderAction: vi.fn(),
+  offsetFromMiddle: 0,
 };
 
 describe("Volume", () => {
@@ -85,7 +86,10 @@ describe("Volume", () => {
 
       const drag = screen.getByTestId("drag");
       expect(drag).toBeInTheDocument();
-      expect(drag).toHaveAttribute("aria-label", "Drag to adjust volume");
+      expect(drag).toHaveAttribute(
+        "aria-label",
+        "Drag or use up and down arrow keys to adjust volume",
+      );
     });
   });
 

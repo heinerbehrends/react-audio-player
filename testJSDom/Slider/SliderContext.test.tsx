@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { initialState } from "../../src/Slider/SliderContext";
+import { initialSliderState } from "../../src/Slider/SliderContext";
 
 describe("initialState", () => {
   it("has correct default values", () => {
-    expect(initialState).toEqual({
+    expect(initialSliderState).toEqual({
       sliderStart: 0,
       sliderLength: 0,
       value: 1,
@@ -15,6 +15,7 @@ describe("initialState", () => {
       handleSliderAction: expect.any(Function),
       step: 0,
       component: "timeline",
+      offsetFromMiddle: 0,
     });
   });
 });

@@ -16,6 +16,7 @@ const mockContextValue: SliderContext = {
   component: "playbackRate" as const,
   handleSliderAction: vi.fn(),
   dragState: "idle" as const,
+  offsetFromMiddle: 0,
 };
 // Mock the provider to capture prop values
 vi.mock("../../src/PlaybackRate/PlaybackRateProvider", () => ({
@@ -146,7 +147,7 @@ describe("PlaybackRateSlider", () => {
       expect(screen.getByTestId("drag-button")).toBeInTheDocument();
       expect(screen.getByTestId("drag-button")).toHaveAttribute(
         "aria-label",
-        "Drag to seek",
+        "Drag or use > and < and ] and [ keys to adjust playback rate",
       );
     });
   });

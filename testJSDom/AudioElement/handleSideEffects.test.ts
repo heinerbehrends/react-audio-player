@@ -182,26 +182,7 @@ describe("handleSideEffect", () => {
     expect(audioElement.currentTime).toBe(100); // 50% of maxValue 200
   });
 
-  it("should handle DRAG_END action for volume", () => {
-    handleSideEffect(
-      {
-        type: "DRAG_END",
-        component: "volume",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
-        maxValue: 1,
-        minValue: 0,
-        step: 0,
-        offsetFromMiddle: 0,
-      },
-      audioElement,
-    );
-    expect(audioElement.volume).toBe(0.5); // 50% of maxValue 1
-  });
-
-  it("should ignore DRAG_END action for playback rate", () => {
+  it("should ignore DRAG_END action for playback rate and volume", () => {
     handleSideEffect(
       {
         type: "DRAG_END",
@@ -218,6 +199,22 @@ describe("handleSideEffect", () => {
       audioElement,
     );
     expect(audioElement.playbackRate).toBe(1); // the playback rate should not change
+    handleSideEffect(
+      {
+        type: "DRAG_END",
+        component: "volume",
+        clientXY: 50,
+        sliderLength: 100,
+        sliderStart: 0,
+        orientation: "horizontal",
+        maxValue: 1,
+        minValue: 0,
+        step: 0,
+        offsetFromMiddle: 0,
+      },
+      audioElement,
+    );
+    expect(audioElement.volume).toBe(1); // the volume should not change
   });
 
   it("should change the current time on CHANGE_VALUE action for timeline", () => {

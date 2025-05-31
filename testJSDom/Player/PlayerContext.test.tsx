@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import {
   PlayerContext,
-  initialState,
+  initialPlayerState,
   PlayerState,
   VolumeState,
 } from "../../src/Player/PlayerContext";
@@ -12,7 +12,7 @@ import {
 describe("PlayerContext", () => {
   describe("initialState", () => {
     it("has correct default values", () => {
-      expect(initialState).toEqual({
+      expect(initialPlayerState).toEqual({
         handlePlayerAction: expect.any(Function),
         playerState: "loading",
         showCaptions: true,
@@ -28,7 +28,7 @@ describe("PlayerContext", () => {
     });
 
     it("getPlayerState returns correct default state", () => {
-      const state = initialState.getPlayerState();
+      const state = initialPlayerState.getPlayerState();
       expect(state).toEqual({
         duration: 0,
         currentTime: 0,
@@ -71,7 +71,7 @@ describe("PlayerContext", () => {
       render(
         <PlayerContext.Provider
           value={{
-            ...initialState,
+            ...initialPlayerState,
             handlePlayerAction: mockHandlePlayerAction,
             getPlayerState: mockGetPlayerState,
             playerState: "playing" as PlayerState,
@@ -92,7 +92,7 @@ describe("PlayerContext", () => {
       render(
         <PlayerContext.Provider
           value={{
-            ...initialState,
+            ...initialPlayerState,
             handlePlayerAction: mockHandlePlayerAction,
             getPlayerState: mockGetPlayerState,
           }}
@@ -111,7 +111,7 @@ describe("PlayerContext", () => {
       render(
         <PlayerContext.Provider
           value={{
-            ...initialState,
+            ...initialPlayerState,
             handlePlayerAction: mockHandlePlayerAction,
             getPlayerState: mockGetPlayerState,
           }}

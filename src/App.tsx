@@ -12,42 +12,6 @@ import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 // import { Debug } from "./Debug";
-import { Waveform } from "./Waveform/Waveform";
-import { useWaveformContext } from "./Waveform/WaveformContext";
-
-function WaveformLineChart({ style, ...props }: React.SVGProps<SVGSVGElement>) {
-  const { waveform } = useWaveformContext();
-  const width = 800;
-  const height = 200;
-  const pointWidth = width / (waveform.length - 1);
-
-  // Create a continuous path by connecting points with lines
-  const path = waveform
-    .map((value, index) => {
-      const x = index * pointWidth;
-      const y = height - value * height;
-      return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-    })
-    .join(" ");
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="xMidYMid meet"
-      style={{ width: "100%", height: "auto", ...style }}
-      {...props}
-    >
-      <path
-        d={path}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function App() {
   const searchParams = useUrlParams();
@@ -59,9 +23,6 @@ function App() {
     <AudioPlayer
       audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
     >
-      <Waveform>
-        <WaveformLineChart />
-      </Waveform>
       <Timeline style={{ height: "40px" }}>
         <Timeline.Seek
           style={{

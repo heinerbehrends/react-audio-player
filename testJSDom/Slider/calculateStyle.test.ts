@@ -23,6 +23,7 @@ describe("calculateStyle", () => {
     dragState: "idle",
     component: "timeline",
     handleSliderAction: vi.fn(),
+    offsetFromMiddle: 0,
     ...overrides,
   });
 
@@ -63,7 +64,7 @@ describe("calculateStyle", () => {
       });
       const style = calculateDragStyle(context);
 
-      expect(style.transform).toBe("translate(calc(75px - 20px), 0)");
+      expect(style.transform).toBe("translate(calc(50px - 20px), 0)");
     });
   });
 

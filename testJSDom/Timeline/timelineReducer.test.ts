@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { timelineReducer } from "../../src/Timeline/timelineReducer";
-import { initialState } from "../../src/Slider/SliderContext";
+import { initialSliderState } from "../../src/Slider/SliderContext";
 
 describe("timelineReducer", () => {
   const baseState = {
-    ...initialState,
+    ...initialSliderState,
     component: "timeline" as const,
     sliderStart: 100,
     sliderLength: 200,
@@ -68,6 +68,7 @@ describe("timelineReducer", () => {
       orientation: "horizontal" as const,
       step: 0,
       component: "timeline" as const,
+      offsetFromMiddle: 0,
     };
 
     const newState = timelineReducer(baseState, action);
@@ -87,6 +88,7 @@ describe("timelineReducer", () => {
       maxValue: 1,
       orientation: "horizontal" as const,
       step: 0,
+      offsetFromMiddle: 0,
     };
 
     const newState = timelineReducer(state, action);
@@ -109,6 +111,7 @@ describe("timelineReducer", () => {
       minValue: 0,
       orientation: "horizontal" as const,
       step: 0,
+      offsetFromMiddle: 0,
     };
 
     const newState = timelineReducer(state, action);

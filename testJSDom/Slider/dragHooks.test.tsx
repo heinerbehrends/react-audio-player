@@ -69,6 +69,14 @@ describe("dragHooks", () => {
       const event = {
         clientX: 50,
         clientY: 0,
+        currentTarget: {
+          getBoundingClientRect: () => ({
+            left: 0,
+            width: 40,
+            top: 0,
+            height: 20,
+          }),
+        },
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
@@ -76,6 +84,7 @@ describe("dragHooks", () => {
         type: "DRAG_START",
         ...context,
         clientXY: 50,
+        offsetFromMiddle: 30, // 50 - 0 - 40/2 = 30
       });
     });
 
@@ -95,6 +104,14 @@ describe("dragHooks", () => {
       const event = {
         clientX: 50,
         clientY: 0,
+        currentTarget: {
+          getBoundingClientRect: () => ({
+            left: 0,
+            width: 40,
+            top: 0,
+            height: 20,
+          }),
+        },
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
@@ -103,6 +120,7 @@ describe("dragHooks", () => {
         type: "DRAG_START",
         ...context,
         clientXY: 50,
+        offsetFromMiddle: 30, // 50 - 0 - 40/2 = 30
       });
     });
   });

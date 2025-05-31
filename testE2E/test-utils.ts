@@ -37,7 +37,9 @@ export async function getTimelineState(page: Page) {
 
 // Common pattern: Getting button position
 export async function getButtonPosition(page: Page) {
-  const button = page.getByLabel("Drag to seek");
+  const button = page.getByLabel(
+    "Drag or use left and right arrow keys to seek",
+  );
   const boundingBox = await button.boundingBox();
   return boundingBox?.x ?? 0;
 }
