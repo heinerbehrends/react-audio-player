@@ -4,39 +4,84 @@ import {
   AudioContextType,
 } from "../src/AudioElement/AudioContext";
 import { PlayerContextType } from "../src/Player/PlayerContext";
-
 import { PlayerContext } from "../src/Player/PlayerContext";
 
-export function createContextWrapper({
-  audioContext,
-  playerContext,
-}: {
-  audioContext: AudioContextType;
+type CreateContextWrapperArgs = {
   playerContext: PlayerContextType;
-}) {
+  audioContext: AudioContextType;
+};
+
+export function createContextWrapper({
+  playerContext,
+  audioContext,
+}: CreateContextWrapperArgs): React.FC<{ children: React.ReactNode }> {
   return ({ children }: { children: React.ReactNode }) => (
-    <PlayerContext.Provider value={playerContext}>
-      <AudioContext.Provider value={audioContext}>
+    <AudioContext.Provider value={audioContext}>
+      <PlayerContext.Provider value={playerContext}>
         {children}
-      </AudioContext.Provider>
-    </PlayerContext.Provider>
+      </PlayerContext.Provider>
+    </AudioContext.Provider>
   );
 }
+
+// export function createContextWrapper({
+//   audioContext,
+//   playerContext,
+// }: {
+//   audioContext: AudioContextType;
+//   playerContext: PlayerContextType;
+// }) {
+//   return ({ children }: { children: React.ReactNode }) => (
+//     <PlayerContext.Provider value={playerContext}>
+//       <AudioContext.Provider value={audioContext}>
+//         {children}
+//       </AudioContext.Provider>
+//     </PlayerContext.Provider>
+//   );
+// }
 
 export function renderWithContexts({
   playerContext,
   audioContext,
-  children,
+  component,
 }: {
   playerContext: PlayerContextType;
   audioContext: AudioContextType;
-  children: React.ReactNode;
+  component: React.ReactNode;
+}) {
+  return render(
+    <AudioContext.Provider value={audioContext}>
+      <PlayerContext.Provider value={playerContext}>
+        {component}
+      </PlayerContext.Provider>
+    </AudioContext.Provider>,
+  );
+}
+
+export function renderWithPlayerContext({
+  playerContext,
+  component,
+}: {
+  playerContext: PlayerContextType;
+  component: React.ReactNode;
 }) {
   return render(
     <PlayerContext.Provider value={playerContext}>
-      <AudioContext.Provider value={audioContext}>
-        {children}
-      </AudioContext.Provider>
+      {component}
     </PlayerContext.Provider>,
+  );
+}
+
+export function renderWithAudioContext({
+  audioContext,
+  component,
+}: {
+  audioContext: AudioContextType;
+  component: React.ReactNode;
+}) {
+  return render(
+    <AudioContext.Provider value={audioContext}>
+      {component}
+    </AudioContext.Provider>,
   );
 }

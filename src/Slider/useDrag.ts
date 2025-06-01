@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { AudioContext } from "../AudioElement/AudioContext";
-import { SliderContext } from "./SliderContext";
+import { SliderContextType } from "./SliderContext";
 
 export function useDrag({
   dragState,
@@ -8,7 +8,7 @@ export function useDrag({
   onPointerMove,
   onPointerCancel,
 }: {
-  dragState: SliderContext["dragState"];
+  dragState: SliderContextType["dragState"];
   onPointerUp: (event: PointerEvent | TouchEvent) => void;
   onPointerMove: (event: PointerEvent | TouchEvent) => void;
   onPointerCancel: () => void;

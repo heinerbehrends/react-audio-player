@@ -1,20 +1,21 @@
 import { useMemo, useReducer, memo } from "react";
-import { SliderContext } from "../Slider/SliderContext";
+import { SliderContextType } from "../Slider/SliderContext";
 import { PlaybackRateContext } from "./PlaybackRateContext";
 import { playbackRateReducer } from "./playbackRateReducer";
 import { useAttachSliderCallback } from "../Slider/useAttachSliderCallback";
 
-const initialState: Omit<SliderContext, "step" | "minValue" | "maxValue"> = {
-  sliderStart: 0,
-  sliderLength: 0,
-  value: 1,
-  orientation: "horizontal",
-  clientXY: 0,
-  dragState: "idle",
-  component: "playbackRate",
-  handleSliderAction: () => {},
-  offsetFromMiddle: 0,
-};
+const initialState: Omit<SliderContextType, "step" | "minValue" | "maxValue"> =
+  {
+    sliderStart: 0,
+    sliderLength: 0,
+    value: 1,
+    orientation: "horizontal",
+    clientXY: 0,
+    dragState: "idle",
+    component: "playbackRate",
+    handleSliderAction: () => {},
+    offsetFromMiddle: 0,
+  };
 
 type PlaybackRateProviderProps = {
   children: React.ReactNode;

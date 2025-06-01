@@ -1,40 +1,42 @@
-import { type SliderContext } from "../src/Slider/SliderContext";
+import { type SliderContextType } from "../src/Slider/SliderContext";
 import { type AudioContextType } from "../src/AudioElement/AudioContext";
 import { vi } from "vitest";
+import React from "react";
+import { PlayerContextType } from "../src/Player/PlayerContext";
 
 // Default values for slider context
-const DEFAULT_SLIDER_CONTEXT = {
-  value: 0.5,
-  minValue: 0,
-  maxValue: 1,
-  step: 0.1,
+const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
+  value: 1,
+  minValue: 0.5,
+  maxValue: 4,
+  step: 0.25,
   orientation: "horizontal" as const,
   sliderLength: 100,
-  sliderStart: 0,
+  sliderStart: 10,
   clientXY: 50,
   dragState: "idle" as const,
   component: "timeline" as const,
-  offsetFromMiddle: 0,
+  offsetFromMiddle: 10,
+  handleSliderAction: vi.fn(),
 };
 
 // Default values for player context
-const DEFAULT_PLAYER_CONTEXT = {
+const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   playerState: "paused" as const,
   showCaptions: false,
   isMuted: false,
-  isPlaying: false,
   playbackRate: 1,
   volumeState: "high" as const,
   timeDisplay: "elapsed" as const,
   audioFiles: [] as AudioFile[],
   cues: [],
+  handlePlayerAction: vi.fn(),
   unmuteVolumeRef: { current: 0 },
   getPlayerState: () => ({
-    handlePlayerAction: vi.fn(),
-    playerState: "high" as const,
-    showCaptions: false,
-    isMuted: false,
-    isPlaying: false,
+    handlePlayerAction: DEFAULT_PLAYER_CONTEXT.handlePlayerAction,
+    playerState: DEFAULT_PLAYER_CONTEXT.playerState,
+    showCaptions: DEFAULT_PLAYER_CONTEXT.showCaptions,
+    isMuted: DEFAULT_PLAYER_CONTEXT.isMuted,
     duration: 0,
     currentTime: 0,
     volume: 0.5,
@@ -45,19 +47,27 @@ const DEFAULT_PLAYER_CONTEXT = {
 };
 
 // Default values for audio context
-const DEFAULT_AUDIO_CONTEXT = {
+const DEFAULT_AUDIO_CONTEXT: AudioContextType = {
   audioElementRef: { current: null },
   handleSideEffect: vi.fn(),
   timelineCallbackRef: { current: { handleTimelineAction: vi.fn() } },
   volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
 };
+
+const DEFAULT_AUDIO_ELEMENT: HTMLAudioElement = {
+  currentTime: 0,
+  volume: 1,
+  playbackRate: 1,
+  duration: 100,
+} as HTMLAudioElement;
+
 /**
  * Creates a slider context with optional overrides
  */
 export function createSliderContext(
-  overrides: Partial<SliderContext> = {},
-): SliderContext {
+  overrides: Partial<SliderContextType> = {},
+): SliderContextType {
   return {
     ...DEFAULT_SLIDER_CONTEXT,
     handleSliderAction: vi.fn(),
@@ -90,6 +100,14 @@ export function createPlayerContext({
   };
 }
 
+export function createAudioElement(
+  overrides: Partial<HTMLAudioElement> = {},
+): HTMLAudioElement {
+  return {
+    ...DEFAULT_AUDIO_ELEMENT,
+    ...overrides,
+  };
+}
 /**
  * Creates a mock pointer event with optional overrides
  */
@@ -140,3 +158,46 @@ type AudioFile = {
   src: string;
   captionSrc?: string;
 };
+
+type MockProviderProps<T> = {
+  children: React.ReactNode;
+} & Partial<T>;
+
+/**
+ * Creates a mock provider component for testing
+ */
+export function createMockProvider<T extends object>(
+  context: T,
+  displayName: string,
+): React.FC<MockProviderProps<T>> {
+  const MockProvider = ({ children, ...props }: MockProviderProps<T>) => {
+    return React.createElement(
+      "div",
+      {
+        "data-testid": `mock-${displayName}`,
+        "data-props": JSON.stringify({ ...context, ...props }),
+      },
+      children,
+    );
+  };
+  MockProvider.displayName = displayName;
+  return MockProvider;
+}
+
+/**
+ * Creates mock providers for all contexts
+ */
+export const mockProviders = {
+  PlayerProvider: createMockProvider(createPlayerContext(), "PlayerProvider"),
+  SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),
+  AudioProvider: createMockProvider(createAudioContext(), "AudioProvider"),
+} as const;
+
+// Example usage:
+// const wrapper = ({ children }) => (
+//   <mockProviders.PlayerProvider>
+//     <mockProviders.SliderProvider>
+//       {children}
+//     </mockProviders.SliderProvider>
+//   </mockProviders.PlayerProvider>
+// );

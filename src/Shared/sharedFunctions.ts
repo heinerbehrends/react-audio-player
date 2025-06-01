@@ -1,11 +1,11 @@
-import type { SliderContext, SliderEvent } from "../Slider/SliderContext";
+import type { SliderContextType, SliderEvent } from "../Slider/SliderContext";
 export function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) <= 0.001;
 }
 
 type CalculateValueArgs = Optional<
   Omit<
-    SliderContext,
+    SliderContextType,
     | "handleSliderAction"
     | "step"
     | "component"
@@ -35,7 +35,7 @@ export function calculateValue({
 }
 
 type CalculateSteppedValueArgs = Omit<
-  SliderContext,
+  SliderContextType,
   | "handleSliderAction"
   | "component"
   | "dragState"
@@ -101,7 +101,7 @@ export function getOffset({
   maxValue = 1,
   orientation = "horizontal",
 }: Optional<
-  Omit<SliderContext, "handleSliderAction" | "sliderStart">,
+  Omit<SliderContextType, "handleSliderAction" | "sliderStart">,
   "step" | "minValue" | "maxValue" | "orientation" | "offsetFromMiddle"
 >): number {
   const range = maxValue - minValue;

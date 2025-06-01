@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useHandleRef } from "./useHandleRef";
 import { useTimelineAriaAttributes } from "../Timeline/useTimelineAria";
 import { useSetValue } from "./dragHooks";
-import { SliderContext } from "./SliderContext";
+import { SliderContextType } from "./SliderContext";
 import {
   progressStyles,
   containerStyles,
@@ -11,7 +11,7 @@ import {
 
 type SetSliderValueProps = React.HTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;
-  sliderContext: SliderContext;
+  sliderContext: SliderContextType;
 };
 
 export function SetSliderValue({

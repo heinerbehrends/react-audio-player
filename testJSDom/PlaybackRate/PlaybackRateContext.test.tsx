@@ -1,7 +1,8 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { PlaybackRateContext } from "../../src/PlaybackRate/PlaybackRateContext";
 import { render, screen } from "@testing-library/react";
+import { createSliderContext } from "../testUtils";
 
 describe("PlaybackRateContext", () => {
   it("should be created with the expected default values", () => {
@@ -33,7 +34,7 @@ describe("PlaybackRateContext", () => {
   it("should allow context values to be overridden with Provider", () => {
     // Create a test component with a provider
     const TestComponent = () => {
-      const testValue = {
+      const testValue = createSliderContext({
         sliderStart: 10,
         sliderLength: 100,
         value: 2,
@@ -41,11 +42,9 @@ describe("PlaybackRateContext", () => {
         maxValue: 5,
         step: 0.5,
         clientXY: 0,
-        dragState: "idle" as const,
-        orientation: "horizontal" as const,
         component: "playbackRate" as const,
         handleSliderAction: vi.fn(),
-      };
+      });
 
       return (
         <PlaybackRateContext.Provider value={testValue}>

@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from "react";
-import { SliderContext } from "./SliderContext";
+import { SliderContextType } from "./SliderContext";
 
-export function useHandleRef(context: SliderContext) {
+export function useHandleRef(context: SliderContextType) {
   const { handleSliderAction: handleTimelineAction, orientation } = context;
   const observerRef = useRef<ResizeObserver>();
 

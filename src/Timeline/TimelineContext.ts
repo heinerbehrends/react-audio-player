@@ -1,4 +1,5 @@
 import { createContext } from "react";
-import { SliderContext, initialSliderState } from "../Slider/SliderContext";
+import { SliderContextType, initialSliderState } from "../Slider/SliderContext";
 
-export const TimelineContext = createContext<SliderContext>(initialSliderState);
+export const TimelineContext =
+  createContext<SliderContextType>(initialSliderState);

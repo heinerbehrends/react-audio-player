@@ -6,12 +6,12 @@ import {
   containerStyles,
   buttonStyles,
 } from "../../src/Slider/calculateStyle";
-import type { SliderContext } from "../../src/Slider/SliderContext";
+import type { SliderContextType } from "../../src/Slider/SliderContext";
 
 describe("calculateStyle", () => {
   const createSliderContext = (
-    overrides: Partial<SliderContext> = {},
-  ): SliderContext => ({
+    overrides: Partial<SliderContextType> = {},
+  ): SliderContextType => ({
     value: 0.5,
     minValue: 0,
     maxValue: 1,

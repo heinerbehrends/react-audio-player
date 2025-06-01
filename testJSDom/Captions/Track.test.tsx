@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { Track } from "../../src/Captions/Track";
-import React from "react";
 import * as cueChangeModule from "../../src/Captions/captionsHooks";
 
 // Set up the spy before tests
@@ -46,7 +45,7 @@ describe("Track", () => {
     render(<Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />);
 
     const useCueChangeMock = vi.mocked(cueChangeModule.useCueChange);
-    const trackRef = useCueChangeMock.mock.calls[0][0].trackRef;
+    const trackRef = useCueChangeMock.mock.calls[0]![0].trackRef;
 
     // The ref should be properly connected to the track element
     expect(trackRef.current).toBeInstanceOf(HTMLTrackElement);
@@ -71,8 +70,8 @@ describe("Track", () => {
 
     // Each Track should create its own ref
     expect(useCueChangeMock).toHaveBeenCalledTimes(2);
-    const firstRef = useCueChangeMock.mock.calls[0][0].trackRef;
-    const secondRef = useCueChangeMock.mock.calls[1][0].trackRef;
+    const firstRef = useCueChangeMock.mock.calls[0]![0].trackRef;
+    const secondRef = useCueChangeMock.mock.calls[1]![0].trackRef;
 
     expect(firstRef).not.toBe(secondRef);
   });

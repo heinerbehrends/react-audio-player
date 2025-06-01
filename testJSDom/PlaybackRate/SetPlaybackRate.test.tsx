@@ -1,29 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import {
   SetPlaybackRate,
   CurrentIndicator,
   RateDisplay,
 } from "../../src/PlaybackRate/SetPlaybackRate";
-import { PlayerContext } from "../../src/Player/PlayerContext";
-import React from "react";
 import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
 import * as isDisabledModule from "../../src/Shared/useIsDisabled";
+import { createPlayerContext } from "../testUtils";
+import { renderWithPlayerContext } from "../testComponents";
 
-const defaultContext = {
-  handlePlayerAction: vi.fn(),
-  playbackRate: 1,
-  playerState: "paused" as const,
-  showCaptions: false,
-  isMuted: false,
-  volumeState: "high" as const,
-  unmuteVolumeRef: { current: 0.7 },
-  getPlayerState: vi.fn(),
-  timeDisplay: "elapsed" as const,
-  audioFiles: [],
-  cues: [],
-};
+const defaultContext = createPlayerContext();
 
 describe("SetPlaybackRate", () => {
   const mockHandlePlayerAction = vi.fn();
@@ -47,11 +35,10 @@ describe("SetPlaybackRate", () => {
       playbackRate,
     };
 
-    return render(
-      <PlayerContext.Provider value={playerContext}>
-        <SetPlaybackRate rate={rate}>{rate}x</SetPlaybackRate>
-      </PlayerContext.Provider>,
-    );
+    return renderWithPlayerContext({
+      playerContext,
+      component: <SetPlaybackRate rate={rate}>{rate}x</SetPlaybackRate>,
+    });
   };
 
   it("renders a button with correct text", () => {
@@ -100,14 +87,13 @@ describe("SetPlaybackRate", () => {
   });
 
   it("accepts and applies additional props", () => {
-    render(
-      <PlayerContext.Provider
-        value={{
-          ...defaultContext,
-          handlePlayerAction: mockHandlePlayerAction,
-          playbackRate: 1,
-        }}
-      >
+    renderWithPlayerContext({
+      playerContext: {
+        ...defaultContext,
+        handlePlayerAction: mockHandlePlayerAction,
+        playbackRate: 1,
+      },
+      component: (
         <SetPlaybackRate
           rate={1.5}
           data-testid="custom-button"
@@ -115,8 +101,8 @@ describe("SetPlaybackRate", () => {
         >
           1.5x
         </SetPlaybackRate>
-      </PlayerContext.Provider>,
-    );
+      ),
+    });
 
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute("data-testid", "custom-button");
@@ -130,13 +116,14 @@ describe("CurrentIndicator", () => {
   };
 
   it("renders children when rate matches current playback rate", () => {
-    render(
-      <PlayerContext.Provider value={testContext}>
+    renderWithPlayerContext({
+      playerContext: testContext,
+      component: (
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
         </CurrentIndicator>
-      </PlayerContext.Provider>,
-    );
+      ),
+    });
 
     const indicator = screen.getByTestId("indicator");
     expect(indicator).toBeInTheDocument();
@@ -145,13 +132,14 @@ describe("CurrentIndicator", () => {
   });
 
   it("hides children when rate doesn't match current playback rate", () => {
-    render(
-      <PlayerContext.Provider value={testContext}>
+    renderWithPlayerContext({
+      playerContext: testContext,
+      component: (
         <CurrentIndicator rate={2}>
           <span data-testid="indicator">Current</span>
         </CurrentIndicator>
-      </PlayerContext.Provider>,
-    );
+      ),
+    });
 
     const indicator = screen.getByTestId("indicator");
     expect(indicator).toBeInTheDocument();
@@ -160,18 +148,17 @@ describe("CurrentIndicator", () => {
   });
 
   it("handles close but not exact rate values", () => {
-    render(
-      <PlayerContext.Provider
-        value={{
-          ...testContext,
-          playbackRate: 1.001, // Very close to 1
-        }}
-      >
+    renderWithPlayerContext({
+      playerContext: {
+        ...testContext,
+        playbackRate: 1.001, // Very close to 1
+      },
+      component: (
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
         </CurrentIndicator>
-      </PlayerContext.Provider>,
-    );
+      ),
+    });
 
     const indicator = screen.getByTestId("indicator");
     expect(indicator).toBeVisible();
@@ -180,49 +167,41 @@ describe("CurrentIndicator", () => {
 
 describe("RateDisplay", () => {
   it("displays the current playback rate with 'x' suffix", () => {
-    render(
-      <PlayerContext.Provider
-        value={{
-          ...defaultContext,
-          playbackRate: 1.5,
-        }}
-      >
-        <RateDisplay />
-      </PlayerContext.Provider>,
-    );
+    renderWithPlayerContext({
+      playerContext: {
+        ...defaultContext,
+        playbackRate: 1.5,
+      },
+      component: <RateDisplay />,
+    });
 
     const display = screen.getByLabelText("Current playback rate");
     expect(display).toHaveTextContent("1.5x");
   });
 
   it("rounds the playback rate to 2 decimal places", () => {
-    render(
-      <PlayerContext.Provider
-        value={{
-          ...defaultContext,
-          playbackRate: 1.75555,
-        }}
-      >
-        <RateDisplay />
-      </PlayerContext.Provider>,
-    );
+    renderWithPlayerContext({
+      playerContext: {
+        ...defaultContext,
+        playbackRate: 1.755,
+      },
+      component: <RateDisplay />,
+    });
 
     const display = screen.getByLabelText("Current playback rate");
     expect(display).toHaveTextContent("1.76x");
   });
 
   it("accepts and applies additional props", () => {
-    render(
-      <PlayerContext.Provider
-        value={{
-          ...defaultContext,
-          playbackRate: 1,
-        }}
-      >
+    renderWithPlayerContext({
+      playerContext: {
+        ...defaultContext,
+        playbackRate: 1.755,
+      },
+      component: (
         <RateDisplay data-testid="rate-display" className="custom-display" />
-      </PlayerContext.Provider>,
-    );
-
+      ),
+    });
     const display = screen.getByLabelText("Current playback rate");
     expect(display).toHaveAttribute("data-testid", "rate-display");
     expect(display).toHaveClass("custom-display");

@@ -1,11 +1,11 @@
 import { SliderProviderAction } from "../Slider/SliderContext";
-import { SliderContext } from "../Slider/SliderContext";
+import { SliderContextType } from "../Slider/SliderContext";
 import { getOffset } from "../Shared/sharedFunctions";
 
 export function playbackRateReducer(
-  state: SliderContext,
+  state: SliderContextType,
   action: SliderProviderAction,
-): SliderContext {
+): SliderContextType {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
       if (action.component !== "playbackRate") {

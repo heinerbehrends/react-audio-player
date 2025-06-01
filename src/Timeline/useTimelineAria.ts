@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { SliderContext } from "../Slider/SliderContext";
+import { SliderContextType } from "../Slider/SliderContext";
 
-export function useTimelineAriaAttributes(context: SliderContext) {
+export function useTimelineAriaAttributes(context: SliderContextType) {
   const { getPlayerState } = useContext(PlayerContext);
   const { currentTime, duration } = getPlayerState();
 

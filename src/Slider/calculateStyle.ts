@@ -1,8 +1,8 @@
-import { SliderContext } from "./SliderContext";
+import { SliderContextType } from "./SliderContext";
 import { getOffset } from "../Shared/sharedFunctions";
 
 export function calculateDragStyle(
-  context: SliderContext,
+  context: SliderContextType,
 ): React.CSSProperties {
   const { orientation } = context;
   const offset = getOffset(context);
@@ -20,7 +20,7 @@ export function calculateDragStyle(
 }
 
 export function calculateProgressStyle(
-  context: SliderContext,
+  context: SliderContextType,
 ): React.CSSProperties {
   const { orientation } = context;
   const progress = getProgress(context);
@@ -33,7 +33,7 @@ export function calculateProgressStyle(
   };
 }
 
-function getProgress(context: SliderContext): number {
+function getProgress(context: SliderContextType): number {
   if (context.sliderLength === 0) {
     return 0;
   }

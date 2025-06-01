@@ -1,14 +1,14 @@
 import { calculateSliderValue } from "../Shared/sharedFunctions";
 import type {
-  SliderContext,
+  SliderContextType,
   SliderContextAction,
 } from "../Slider/SliderContext";
 import { getOffset } from "../Shared/sharedFunctions";
 
 export function timelineReducer(
-  state: SliderContext,
+  state: SliderContextType,
   action: SliderContextAction,
-): SliderContext {
+): SliderContextType {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
       if (action.component !== "timeline") {

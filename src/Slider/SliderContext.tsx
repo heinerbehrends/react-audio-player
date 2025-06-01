@@ -103,14 +103,14 @@ export type SliderData = {
   component: SliderComponent;
 };
 
-export type SliderContext = SliderData & {
+export type SliderContextType = SliderData & {
   value: number;
   dragState: "idle" | "dragging";
   offsetFromMiddle: number;
   handleSliderAction: (action: SliderProviderAction) => void;
 };
 
-export const initialSliderState: SliderContext = {
+export const initialSliderState: SliderContextType = {
   sliderStart: 0,
   sliderLength: 0,
   value: 1,

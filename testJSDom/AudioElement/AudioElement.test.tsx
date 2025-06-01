@@ -36,7 +36,7 @@ describe("AudioElement", () => {
     renderWithContexts({
       playerContext: createPlayerContext(),
       audioContext: nullCallbacksContext,
-      children: <AudioElement />,
+      component: <AudioElement />,
     });
     const audio = screen.getByLabelText("audio player");
 
@@ -55,7 +55,7 @@ describe("AudioElement", () => {
     renderWithContexts({
       playerContext: noAudioContext,
       audioContext: createAudioContext(),
-      children: <AudioElement />,
+      component: <AudioElement />,
     });
     const audio = screen.getByLabelText("audio player");
 
@@ -71,7 +71,7 @@ describe("AudioElement", () => {
     const { rerender } = renderWithContexts({
       playerContext: createPlayerContext(),
       audioContext: contextWithRef,
-      children: <AudioElement />,
+      component: <AudioElement />,
     });
 
     const audio = screen.getByLabelText("audio player");
@@ -105,7 +105,7 @@ describe("AudioElement", () => {
     renderWithContexts({
       playerContext: contextWithCaptions,
       audioContext: createAudioContext(),
-      children: <AudioElement />,
+      component: <AudioElement />,
     });
     const track = screen.getByTestId("caption-track");
     expect(track).toBeInTheDocument();
@@ -122,7 +122,7 @@ describe("AudioElement", () => {
     renderWithContexts({
       playerContext: contextWithAudioSrc,
       audioContext: createAudioContext(),
-      children: <AudioElement />,
+      component: <AudioElement />,
     });
     const audio = screen.getByLabelText("audio player");
     expect(audio).toHaveAttribute("src", "test-audio.mp3");
@@ -132,7 +132,7 @@ describe("AudioElement", () => {
     renderWithContexts({
       playerContext: createPlayerContext(),
       audioContext: createAudioContext(),
-      children: <AudioElement />,
+      component: <AudioElement />,
     });
     const audio = screen.getByLabelText("audio player");
     expect(audio).toHaveAttribute("aria-label", "audio player");

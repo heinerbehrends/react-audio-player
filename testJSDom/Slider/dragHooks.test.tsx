@@ -8,11 +8,10 @@ import {
   useSetValue,
 } from "../../src/Slider/dragHooks";
 import { PlayerContext } from "../../src/Player/PlayerContext";
-import React, { type PointerEvent } from "react";
+import type { PointerEvent } from "react";
 import { createSliderContext, createPlayerContext } from "../testUtils";
 
 describe("dragHooks", () => {
-  // Reset all mocks before each test
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -181,7 +180,7 @@ describe("dragHooks", () => {
       expect(context.handleSliderAction).toHaveBeenNthCalledWith(2, {
         type: "UPDATE_UI_VALUE",
         component: "timeline",
-        value: context.value,
+        value: expect.closeTo(1.9, 5),
       });
       expect(context.handleSliderAction).toHaveBeenNthCalledWith(3, {
         type: "DRAG_START",

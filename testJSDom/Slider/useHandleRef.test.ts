@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useHandleRef } from "../../src/Slider/useHandleRef";
-import { SliderContext } from "../../src/Slider/SliderContext";
+import { SliderContextType } from "../../src/Slider/SliderContext";
 
 const mockResizeObserver = vi.fn(() => ({
   observe: vi.fn(),
@@ -19,7 +19,7 @@ afterAll(() => {
 });
 
 describe("useHandleRef", () => {
-  const createSliderContext = (overrides = {}): SliderContext => ({
+  const createSliderContext = (overrides = {}): SliderContextType => ({
     handleSliderAction: vi.fn(),
     orientation: "horizontal" as const,
     ...overrides,

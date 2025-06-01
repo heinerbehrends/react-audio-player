@@ -5,7 +5,7 @@ import { PlaybackRateProvider } from "../../src/PlaybackRate/PlaybackRateProvide
 import { PlaybackRateContext } from "../../src/PlaybackRate/PlaybackRateContext";
 import React, { useContext } from "react";
 import * as attachSliderModule from "../../src/Slider/useAttachSliderCallback";
-import { SliderContext } from "../../src/Slider/SliderContext";
+import { SliderContextType } from "../../src/Slider/SliderContext";
 
 // Create a test component to access context values
 const TestConsumer = ({
@@ -13,7 +13,7 @@ const TestConsumer = ({
   onMount,
 }: {
   testId?: string;
-  onMount?: (context: SliderContext) => void;
+  onMount?: (context: SliderContextType) => void;
 }) => {
   const context = useContext(PlaybackRateContext);
 
@@ -143,7 +143,7 @@ describe("PlaybackRateProvider", () => {
     );
 
     expect(renderSpy).toHaveBeenCalledTimes(1);
-    const firstContext = renderSpy.mock.calls[0][0];
+    const firstContext = renderSpy.mock.calls[0]![0];
 
     // Force re-render
     rerender(
@@ -153,7 +153,7 @@ describe("PlaybackRateProvider", () => {
     );
 
     expect(renderSpy).toHaveBeenCalledTimes(2);
-    const secondContext = renderSpy.mock.calls[1][0];
+    const secondContext = renderSpy.mock.calls[1]![0];
 
     // Value should have the same properties
     expect(Object.keys(secondContext)).toEqual(Object.keys(firstContext));

@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DragButton } from "../../src/Slider/DragButton";
-import { SliderContext } from "../../src/Slider/SliderContext";
+import { SliderContextType } from "../../src/Slider/SliderContext";
 import React from "react";
 
 describe("DragButton", () => {
   const createSliderContext = (
-    overrides: Partial<SliderContext> = {},
-  ): SliderContext => ({
+    overrides: Partial<SliderContextType> = {},
+  ): SliderContextType => ({
     value: 0.5,
     minValue: 0,
     maxValue: 1,

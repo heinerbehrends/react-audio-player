@@ -1,25 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { playbackRateReducer } from "../../src/PlaybackRate/playbackRateReducer";
 import {
-  SliderContext,
+  SliderContextType,
   SliderProviderAction,
 } from "../../src/Slider/SliderContext";
+import { createSliderContext } from "../testUtils";
 
 describe("playbackRateReducer", () => {
   // Default state used in tests
-  const defaultState: SliderContext = {
-    sliderStart: 10,
-    sliderLength: 100,
-    value: 1,
-    orientation: "horizontal",
+  const defaultState: SliderContextType = createSliderContext({
     clientXY: 0,
-    dragState: "idle",
     component: "playbackRate",
-    minValue: 0.5,
-    maxValue: 4,
-    step: 0.25,
     handleSliderAction: () => {},
-  };
+  });
 
   describe("UPDATE_UI_VALUE action", () => {
     it("should update value when component is playbackRate", () => {
@@ -72,14 +65,8 @@ describe("playbackRateReducer", () => {
     it("should set dragState to dragging and update clientXY", () => {
       const action = {
         type: "DRAG_START",
+        ...defaultState,
         clientXY: 50,
-        component: "playbackRate",
-        orientation: "horizontal",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
-        sliderStart: 10,
-        sliderLength: 100,
       } as const;
 
       const newState = playbackRateReducer(defaultState, action);
@@ -97,14 +84,8 @@ describe("playbackRateReducer", () => {
 
       const action = {
         type: "DRAG_START",
+        ...defaultState,
         clientXY: 50,
-        component: "playbackRate",
-        orientation: "horizontal",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
-        sliderStart: 10,
-        sliderLength: 100,
       } as const;
 
       const newState = playbackRateReducer(draggingState, action);
@@ -117,14 +98,8 @@ describe("playbackRateReducer", () => {
     it("should return state unchanged", () => {
       const action = {
         type: "DRAG",
+        ...defaultState,
         clientXY: 75,
-        component: "playbackRate",
-        orientation: "horizontal",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
-        sliderStart: 10,
-        sliderLength: 100,
       } as const;
 
       const newState = playbackRateReducer(defaultState, action);
@@ -143,14 +118,8 @@ describe("playbackRateReducer", () => {
 
       const action = {
         type: "DRAG_END",
-        component: "playbackRate",
+        ...defaultState,
         clientXY: 75,
-        sliderLength: 100,
-        sliderStart: 10,
-        orientation: "horizontal",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
       } as const;
 
       const newState = playbackRateReducer(draggingState, action);
@@ -171,14 +140,9 @@ describe("playbackRateReducer", () => {
 
       const action = {
         type: "DRAG_END",
+        ...defaultState,
         component: "timeline",
         clientXY: 75,
-        sliderLength: 100,
-        sliderStart: 10,
-        orientation: "horizontal",
-        minValue: 0,
-        maxValue: 100,
-        step: 1,
       } as const;
 
       const newState = playbackRateReducer(draggingState, action);
@@ -189,14 +153,8 @@ describe("playbackRateReducer", () => {
     it("should ignore DRAG_END when not dragging", () => {
       const action = {
         type: "DRAG_END",
-        component: "playbackRate",
+        ...defaultState,
         clientXY: 75,
-        sliderLength: 100,
-        sliderStart: 10,
-        orientation: "horizontal",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
       } as const;
 
       const newState = playbackRateReducer(defaultState, action);
@@ -266,14 +224,9 @@ describe("playbackRateReducer", () => {
 
       const action = {
         type: "DRAG_START",
+        ...defaultState,
         clientXY: 50,
-        component: "playbackRate",
-        orientation: "vertical",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
-        sliderStart: 10,
-        sliderLength: 100,
+        offsetFromMiddle: 0,
       } as const;
 
       const newState = playbackRateReducer(verticalState, action);
@@ -292,14 +245,9 @@ describe("playbackRateReducer", () => {
 
       const action = {
         type: "DRAG_START",
+        ...defaultState,
         clientXY: 50,
-        component: "playbackRate",
-        orientation: "vertical",
-        minValue: 0.5,
-        maxValue: 4,
-        step: 0.25,
-        sliderStart: 10,
-        sliderLength: 100,
+        offsetFromMiddle: 0,
       } as const;
 
       const newState = playbackRateReducer(steppedState, action);

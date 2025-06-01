@@ -2,7 +2,7 @@ import { useReducer, useMemo, memo } from "react";
 import { timelineReducer } from "./timelineReducer";
 import {
   initialSliderState,
-  type SliderContext,
+  type SliderContextType,
 } from "../Slider/SliderContext";
 import { useAttachSliderCallback } from "../Slider/useAttachSliderCallback";
 import { TimelineContext } from "./TimelineContext";
@@ -22,7 +22,7 @@ export const TimelineProvider = memo(function TimelineProvider({
     dispatch,
   });
 
-  const value: SliderContext = useMemo(() => {
+  const value: SliderContextType = useMemo(() => {
     return {
       ...state,
       handleSliderAction: handleTimelineAction,

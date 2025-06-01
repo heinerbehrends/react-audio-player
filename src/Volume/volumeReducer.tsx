@@ -1,13 +1,13 @@
 import type {
-  SliderContext,
+  SliderContextType,
   SliderContextAction,
 } from "../Slider/SliderContext";
 import { getOffset } from "../Shared/sharedFunctions";
 
 export function volumeReducer(
-  state: SliderContext,
+  state: SliderContextType,
   action: SliderContextAction,
-): SliderContext {
+): SliderContextType {
   switch (action.type) {
     case "UPDATE_UI_VALUE": {
       if (action.component !== "volume") {

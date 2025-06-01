@@ -7,11 +7,11 @@ import {
   useHandleDragStart,
 } from "./dragHooks";
 import { calculateDragStyle } from "./calculateStyle";
-import { SliderContext } from "./SliderContext";
+import { SliderContextType } from "./SliderContext";
 
 interface DragButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   ariaLabel: string;
-  sliderContext: SliderContext;
+  sliderContext: SliderContextType;
 }
 
 export function DragButton({

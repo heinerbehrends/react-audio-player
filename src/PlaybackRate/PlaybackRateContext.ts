@@ -1,7 +1,7 @@
 import { createContext } from "react";
-import { SliderContext } from "../Slider/SliderContext";
+import { SliderContextType } from "../Slider/SliderContext";
 
-export const PlaybackRateContext = createContext<SliderContext>({
+export const PlaybackRateContext = createContext<SliderContextType>({
   sliderStart: 0,
   sliderLength: 0,
   value: 0,

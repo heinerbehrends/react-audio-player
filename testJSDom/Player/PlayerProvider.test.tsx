@@ -1,39 +1,26 @@
 import React, { useContext } from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent, render } from "@testing-library/react";
 import { PlayerContextProvider } from "../../src/Player/PlayerProvider";
 import {
   PlayerContext,
   PlayerContextType,
 } from "../../src/Player/PlayerContext";
 import { AudioContext } from "../../src/AudioElement/AudioContext";
+import { createAudioElement, createAudioContext } from "../testUtils";
+import { renderWithAudioContext } from "../testComponents";
 
 describe("PlayerContextProvider", () => {
-  const mockAudioElement = {
-    duration: 100,
+  const mockAudioElement = createAudioElement({
     currentTime: 50,
     volume: 0.5,
-    playbackRate: 1,
-  } as HTMLAudioElement;
+  }) as HTMLAudioElement;
 
   const mockHandleSideEffect = vi.fn();
-  const mockAudioContext = {
+  const mockAudioContext = createAudioContext({
     audioElementRef: { current: mockAudioElement },
     handleSideEffect: mockHandleSideEffect,
-    volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
-    timelineCallbackRef: {
-      current: {
-        handleTimelineAction: vi.fn(),
-        handleTimelineSideEffect: vi.fn(),
-      },
-    },
-    playbackRateCallbackRef: {
-      current: {
-        handlePlaybackRateAction: vi.fn(),
-        handlePlaybackRateSideEffect: vi.fn(),
-      },
-    },
-  };
+  });
 
   // Create a test component to access context values
   const TestConsumer = ({
@@ -80,13 +67,14 @@ describe("PlayerContextProvider", () => {
   };
 
   const renderWithProvider = (audioFiles = [{ src: "test.mp3" }]) => {
-    return render(
-      <AudioContext.Provider value={mockAudioContext}>
+    return renderWithAudioContext({
+      audioContext: mockAudioContext,
+      component: (
         <PlayerContextProvider audioFiles={audioFiles}>
           <TestConsumer />
         </PlayerContextProvider>
-      </AudioContext.Provider>,
-    );
+      ),
+    });
   };
 
   describe("Initialization", () => {
@@ -119,8 +107,9 @@ describe("PlayerContextProvider", () => {
   describe("getPlayerState", () => {
     it("returns correct state from audio element", () => {
       let contextValue: PlayerContextType | undefined;
-      render(
-        <AudioContext.Provider value={mockAudioContext}>
+      renderWithAudioContext({
+        audioContext: mockAudioContext,
+        component: (
           <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
             <TestConsumer
               onMount={(context) => {
@@ -128,8 +117,8 @@ describe("PlayerContextProvider", () => {
               }}
             />
           </PlayerContextProvider>
-        </AudioContext.Provider>,
-      );
+        ),
+      });
 
       expect(contextValue).toBeDefined();
       const state = contextValue!.getPlayerState();
@@ -150,8 +139,9 @@ describe("PlayerContextProvider", () => {
       };
 
       let contextValue: PlayerContextType | undefined;
-      render(
-        <AudioContext.Provider value={nullAudioContext}>
+      renderWithAudioContext({
+        audioContext: nullAudioContext,
+        component: (
           <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
             <TestConsumer
               onMount={(context) => {
@@ -159,8 +149,8 @@ describe("PlayerContextProvider", () => {
               }}
             />
           </PlayerContextProvider>
-        </AudioContext.Provider>,
-      );
+        ),
+      });
 
       expect(contextValue).toBeDefined();
       const state = contextValue!.getPlayerState();
@@ -204,7 +194,7 @@ describe("PlayerContextProvider", () => {
         </AudioContext.Provider>,
       );
 
-      const firstContext = renderSpy.mock.calls[0][0];
+      const firstContext = renderSpy.mock.calls[0]![0];
 
       rerender(
         <AudioContext.Provider value={mockAudioContext}>
@@ -214,7 +204,7 @@ describe("PlayerContextProvider", () => {
         </AudioContext.Provider>,
       );
 
-      const secondContext = renderSpy.mock.calls[1][0];
+      const secondContext = renderSpy.mock.calls[1]![0];
       expect(secondContext).toBe(firstContext);
     });
   });

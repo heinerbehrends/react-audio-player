@@ -1,8 +1,7 @@
-import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
-import { AudioFile } from "../../src/Player/PlayerProvider";
+import type { AudioFile } from "../../src/Player/PlayerProvider";
 
 // Mock the child components
 vi.mock("../../src/AudioElement/AudioContextProvider", () => ({

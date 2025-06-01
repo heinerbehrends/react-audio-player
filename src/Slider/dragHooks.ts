@@ -1,9 +1,9 @@
 import { useCallback, useContext } from "react";
-import type { SliderContext, SliderEvent } from "./SliderContext";
+import type { SliderContextType, SliderEvent } from "./SliderContext";
 import { getClientXY, calculateValue } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
 
-export function useHandleDragEnd(context: SliderContext) {
+export function useHandleDragEnd(context: SliderContextType) {
   return useCallback(
     (event: SliderEvent) => {
       const { handleSliderAction, offsetFromMiddle } = context;
@@ -19,7 +19,7 @@ export function useHandleDragEnd(context: SliderContext) {
   );
 }
 
-export function useHandleDragStart(context: SliderContext) {
+export function useHandleDragStart(context: SliderContextType) {
   const { getPlayerState } = useContext(PlayerContext);
   const { unmuteVolumeRef } = getPlayerState();
 
@@ -48,7 +48,7 @@ export function useHandleDragStart(context: SliderContext) {
   );
 }
 
-export function useHandleDrag(context: SliderContext) {
+export function useHandleDrag(context: SliderContextType) {
   return useCallback(
     function handleDrag(event: SliderEvent) {
       if (context.dragState !== "dragging") {
@@ -67,7 +67,7 @@ export function useHandleDrag(context: SliderContext) {
   );
 }
 
-export function useOnPointerCancel(context: SliderContext) {
+export function useOnPointerCancel(context: SliderContextType) {
   const { handleSliderAction: handleTimelineAction } = context;
 
   return useCallback(() => {
@@ -77,7 +77,7 @@ export function useOnPointerCancel(context: SliderContext) {
   }, [handleTimelineAction]);
 }
 
-export function useSetValue(context: SliderContext) {
+export function useSetValue(context: SliderContextType) {
   const { handleSliderAction: handleTimelineAction } = context;
   const { handlePlayerAction } = useContext(PlayerContext);
   return useCallback(

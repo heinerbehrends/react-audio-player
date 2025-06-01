@@ -1,15 +1,8 @@
-import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { Seek } from "../../src/Player/Seek";
-import {
-  PlayerContext,
-  PlayerContextType,
-} from "../../src/Player/PlayerContext";
-import {
-  AudioContext,
-  AudioContextType,
-} from "../../src/AudioElement/AudioContext";
+import { createPlayerContext, createAudioContext } from "../testUtils";
+import { renderWithContexts } from "../testComponents";
 
 describe("Seek", () => {
   const mockHandlePlayerAction = vi.fn();
@@ -20,36 +13,21 @@ describe("Seek", () => {
     unmuteVolumeRef: { current: 0.7 },
   });
 
-  const defaultContext: PlayerContextType = {
-    handlePlayerAction: mockHandlePlayerAction,
-    getPlayerState: mockGetPlayerState,
-    playbackRate: 1,
-    volumeState: "high" as const,
-    playerState: "paused" as const,
-    showCaptions: false,
-    isMuted: false,
-    timeDisplay: "elapsed" as const,
-    audioFiles: [],
-    cues: [],
-    unmuteVolumeRef: { current: 0.7 },
-  };
+  const defaultContext = createPlayerContext({
+    overrides: {
+      handlePlayerAction: mockHandlePlayerAction,
+      getPlayerState: mockGetPlayerState,
+    },
+  });
 
-  const defaultAudioContext: AudioContextType = {
-    volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
-    audioElementRef: { current: null },
-    handleSideEffect: vi.fn(),
-    timelineCallbackRef: { current: { handleTimelineAction: vi.fn() } },
-    playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
-  };
+  const defaultAudioContext = createAudioContext();
 
   const renderSeek = (amount: number, context = defaultContext) => {
-    return render(
-      <PlayerContext.Provider value={context}>
-        <AudioContext.Provider value={defaultAudioContext}>
-          <Seek amount={amount}>Seek {amount}</Seek>
-        </AudioContext.Provider>
-      </PlayerContext.Provider>,
-    );
+    return renderWithContexts({
+      playerContext: context,
+      audioContext: defaultAudioContext,
+      component: <Seek amount={amount}>Seek {amount}</Seek>,
+    });
   };
 
   describe("Rendering", () => {
