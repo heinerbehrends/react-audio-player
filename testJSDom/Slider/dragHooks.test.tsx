@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import {
   useHandleDragStart,
@@ -9,50 +9,12 @@ import {
 } from "../../src/Slider/dragHooks";
 import { PlayerContext } from "../../src/Player/PlayerContext";
 import React, { type PointerEvent } from "react";
+import { createSliderContext, createPlayerContext } from "../testUtils";
 
 describe("dragHooks", () => {
-  const createSliderContext = (overrides = {}) => ({
-    value: 0.5,
-    minValue: 0,
-    maxValue: 1,
-    step: 0.1,
-    orientation: "horizontal" as const,
-    sliderLength: 100,
-    sliderStart: 0,
-    clientXY: 50,
-    dragState: "idle" as const,
-    component: "timeline" as const,
-    handleSliderAction: vi.fn(),
-    offsetFromMiddle: 0,
-    ...overrides,
-  });
-
-  const createPlayerContext = (overrides = {}) => ({
-    handlePlayerAction: vi.fn(),
-    playerState: "paused" as const,
-    showCaptions: false,
-    isMuted: false,
-    isPlaying: false,
-    playbackRate: 1,
-    volumeState: "high" as const,
-    timeDisplay: "elapsed" as const,
-    audioFiles: [],
-    cues: [],
-    unmuteVolumeRef: { current: 0 },
-    getPlayerState: () => ({
-      handlePlayerAction: vi.fn(),
-      playerState: "high" as const,
-      showCaptions: false,
-      isMuted: false,
-      isPlaying: false,
-      duration: 0,
-      currentTime: 0,
-      volume: 0.5,
-      playbackRate: 1,
-      volumeState: "high" as const,
-      unmuteVolumeRef: { current: 0 },
-      ...overrides,
-    }),
+  // Reset all mocks before each test
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
   describe("useHandleDragStart", () => {
@@ -80,11 +42,12 @@ describe("dragHooks", () => {
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
+      expect(context.handleSliderAction).toHaveBeenCalledTimes(1);
       expect(context.handleSliderAction).toHaveBeenCalledWith({
         type: "DRAG_START",
         ...context,
         clientXY: 50,
-        offsetFromMiddle: 30, // 50 - 0 - 40/2 = 30
+        offsetFromMiddle: 30,
       });
     });
 
@@ -94,7 +57,11 @@ describe("dragHooks", () => {
       const { result } = renderHook(() => useHandleDragStart(context), {
         wrapper: ({ children }) => (
           <PlayerContext.Provider
-            value={createPlayerContext({ unmuteVolumeRef })}
+            value={createPlayerContext({
+              overrides: {
+                unmuteVolumeRef,
+              },
+            })}
           >
             {children}
           </PlayerContext.Provider>
@@ -116,11 +83,12 @@ describe("dragHooks", () => {
       result.current(event);
 
       expect(unmuteVolumeRef.current).toBe(0.5);
+      expect(context.handleSliderAction).toHaveBeenCalledTimes(1);
       expect(context.handleSliderAction).toHaveBeenCalledWith({
         type: "DRAG_START",
         ...context,
         clientXY: 50,
-        offsetFromMiddle: 30, // 50 - 0 - 40/2 = 30
+        offsetFromMiddle: 30,
       });
     });
   });
@@ -136,6 +104,7 @@ describe("dragHooks", () => {
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
+      expect(context.handleSliderAction).toHaveBeenCalledTimes(1);
       expect(context.handleSliderAction).toHaveBeenCalledWith({
         type: "DRAG",
         ...context,
@@ -144,6 +113,7 @@ describe("dragHooks", () => {
     });
 
     it("does not handle drag when not in dragging state", () => {
+      // Create a fresh context with a new spy for this test
       const context = createSliderContext({ dragState: "idle" });
       const { result } = renderHook(() => useHandleDrag(context));
 
@@ -168,6 +138,7 @@ describe("dragHooks", () => {
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
+      expect(context.handleSliderAction).toHaveBeenCalledTimes(1);
       expect(context.handleSliderAction).toHaveBeenCalledWith({
         type: "DRAG_END",
         ...context,
@@ -183,6 +154,7 @@ describe("dragHooks", () => {
 
       result.current();
 
+      expect(context.handleSliderAction).toHaveBeenCalledTimes(1);
       expect(context.handleSliderAction).toHaveBeenCalledWith({
         type: "CANCEL_DRAG",
       });
@@ -200,10 +172,20 @@ describe("dragHooks", () => {
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
-      expect(context.handleSliderAction).toHaveBeenCalledWith({
+      expect(context.handleSliderAction).toHaveBeenCalledTimes(3);
+      expect(context.handleSliderAction).toHaveBeenNthCalledWith(1, {
         type: "SET_SLIDER_VALUE",
         ...context,
         clientXY: 60,
+      });
+      expect(context.handleSliderAction).toHaveBeenNthCalledWith(2, {
+        type: "UPDATE_UI_VALUE",
+        component: "timeline",
+        value: context.value,
+      });
+      expect(context.handleSliderAction).toHaveBeenNthCalledWith(3, {
+        type: "DRAG_START",
+        ...context,
       });
     });
   });

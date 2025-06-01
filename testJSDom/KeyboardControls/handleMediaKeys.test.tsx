@@ -4,12 +4,31 @@ import {
   useHandleMediaKeys,
 } from "../../src/KeyboardControls/handleMediaKeys";
 import { renderHook } from "@testing-library/react";
-import { PlayerContext } from "../../src/Player/PlayerContext";
+import {
+  PlayerContext,
+  PlayerContextType,
+  PlayerProviderAction,
+} from "../../src/Player/PlayerContext";
 import React from "react";
+import { createPlayerContext } from "../testUtils";
+import {
+  SliderComponent,
+  SliderContextAction,
+} from "../../src/Slider/SliderContext";
 
 describe("handleMediaKeys", () => {
   const mockHandlePlayerAction = vi.fn();
-  let defaultArgs;
+  const mockHandleVolumeAction = vi.fn();
+  let defaultArgs: {
+    event: React.KeyboardEvent<HTMLButtonElement>;
+    unmuteVolume: number;
+    component: SliderComponent;
+    isMuted: boolean;
+    handlePlayerAction: (action: PlayerProviderAction) => void;
+    volumeCallbackRef: {
+      current: { handleVolumeAction: (action: SliderContextAction) => void };
+    };
+  } & ReturnType<PlayerContextType["getPlayerState"]>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -18,19 +37,13 @@ describe("handleMediaKeys", () => {
         key: "",
         preventDefault: vi.fn(),
       } as unknown as React.KeyboardEvent<HTMLButtonElement>,
-      handlePlayerAction: mockHandlePlayerAction,
-      duration: 100,
-      currentTime: 30,
-      volume: 0.5,
+      ...createPlayerContext().getPlayerState(),
       unmuteVolume: 0.7,
-      playbackRate: 1,
-      volumeState: "high" as const,
-      unmuteVolumeRef: { current: 0.7 },
+      component: "timeline",
       isMuted: false,
+      handlePlayerAction: mockHandlePlayerAction,
       volumeCallbackRef: {
-        current: {
-          handleVolumeAction: vi.fn(),
-        },
+        current: { handleVolumeAction: mockHandleVolumeAction },
       },
     };
   });
@@ -254,9 +267,9 @@ describe("handleMediaKeys", () => {
 
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
-        value: 35, // 30 + 5
+        value: 5, // Relative forward seek of 5 seconds
         component: "timeline",
       });
     });
@@ -268,9 +281,9 @@ describe("handleMediaKeys", () => {
 
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
-        value: 25, // 30 - 5
+        value: -5, // Relative backward seek of 5 seconds
         component: "timeline",
       });
     });
@@ -282,9 +295,9 @@ describe("handleMediaKeys", () => {
 
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
-        value: 40, // 30 + 10
+        value: 10, // Relative forward seek of 10 seconds
         component: "timeline",
       });
     });
@@ -296,9 +309,9 @@ describe("handleMediaKeys", () => {
 
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
-        value: 20, // 30 - 10
+        value: -10, // Relative backward seek of 10 seconds
         component: "timeline",
       });
     });
@@ -306,6 +319,13 @@ describe("handleMediaKeys", () => {
 
   describe("Numeric seek keys", () => {
     it("should handle numeric keys to seek to percentage of duration", () => {
+      // Set up test data with a specific duration
+      defaultArgs = {
+        ...defaultArgs,
+        duration: 100,
+        currentTime: 30,
+      };
+
       const numericTests = [
         { key: "0", expected: 0 },
         { key: "1", expected: 10 }, // 10% of 100
@@ -314,14 +334,13 @@ describe("handleMediaKeys", () => {
       ];
 
       numericTests.forEach((test) => {
-        mockHandlePlayerAction.mockClear();
         defaultArgs.event.key = test.key;
 
         const result = handleMediaKeys(defaultArgs);
 
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+        expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
           type: "CHANGE_VALUE",
           value: test.expected,
           component: "timeline",
@@ -335,14 +354,13 @@ describe("handleMediaKeys", () => {
       const increaseKeys = [">", "]"];
 
       increaseKeys.forEach((key) => {
-        mockHandlePlayerAction.mockClear();
         defaultArgs.event.key = key;
 
         const result = handleMediaKeys(defaultArgs);
 
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+        expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
           type: "SET_PLAYBACK_RATE",
           playbackRate: 1.25, // 1 + 0.25
         });
@@ -353,14 +371,13 @@ describe("handleMediaKeys", () => {
       const decreaseKeys = ["<", "["];
 
       decreaseKeys.forEach((key) => {
-        mockHandlePlayerAction.mockClear();
         defaultArgs.event.key = key;
 
         const result = handleMediaKeys(defaultArgs);
 
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+        expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
           type: "SET_PLAYBACK_RATE",
           playbackRate: 0.75, // 1 - 0.25
         });
@@ -375,7 +392,7 @@ describe("handleMediaKeys", () => {
 
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(defaultArgs.handlePlayerAction).toHaveBeenCalledWith({
         type: "SET_PLAYBACK_RATE",
         playbackRate: 1, // reset to 1
       });
@@ -389,7 +406,7 @@ describe("handleMediaKeys", () => {
 
     expect(result).toBe(false);
     expect(defaultArgs.event.preventDefault).not.toHaveBeenCalled();
-    expect(mockHandlePlayerAction).not.toHaveBeenCalled();
+    expect(defaultArgs.handlePlayerAction).not.toHaveBeenCalled();
   });
 });
 
@@ -420,7 +437,7 @@ describe("useHandleMediaKeys", () => {
     };
 
     // Create wrapper to provide context
-    const wrapper = ({ children }) => (
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
       <PlayerContext.Provider value={mockPlayerContext}>
         {children}
       </PlayerContext.Provider>

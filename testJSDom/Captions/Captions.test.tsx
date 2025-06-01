@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { Captions } from "../../src/Captions/Captions";
 import { PlayerContext } from "../../src/Player/PlayerContext";
-import React from "react";
+import { createPlayerContext } from "../testUtils";
 
 // Mock ToggleCaptions
 vi.mock("../../src/Captions/ToggleCaptions", () => ({
@@ -14,18 +14,9 @@ describe("Captions", () => {
   const mockCue1 = { text: "Hello world" };
   const mockCue2 = { text: "This is a test" };
   const defaultContext = {
+    ...createPlayerContext(),
     cues: [mockCue1, mockCue2] as VTTCue[],
     showCaptions: true,
-    // Other required context values
-    handlePlayerAction: vi.fn(),
-    playerState: "paused" as const,
-    isMuted: false,
-    audioFiles: [],
-    getPlayerState: vi.fn(),
-    playbackRate: 1,
-    volumeState: "high" as const,
-    unmuteVolumeRef: { current: 0.5 },
-    timeDisplay: "elapsed" as const,
   };
 
   beforeEach(() => {
