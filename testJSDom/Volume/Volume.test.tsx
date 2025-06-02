@@ -1,24 +1,23 @@
-import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Volume } from "../../src/Volume/Volume";
 import { VolumeContext } from "../../src/Volume/VolumeContext";
+import { createPlayerContext, createSliderContext } from "../testUtils";
+import { renderWithPlayerContext } from "../testComponents";
 
-const mockVolumeContext = {
+const defaultSliderContext = createSliderContext({
+  component: "volume" as const,
   value: 0.5,
   minValue: 0,
   maxValue: 1,
-  step: 0.1,
-  orientation: "horizontal" as const,
-  sliderLength: 100,
-  sliderStart: 0,
-  clientXY: 50,
-  dragState: "idle" as const,
-  component: "volume" as const,
-  handleSliderAction: vi.fn(),
-  offsetFromMiddle: 0,
-};
+});
+
+const playerContext = createPlayerContext({
+  getPlayerStateOverrides: {
+    volume: 0.5,
+  },
+});
 
 describe("Volume", () => {
   it("should export all subcomponents", () => {
@@ -31,7 +30,7 @@ describe("Volume", () => {
   describe("Subcomponents render correctly", () => {
     it("should render Volume.Progress with expected styles", () => {
       render(
-        <VolumeContext.Provider value={mockVolumeContext}>
+        <VolumeContext.Provider value={defaultSliderContext}>
           <Volume.Progress data-testid="progress" />
         </VolumeContext.Provider>,
       );
@@ -49,11 +48,10 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Background with expected styles", () => {
-      render(
-        <VolumeContext.Provider value={mockVolumeContext}>
-          <Volume.Background data-testid="background" />
-        </VolumeContext.Provider>,
-      );
+      renderWithPlayerContext({
+        component: <Volume.Background data-testid="background" />,
+        playerContext,
+      });
 
       const background = screen.getByTestId("background");
       expect(background).toBeInTheDocument();
@@ -66,11 +64,10 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Set with expected attributes", () => {
-      render(
-        <VolumeContext.Provider value={mockVolumeContext}>
-          <Volume.Set data-testid="set">Set</Volume.Set>
-        </VolumeContext.Provider>,
-      );
+      renderWithPlayerContext({
+        playerContext,
+        component: <Volume.Set data-testid="set">Set</Volume.Set>,
+      });
 
       const set = screen.getByTestId("set");
       expect(set).toBeInTheDocument();
@@ -78,11 +75,10 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Drag with expected attributes", () => {
-      render(
-        <VolumeContext.Provider value={mockVolumeContext}>
-          <Volume.Drag data-testid="drag" />
-        </VolumeContext.Provider>,
-      );
+      renderWithPlayerContext({
+        playerContext,
+        component: <Volume.Drag data-testid="drag" />,
+      });
 
       const drag = screen.getByTestId("drag");
       expect(drag).toBeInTheDocument();
@@ -95,7 +91,7 @@ describe("Volume", () => {
 
   it("should support composition of components", () => {
     render(
-      <VolumeContext.Provider value={mockVolumeContext}>
+      <VolumeContext.Provider value={defaultSliderContext}>
         <Volume>
           <Volume.Background data-testid="background" />
           <Volume.Progress data-testid="progress" />
@@ -113,7 +109,7 @@ describe("Volume", () => {
 
   it("should render a container with proper styles and accessibility attributes", () => {
     render(
-      <VolumeContext.Provider value={mockVolumeContext}>
+      <VolumeContext.Provider value={defaultSliderContext}>
         <Volume>
           <div data-testid="volume-child">Content</div>
         </Volume>

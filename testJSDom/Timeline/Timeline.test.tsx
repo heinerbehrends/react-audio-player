@@ -1,24 +1,16 @@
-import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
 import { TimelineContext } from "../../src/Timeline/TimelineContext";
+import { createSliderContext } from "../testUtils";
 
-const mockTimelineContext = {
+const mockTimelineContext = createSliderContext({
   value: 0.5,
   minValue: 0,
   maxValue: 1,
   step: 0.1,
-  orientation: "horizontal" as const,
-  sliderLength: 100,
-  sliderStart: 0,
-  clientXY: 50,
-  dragState: "idle" as const,
-  component: "timeline" as const,
-  handleSliderAction: vi.fn(),
-  offsetFromMiddle: 0,
-};
+});
 
 describe("Timeline", () => {
   it("should export all subcomponents", () => {

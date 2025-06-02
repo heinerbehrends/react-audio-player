@@ -2,27 +2,9 @@ import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DragButton } from "../../src/Slider/DragButton";
-import { SliderContextType } from "../../src/Slider/SliderContext";
-import React from "react";
+import { createSliderContext } from "../testUtils";
 
 describe("DragButton", () => {
-  const createSliderContext = (
-    overrides: Partial<SliderContextType> = {},
-  ): SliderContextType => ({
-    value: 0.5,
-    minValue: 0,
-    maxValue: 1,
-    step: 0.1,
-    orientation: "horizontal",
-    sliderLength: 100,
-    sliderStart: 0,
-    clientXY: 50,
-    dragState: "idle",
-    component: "timeline",
-    handleSliderAction: vi.fn(),
-    ...overrides,
-  });
-
   it("renders with correct aria label", () => {
     const context = createSliderContext();
     const { getByLabelText } = render(
@@ -61,8 +43,8 @@ describe("DragButton", () => {
     const calls = (
       context.handleSliderAction as unknown as ReturnType<typeof vi.fn>
     ).mock.calls;
-    expect(calls[0][0].type).toBe("DRAG_START");
-    expect(calls[0][0].clientXY).toBe(50);
+    expect(calls[0]?.[0]?.type).toBe("DRAG_START");
+    expect(calls[0]?.[0]?.clientXY).toBe(50);
   });
 
   it("handles pointer up event", async () => {

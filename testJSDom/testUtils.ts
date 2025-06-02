@@ -47,20 +47,16 @@ const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
 };
 
 // Default values for audio context
-const DEFAULT_AUDIO_CONTEXT: AudioContextType = {
-  audioElementRef: { current: null },
-  handleSideEffect: vi.fn(),
-  timelineCallbackRef: { current: { handleTimelineAction: vi.fn() } },
-  volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
-  playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
-};
 
-const DEFAULT_AUDIO_ELEMENT: HTMLAudioElement = {
+const DEFAULT_AUDIO_ELEMENT: Partial<HTMLAudioElement> = {
   currentTime: 0,
   volume: 1,
   playbackRate: 1,
   duration: 100,
-} as HTMLAudioElement;
+  paused: false,
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+};
 
 /**
  * Creates a slider context with optional overrides
@@ -102,12 +98,21 @@ export function createPlayerContext({
 
 export function createAudioElement(
   overrides: Partial<HTMLAudioElement> = {},
-): HTMLAudioElement {
+): Partial<HTMLAudioElement> {
   return {
     ...DEFAULT_AUDIO_ELEMENT,
     ...overrides,
   };
 }
+
+const DEFAULT_AUDIO_CONTEXT = {
+  handleSideEffect: vi.fn(),
+  audioElementRef: { current: createAudioElement() as HTMLAudioElement },
+  timelineCallbackRef: { current: { handleTimelineAction: vi.fn() } },
+  volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
+  playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
+};
+
 /**
  * Creates a mock pointer event with optional overrides
  */
@@ -192,12 +197,3 @@ export const mockProviders = {
   SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),
   AudioProvider: createMockProvider(createAudioContext(), "AudioProvider"),
 } as const;
-
-// Example usage:
-// const wrapper = ({ children }) => (
-//   <mockProviders.PlayerProvider>
-//     <mockProviders.SliderProvider>
-//       {children}
-//     </mockProviders.SliderProvider>
-//   </mockProviders.PlayerProvider>
-// );

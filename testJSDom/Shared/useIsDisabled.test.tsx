@@ -1,27 +1,20 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useIsDisabled } from "../../src/Shared/useIsDisabled";
 import { PlayerContext, PlayerState } from "../../src/Player/PlayerContext";
 import React from "react";
+import { createPlayerContext } from "../testUtils";
 
 describe("useIsDisabled", () => {
+  const playerContext = createPlayerContext({
+    overrides: {
+      unmuteVolumeRef: { current: 0.7 },
+    },
+  });
   const createWrapper = (playerState: PlayerState) => {
+    playerContext.playerState = playerState;
     return ({ children }: { children: React.ReactNode }) => (
-      <PlayerContext.Provider
-        value={{
-          playerState,
-          handlePlayerAction: vi.fn(),
-          getPlayerState: vi.fn(),
-          playbackRate: 1,
-          volumeState: "high" as const,
-          showCaptions: false,
-          isMuted: false,
-          timeDisplay: "elapsed" as const,
-          audioFiles: [],
-          cues: [],
-          unmuteVolumeRef: { current: 0.7 },
-        }}
-      >
+      <PlayerContext.Provider value={playerContext}>
         {children}
       </PlayerContext.Provider>
     );

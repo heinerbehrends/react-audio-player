@@ -7,47 +7,34 @@ import {
   PlayerContextType,
 } from "../../src/Player/PlayerContext";
 import "@testing-library/jest-dom";
-
-function createPlayerContext(overrides = {}): PlayerContextType {
-  return {
-    handlePlayerAction: vi.fn(),
-    playerState: "playing",
-    showCaptions: false,
-    isMuted: false,
-    playbackRate: 1.5,
-    volumeState: "high",
-    unmuteVolumeRef: { current: 0.5 },
-    timeDisplay: "elapsed",
-    audioFiles: [{ src: "test-audio.mp3" }],
-    cues: [],
-    getPlayerState: () => ({
-      duration: 65,
-      currentTime: 45,
-      volume: 0.5,
-      playbackRate: 1.5,
-      volumeState: "high",
-      unmuteVolumeRef: { current: 0.5 },
-      // ... other state
-    }),
-    ...overrides,
-  };
-}
+import { createPlayerContext } from "../testUtils";
 
 const createWrapper =
   (context: PlayerContextType) =>
-  ({ children }) => (
+  ({ children }: { children: React.ReactNode }) => (
     <PlayerContext.Provider value={context}>{children}</PlayerContext.Provider>
   );
 
 describe("Time", () => {
+  const defaultContext = createPlayerContext({
+    overrides: {
+      handlePlayerAction: vi.fn(),
+      playerState: "playing",
+      timeDisplay: "elapsed",
+    },
+    getPlayerStateOverrides: () => ({
+      duration: 65,
+      currentTime: 45,
+    }),
+  });
   it("hides when showing remaining time", () => {
-    const context = createPlayerContext({ timeDisplay: "remaining" });
+    const context = { ...defaultContext, timeDisplay: "remaining" as const };
     render(<Time.Elapsed />, { wrapper: createWrapper(context) });
     expect(screen.queryByLabelText("elapsed")).not.toBeInTheDocument();
   });
 
   it("has correct aria attributes", () => {
-    const context = createPlayerContext({ timeDisplay: "remaining" });
+    const context = { ...defaultContext, timeDisplay: "remaining" as const };
     render(<Time.Toggle>Toggle</Time.Toggle>, {
       wrapper: createWrapper(context),
     });
@@ -60,12 +47,26 @@ describe("Time", () => {
   });
 
   it("formats time correctly", () => {
+    const mockAudioElement = {
+      duration: 65,
+      currentTime: 45,
+      volume: 0.5,
+      playbackRate: 1.5,
+    } as HTMLAudioElement;
+
     const context = createPlayerContext({
-      getPlayerState: () => ({
-        duration: 65,
-        currentTime: 45,
-        // ... other state
-      }),
+      overrides: {
+        playerState: "playing",
+        timeDisplay: "elapsed",
+        getPlayerState: () => ({
+          duration: mockAudioElement.duration,
+          currentTime: mockAudioElement.currentTime,
+          volume: mockAudioElement.volume,
+          playbackRate: mockAudioElement.playbackRate,
+          volumeState: "high",
+          unmuteVolumeRef: { current: 0.5 },
+        }),
+      },
     });
     render(<Time.Duration />, { wrapper: createWrapper(context) });
     expect(screen.getByLabelText("duration")).toHaveTextContent("1:05");

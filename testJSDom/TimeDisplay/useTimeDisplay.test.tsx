@@ -1,26 +1,16 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useTimeDisplay } from "../../src/TimeDisplay/useTimeDisplay";
-import { AudioContext } from "../../src/AudioElement/AudioContext";
-import React from "react";
+import {
+  AudioContext,
+  type AudioContextType,
+} from "../../src/AudioElement/AudioContext";
+import { createAudioContext } from "../testUtils";
 
 describe("useTimeDisplay", () => {
-  const createAudioContext = (overrides = {}) => ({
-    audioElementRef: {
-      current: {
-        currentTime: 45,
-        duration: 120,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        paused: false,
-        ...overrides,
-      },
-    },
-  });
-
   const createWrapper =
-    (contextValue) =>
-    ({ children }) => (
+    (contextValue: AudioContextType) =>
+    ({ children }: { children: React.ReactNode }) => (
       <AudioContext.Provider value={contextValue}>
         {children}
       </AudioContext.Provider>
@@ -31,9 +21,8 @@ describe("useTimeDisplay", () => {
     renderHook(() => useTimeDisplay(), {
       wrapper: createWrapper(context),
     });
-
     expect(
-      context.audioElementRef.current.addEventListener,
+      context.audioElementRef.current!.addEventListener,
     ).toHaveBeenCalledWith("timeupdate", expect.any(Function));
   });
 
@@ -46,7 +35,7 @@ describe("useTimeDisplay", () => {
     unmount();
 
     expect(
-      context.audioElementRef.current.removeEventListener,
+      context.audioElementRef.current!.removeEventListener,
     ).toHaveBeenCalledWith("timeupdate", expect.any(Function));
   });
 });
