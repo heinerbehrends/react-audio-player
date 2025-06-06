@@ -109,6 +109,7 @@ export function timelineReducer(
         dragState: "idle" as const,
         clientXY: 0,
         value: time,
+        offsetFromMiddle: 0,
       };
     }
 
@@ -117,6 +118,7 @@ export function timelineReducer(
         ...state,
         dragState: "idle" as const,
         clientXY: 0,
+        offsetFromMiddle: 0,
       };
     }
 

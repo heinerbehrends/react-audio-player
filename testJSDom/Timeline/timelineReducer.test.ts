@@ -118,4 +118,38 @@ describe("timelineReducer", () => {
     expect(newState.dragState).toBe("idle");
     expect(newState.clientXY).toBe(0);
   });
+
+  it("should reset offsetFromMiddle on DRAG_END", () => {
+    const state = {
+      ...defaultState,
+      dragState: "dragging" as const,
+      clientXY: 100,
+      offsetFromMiddle: 50,
+    };
+    const action = {
+      type: "DRAG_END" as const,
+      ...defaultState,
+      clientXY: 200,
+      sliderStart: 100,
+      sliderLength: 200,
+    };
+
+    const newState = timelineReducer(state, action);
+    expect(newState.offsetFromMiddle).toBe(0);
+  });
+
+  it("should reset offsetFromMiddle on CANCEL_DRAG", () => {
+    const state = {
+      ...defaultState,
+      dragState: "dragging" as const,
+      clientXY: 100,
+      offsetFromMiddle: 50,
+    };
+    const action = {
+      type: "CANCEL_DRAG" as const,
+    };
+
+    const newState = timelineReducer(state, action);
+    expect(newState.offsetFromMiddle).toBe(0);
+  });
 });
