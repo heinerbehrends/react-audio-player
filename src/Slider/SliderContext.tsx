@@ -1,4 +1,4 @@
-import { SideEffectAction } from "../AudioElement/AudioContext";
+import type { SideEffectAction } from "../AudioElement/AudioContext";
 
 export type SliderComponent = "timeline" | "volume" | "playbackRate";
 export type SliderEvent =

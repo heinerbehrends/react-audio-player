@@ -11,7 +11,7 @@ import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
-// import { Debug } from "./Debug";
+import { Debug } from "./Debug";
 
 function App() {
   const searchParams = useUrlParams();
@@ -43,7 +43,7 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        {/* <Debug type="timeline" /> */}
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>

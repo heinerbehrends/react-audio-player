@@ -180,7 +180,7 @@ describe("dragHooks", () => {
       expect(context.handleSliderAction).toHaveBeenNthCalledWith(2, {
         type: "UPDATE_UI_VALUE",
         component: "timeline",
-        value: expect.closeTo(1.9, 5),
+        value: expect.closeTo(2.25, 5),
       });
       expect(context.handleSliderAction).toHaveBeenNthCalledWith(3, {
         type: "DRAG_START",

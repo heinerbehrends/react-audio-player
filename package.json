@@ -18,7 +18,7 @@
   },
   "author": "Heiner Behrends <heiner@heinerbehrends.com>",
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
@@ -34,13 +34,15 @@
     "testE2E": "playwright test",
     "test": "vitest",
     "type-check": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check-exports": "attw --pack ."
   },
   "peerDependencies": {
     "react": ">=16.3.0",
     "react-dom": ">=16.3.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.1",
     "@eslint/js": "^9.27.0",
     "@playwright/test": "^1.52.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -76,53 +78,38 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/mjs/index.mjs",
-      "require": "./dist/cjs/index.cjs"
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./volume": {
       "types": "./dist/volume.d.ts",
       "import": "./dist/volume.mjs",
-      "require": "./dist/volume.js"
+      "default": "./dist/volume.mjs"
     },
     "./timeline": {
       "types": "./dist/timeline.d.ts",
       "import": "./dist/timeline.mjs",
-      "require": "./dist/timeline.js"
-    },
-    "./slider": {
-      "types": "./dist/slider.d.ts",
-      "import": "./dist/slider.mjs",
-      "require": "./dist/slider.js"
-    },
-    "./audio-element": {
-      "types": "./dist/audio-element.d.ts",
-      "import": "./dist/audio-element.mjs",
-      "require": "./dist/audio-element.js"
+      "default": "./dist/timeline.mjs"
     },
     "./captions": {
       "types": "./dist/captions.d.ts",
       "import": "./dist/captions.mjs",
-      "require": "./dist/captions.js"
+      "default": "./dist/captions.mjs"
     },
     "./playback-rate": {
       "types": "./dist/playback-rate.d.ts",
       "import": "./dist/playback-rate.mjs",
-      "require": "./dist/playback-rate.js"
-    },
-    "./keyboard-controls": {
-      "types": "./dist/keyboard-controls.d.ts",
-      "import": "./dist/keyboard-controls.mjs",
-      "require": "./dist/keyboard-controls.js"
+      "default": "./dist/playback-rate.mjs"
     },
     "./player": {
       "types": "./dist/player.d.ts",
-      "import": "./dist/mjs/player.mjs",
-      "require": "./dist/cjs/player.cjs"
+      "import": "./dist/player.mjs",
+      "default": "./dist/player.mjs"
     },
     "./time-display": {
       "types": "./dist/time-display.d.ts",
       "import": "./dist/time-display.mjs",
-      "require": "./dist/time-display.js"
+      "default": "./dist/time-display.mjs"
     }
   }
 }

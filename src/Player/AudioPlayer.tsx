@@ -1,5 +1,5 @@
 import { AudioContextProvider } from "../AudioElement/AudioContextProvider";
-import { AudioFile, PlayerContextProvider } from "./PlayerProvider";
+import { type AudioFile, PlayerContextProvider } from "./PlayerProvider";
 import { AudioElement } from "../AudioElement/AudioElement";
 
 type AudioPlayerProps = {

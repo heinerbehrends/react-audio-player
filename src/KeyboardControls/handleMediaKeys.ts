@@ -1,9 +1,15 @@
-import { useContext, useCallback, MutableRefObject } from "react";
+import { useContext, useCallback, type MutableRefObject } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { PlayerProviderAction, VolumeState } from "../Player/PlayerContext";
+import type {
+  PlayerProviderAction,
+  VolumeState,
+} from "../Player/PlayerContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
-import { SliderComponent } from "../Slider/SliderContext";
-import { AudioContext, VolumeProviderRef } from "../AudioElement/AudioContext";
+import type { SliderComponent } from "../Slider/SliderContext";
+import {
+  AudioContext,
+  type VolumeProviderRef,
+} from "../AudioElement/AudioContext";
 
 type ActionHandler<Action> = (action: Action) => void;
 

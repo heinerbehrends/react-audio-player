@@ -14,8 +14,8 @@ import {
   type PlayerContextAction,
   type PlayerProviderAction,
   type PlayerContextType,
-  PlayerContextActionType,
-  PlayerStateReturnType,
+  type PlayerContextActionType,
+  type PlayerStateReturnType,
 } from "./PlayerContext";
 import { playerReducer } from "./playerReducer";
 import {

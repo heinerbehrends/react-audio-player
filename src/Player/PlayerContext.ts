@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { SideEffectAction } from "../AudioElement/AudioContext";
+import type { SideEffectAction } from "../AudioElement/AudioContext";
 
 type AudioFileLoadedAction = {
   type: "AUDIO_FILE_LOADED";

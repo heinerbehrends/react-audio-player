@@ -83,7 +83,7 @@ export function useSetValue(context: SliderContextType) {
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
-      const value = calculateValue(context);
+      const value = calculateValue({ ...context, clientXY });
       handleTimelineAction({
         type: "SET_SLIDER_VALUE",
         ...context,
