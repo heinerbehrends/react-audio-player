@@ -144,7 +144,7 @@ describe("audioElementHooks", () => {
       });
     });
 
-    it("should not update volume when player is muted", () => {
+    it("should set UI volume to 0 when player is muted", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: { ...mockAudioElement, volume: 0.001 } },
       });
@@ -159,7 +159,11 @@ describe("audioElementHooks", () => {
       expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
       expect(
         audioContext.volumeCallbackRef.current.handleVolumeAction,
-      ).not.toHaveBeenCalled();
+      ).toHaveBeenCalledWith({
+        type: "UPDATE_UI_VALUE",
+        value: 0,
+        component: "volume",
+      });
     });
   });
 
@@ -266,21 +270,8 @@ describe("audioElementHooks", () => {
       result.current.handlePause();
 
       expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "PAUSE",
+        type: "TOGGLE_PLAY",
       });
-    });
-
-    it("should not dispatch PAUSE when currentTime is not 0", () => {
-      const audioContext = createAudioContext({
-        audioElementRef: { current: { ...mockAudioElement, currentTime: 1 } },
-      });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-      const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
-
-      result.current.handlePause();
-
-      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
   });
 

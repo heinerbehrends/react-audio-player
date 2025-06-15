@@ -18,6 +18,14 @@ export function handleSideEffect(
       audioElement.pause();
       break;
     }
+    case "TOGGLE_PLAY": {
+      if (audioElement.paused) {
+        audioElement.play();
+      } else {
+        audioElement.pause();
+      }
+      break;
+    }
     case "AUDIO_FILE_ENDED":
     case "STOP_AUDIO": {
       audioElement.currentTime = 0;

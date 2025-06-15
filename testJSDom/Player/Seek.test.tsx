@@ -4,8 +4,12 @@ import { Seek } from "../../src/Player/Seek";
 import { createPlayerContext, createAudioContext } from "../testUtils";
 import { renderWithContexts } from "../testComponents";
 
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
 describe("Seek", () => {
-  const mockHandlePlayerAction = vi.fn();
   const mockGetPlayerState = vi.fn().mockReturnValue({
     currentTime: 30,
     duration: 100,
@@ -15,7 +19,6 @@ describe("Seek", () => {
 
   const defaultContext = createPlayerContext({
     overrides: {
-      handlePlayerAction: mockHandlePlayerAction,
       getPlayerState: mockGetPlayerState,
     },
   });
@@ -49,7 +52,7 @@ describe("Seek", () => {
       renderSeek(10);
       fireEvent.click(screen.getByLabelText("Seek forward by 10 seconds"));
 
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
         component: "timeline",
         value: 40, // 30 + 10
@@ -60,7 +63,7 @@ describe("Seek", () => {
       renderSeek(-10);
       fireEvent.click(screen.getByLabelText("Seek backward by 10 seconds"));
 
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
         component: "timeline",
         value: 20, // 30 - 10
@@ -75,7 +78,7 @@ describe("Seek", () => {
         key: "ArrowRight",
       });
 
-      expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
         value: 35, // 30 + 5
         component: "timeline",
@@ -89,7 +92,7 @@ describe("Seek", () => {
       });
 
       // Should not call handlePlayerAction for volume component
-      expect(mockHandlePlayerAction).not.toHaveBeenCalledWith({
+      expect(mockHandleSideEffect).not.toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
         component: "volume",
       });

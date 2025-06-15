@@ -339,7 +339,7 @@ export function useHandleMediaKeys(component?: SliderComponent) {
 
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      handleMediaKeys({
+      const result = handleMediaKeys({
         event,
         handleSideEffect,
         handlePlayerAction,
@@ -354,6 +354,12 @@ export function useHandleMediaKeys(component?: SliderComponent) {
         unmuteVolumeRef,
         isMuted,
       });
+
+      if (result) {
+        event.stopPropagation();
+      }
+
+      return result;
     },
     [
       handleSideEffect,

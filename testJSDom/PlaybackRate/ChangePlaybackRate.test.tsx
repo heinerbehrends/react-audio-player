@@ -8,6 +8,11 @@ import { PlayerContext } from "../../src/Player/PlayerContext";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
 describe("ChangePlaybackRate", () => {
   const mockHandlePlayerAction = vi.fn();
   const mockHandleMediaKeys = vi.fn();
@@ -75,23 +80,12 @@ describe("ChangePlaybackRate", () => {
     console.log("Running click test");
 
     // Use a fresh mock
-    const handlePlayerAction = vi.fn();
-
     // Create minimal context with only required values
-    const playerContext = {
-      handlePlayerAction,
-      playbackRate: 1,
-      // Add minimal required context values
-      playerState: "paused" as const,
-      showCaptions: false,
-      isMuted: false,
-      volumeState: "high" as const,
-      unmuteVolumeRef: { current: 0.5 },
-      getPlayerState: vi.fn(),
-      timeDisplay: "elapsed" as const,
-      audioFiles: [],
-      cues: [],
-    };
+    const playerContext = createPlayerContext({
+      overrides: {
+        playbackRate: 1,
+      },
+    });
     // Render with the fresh context
     renderWithPlayerContext({
       playerContext,
@@ -100,7 +94,7 @@ describe("ChangePlaybackRate", () => {
     const button = screen.getByRole("button");
 
     fireEvent.click(button);
-    expect(handlePlayerAction).toHaveBeenCalled();
+    expect(mockHandleSideEffect).toHaveBeenCalled();
   });
 
   it("uses the useHandleMediaKeys hook for keyboard events", () => {
@@ -152,28 +146,14 @@ describe("ChangePlaybackRate", () => {
   it("calculates new playback rate based on current rate and amount", () => {
     // Make sure button is enabled
     vi.spyOn(isDisabledModule, "useIsDisabled").mockReturnValue(false);
-
-    // Create a fresh mock
-    const handlePlayerAction = vi.fn();
-
     // Create context with specific playback rate
+    const playerContext = createPlayerContext({
+      overrides: {
+        playbackRate: 2,
+      },
+    });
     render(
-      <PlayerContext.Provider
-        value={{
-          handlePlayerAction,
-          playbackRate: 2,
-          // Add other required context values
-          playerState: "paused" as const,
-          showCaptions: false,
-          isMuted: false,
-          volumeState: "high" as const,
-          unmuteVolumeRef: { current: 0.5 },
-          getPlayerState: vi.fn(),
-          timeDisplay: "elapsed" as const,
-          audioFiles: [],
-          cues: [],
-        }}
-      >
+      <PlayerContext.Provider value={playerContext}>
         <ChangePlaybackRate amount={0.5}>Change Rate</ChangePlaybackRate>
       </PlayerContext.Provider>,
     );
@@ -182,7 +162,7 @@ describe("ChangePlaybackRate", () => {
 
     fireEvent.click(button);
 
-    expect(handlePlayerAction).toHaveBeenCalledWith({
+    expect(mockHandleSideEffect).toHaveBeenCalledWith({
       type: "SET_PLAYBACK_RATE",
       playbackRate: 2.5,
     });

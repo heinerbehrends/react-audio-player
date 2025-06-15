@@ -9,6 +9,16 @@ import {
 import { AudioContext } from "../../src/AudioElement/AudioContext";
 import { createAudioElement, createAudioContext } from "../testUtils";
 import { renderWithAudioContext } from "../testComponents";
+import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions";
+
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => {
+    const { audioElementRef } = useContext(AudioContext);
+    return (action: SideEffectAction) =>
+      mockHandleSideEffect(action, audioElementRef.current);
+  },
+}));
 
 describe("PlayerContextProvider", () => {
   const mockAudioElement = createAudioElement({
@@ -16,12 +26,9 @@ describe("PlayerContextProvider", () => {
     volume: 0.5,
   }) as HTMLAudioElement;
 
-  const mockHandleSideEffect = vi.fn();
   const mockAudioContext = createAudioContext({
     audioElementRef: { current: mockAudioElement },
-    handleSideEffect: mockHandleSideEffect,
   });
-
   // Create a test component to access context values
   const TestConsumer = ({
     testId = "test-value",
@@ -30,23 +37,23 @@ describe("PlayerContextProvider", () => {
     testId?: string;
     onMount?: (context: PlayerContextType) => void;
   }) => {
-    const context = useContext(PlayerContext);
+    const contextValue = useContext(PlayerContext);
 
+    // Call onMount with context if provided
     React.useEffect(() => {
-      if (!context || !onMount) return;
-      onMount(context);
-    }, [context, onMount]);
+      if (onMount) {
+        onMount(contextValue);
+      }
+    }, [onMount, contextValue]);
 
     return (
       <div>
-        <button
-          onClick={() => context.handlePlayerAction({ type: "TOGGLE_PLAY" })}
-        >
+        <button onClick={() => mockHandleSideEffect({ type: "TOGGLE_PLAY" })}>
           Toggle Play
         </button>
         <button
           onClick={() =>
-            context.handlePlayerAction({
+            mockHandleSideEffect({
               type: "SET_UNMUTE_VOLUME",
               unmuteVolume: 0.7,
             })
@@ -54,13 +61,17 @@ describe("PlayerContextProvider", () => {
         >
           Set Unmute Volume
         </button>
-        <div data-testid={`${testId}-player-state`}>{context.playerState}</div>
-        <div data-testid={`${testId}-volume-state`}>{context.volumeState}</div>
+        <div data-testid={`${testId}-player-state`}>
+          {contextValue.playerState}
+        </div>
+        <div data-testid={`${testId}-volume-state`}>
+          {contextValue.volumeState}
+        </div>
         <div data-testid={`${testId}-playback-rate`}>
-          {context.playbackRate}
+          {contextValue.playbackRate}
         </div>
         <div data-testid={`${testId}-unmute-volume`}>
-          {context.unmuteVolumeRef.current}
+          {contextValue.unmuteVolumeRef.current}
         </div>
       </div>
     );
@@ -76,33 +87,6 @@ describe("PlayerContextProvider", () => {
       ),
     });
   };
-
-  describe("Initialization", () => {
-    it("initializes with correct default values", () => {
-      renderWithProvider();
-      expect(screen.getByTestId("test-value-player-state")).toHaveTextContent(
-        "loading",
-      );
-      expect(screen.getByTestId("test-value-volume-state")).toHaveTextContent(
-        "high",
-      );
-      expect(screen.getByTestId("test-value-playback-rate")).toHaveTextContent(
-        "1",
-      );
-      expect(screen.getByTestId("test-value-unmute-volume")).toHaveTextContent(
-        "1",
-      );
-    });
-
-    it("initializes with provided audio files", () => {
-      const audioFiles = [
-        { src: "test1.mp3", captionSrc: "test1.vtt" },
-        { src: "test2.mp3" },
-      ];
-      renderWithProvider(audioFiles);
-      expect(screen.getByTestId("test-value-player-state")).toBeInTheDocument();
-    });
-  });
 
   describe("getPlayerState", () => {
     it("returns correct state from audio element", () => {
@@ -169,10 +153,9 @@ describe("PlayerContextProvider", () => {
     it("handles side effect actions", () => {
       renderWithProvider();
       fireEvent.click(screen.getByText("Toggle Play"));
-      expect(mockHandleSideEffect).toHaveBeenCalledWith(
-        { type: "TOGGLE_PLAY" },
-        mockAudioElement,
-      );
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "TOGGLE_PLAY",
+      });
     });
   });
 

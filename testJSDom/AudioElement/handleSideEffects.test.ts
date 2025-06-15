@@ -22,15 +22,15 @@ describe("handleSideEffect", () => {
     expect(result).toBeUndefined();
   });
 
-  it("should handle TOGGLE_PLAY action", () => {
-    handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
+  it("should handle PLAY and PAUSE action", () => {
+    handleSideEffect({ type: "PLAY" }, audioElement);
     expect(audioElement.play).toHaveBeenCalled();
 
     audioElement = {
       ...audioElement,
       paused: false,
     } as HTMLAudioElement;
-    handleSideEffect({ type: "TOGGLE_PLAY" }, audioElement);
+    handleSideEffect({ type: "PAUSE" }, audioElement);
     expect(audioElement.pause).toHaveBeenCalled();
   });
 

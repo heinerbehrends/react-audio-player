@@ -11,10 +11,15 @@ import * as isDisabledModule from "../../src/Shared/useIsDisabled";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
+// Mock useHandleSideEffect hook
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
 const defaultContext = createPlayerContext();
 
 describe("SetPlaybackRate", () => {
-  const mockHandlePlayerAction = vi.fn();
   const mockHandleKeyDown = vi.fn();
   let mockIsDisabled = false;
 
@@ -31,7 +36,6 @@ describe("SetPlaybackRate", () => {
   const renderWithContext = (playbackRate = 1, rate = 1.5) => {
     const playerContext = {
       ...defaultContext,
-      handlePlayerAction: mockHandlePlayerAction,
       playbackRate,
     };
 
@@ -54,13 +58,13 @@ describe("SetPlaybackRate", () => {
     expect(button).toHaveAttribute("aria-label", "Set playback rate to 2x");
   });
 
-  it("calls handlePlayerAction with correct values when clicked", () => {
+  it("calls handleSideEffect with correct values when clicked", () => {
     renderWithContext();
     const button = screen.getByRole("button");
 
     fireEvent.click(button);
 
-    expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+    expect(mockHandleSideEffect).toHaveBeenCalledWith({
       type: "SET_PLAYBACK_RATE",
       playbackRate: 1.5,
     });
@@ -83,14 +87,13 @@ describe("SetPlaybackRate", () => {
     expect(button).toBeDisabled();
 
     fireEvent.click(button);
-    expect(mockHandlePlayerAction).not.toHaveBeenCalled();
+    expect(mockHandleSideEffect).not.toHaveBeenCalled();
   });
 
   it("accepts and applies additional props", () => {
     renderWithPlayerContext({
       playerContext: {
         ...defaultContext,
-        handlePlayerAction: mockHandlePlayerAction,
         playbackRate: 1,
       },
       component: (

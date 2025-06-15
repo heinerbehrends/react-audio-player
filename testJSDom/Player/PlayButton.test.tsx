@@ -6,6 +6,11 @@ import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 import "@testing-library/jest-dom";
 
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
 describe("PlayButton", () => {
   const mockPlayerContext = createPlayerContext();
 
@@ -51,8 +56,8 @@ describe("PlayButton", () => {
       });
       const button = screen.getByRole("button", { name: "Play audio" });
       fireEvent.click(button);
-      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "PLAY",
       });
     });
 
@@ -67,7 +72,7 @@ describe("PlayButton", () => {
       });
       const button = screen.getByRole("button", { name: "Play audio" });
       fireEvent.keyDown(button, { key: "p" });
-      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalled();
     });
   });
 
