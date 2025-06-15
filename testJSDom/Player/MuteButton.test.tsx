@@ -173,15 +173,7 @@ describe("MuteButton", () => {
         type: "TOGGLE_MUTE",
         unmuteVolume: 0.5,
       });
-      expect(
-        mockAudioContext.volumeCallbackRef.current.handleVolumeAction,
-      ).toHaveBeenCalledWith({
-        type: "UPDATE_UI_VALUE",
-        value: 0,
-        component: "volume",
-      });
     });
-
     it("handles unmute toggle correctly", () => {
       renderWithContexts({
         playerContext: mockPlayerContext,
@@ -198,13 +190,9 @@ describe("MuteButton", () => {
       fireEvent.click(button);
       // Second click to unmute
       fireEvent.click(button);
-
-      expect(
-        mockAudioContext.volumeCallbackRef.current.handleVolumeAction,
-      ).toHaveBeenCalledWith({
-        type: "UPDATE_UI_VALUE",
-        value: 0,
-        component: "volume",
+      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalledWith({
+        type: "TOGGLE_MUTE",
+        unmuteVolume: 0.5,
       });
     });
   });

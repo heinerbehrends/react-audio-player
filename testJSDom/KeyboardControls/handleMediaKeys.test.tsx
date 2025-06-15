@@ -226,44 +226,6 @@ describe("handleMediaKeys", () => {
           unmuteVolume: 0.5,
         });
       });
-
-      it("should update UI value when muting", () => {
-        const mockHandleVolumeAction = vi.fn();
-        defaultArgs.event.key = "m";
-        defaultArgs.volume = 0.5;
-        defaultArgs.isMuted = false;
-        defaultArgs.volumeCallbackRef = {
-          current: { handleVolumeAction: mockHandleVolumeAction },
-        };
-
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(mockHandleVolumeAction).toHaveBeenCalledWith({
-          type: "UPDATE_UI_VALUE",
-          value: 0,
-          component: "volume",
-        });
-      });
-
-      it("should update UI value when unmuting", () => {
-        const mockHandleVolumeAction = vi.fn();
-        defaultArgs.event.key = "m";
-        defaultArgs.volume = 0.5;
-        defaultArgs.isMuted = true;
-        defaultArgs.volumeCallbackRef = {
-          current: { handleVolumeAction: mockHandleVolumeAction },
-        };
-
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(mockHandleVolumeAction).toHaveBeenCalledWith({
-          type: "UPDATE_UI_VALUE",
-          value: 0.5,
-          component: "volume",
-        });
-      });
     });
   });
 
@@ -306,7 +268,7 @@ describe("handleMediaKeys", () => {
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
-        value: 10, // Relative forward seek of 10 seconds
+        value: 5, // Relative forward seek of 10 seconds
         component: "timeline",
       });
     });
@@ -320,7 +282,7 @@ describe("handleMediaKeys", () => {
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "CHANGE_VALUE",
-        value: -10, // Relative backward seek of 10 seconds
+        value: -5, // Relative backward seek of 10 seconds
         component: "timeline",
       });
     });
@@ -389,7 +351,7 @@ describe("handleMediaKeys", () => {
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandleSideEffect).toHaveBeenCalledWith({
           type: "SET_PLAYBACK_RATE",
-          playbackRate: 0.75, // 1 - 0.25
+          playbackRate: 0.95, // 1 - 0.05
         });
       });
     });

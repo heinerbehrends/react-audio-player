@@ -156,13 +156,9 @@ describe("audioElementHooks", () => {
 
       result.current();
 
-      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
-      expect(
-        audioContext.volumeCallbackRef.current.handleVolumeAction,
-      ).toHaveBeenCalledWith({
-        type: "UPDATE_UI_VALUE",
-        value: 0,
-        component: "volume",
+      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
+        type: "SET_VOLUME_STATE",
+        volumeState: "muted",
       });
     });
   });

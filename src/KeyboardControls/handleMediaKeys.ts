@@ -30,29 +30,29 @@ export type HandleMediaKeysArgs = {
 
 // First define the action types
 type KeyAction =
-  | "TOGGLE_PLAY"
-  | "STOP"
-  | "TOGGLE_MUTE"
-  | "INCREASE_VOLUME"
-  | "DECREASE_VOLUME"
-  | "INCREASE_PLAYBACK_RATE"
-  | "DECREASE_PLAYBACK_RATE"
-  | "RESET_PLAYBACK_RATE"
-  | "SET_TIME_FORWARD"
-  | "SET_TIME_FORWARD_FAST"
-  | "SET_TIME_BACKWARD"
-  | "SET_TIME_BACKWARD_FAST"
-  | "SET_TIME_TO_START"
-  | "SET_TIME_TO_10_PERCENT"
-  | "SET_TIME_TO_20_PERCENT"
-  | "SET_TIME_TO_30_PERCENT"
-  | "SET_TIME_TO_40_PERCENT"
-  | "SET_TIME_TO_50_PERCENT"
-  | "SET_TIME_TO_60_PERCENT"
-  | "SET_TIME_TO_70_PERCENT"
-  | "SET_TIME_TO_80_PERCENT"
-  | "SET_TIME_TO_90_PERCENT"
-  | "TOGGLE_CAPTIONS";
+  | { type: "TOGGLE_PLAY" }
+  | { type: "STOP" }
+  | { type: "TOGGLE_MUTE" }
+  | { type: "INCREASE_VOLUME"; value: number }
+  | { type: "DECREASE_VOLUME"; value: number }
+  | { type: "INCREASE_PLAYBACK_RATE"; value: number }
+  | { type: "DECREASE_PLAYBACK_RATE"; value: number }
+  | { type: "RESET_PLAYBACK_RATE" }
+  | { type: "SET_TIME_FORWARD"; value: number }
+  | { type: "SET_TIME_FORWARD_FAST"; value: number }
+  | { type: "SET_TIME_BACKWARD"; value: number }
+  | { type: "SET_TIME_BACKWARD_FAST"; value: number }
+  | { type: "SET_TIME_TO_START" }
+  | { type: "SET_TIME_TO_10_PERCENT" }
+  | { type: "SET_TIME_TO_20_PERCENT" }
+  | { type: "SET_TIME_TO_30_PERCENT" }
+  | { type: "SET_TIME_TO_40_PERCENT" }
+  | { type: "SET_TIME_TO_50_PERCENT" }
+  | { type: "SET_TIME_TO_60_PERCENT" }
+  | { type: "SET_TIME_TO_70_PERCENT" }
+  | { type: "SET_TIME_TO_80_PERCENT" }
+  | { type: "SET_TIME_TO_90_PERCENT" }
+  | { type: "TOGGLE_CAPTIONS" };
 
 // Then use it in the map type
 type KeyToActionMap = {
@@ -60,47 +60,47 @@ type KeyToActionMap = {
 };
 
 const defaultKeyToActionMap: KeyToActionMap = {
-  p: "TOGGLE_PLAY",
-  P: "TOGGLE_PLAY",
-  k: "TOGGLE_PLAY",
-  K: "TOGGLE_PLAY",
-  MediaPlayPause: "TOGGLE_PLAY",
-  " ": "TOGGLE_PLAY",
-  s: "STOP",
-  S: "STOP",
-  MediaStop: "STOP",
-  m: "TOGGLE_MUTE",
-  M: "TOGGLE_MUTE",
-  MediaMute: "TOGGLE_MUTE",
-  l: "SET_TIME_FORWARD_FAST",
-  L: "SET_TIME_FORWARD_FAST",
-  ArrowRight: "SET_TIME_FORWARD",
-  ArrowLeft: "SET_TIME_BACKWARD",
-  MediaVolumeUp: "INCREASE_VOLUME",
-  ArrowUp: "INCREASE_VOLUME",
-  ArrowDown: "DECREASE_VOLUME",
-  MediaVolumeDown: "DECREASE_VOLUME",
-  j: "SET_TIME_BACKWARD_FAST",
-  J: "SET_TIME_BACKWARD_FAST",
-  ">": "INCREASE_PLAYBACK_RATE",
-  "<": "DECREASE_PLAYBACK_RATE",
-  "]": "INCREASE_PLAYBACK_RATE",
-  "[": "DECREASE_PLAYBACK_RATE",
-  Backspace: "RESET_PLAYBACK_RATE",
-  "0": "SET_TIME_TO_START",
-  "1": "SET_TIME_TO_10_PERCENT",
-  "2": "SET_TIME_TO_20_PERCENT",
-  "3": "SET_TIME_TO_30_PERCENT",
-  "4": "SET_TIME_TO_40_PERCENT",
-  "5": "SET_TIME_TO_50_PERCENT",
-  "6": "SET_TIME_TO_60_PERCENT",
-  "7": "SET_TIME_TO_70_PERCENT",
-  "8": "SET_TIME_TO_80_PERCENT",
-  "9": "SET_TIME_TO_90_PERCENT",
+  p: { type: "TOGGLE_PLAY" },
+  P: { type: "TOGGLE_PLAY" },
+  k: { type: "TOGGLE_PLAY" },
+  K: { type: "TOGGLE_PLAY" },
+  MediaPlayPause: { type: "TOGGLE_PLAY" },
+  " ": { type: "TOGGLE_PLAY" },
+  s: { type: "STOP" },
+  S: { type: "STOP" },
+  MediaStop: { type: "STOP" },
+  m: { type: "TOGGLE_MUTE" },
+  M: { type: "TOGGLE_MUTE" },
+  MediaMute: { type: "TOGGLE_MUTE" },
+  l: { type: "SET_TIME_FORWARD", value: 30 },
+  L: { type: "SET_TIME_FORWARD", value: 30 },
+  ArrowRight: { type: "SET_TIME_FORWARD", value: 5 },
+  ArrowLeft: { type: "SET_TIME_BACKWARD", value: 5 },
+  MediaVolumeUp: { type: "INCREASE_VOLUME", value: 0.025 },
+  ArrowUp: { type: "INCREASE_VOLUME", value: 0.025 },
+  ArrowDown: { type: "DECREASE_VOLUME", value: 0.025 },
+  MediaVolumeDown: { type: "DECREASE_VOLUME", value: 0.025 },
+  j: { type: "SET_TIME_BACKWARD", value: 10 },
+  J: { type: "SET_TIME_BACKWARD", value: 10 },
+  ">": { type: "INCREASE_PLAYBACK_RATE", value: 0.25 },
+  "<": { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
+  "]": { type: "INCREASE_PLAYBACK_RATE", value: 0.25 },
+  "[": { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
+  Backspace: { type: "RESET_PLAYBACK_RATE" },
+  "0": { type: "SET_TIME_TO_START" },
+  "1": { type: "SET_TIME_TO_10_PERCENT" },
+  "2": { type: "SET_TIME_TO_20_PERCENT" },
+  "3": { type: "SET_TIME_TO_30_PERCENT" },
+  "4": { type: "SET_TIME_TO_40_PERCENT" },
+  "5": { type: "SET_TIME_TO_50_PERCENT" },
+  "6": { type: "SET_TIME_TO_60_PERCENT" },
+  "7": { type: "SET_TIME_TO_70_PERCENT" },
+  "8": { type: "SET_TIME_TO_80_PERCENT" },
+  "9": { type: "SET_TIME_TO_90_PERCENT" },
 };
 
 type ActionToFunctionMap = {
-  [key in KeyAction]: (args: HandleMediaKeysArgs) => boolean;
+  [key in KeyAction["type"]]: (args: HandleMediaKeysArgs) => boolean;
 };
 
 function createActionToFunctionMap(
@@ -118,7 +118,7 @@ function createActionToFunctionMap(
       value: args.playbackRate + 0.25,
     }),
     DECREASE_PLAYBACK_RATE: handleChangePlaybackRate({
-      value: args.playbackRate - 0.25,
+      value: args.playbackRate - 0.05,
     }),
     SET_TIME_FORWARD: handleSetTime({
       value: args.currentTime + 5,
@@ -179,29 +179,10 @@ function handleTogglePlay({ event, handleSideEffect }: KeyHandlerArgs) {
 function handleToggleMute({
   volume,
   unmuteVolume,
-  isMuted,
   handleSideEffect,
-  volumeCallbackRef,
-}: Pick<
-  HandleMediaKeysArgs,
-  | "volume"
-  | "unmuteVolume"
-  | "isMuted"
-  | "volumeCallbackRef"
-  | "handleSideEffect"
->) {
+}: Pick<HandleMediaKeysArgs, "volume" | "unmuteVolume" | "handleSideEffect">) {
   const nextUnmuteVolume = areNumbersClose(volume, 0) ? unmuteVolume : volume;
   handleSideEffect({ type: "TOGGLE_MUTE", unmuteVolume: nextUnmuteVolume });
-
-  if (!volumeCallbackRef?.current?.handleVolumeAction) return false;
-  const nextVolume = isMuted ? volume : 0;
-
-  volumeCallbackRef.current.handleVolumeAction({
-    type: "UPDATE_UI_VALUE",
-    value: nextVolume,
-    component: "volume",
-  });
-
   return true;
 }
 
@@ -317,8 +298,8 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 
   const action = defaultKeyToActionMap[event.key];
 
-  if (!action || !(action in actionToFunctionMap)) return false;
-  const handler = actionToFunctionMap[action];
+  if (!action || !(action.type in actionToFunctionMap)) return false;
+  const handler = actionToFunctionMap[action.type];
 
   const isHandled = handler(args);
   if (isHandled) event.preventDefault();
