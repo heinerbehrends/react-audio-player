@@ -56,7 +56,6 @@ export function useHandleDrag(context: SliderContextType) {
       }
       const { handleSliderAction } = context;
       const clientXY = getClientXY(event, context.orientation);
-      console.log("handleDrag", context.dragState);
       handleSliderAction({
         type: "DRAG",
         ...context,

@@ -3,6 +3,7 @@ import { PlayerContext } from "../Player/PlayerContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 type SetPlaybackRateProps = {
   rate: number;
@@ -62,10 +63,10 @@ export function RateDisplay({ ...props }: RateDisplayProps) {
 }
 
 function useSetPlaybackRate(rate: number) {
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const handleSideEffect = useHandleSideEffect();
   const setPlaybackRate = useCallback(() => {
-    handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
-  }, [handlePlayerAction, rate]);
+    handleSideEffect({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
+  }, [handleSideEffect, rate]);
   return setPlaybackRate;
 }
 

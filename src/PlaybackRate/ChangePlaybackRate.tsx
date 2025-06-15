@@ -2,6 +2,7 @@ import { useCallback, useContext } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { PlayerContext } from "../Player/PlayerContext";
 import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 type IncreaseDecreaseProps = {
   amount: number;
@@ -35,12 +36,13 @@ export function ChangePlaybackRate({
 }
 
 function useChangePlaybackRate(amount: number) {
-  const { handlePlayerAction, playbackRate } = useContext(PlayerContext);
+  const { playbackRate } = useContext(PlayerContext);
+  const handleSideEffect = useHandleSideEffect();
   return useCallback(() => {
     const newRate = playbackRate + amount;
-    handlePlayerAction({
+    handleSideEffect({
       type: "SET_PLAYBACK_RATE",
       playbackRate: newRate,
     });
-  }, [handlePlayerAction, amount, playbackRate]);
+  }, [handleSideEffect, amount, playbackRate]);
 }

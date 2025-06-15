@@ -2,7 +2,7 @@ import {
   areNumbersClose,
   calculateSliderValue,
 } from "../Shared/sharedFunctions";
-import type { SideEffectAction } from "./AudioContext";
+import type { SideEffectAction } from "./sideEffectActions";
 
 export function handleSideEffect(
   action: SideEffectAction,
@@ -10,12 +10,12 @@ export function handleSideEffect(
 ) {
   if (!audioElement) return;
   switch (action.type) {
-    case "TOGGLE_PLAY": {
-      if (audioElement.paused) {
-        audioElement.play();
-      } else {
-        audioElement.pause();
-      }
+    case "PLAY": {
+      audioElement.play();
+      break;
+    }
+    case "PAUSE": {
+      audioElement.pause();
       break;
     }
     case "AUDIO_FILE_ENDED":

@@ -1,5 +1,4 @@
 import { createContext } from "react";
-import type { SideEffectAction } from "../AudioElement/AudioContext";
 
 type AudioFileLoadedAction = {
   type: "AUDIO_FILE_LOADED";
@@ -49,11 +48,6 @@ export type PauseAction = {
   type: "PAUSE";
 };
 
-export type SetUnmuteVolumeAction = {
-  type: "SET_UNMUTE_VOLUME";
-  unmuteVolume: number;
-};
-
 export type ToggleCaptionsAction = {
   type: "TOGGLE_CAPTIONS";
 };
@@ -70,42 +64,9 @@ export type PlayerContextAction =
   | SetVolumeStateAction
   | UnmuteAction
   | PauseAction
-  | SetUnmuteVolumeAction
   | ToggleCaptionsAction;
 
-type SideEffectActionType = SideEffectAction["type"];
 export type PlayerContextActionType = PlayerContextAction["type"];
-
-export type PlayerProviderAction = SideEffectAction | PlayerContextAction;
-
-export const PLAYER_SIDE_EFFECT_MAP: Record<SideEffectActionType, true> = {
-  TOGGLE_PLAY: true,
-  TOGGLE_MUTE: true,
-  CHANGE_VALUE: true,
-  AUDIO_FILE_ENDED: true,
-  DRAG: true,
-  DRAG_END: true,
-  STOP_AUDIO: true,
-  SET_PLAYBACK_RATE: true,
-  UNMUTE: true,
-  SET_SLIDER_VALUE: true,
-};
-
-export const PLAYER_DISPATCH_MAP: Record<PlayerContextActionType, boolean> = {
-  AUDIO_FILE_LOADED: true,
-  TOGGLE_PLAY: true,
-  TOGGLE_MUTE: true,
-  TOGGLE_TIME_DISPLAY: true,
-  AUDIO_FILE_ENDED: true,
-  AUDIO_FILE_ERROR: true,
-  CAPTION_CUE_CHANGE: true,
-  SET_PLAYBACK_RATE: true,
-  SET_VOLUME_STATE: true,
-  UNMUTE: true,
-  PAUSE: true,
-  SET_UNMUTE_VOLUME: false,
-  TOGGLE_CAPTIONS: true,
-};
 
 export type VolumeState = "muted" | "low" | "high";
 
@@ -120,7 +81,7 @@ export type PlayerStateReturnType = {
 
 export type PlayerState = "loading" | "playing" | "paused" | "error";
 export type PlayerContextType = {
-  handlePlayerAction: (action: PlayerProviderAction) => void;
+  handlePlayerAction: (action: PlayerContextAction) => void;
   playerState: PlayerState;
   showCaptions: boolean;
   isMuted: boolean;

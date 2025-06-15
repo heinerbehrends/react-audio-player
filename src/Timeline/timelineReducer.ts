@@ -43,13 +43,8 @@ export function timelineReducer(
         return state;
       }
       const offset = getOffset({
-        value: state.value,
-        sliderLength: state.sliderLength,
+        ...state,
         clientXY: action.clientXY,
-        minValue: state.minValue,
-        maxValue: state.maxValue,
-        dragState: state.dragState,
-        component: state.component,
       });
 
       return {
@@ -73,13 +68,8 @@ export function timelineReducer(
       );
       const clientXY = restrictedClientXY - state.sliderStart;
       const value = calculateSliderValue({
+        ...state,
         clientXY: action.clientXY - state.offsetFromMiddle,
-        sliderLength: state.sliderLength,
-        maxValue: state.maxValue,
-        sliderStart: state.sliderStart,
-        minValue: state.minValue,
-        orientation: state.orientation,
-        step: state.step,
       });
       return {
         ...state,
@@ -96,13 +86,8 @@ export function timelineReducer(
         return state;
       }
       const time = calculateSliderValue({
+        ...state,
         clientXY: action.clientXY - state.offsetFromMiddle,
-        sliderLength: state.sliderLength,
-        maxValue: action.maxValue,
-        sliderStart: state.sliderStart,
-        minValue: state.minValue,
-        orientation: state.orientation,
-        step: state.step,
       });
       return {
         ...state,

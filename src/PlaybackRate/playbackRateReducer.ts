@@ -29,14 +29,8 @@ export function playbackRateReducer(
         return state;
       }
       const offset = getOffset({
-        value: state.value,
-        sliderLength: state.sliderLength,
+        ...state,
         clientXY: action.clientXY,
-        minValue: state.minValue,
-        maxValue: state.maxValue,
-        dragState: state.dragState,
-        step: state.step,
-        component: state.component,
       });
       return {
         ...state,

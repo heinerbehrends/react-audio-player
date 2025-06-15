@@ -1,21 +1,21 @@
 import { useContext, useCallback, type MutableRefObject } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import type {
-  PlayerProviderAction,
-  VolumeState,
-} from "../Player/PlayerContext";
+import type { PlayerContextAction, VolumeState } from "../Player/PlayerContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import type { SliderComponent } from "../Slider/SliderContext";
 import {
   AudioContext,
   type VolumeProviderRef,
 } from "../AudioElement/AudioContext";
+import type { SideEffectAction } from "../AudioElement/sideEffectActions";
+import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 type ActionHandler<Action> = (action: Action) => void;
 
 export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
-  handlePlayerAction: ActionHandler<PlayerProviderAction>;
+  handleSideEffect: ActionHandler<SideEffectAction>;
+  handlePlayerAction: ActionHandler<PlayerContextAction>;
   duration: number;
   currentTime: number;
   volume: number;
@@ -167,11 +167,11 @@ function createActionToFunctionMap(
 
 type KeyHandlerArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
-  handlePlayerAction: ActionHandler<PlayerProviderAction>;
+  handleSideEffect: ActionHandler<SideEffectAction>;
 };
 
-function handleTogglePlay({ event, handlePlayerAction }: KeyHandlerArgs) {
-  handlePlayerAction({ type: "TOGGLE_PLAY" });
+function handleTogglePlay({ event, handleSideEffect }: KeyHandlerArgs) {
+  handleSideEffect({ type: "TOGGLE_PLAY" });
   event.preventDefault();
   return true;
 }
@@ -180,18 +180,18 @@ function handleToggleMute({
   volume,
   unmuteVolume,
   isMuted,
-  handlePlayerAction,
+  handleSideEffect,
   volumeCallbackRef,
 }: Pick<
   HandleMediaKeysArgs,
   | "volume"
   | "unmuteVolume"
   | "isMuted"
-  | "handlePlayerAction"
   | "volumeCallbackRef"
+  | "handleSideEffect"
 >) {
   const nextUnmuteVolume = areNumbersClose(volume, 0) ? unmuteVolume : volume;
-  handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume: nextUnmuteVolume });
+  handleSideEffect({ type: "TOGGLE_MUTE", unmuteVolume: nextUnmuteVolume });
 
   if (!volumeCallbackRef?.current?.handleVolumeAction) return false;
   const nextVolume = isMuted ? volume : 0;
@@ -207,24 +207,24 @@ function handleToggleMute({
 
 type ChangeValueArgs = Pick<
   HandleMediaKeysArgs,
-  "event" | "handlePlayerAction" | "currentTime" | "playbackRate" | "component"
+  "event" | "handleSideEffect" | "currentTime" | "playbackRate" | "component"
 >;
 
 function handleChangeValue({ value }: { value: number }) {
   return function handleChangeValue({
-    handlePlayerAction,
+    handleSideEffect,
     component,
     currentTime,
     playbackRate,
   }: ChangeValueArgs) {
     const current = component === "timeline" ? currentTime : playbackRate;
-    handlePlayerAction({
+    handleSideEffect({
       type: "CHANGE_VALUE",
       value,
       component: component || "timeline",
     });
     if (component === "volume") {
-      handlePlayerAction({
+      handleSideEffect({
         type: "TOGGLE_MUTE",
         unmuteVolume: current,
       });
@@ -234,8 +234,8 @@ function handleChangeValue({ value }: { value: number }) {
 }
 
 function handleSetTime({ value }: { value: number }) {
-  return function handleSetTime({ handlePlayerAction }: ChangeValueArgs) {
-    handlePlayerAction({
+  return function handleSetTime({ handleSideEffect }: ChangeValueArgs) {
+    handleSideEffect({
       type: "CHANGE_VALUE",
       value,
       component: "timeline",
@@ -253,10 +253,10 @@ function handleToggleCaptions({
 
 function handleVolumeUp({
   volume,
-  handlePlayerAction,
-}: Pick<HandleMediaKeysArgs, "volume" | "handlePlayerAction">) {
+  handleSideEffect,
+}: Pick<HandleMediaKeysArgs, "volume" | "handleSideEffect">) {
   // handlePlayerAction({ type: "UNMUTE" });
-  handlePlayerAction({
+  handleSideEffect({
     type: "CHANGE_VALUE",
     value: volume + 0.025,
     component: "volume",
@@ -266,9 +266,9 @@ function handleVolumeUp({
 
 function handleChangePlaybackRate({ value }: { value: number }) {
   return function handleChangePlaybackRate({
-    handlePlayerAction,
+    handleSideEffect,
   }: ChangeValueArgs) {
-    handlePlayerAction({
+    handleSideEffect({
       type: "SET_PLAYBACK_RATE",
       playbackRate: value,
     });
@@ -279,21 +279,21 @@ function handleChangePlaybackRate({ value }: { value: number }) {
 function handleVolumeDown({
   volume,
   volumeState,
-  handlePlayerAction,
-}: Pick<HandleMediaKeysArgs, "volume" | "volumeState" | "handlePlayerAction">) {
+  handleSideEffect,
+}: Pick<HandleMediaKeysArgs, "volume" | "volumeState" | "handleSideEffect">) {
   const restrictedVolume = Math.max(volume - 0.025, 0);
   if (areNumbersClose(restrictedVolume, 0) && volumeState !== "muted") {
-    handlePlayerAction({
+    handleSideEffect({
       type: "SET_UNMUTE_VOLUME",
       unmuteVolume: 0.025,
     });
   }
   if (!areNumbersClose(restrictedVolume, 0)) {
-    handlePlayerAction({
+    handleSideEffect({
       type: "UNMUTE",
     });
   }
-  handlePlayerAction({
+  handleSideEffect({
     type: "CHANGE_VALUE",
     value: restrictedVolume,
     component: "volume",
@@ -301,13 +301,13 @@ function handleVolumeDown({
   return true;
 }
 
-function handleStopAudio({ handlePlayerAction }: KeyHandlerArgs) {
-  handlePlayerAction({ type: "STOP_AUDIO" });
+function handleStopAudio({ handleSideEffect }: KeyHandlerArgs) {
+  handleSideEffect({ type: "STOP_AUDIO" });
   return true;
 }
 
-function handleResetPlaybackRate({ handlePlayerAction }: KeyHandlerArgs) {
-  handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: 1 });
+function handleResetPlaybackRate({ handleSideEffect }: KeyHandlerArgs) {
+  handleSideEffect({ type: "SET_PLAYBACK_RATE", playbackRate: 1 });
   return true;
 }
 
@@ -327,12 +327,13 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 
 export function useHandleMediaKeys(component?: SliderComponent) {
   const {
-    handlePlayerAction,
     getPlayerState,
     playbackRate,
     volumeState,
     isMuted,
+    handlePlayerAction,
   } = useContext(PlayerContext);
+  const handleSideEffect = useHandleSideEffect();
   const { volumeCallbackRef } = useContext(AudioContext);
   const { duration, currentTime, volume, unmuteVolumeRef } = getPlayerState();
 
@@ -340,6 +341,7 @@ export function useHandleMediaKeys(component?: SliderComponent) {
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       handleMediaKeys({
         event,
+        handleSideEffect,
         handlePlayerAction,
         playbackRate,
         volumeState,
@@ -354,6 +356,7 @@ export function useHandleMediaKeys(component?: SliderComponent) {
       });
     },
     [
+      handleSideEffect,
       handlePlayerAction,
       playbackRate,
       volumeState,

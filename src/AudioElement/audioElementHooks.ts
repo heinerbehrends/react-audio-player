@@ -25,8 +25,16 @@ export function useHandleVolumeChange() {
   const { handlePlayerAction, isMuted } = useContext(PlayerContext);
   const { audioElementRef, volumeCallbackRef } = useContext(AudioContext);
   return useCallback(() => {
-    if (isMuted) return;
     const volume = audioElementRef.current?.volume ?? 0;
+    if (!volumeCallbackRef?.current?.handleVolumeAction) return;
+    if (isMuted) {
+      volumeCallbackRef.current.handleVolumeAction({
+        type: "UPDATE_UI_VALUE",
+        value: 0,
+        component: "volume",
+      });
+      return;
+    }
     const volumeState = areNumbersClose(volume, 0)
       ? "muted"
       : volume < 0.5
@@ -37,13 +45,11 @@ export function useHandleVolumeChange() {
       volumeState,
     });
 
-    if (volumeCallbackRef?.current?.handleVolumeAction) {
-      volumeCallbackRef.current.handleVolumeAction({
-        type: "UPDATE_UI_VALUE",
-        value: audioElementRef.current?.volume ?? 0,
-        component: "volume",
-      });
-    }
+    volumeCallbackRef.current.handleVolumeAction({
+      type: "UPDATE_UI_VALUE",
+      value: audioElementRef.current?.volume ?? 0,
+      component: "volume",
+    });
   }, [volumeCallbackRef, audioElementRef, isMuted, handlePlayerAction]);
 }
 
@@ -71,16 +77,27 @@ export function usePlayerCallbacks() {
   );
 
   const handlePause = useCallback(() => {
-    if (audioElementRef.current?.currentTime === 0) {
-      handlePlayerAction({ type: "PAUSE" });
-    }
-  }, [handlePlayerAction, audioElementRef]);
+    handlePlayerAction({ type: "TOGGLE_PLAY" });
+  }, [handlePlayerAction]);
+
+  const handlePlay = useCallback(() => {
+    handlePlayerAction({ type: "TOGGLE_PLAY" });
+  }, [handlePlayerAction]);
+
+  const handlePlaybackRateChange = useCallback(
+    (rate: number) => {
+      handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
+    },
+    [handlePlayerAction],
+  );
 
   return {
     handleEnded,
     handleError,
     handleLoadedMetadata,
     handlePause,
+    handlePlay,
+    handlePlaybackRateChange,
   };
 }
 

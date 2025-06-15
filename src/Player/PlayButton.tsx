@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { PlayerContext } from "./PlayerContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 type PlayButtonProps = {
   children: React.ReactNode;
@@ -33,9 +34,14 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
 }
 
 function useHandleClick() {
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const { playerState } = useContext(PlayerContext);
+  const handleSideEffect = useHandleSideEffect();
   return () => {
-    handlePlayerAction({ type: "TOGGLE_PLAY" });
+    if (playerState === "playing") {
+      handleSideEffect({ type: "PAUSE" });
+      return;
+    }
+    handleSideEffect({ type: "PLAY" });
   };
 }
 

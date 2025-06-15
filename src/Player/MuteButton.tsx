@@ -37,8 +37,7 @@ type MutedProps = {
 };
 
 function useToggleMute() {
-  const { getPlayerState, handlePlayerAction, isMuted } =
-    useContext(PlayerContext);
+  const { getPlayerState, handlePlayerAction } = useContext(PlayerContext);
   const {
     volumeCallbackRef: { current: volumeCallback },
   } = useContext(AudioContext);
@@ -52,13 +51,13 @@ function useToggleMute() {
       : volume;
     handlePlayerAction({ type: "TOGGLE_MUTE", unmuteVolume });
 
-    const nextVolume = isMuted ? volume : 0;
-    volumeCallback.handleVolumeAction({
-      type: "UPDATE_UI_VALUE",
-      value: nextVolume,
-      component: "volume",
-    });
-  }, [handlePlayerAction, isMuted, volume, volumeCallback, unmuteVolumeRef]);
+    // const nextVolume = isMuted ? volume : 0;
+    // volumeCallback.handleVolumeAction({
+    //   type: "UPDATE_UI_VALUE",
+    //   value: nextVolume,
+    //   component: "volume",
+    // });
+  }, [handlePlayerAction, volume, volumeCallback, unmuteVolumeRef]);
 }
 
 function Muted({ children }: MutedProps): React.ReactElement | null {
