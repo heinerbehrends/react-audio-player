@@ -10,7 +10,7 @@ import {
 } from "./audioElementHooks";
 
 export const AudioElement = memo(function AudioElement() {
-  const { handlePlayerAction, audioFiles, isMuted } = useContext(PlayerContext);
+  const { audioFiles } = useContext(PlayerContext);
   const {
     audioElementRef,
     timelineCallbackRef,
@@ -55,11 +55,8 @@ export const AudioElement = memo(function AudioElement() {
         );
       }}
       src={src}
-      muted={isMuted}
     >
-      {captionSrc && (
-        <Track src={captionSrc} handlePlayerAction={handlePlayerAction} />
-      )}
+      {captionSrc && <Track src={captionSrc} />}
     </audio>
   );
 });

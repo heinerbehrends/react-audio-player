@@ -2,6 +2,7 @@ import { useCallback, useContext } from "react";
 import type { SliderContextType, SliderEvent } from "./SliderContext";
 import { getClientXY, calculateValue } from "../Shared/sharedFunctions";
 import { PlayerContext } from "../Player/PlayerContext";
+import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 export function useHandleDragEnd(context: SliderContextType) {
   return useCallback(
@@ -78,7 +79,7 @@ export function useOnPointerCancel(context: SliderContextType) {
 
 export function useSetValue(context: SliderContextType) {
   const { handleSliderAction: handleTimelineAction } = context;
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const handleSideEffect = useHandleSideEffect();
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
@@ -98,11 +99,11 @@ export function useSetValue(context: SliderContextType) {
         ...context,
       });
       if (context.component === "volume") {
-        handlePlayerAction({
+        handleSideEffect({
           type: "UNMUTE",
         });
       }
     },
-    [handleTimelineAction, context, handlePlayerAction],
+    [context, handleSideEffect, handleTimelineAction],
   );
 }

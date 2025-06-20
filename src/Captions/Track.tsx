@@ -1,13 +1,13 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 import { useCueChange } from "./captionsHooks";
-import { PlayerProviderAction } from "../Player/PlayerContext";
+import { PlayerContext } from "../Player/PlayerContext";
 
 type TrackProps = {
   src: string;
-  handlePlayerAction: (action: PlayerProviderAction) => void;
 };
 
-export function Track({ src, handlePlayerAction }: TrackProps) {
+export function Track({ src }: TrackProps) {
+  const { handlePlayerAction } = useContext(PlayerContext);
   const trackRef = useRef<HTMLTrackElement | null>(null);
   useCueChange({ trackRef, handlePlayerAction });
   return <track ref={trackRef} kind="captions" src={src} default />;

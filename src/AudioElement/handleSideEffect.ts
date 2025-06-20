@@ -8,6 +8,7 @@ export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null,
 ) {
+  console.log("handleSideEffect", action);
   if (!audioElement) return;
   switch (action.type) {
     case "PLAY": {
@@ -124,6 +125,7 @@ export function handleSideEffect(
           sliderStart: action.sliderStart,
           orientation: action.orientation,
         });
+        audioElement.muted = false;
         audioElement.volume = volume;
       }
       if (action.component === "playbackRate") {

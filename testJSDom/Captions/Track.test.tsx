@@ -8,7 +8,6 @@ import * as cueChangeModule from "../../src/Captions/captionsHooks";
 vi.spyOn(cueChangeModule, "useCueChange").mockImplementation(vi.fn());
 
 describe("Track", () => {
-  const mockHandlePlayerAction = vi.fn();
   const mockSrc = "captions.vtt";
 
   beforeEach(() => {
@@ -16,9 +15,7 @@ describe("Track", () => {
   });
 
   it("renders a track element with correct attributes", () => {
-    const { container } = render(
-      <Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />,
-    );
+    const { container } = render(<Track src={mockSrc} />);
 
     // Use container.querySelector to find the track element
     const trackElement = container.querySelector("track");
@@ -30,7 +27,7 @@ describe("Track", () => {
   });
 
   it("calls useCueChange with correct props", () => {
-    render(<Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />);
+    render(<Track src={mockSrc} />);
 
     const useCueChangeMock = vi.mocked(cueChangeModule.useCueChange);
 
@@ -42,7 +39,7 @@ describe("Track", () => {
   });
 
   it("creates a valid ref for the track element", () => {
-    render(<Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />);
+    render(<Track src={mockSrc} />);
 
     const useCueChangeMock = vi.mocked(cueChangeModule.useCueChange);
     const trackRef = useCueChangeMock.mock.calls[0]![0].trackRef;
@@ -55,14 +52,8 @@ describe("Track", () => {
     // Render two Track components
     render(
       <>
-        <Track
-          src="captions1.vtt"
-          handlePlayerAction={mockHandlePlayerAction}
-        />
-        <Track
-          src="captions2.vtt"
-          handlePlayerAction={mockHandlePlayerAction}
-        />
+        <Track src="captions1.vtt" />
+        <Track src="captions2.vtt" />
       </>,
     );
 
@@ -77,9 +68,7 @@ describe("Track", () => {
   });
 
   it("updates properly when src changes", () => {
-    const { rerender, container } = render(
-      <Track src={mockSrc} handlePlayerAction={mockHandlePlayerAction} />,
-    );
+    const { rerender, container } = render(<Track src={mockSrc} />);
 
     // Initial track element
     const initialTrack = container.querySelector("track");
@@ -87,9 +76,7 @@ describe("Track", () => {
 
     // Change the src prop
     const newSrc = "new-captions.vtt";
-    rerender(
-      <Track src={newSrc} handlePlayerAction={mockHandlePlayerAction} />,
-    );
+    rerender(<Track src={newSrc} />);
 
     // Same element should now have the new src
     const updatedTrack = container.querySelector("track");
