@@ -14,15 +14,15 @@ export function MuteButtonComponent({
   children,
   ...props
 }: MuteButtonComponentProps) {
-  const { isMuted } = useContext(PlayerContext);
+  const { volumeState } = useContext(PlayerContext);
   const toggleMute = useToggleMute();
   const handleMediaKeys = useHandleMediaKeys();
   const isDisabled = useIsDisabled();
 
   return (
     <button
-      aria-label={isMuted ? "Unmute" : "Mute"}
-      aria-pressed={isMuted}
+      aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
+      aria-pressed={volumeState === "muted"}
       onKeyDown={handleMediaKeys}
       onClick={toggleMute}
       disabled={isDisabled}

@@ -128,6 +128,20 @@ describe("playerReducer", () => {
       };
       expect(playerReducer(playerContext, action).volumeState).toBe("low");
     });
+    it("updates isMuted to true if volumeState is muted", () => {
+      const action = {
+        type: "SET_VOLUME_STATE" as const,
+        volumeState: "muted" as const,
+      };
+      expect(playerReducer(playerContext, action).isMuted).toBe(true);
+    });
+    it("updates isMuted to false if volumeState is not muted", () => {
+      const action = {
+        type: "SET_VOLUME_STATE" as const,
+        volumeState: "low" as const,
+      };
+      expect(playerReducer(playerContext, action).isMuted).toBe(false);
+    });
   });
 
   describe("UNMUTE", () => {

@@ -6,6 +6,11 @@ import "@testing-library/jest-dom";
 import { createPlayerContext, createAudioContext } from "../testUtils";
 import { renderWithContexts, renderWithPlayerContext } from "../testComponents";
 
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
 describe("MuteButton", () => {
   const mockPlayerContext = createPlayerContext();
 
@@ -54,7 +59,7 @@ describe("MuteButton", () => {
       });
       const button = screen.getByRole("button");
       fireEvent.click(button);
-      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalledWith({
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
         unmuteVolume: 0.5,
       });
@@ -72,7 +77,7 @@ describe("MuteButton", () => {
       });
       const button = screen.getByRole("button");
       fireEvent.keyDown(button, { key: "m" });
-      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalled();
     });
   });
 
@@ -169,11 +174,12 @@ describe("MuteButton", () => {
 
       fireEvent.click(button);
 
-      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalledWith({
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
         unmuteVolume: 0.5,
       });
     });
+
     it("handles unmute toggle correctly", () => {
       renderWithContexts({
         playerContext: mockPlayerContext,
@@ -190,7 +196,8 @@ describe("MuteButton", () => {
       fireEvent.click(button);
       // Second click to unmute
       fireEvent.click(button);
-      expect(mockPlayerContext.handlePlayerAction).toHaveBeenCalledWith({
+
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
         unmuteVolume: 0.5,
       });

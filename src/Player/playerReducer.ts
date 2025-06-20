@@ -32,6 +32,7 @@ export function playerReducer(
     }
 
     case "TOGGLE_MUTE": {
+      console.log("TOGGLE_MUTE", state.isMuted);
       const newVolumeState = state.isMuted ? state.volumeState : "muted";
       return {
         ...state,
@@ -84,8 +85,16 @@ export function playerReducer(
     }
 
     case "SET_VOLUME_STATE": {
+      if (action.volumeState === "muted") {
+        return {
+          ...state,
+          isMuted: true,
+          volumeState: action.volumeState,
+        };
+      }
       return {
         ...state,
+        isMuted: false,
         volumeState: action.volumeState,
       };
     }

@@ -19,6 +19,7 @@ export function Debug({
   const {
     playerState: state,
     volumeState,
+    isMuted,
     unmuteVolumeRef: { current: unmuteVolume },
   } = useContext(PlayerContext);
   const {
@@ -54,7 +55,7 @@ export function Debug({
       <p>Volume state: {volumeState}</p>
       <p>Min Value: {context.minValue}</p>
       <p>Max Value: {context.maxValue}</p>
-      <p>Audio Element muted: {audioElement?.muted}</p>
+      <p>Audio Element muted: {isMuted ? "true" : "false"}</p>
     </div>
   );
 }
