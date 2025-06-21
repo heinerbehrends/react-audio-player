@@ -1,16 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
 import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
 import * as isDisabledModule from "../../src/Shared/useIsDisabled";
-import { PlayerContext } from "../../src/Player/PlayerContext";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
 const mockHandleSideEffect = vi.fn();
 vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
   useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
+let mockAudioElement = {
+  playbackRate: 1,
+} as unknown as HTMLAudioElement;
+
+vi.mock("../../src/AudioElement/useAudioElement", () => ({
+  useAudioElement: () => mockAudioElement,
 }));
 
 describe("ChangePlaybackRate", () => {
@@ -29,11 +36,8 @@ describe("ChangePlaybackRate", () => {
       () => mockIsDisabled,
     );
   });
-  const playerContext = createPlayerContext({
-    overrides: {
-      playbackRate: 1,
-    },
-  });
+
+  const playerContext = createPlayerContext();
 
   it("renders a button with correct text", () => {
     renderWithPlayerContext({
@@ -81,11 +85,7 @@ describe("ChangePlaybackRate", () => {
 
     // Use a fresh mock
     // Create minimal context with only required values
-    const playerContext = createPlayerContext({
-      overrides: {
-        playbackRate: 1,
-      },
-    });
+    const playerContext = createPlayerContext();
     // Render with the fresh context
     renderWithPlayerContext({
       playerContext,
@@ -144,19 +144,19 @@ describe("ChangePlaybackRate", () => {
   });
 
   it("calculates new playback rate based on current rate and amount", () => {
+    mockAudioElement = {
+      playbackRate: 2,
+    } as unknown as HTMLAudioElement;
     // Make sure button is enabled
     vi.spyOn(isDisabledModule, "useIsDisabled").mockReturnValue(false);
     // Create context with specific playback rate
-    const playerContext = createPlayerContext({
-      overrides: {
-        playbackRate: 2,
-      },
-    });
-    render(
-      <PlayerContext.Provider value={playerContext}>
+    const playerContext = createPlayerContext();
+    renderWithPlayerContext({
+      playerContext,
+      component: (
         <ChangePlaybackRate amount={0.5}>Change Rate</ChangePlaybackRate>
-      </PlayerContext.Provider>,
-    );
+      ),
+    });
 
     const button = screen.getByRole("button");
 

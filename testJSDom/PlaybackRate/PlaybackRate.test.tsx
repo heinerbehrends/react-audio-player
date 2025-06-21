@@ -1,15 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { PlaybackRate } from "../../src/PlaybackRate/PlaybackRate";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
 // Setup player context for testing
-const mockPlayerContext = createPlayerContext({
-  overrides: {
-    playbackRate: 1.5,
-  },
-});
+const mockPlayerContext = createPlayerContext();
+
+const mockAudioElement = {
+  playbackRate: 1.5,
+} as unknown as HTMLAudioElement;
+
+vi.mock("../../src/AudioElement/useAudioElement", () => ({
+  useAudioElement: () => mockAudioElement,
+}));
 
 describe("PlaybackRate", () => {
   it("should export all subcomponents", () => {

@@ -41,36 +41,41 @@ export function handleSideEffect(
       break;
     }
     case "SET_SLIDER_VALUE": {
-      if (action.component === "timeline") {
-        const time = calculateSliderValue({
-          clientXY: action.clientXY,
-          sliderLength: action.sliderLength,
-          maxValue: action.maxValue,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-          step: action.step,
-        });
-        audioElement.currentTime = time;
-      }
-      if (action.component === "volume") {
-        const volume = calculateSliderValue({
-          clientXY: action.clientXY,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-        });
-        audioElement.volume = volume;
-      }
-      if (action.component === "playbackRate") {
-        const playbackRate = calculateSliderValue({
-          clientXY: action.clientXY,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          minValue: action.minValue,
-          maxValue: action.maxValue,
-          step: action.step,
-        });
-        audioElement.playbackRate = playbackRate;
+      switch (action.component) {
+        case "timeline": {
+          const time = calculateSliderValue({
+            clientXY: action.clientXY,
+            sliderLength: action.sliderLength,
+            maxValue: action.maxValue,
+            sliderStart: action.sliderStart,
+            orientation: action.orientation,
+            step: action.step,
+          });
+          audioElement.currentTime = time;
+          break;
+        }
+        case "volume": {
+          const volume = calculateSliderValue({
+            clientXY: action.clientXY,
+            sliderLength: action.sliderLength,
+            sliderStart: action.sliderStart,
+            orientation: action.orientation,
+          });
+          audioElement.volume = volume;
+          break;
+        }
+        case "playbackRate": {
+          const playbackRate = calculateSliderValue({
+            clientXY: action.clientXY,
+            sliderLength: action.sliderLength,
+            sliderStart: action.sliderStart,
+            minValue: action.minValue,
+            maxValue: action.maxValue,
+            step: action.step,
+          });
+          audioElement.playbackRate = playbackRate;
+          break;
+        }
       }
       break;
     }
@@ -83,82 +88,86 @@ export function handleSideEffect(
       break;
     }
     case "DRAG_END": {
-      if (action.component === "timeline") {
-        const time = calculateSliderValue({
-          clientXY: action.clientXY - action.offsetFromMiddle,
-          sliderLength: action.sliderLength,
-          maxValue: action.maxValue,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-          step: action.step,
-        });
-        audioElement.currentTime = time;
-      }
-      if (action.component === "volume") {
-        if (areNumbersClose(audioElement.volume, 0)) {
-          // Restore the volume from when we started dragging
-          const dragStartVolume = parseFloat(
-            audioElement.dataset["dragStartVolume"] ?? "1",
-          );
-          audioElement.volume = dragStartVolume;
-          audioElement.muted = true;
-          // Clean up the stored value
-          delete audioElement.dataset["dragStartVolume"];
+      switch (action.component) {
+        case "timeline": {
+          const time = calculateSliderValue({
+            clientXY: action.clientXY - action.offsetFromMiddle,
+            sliderLength: action.sliderLength,
+            maxValue: action.maxValue,
+            sliderStart: action.sliderStart,
+            orientation: action.orientation,
+            step: action.step,
+          });
+          audioElement.currentTime = time;
+          break;
         }
-        return true;
-      }
-      if (action.component === "playbackRate") {
-        return;
+        case "volume": {
+          if (areNumbersClose(audioElement.volume, 0)) {
+            audioElement.muted = true;
+          }
+          break;
+        }
+        case "playbackRate": {
+          return;
+        }
       }
       break;
     }
     case "CHANGE_VALUE": {
-      if (action.component === "timeline") {
-        audioElement.currentTime = action.value;
-      }
-      if (action.component === "volume") {
-        const isCloseToZero = areNumbersClose(action.value, 0);
-        if (audioElement.muted && !isCloseToZero) {
-          audioElement.muted = false;
+      switch (action.component) {
+        case "timeline": {
+          audioElement.currentTime = action.value;
+          break;
         }
-        if (isCloseToZero) {
-          audioElement.muted = true;
+        case "volume": {
+          const isCloseToZero = areNumbersClose(action.value, 0);
+          if (audioElement.muted && !isCloseToZero) {
+            audioElement.muted = false;
+          }
+          if (isCloseToZero) {
+            audioElement.muted = true;
+          }
+          audioElement.volume = action.value;
+          break;
         }
-        audioElement.volume = action.value;
-      }
-      if (action.component === "playbackRate") {
-        audioElement.playbackRate = action.value;
+        case "playbackRate": {
+          audioElement.playbackRate = action.value;
+          break;
+        }
       }
       break;
     }
     case "DRAG": {
-      if (action.component === "timeline") {
-        return;
-      }
-      if (action.component === "volume") {
-        const volume = calculateSliderValue({
-          clientXY: action.clientXY - action.offsetFromMiddle,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          orientation: action.orientation,
-        });
-        audioElement.muted = false;
-        audioElement.volume = volume;
-      }
-      if (action.component === "playbackRate") {
-        const step = action.step || 0.25;
-        const minValue = action.minValue || 0.5;
-        const maxValue = action.maxValue || 4;
-        const playbackRate = calculateSliderValue({
-          minValue,
-          maxValue,
-          step,
-          sliderLength: action.sliderLength,
-          sliderStart: action.sliderStart,
-          clientXY: action.clientXY,
-        });
-
-        audioElement.playbackRate = playbackRate;
+      switch (action.component) {
+        case "timeline": {
+          return;
+        }
+        case "volume": {
+          const volume = calculateSliderValue({
+            clientXY: action.clientXY - action.offsetFromMiddle,
+            sliderLength: action.sliderLength,
+            sliderStart: action.sliderStart,
+            orientation: action.orientation,
+          });
+          audioElement.muted = false;
+          audioElement.volume = volume;
+          break;
+        }
+        case "playbackRate": {
+          const step = action.step || 0.25;
+          const minValue = action.minValue || 0.5;
+          const maxValue = action.maxValue || 4;
+          const playbackRate = calculateSliderValue({
+            minValue,
+            maxValue,
+            step,
+            sliderLength: action.sliderLength,
+            sliderStart: action.sliderStart,
+            clientXY: action.clientXY,
+          });
+          audioElement.playbackRate = playbackRate;
+          break;
+        }
       }
       break;
     }
@@ -176,7 +185,7 @@ export function handleSideEffect(
       const isCloseToZero = areNumbersClose(newVolume, 0);
       if (isCloseToZero) {
         audioElement.muted = true;
-        return true;
+        return;
       }
       audioElement.volume = newVolume;
       break;

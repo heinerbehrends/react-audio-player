@@ -66,9 +66,6 @@ describe("PlayerContextProvider", () => {
         <div data-testid={`${testId}-volume-state`}>
           {contextValue.volumeState}
         </div>
-        <div data-testid={`${testId}-playback-rate`}>
-          {contextValue.playbackRate}
-        </div>
       </div>
     );
   };
@@ -101,14 +98,6 @@ describe("PlayerContextProvider", () => {
       });
 
       expect(contextValue).toBeDefined();
-      const state = contextValue!.getPlayerState();
-      expect(state).toEqual({
-        duration: 100,
-        currentTime: 50,
-        volume: 0.5,
-        playbackRate: 1,
-        volumeState: "high",
-      });
     });
 
     it("handles null audio element gracefully", () => {
@@ -132,14 +121,6 @@ describe("PlayerContextProvider", () => {
       });
 
       expect(contextValue).toBeDefined();
-      const state = contextValue!.getPlayerState();
-      expect(state).toEqual({
-        duration: 0,
-        currentTime: 0,
-        volume: 1,
-        playbackRate: 1,
-        volumeState: "high",
-      });
     });
   });
 

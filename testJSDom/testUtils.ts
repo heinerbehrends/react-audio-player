@@ -25,25 +25,11 @@ const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   playerState: "paused" as const,
   showCaptions: false,
   isMuted: false,
-  playbackRate: 1,
   volumeState: "high" as const,
   timeDisplay: "elapsed" as const,
   audioFiles: [] as AudioFile[],
   cues: [],
   handlePlayerAction: vi.fn(),
-  unmuteVolumeRef: { current: 0 },
-  getPlayerState: () => ({
-    handlePlayerAction: DEFAULT_PLAYER_CONTEXT.handlePlayerAction,
-    playerState: DEFAULT_PLAYER_CONTEXT.playerState,
-    showCaptions: DEFAULT_PLAYER_CONTEXT.showCaptions,
-    isMuted: DEFAULT_PLAYER_CONTEXT.isMuted,
-    duration: 0,
-    currentTime: 0,
-    volume: 0.5,
-    playbackRate: 1,
-    volumeState: "high" as const,
-    unmuteVolumeRef: { current: 0 },
-  }),
 };
 
 // Default values for audio context
@@ -51,7 +37,6 @@ const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
 const DEFAULT_AUDIO_ELEMENT: Partial<HTMLAudioElement> = {
   currentTime: 0,
   volume: 1,
-  playbackRate: 1,
   duration: 100,
   paused: false,
   addEventListener: vi.fn(),
@@ -76,22 +61,13 @@ export function createSliderContext(
  */
 export function createPlayerContext({
   overrides = {},
-  getPlayerStateOverrides = {},
 }: {
   overrides?: Partial<typeof DEFAULT_PLAYER_CONTEXT>;
-  getPlayerStateOverrides?: Partial<
-    (typeof DEFAULT_PLAYER_CONTEXT)["getPlayerState"]
-  >;
 } = {}) {
   const handlePlayerAction = vi.fn();
   return {
     ...DEFAULT_PLAYER_CONTEXT,
     handlePlayerAction,
-    getPlayerState: () => ({
-      ...DEFAULT_PLAYER_CONTEXT.getPlayerState(),
-      handlePlayerAction,
-      ...getPlayerStateOverrides,
-    }),
     ...overrides,
   };
 }

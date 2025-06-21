@@ -1,5 +1,4 @@
-import { useCallback, useContext } from "react";
-import { PlayerContext } from "./PlayerContext";
+import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
@@ -30,14 +29,11 @@ export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
 }
 
 function useSeek(amount: number) {
-  const { getPlayerState } = useContext(PlayerContext);
   const handleSideEffect = useHandleSideEffect();
   return useCallback(() => {
-    const { currentTime } = getPlayerState();
     handleSideEffect({
-      type: "CHANGE_VALUE",
-      component: "timeline",
-      value: currentTime + amount,
+      type: "SET_TIME_FORWARD",
+      value: amount,
     });
-  }, [handleSideEffect, getPlayerState, amount]);
+  }, [handleSideEffect, amount]);
 }

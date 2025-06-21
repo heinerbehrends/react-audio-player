@@ -8,6 +8,16 @@ import {
 } from "../../src/Player/PlayerContext";
 import "@testing-library/jest-dom";
 import { createPlayerContext } from "../testUtils";
+import { formatTime } from "../../src/Shared/sharedFunctions";
+
+const mockAudioElement = {
+  currentTime: 65,
+  duration: 120,
+} as unknown as HTMLAudioElement;
+
+vi.mock("../../src/AudioElement/useAudioElement", () => ({
+  useAudioElement: () => mockAudioElement,
+}));
 
 const createWrapper =
   (context: PlayerContextType) =>
@@ -16,17 +26,7 @@ const createWrapper =
   );
 
 describe("Time", () => {
-  const defaultContext = createPlayerContext({
-    overrides: {
-      handlePlayerAction: vi.fn(),
-      playerState: "playing",
-      timeDisplay: "elapsed",
-    },
-    getPlayerStateOverrides: () => ({
-      duration: 65,
-      currentTime: 45,
-    }),
-  });
+  const defaultContext = createPlayerContext();
   it("hides when showing remaining time", () => {
     const context = { ...defaultContext, timeDisplay: "remaining" as const };
     render(<Time.Elapsed />, { wrapper: createWrapper(context) });
@@ -47,27 +47,8 @@ describe("Time", () => {
   });
 
   it("formats time correctly", () => {
-    const mockAudioElement = {
-      duration: 65,
-      currentTime: 45,
-      volume: 0.5,
-      playbackRate: 1.5,
-    } as HTMLAudioElement;
-
-    const context = createPlayerContext({
-      overrides: {
-        playerState: "playing",
-        timeDisplay: "elapsed",
-        getPlayerState: () => ({
-          duration: mockAudioElement.duration,
-          currentTime: mockAudioElement.currentTime,
-          volume: mockAudioElement.volume,
-          playbackRate: mockAudioElement.playbackRate,
-          volumeState: "high",
-        }),
-      },
-    });
-    render(<Time.Duration />, { wrapper: createWrapper(context) });
-    expect(screen.getByLabelText("duration")).toHaveTextContent("1:05");
+    expect(formatTime(65)).toBe("1:05");
+    expect(formatTime(120)).toBe("2:00");
+    expect(formatTime(121)).toBe("2:01");
   });
 });

@@ -1,7 +1,6 @@
 import type {
   ToggleMuteAction,
   UnmuteAction,
-  SetPlaybackRateAction,
   AudioFileEndedAction,
   PauseAction,
   TogglePlayAction,
@@ -28,49 +27,54 @@ type SetSliderValueAction = SliderData & {
   component: "timeline" | "volume" | "playbackRate";
 };
 
-export type PlayAction = {
+type PlayAction = {
   type: "PLAY";
 };
 
-export type IncreaseVolumeAction = {
+type IncreaseVolumeAction = {
   type: "INCREASE_VOLUME";
   value: number;
 };
 
-export type DecreaseVolumeAction = {
+type DecreaseVolumeAction = {
   type: "DECREASE_VOLUME";
   value: number;
 };
 
-export type IncreasePlaybackRateAction = {
+type IncreasePlaybackRateAction = {
   type: "INCREASE_PLAYBACK_RATE";
   value: number;
 };
 
-export type DecreasePlaybackRateAction = {
+type DecreasePlaybackRateAction = {
   type: "DECREASE_PLAYBACK_RATE";
   value: number;
 };
 
-export type ResetPlaybackRateAction = {
+type SetPlaybackRateAction = {
+  type: "SET_PLAYBACK_RATE";
+  playbackRate: number;
+};
+
+type ResetPlaybackRateAction = {
   type: "RESET_PLAYBACK_RATE";
 };
 
-export type SetTimeForwardAction = {
+type SetTimeForwardAction = {
   type: "SET_TIME_FORWARD";
   value: number;
 };
 
-export type SetTimeBackwardAction = {
+type SetTimeBackwardAction = {
   type: "SET_TIME_BACKWARD";
   value: number;
 };
 
-export type SetTimeToStartAction = {
+type SetTimeToStartAction = {
   type: "SET_TIME_TO_START";
 };
 
-export type SetTimeToPercentAction = {
+type SetTimeToPercentAction = {
   type: "SET_TIME_TO_PERCENT";
   percent: number;
 };

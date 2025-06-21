@@ -1,16 +1,10 @@
-import { useContext } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
-import { SliderContextType } from "../Slider/SliderContext";
+import type { SliderContextType } from "../Slider/SliderContext";
+import { useAudioElement } from "../AudioElement/useAudioElement";
+import { formatTime } from "../Shared/sharedFunctions";
 
 export function useTimelineAriaAttributes(context: SliderContextType) {
-  const { getPlayerState } = useContext(PlayerContext);
-  const { currentTime, duration } = getPlayerState();
+  const { currentTime, duration } = useAudioElement();
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
   const ariaLabelMap = {
     playbackRate: "Playback rate slider",
     timeline: "Timeline slider",

@@ -28,9 +28,10 @@ export function useHandleVolumeChange() {
     const isMuted =
       audioElementRef.current?.muted ??
       areNumbersClose(audioElementRef.current?.volume ?? 0, 0);
-    console.log("isMuted useHandleVolumeChange", isMuted);
     const volume = audioElementRef.current?.volume ?? 0;
+
     if (!volumeCallbackRef?.current?.handleVolumeAction) return;
+
     if (isMuted) {
       volumeCallbackRef.current.handleVolumeAction({
         type: "UPDATE_UI_VALUE",
@@ -88,26 +89,17 @@ export function usePlayerCallbacks() {
     handlePlayerAction({ type: "TOGGLE_PLAY" });
   }, [handlePlayerAction]);
 
-  const handlePlaybackRateChange = useCallback(
-    (rate: number) => {
-      handlePlayerAction({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
-    },
-    [handlePlayerAction],
-  );
-
   return {
     handleEnded,
     handleError,
     handleLoadedMetadata,
     handlePause,
     handlePlay,
-    handlePlaybackRateChange,
   };
 }
 
 export function useHandlePlaybackRateChange() {
   const { audioElementRef, playbackRateCallbackRef } = useContext(AudioContext);
-  const { handlePlayerAction } = useContext(PlayerContext);
   return useCallback(() => {
     if (playbackRateCallbackRef?.current?.handlePlaybackRateAction) {
       playbackRateCallbackRef.current.handlePlaybackRateAction({
@@ -116,9 +108,5 @@ export function useHandlePlaybackRateChange() {
         component: "playbackRate",
       });
     }
-    handlePlayerAction({
-      type: "SET_PLAYBACK_RATE",
-      playbackRate: audioElementRef.current?.playbackRate ?? 1,
-    });
-  }, [playbackRateCallbackRef, audioElementRef, handlePlayerAction]);
+  }, [playbackRateCallbackRef, audioElementRef]);
 }

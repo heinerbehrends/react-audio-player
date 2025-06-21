@@ -29,11 +29,6 @@ type CaptionCueChangeAction = {
   cues: TextTrackCue[];
 };
 
-export type SetPlaybackRateAction = {
-  type: "SET_PLAYBACK_RATE";
-  playbackRate: number;
-};
-
 export type SetVolumeStateAction = {
   type: "SET_VOLUME_STATE";
   volumeState: "muted" | "low" | "high";
@@ -59,7 +54,6 @@ export type PlayerContextAction =
   | AudioFileEndedAction
   | AudioFileErrorAction
   | CaptionCueChangeAction
-  | SetPlaybackRateAction
   | SetVolumeStateAction
   | UnmuteAction
   | PauseAction
@@ -69,42 +63,24 @@ export type PlayerContextActionType = PlayerContextAction["type"];
 
 export type VolumeState = "muted" | "low" | "high";
 
-export type PlayerStateReturnType = {
-  duration: number;
-  currentTime: number;
-  volume: number;
-  playbackRate: number;
-  volumeState: VolumeState;
-};
-
 export type PlayerState = "loading" | "playing" | "paused" | "error";
 export type PlayerContextType = {
+  isMuted: boolean;
   handlePlayerAction: (action: PlayerContextAction) => void;
   playerState: PlayerState;
   showCaptions: boolean;
-  isMuted: boolean;
-  playbackRate: number;
   volumeState: VolumeState;
-  getPlayerState: () => PlayerStateReturnType;
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
   cues: VTTCue[];
 };
 
 export const initialPlayerState: PlayerContextType = {
+  isMuted: false,
   handlePlayerAction: () => {},
   playerState: "loading",
   showCaptions: true,
-  isMuted: false,
-  playbackRate: 1,
   volumeState: "high",
-  getPlayerState: () => ({
-    duration: 0,
-    currentTime: 0,
-    volume: 1,
-    playbackRate: 1,
-    volumeState: "high",
-  }),
   timeDisplay: "elapsed",
   audioFiles: [],
   cues: [],

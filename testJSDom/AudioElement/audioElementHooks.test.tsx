@@ -272,10 +272,13 @@ describe("audioElementHooks", () => {
   });
 
   describe("useHandlePlaybackRateChange", () => {
-    it("should update UI and dispatch playback rate change", () => {
+    it("should update UI value", () => {
+      mockAudioElement = {
+        playbackRate: 1.5,
+      } as unknown as HTMLAudioElement;
       const audioContext = createAudioContext({
         audioElementRef: {
-          current: { ...mockAudioElement, playbackRate: 1.5 },
+          current: mockAudioElement,
         },
       });
       const playerContext = createPlayerContext();
@@ -293,63 +296,6 @@ describe("audioElementHooks", () => {
         type: "UPDATE_UI_VALUE",
         value: 1.5,
         component: "playbackRate",
-      });
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_PLAYBACK_RATE",
-        playbackRate: 1.5,
-      });
-    });
-
-    it("should use default playback rate of 1 if audio element is null", () => {
-      const audioContext = createAudioContext({
-        audioElementRef: { current: null },
-      });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-      const { result } = renderHook(() => useHandlePlaybackRateChange(), {
-        wrapper,
-      });
-
-      result.current();
-
-      expect(
-        audioContext.playbackRateCallbackRef.current.handlePlaybackRateAction,
-      ).toHaveBeenCalledWith({
-        type: "UPDATE_UI_VALUE",
-        value: 1,
-        component: "playbackRate",
-      });
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_PLAYBACK_RATE",
-        playbackRate: 1,
-      });
-    });
-
-    it("should not call playbackRateCallbackRef handler when it's null", () => {
-      const audioContext = createAudioContext({
-        audioElementRef: { current: mockAudioElement },
-        playbackRateCallbackRef: {
-          current: { handlePlaybackRateAction: null },
-        },
-      });
-
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-
-      const { result } = renderHook(() => useHandlePlaybackRateChange(), {
-        wrapper,
-      });
-
-      result.current();
-
-      expect(
-        audioContext.playbackRateCallbackRef.current.handlePlaybackRateAction,
-      ).toBeNull();
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_PLAYBACK_RATE",
-        playbackRate: mockAudioElement.playbackRate,
       });
     });
   });

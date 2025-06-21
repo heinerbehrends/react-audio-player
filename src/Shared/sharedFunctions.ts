@@ -133,3 +133,10 @@ function isTouchEvent(
 ): event is React.TouchEvent<HTMLButtonElement> {
   return "touches" in event;
 }
+
+export function formatTime(time: number) {
+  const roundedTime = Math.round(time);
+  const minutes = Math.floor(roundedTime / 60);
+  const seconds = roundedTime % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}

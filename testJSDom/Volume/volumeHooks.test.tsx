@@ -1,26 +1,31 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useVolumeAriaAttributes } from "../../src/Volume/volumeHooks";
-import { PlayerContext } from "../../src/Player/PlayerContext";
-import React from "react";
+import {
+  PlayerContext,
+  PlayerContextType,
+} from "../../src/Player/PlayerContext";
+import { createPlayerContext } from "../testUtils";
+
+let mockAudioElement = {
+  volume: 0.5,
+} as unknown as HTMLAudioElement;
+
+vi.mock("../../src/AudioElement/useAudioElement", () => ({
+  useAudioElement: () => mockAudioElement,
+}));
 
 describe("useVolumeAriaAttributes", () => {
-  const createPlayerContext = (overrides = {}) => ({
-    getPlayerState: () => ({
-      volume: 0.5,
-      ...overrides,
-    }),
-  });
-
   const createWrapper =
-    (contextValue) =>
-    ({ children }) => (
+    (contextValue: PlayerContextType) =>
+    ({ children }: { children: React.ReactNode }) => (
       <PlayerContext.Provider value={contextValue}>
         {children}
       </PlayerContext.Provider>
     );
 
   it("should return correct aria attributes for volume", () => {
+    mockAudioElement = { volume: 0.5 } as unknown as HTMLAudioElement;
     const playerContext = createPlayerContext();
     const { result } = renderHook(() => useVolumeAriaAttributes(), {
       wrapper: createWrapper(playerContext),
@@ -36,7 +41,8 @@ describe("useVolumeAriaAttributes", () => {
   });
 
   it("should handle volume at 0%", () => {
-    const playerContext = createPlayerContext({ volume: 0 });
+    mockAudioElement = { volume: 0 } as unknown as HTMLAudioElement;
+    const playerContext = createPlayerContext();
     const { result } = renderHook(() => useVolumeAriaAttributes(), {
       wrapper: createWrapper(playerContext),
     });
@@ -46,7 +52,8 @@ describe("useVolumeAriaAttributes", () => {
   });
 
   it("should handle volume at 100%", () => {
-    const playerContext = createPlayerContext({ volume: 1 });
+    mockAudioElement = { volume: 1 } as unknown as HTMLAudioElement;
+    const playerContext = createPlayerContext();
     const { result } = renderHook(() => useVolumeAriaAttributes(), {
       wrapper: createWrapper(playerContext),
     });
@@ -56,7 +63,8 @@ describe("useVolumeAriaAttributes", () => {
   });
 
   it("should round volume percentage", () => {
-    const playerContext = createPlayerContext({ volume: 0.333 });
+    mockAudioElement = { volume: 0.333 } as unknown as HTMLAudioElement;
+    const playerContext = createPlayerContext();
     const { result } = renderHook(() => useVolumeAriaAttributes(), {
       wrapper: createWrapper(playerContext),
     });

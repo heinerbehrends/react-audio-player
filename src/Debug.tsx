@@ -16,11 +16,7 @@ export function Debug({
 }: {
   type: "timeline" | "volume" | "playbackRate";
 }) {
-  const {
-    playerState: state,
-    volumeState,
-    isMuted,
-  } = useContext(PlayerContext);
+  const { playerState: state, volumeState } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
   } = useContext(AudioContext);
@@ -53,7 +49,6 @@ export function Debug({
       <p>Volume state: {volumeState}</p>
       <p>Min Value: {context.minValue}</p>
       <p>Max Value: {context.maxValue}</p>
-      <p>Audio Element muted: {isMuted ? "true" : "false"}</p>
     </div>
   );
 }

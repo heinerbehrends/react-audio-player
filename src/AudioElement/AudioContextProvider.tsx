@@ -5,7 +5,6 @@ import {
   VolumeProviderRef,
   type TimelineProviderRef,
 } from "./AudioContext";
-import { handleSideEffect } from "./handleSideEffect";
 
 type TimelineProviderProps = {
   children: React.ReactNode;
@@ -28,7 +27,6 @@ export function AudioContextProvider({ children }: TimelineProviderProps) {
     <AudioContext.Provider
       value={{
         audioElementRef,
-        handleSideEffect,
         timelineCallbackRef,
         volumeCallbackRef,
         playbackRateCallbackRef,

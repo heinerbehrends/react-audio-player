@@ -17,6 +17,14 @@ vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
   useHandleSideEffect: () => mockHandleSideEffect,
 }));
 
+let mockAudioElement = {
+  playbackRate: 1,
+} as unknown as HTMLAudioElement;
+
+vi.mock("../../src/AudioElement/useAudioElement", () => ({
+  useAudioElement: () => mockAudioElement,
+}));
+
 const defaultContext = createPlayerContext();
 
 describe("SetPlaybackRate", () => {
@@ -33,33 +41,33 @@ describe("SetPlaybackRate", () => {
     );
   });
 
-  const renderWithContext = (playbackRate = 1, rate = 1.5) => {
-    const playerContext = {
-      ...defaultContext,
-      playbackRate,
-    };
-
-    return renderWithPlayerContext({
-      playerContext,
-      component: <SetPlaybackRate rate={rate}>{rate}x</SetPlaybackRate>,
-    });
-  };
-
   it("renders a button with correct text", () => {
-    renderWithContext();
+    renderWithPlayerContext({
+      playerContext: defaultContext,
+      component: <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
+    });
     const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
     expect(button).toHaveTextContent("1.5x");
   });
 
   it("sets correct aria-label", () => {
-    renderWithContext(1, 2);
+    mockAudioElement = {
+      playbackRate: 1,
+    } as unknown as HTMLAudioElement;
+    renderWithPlayerContext({
+      playerContext: defaultContext,
+      component: <SetPlaybackRate rate={2}>2x</SetPlaybackRate>,
+    });
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute("aria-label", "Set playback rate to 2x");
   });
 
   it("calls handleSideEffect with correct values when clicked", () => {
-    renderWithContext();
+    renderWithPlayerContext({
+      playerContext: defaultContext,
+      component: <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
+    });
     const button = screen.getByRole("button");
 
     fireEvent.click(button);
@@ -71,7 +79,10 @@ describe("SetPlaybackRate", () => {
   });
 
   it("uses handleMediaKeys for keyboard events", () => {
-    renderWithContext();
+    renderWithPlayerContext({
+      playerContext: defaultContext,
+      component: <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
+    });
     const button = screen.getByRole("button");
 
     fireEvent.keyDown(button, { key: "p" });
@@ -81,7 +92,10 @@ describe("SetPlaybackRate", () => {
 
   it("is disabled when useIsDisabled returns true", () => {
     mockIsDisabled = true;
-    renderWithContext();
+    renderWithPlayerContext({
+      playerContext: defaultContext,
+      component: <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
+    });
     const button = screen.getByRole("button");
 
     expect(button).toBeDisabled();
@@ -91,11 +105,11 @@ describe("SetPlaybackRate", () => {
   });
 
   it("accepts and applies additional props", () => {
+    mockAudioElement = {
+      playbackRate: 1,
+    } as unknown as HTMLAudioElement;
     renderWithPlayerContext({
-      playerContext: {
-        ...defaultContext,
-        playbackRate: 1,
-      },
+      playerContext: defaultContext,
       component: (
         <SetPlaybackRate
           rate={1.5}
@@ -114,9 +128,7 @@ describe("SetPlaybackRate", () => {
 });
 
 describe("CurrentIndicator", () => {
-  const testContext = {
-    ...defaultContext,
-  };
+  const testContext = createPlayerContext();
 
   it("renders children when rate matches current playback rate", () => {
     renderWithPlayerContext({
@@ -151,11 +163,12 @@ describe("CurrentIndicator", () => {
   });
 
   it("handles close but not exact rate values", () => {
+    mockAudioElement = {
+      playbackRate: 1.001,
+    } as unknown as HTMLAudioElement;
+
     renderWithPlayerContext({
-      playerContext: {
-        ...testContext,
-        playbackRate: 1.001, // Very close to 1
-      },
+      playerContext: testContext,
       component: (
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
@@ -170,11 +183,11 @@ describe("CurrentIndicator", () => {
 
 describe("RateDisplay", () => {
   it("displays the current playback rate with 'x' suffix", () => {
+    mockAudioElement = {
+      playbackRate: 1.5,
+    } as unknown as HTMLAudioElement;
     renderWithPlayerContext({
-      playerContext: {
-        ...defaultContext,
-        playbackRate: 1.5,
-      },
+      playerContext: defaultContext,
       component: <RateDisplay />,
     });
 
@@ -183,11 +196,11 @@ describe("RateDisplay", () => {
   });
 
   it("rounds the playback rate to 2 decimal places", () => {
+    mockAudioElement = {
+      playbackRate: 1.755,
+    } as unknown as HTMLAudioElement;
     renderWithPlayerContext({
-      playerContext: {
-        ...defaultContext,
-        playbackRate: 1.755,
-      },
+      playerContext: defaultContext,
       component: <RateDisplay />,
     });
 
@@ -197,10 +210,7 @@ describe("RateDisplay", () => {
 
   it("accepts and applies additional props", () => {
     renderWithPlayerContext({
-      playerContext: {
-        ...defaultContext,
-        playbackRate: 1.755,
-      },
+      playerContext: defaultContext,
       component: (
         <RateDisplay data-testid="rate-display" className="custom-display" />
       ),

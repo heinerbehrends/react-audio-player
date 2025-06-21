@@ -10,17 +10,7 @@ vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
 }));
 
 describe("Seek", () => {
-  const mockGetPlayerState = vi.fn().mockReturnValue({
-    currentTime: 30,
-    duration: 100,
-    volume: 0.5,
-  });
-
-  const defaultContext = createPlayerContext({
-    overrides: {
-      getPlayerState: mockGetPlayerState,
-    },
-  });
+  const defaultContext = createPlayerContext();
 
   const defaultAudioContext = createAudioContext();
 
@@ -52,9 +42,8 @@ describe("Seek", () => {
       fireEvent.click(screen.getByLabelText("Seek forward by 10 seconds"));
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        component: "timeline",
-        value: 40, // 30 + 10
+        type: "SET_TIME_FORWARD",
+        value: 10,
       });
     });
 
@@ -63,9 +52,8 @@ describe("Seek", () => {
       fireEvent.click(screen.getByLabelText("Seek backward by 10 seconds"));
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        component: "timeline",
-        value: 20, // 30 - 10
+        type: "SET_TIME_FORWARD",
+        value: -10,
       });
     });
   });
@@ -80,19 +68,6 @@ describe("Seek", () => {
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "SET_TIME_FORWARD",
         value: 5,
-      });
-    });
-
-    it("ignores keyboard events when component is volume", () => {
-      renderSeek(10);
-      fireEvent.keyDown(screen.getByLabelText("Seek forward by 10 seconds"), {
-        key: "ArrowRight",
-      });
-
-      // Should not call handlePlayerAction for volume component
-      expect(mockHandleSideEffect).not.toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        component: "volume",
       });
     });
   });

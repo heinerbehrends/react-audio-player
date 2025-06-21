@@ -3,6 +3,8 @@ import { PlayerContext } from "../Player/PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useAudioElement } from "../AudioElement/useAudioElement";
+import { formatTime } from "../Shared/sharedFunctions";
 
 type ChildrenProps = {
   children: React.ReactNode;
@@ -64,8 +66,7 @@ const Remaining = memo(function Remaining() {
 });
 
 const Duration = memo(function Duration() {
-  const { getPlayerState } = useContext(PlayerContext);
-  const { duration } = getPlayerState();
+  const { duration } = useAudioElement();
   return <time aria-label="duration">{formatTime(duration)}</time>;
 });
 
@@ -84,10 +85,3 @@ export const Time: Time = Object.assign({
   Duration,
   Toggle,
 });
-
-function formatTime(time: number) {
-  const roundedTime = Math.round(time);
-  const minutes = Math.floor(roundedTime / 60);
-  const seconds = roundedTime % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}

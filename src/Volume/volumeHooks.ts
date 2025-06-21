@@ -1,9 +1,7 @@
-import { useContext } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
+import { useAudioElement } from "../AudioElement/useAudioElement";
 
 export function useVolumeAriaAttributes() {
-  const { getPlayerState } = useContext(PlayerContext);
-  const { volume } = getPlayerState();
+  const { volume } = useAudioElement();
   return {
     "aria-label": "Adjust volume",
     "aria-valuemin": 0,

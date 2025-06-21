@@ -27,7 +27,6 @@ describe("MuteButton", () => {
         volumeState: state as VolumeState,
         isMuted,
         getPlayerState: vi.fn(() => ({
-          ...mockPlayerContext.getPlayerState(),
           volumeState: state as VolumeState,
           isMuted,
         })),
