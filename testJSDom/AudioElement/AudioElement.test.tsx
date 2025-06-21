@@ -137,4 +137,29 @@ describe("AudioElement", () => {
     const audio = screen.getByLabelText("audio player");
     expect(audio).toHaveAttribute("aria-label", "audio player");
   });
+
+  it("updates timeline max value when duration changes", () => {
+    const mockTimelineAction = vi.fn();
+    const mockAudioElement = { duration: 150 } as HTMLAudioElement;
+    const audioContext = createAudioContext({
+      audioElementRef: { current: mockAudioElement },
+      timelineCallbackRef: {
+        current: { handleTimelineAction: mockTimelineAction },
+      },
+    });
+
+    renderWithContexts({
+      playerContext: createPlayerContext(),
+      audioContext: audioContext,
+      component: <AudioElement />,
+    });
+
+    const audio = screen.getByLabelText("audio player");
+    audio.dispatchEvent(new Event("durationchange"));
+
+    expect(mockTimelineAction).toHaveBeenCalledWith({
+      type: "SET_MAX_VALUE",
+      maxValue: 100,
+    });
+  });
 });

@@ -37,6 +37,7 @@ export const AudioElement = memo(function AudioElement() {
     !!playbackRateCallbackRef?.current?.handlePlaybackRateAction;
   return (
     <audio
+      src={src}
       aria-label="audio player"
       ref={audioElementRef}
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
@@ -59,7 +60,6 @@ export const AudioElement = memo(function AudioElement() {
           timelineCallbackRef?.current?.handleTimelineAction,
         );
       }}
-      src={src}
     >
       {captionSrc && <Track src={captionSrc} />}
     </audio>
