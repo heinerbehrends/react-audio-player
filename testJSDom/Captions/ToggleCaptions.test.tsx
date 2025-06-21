@@ -27,7 +27,6 @@ describe("ToggleCaptions", () => {
     getPlayerState: vi.fn(),
     playbackRate: 1,
     volumeState: "high" as const,
-    unmuteVolumeRef: { current: 0.5 },
     timeDisplay: "elapsed" as const,
   };
 

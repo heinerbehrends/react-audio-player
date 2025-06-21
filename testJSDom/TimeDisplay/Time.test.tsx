@@ -64,7 +64,6 @@ describe("Time", () => {
           volume: mockAudioElement.volume,
           playbackRate: mockAudioElement.playbackRate,
           volumeState: "high",
-          unmuteVolumeRef: { current: 0.5 },
         }),
       },
     });

@@ -8,6 +8,7 @@ import type {
 } from "../Player/PlayerContext";
 import type {
   DragAction,
+  DragStartAction,
   DragEndAction,
   SliderData,
 } from "../Slider/SliderContext";
@@ -27,13 +28,51 @@ type SetSliderValueAction = SliderData & {
   component: "timeline" | "volume" | "playbackRate";
 };
 
-type SetUnmuteVolumeAction = {
-  type: "SET_UNMUTE_VOLUME";
-  unmuteVolume: number;
-};
-
 export type PlayAction = {
   type: "PLAY";
+};
+
+export type IncreaseVolumeAction = {
+  type: "INCREASE_VOLUME";
+  value: number;
+};
+
+export type DecreaseVolumeAction = {
+  type: "DECREASE_VOLUME";
+  value: number;
+};
+
+export type IncreasePlaybackRateAction = {
+  type: "INCREASE_PLAYBACK_RATE";
+  value: number;
+};
+
+export type DecreasePlaybackRateAction = {
+  type: "DECREASE_PLAYBACK_RATE";
+  value: number;
+};
+
+export type ResetPlaybackRateAction = {
+  type: "RESET_PLAYBACK_RATE";
+};
+
+export type SetTimeForwardAction = {
+  type: "SET_TIME_FORWARD";
+  value: number;
+};
+
+export type SetTimeBackwardAction = {
+  type: "SET_TIME_BACKWARD";
+  value: number;
+};
+
+export type SetTimeToStartAction = {
+  type: "SET_TIME_TO_START";
+};
+
+export type SetTimeToPercentAction = {
+  type: "SET_TIME_TO_PERCENT";
+  percent: number;
 };
 
 export type SideEffectAction =
@@ -44,9 +83,18 @@ export type SideEffectAction =
   | StopAudioAction
   | SetPlaybackRateAction
   | ChangeValueAction
+  | DragStartAction
   | DragAction
   | DragEndAction
   | AudioFileEndedAction
   | UnmuteAction
   | SetSliderValueAction
-  | SetUnmuteVolumeAction;
+  | IncreaseVolumeAction
+  | DecreaseVolumeAction
+  | IncreasePlaybackRateAction
+  | DecreasePlaybackRateAction
+  | ResetPlaybackRateAction
+  | SetTimeForwardAction
+  | SetTimeBackwardAction
+  | SetTimeToStartAction
+  | SetTimeToPercentAction;

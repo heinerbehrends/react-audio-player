@@ -28,6 +28,7 @@ export function useHandleVolumeChange() {
     const isMuted =
       audioElementRef.current?.muted ??
       areNumbersClose(audioElementRef.current?.volume ?? 0, 0);
+    console.log("isMuted useHandleVolumeChange", isMuted);
     const volume = audioElementRef.current?.volume ?? 0;
     if (!volumeCallbackRef?.current?.handleVolumeAction) return;
     if (isMuted) {

@@ -8,7 +8,6 @@ export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null,
 ) {
-  console.log("handleSideEffect", action);
   if (!audioElement) return;
   switch (action.type) {
     case "PLAY": {
@@ -34,9 +33,6 @@ export function handleSideEffect(
       break;
     }
     case "TOGGLE_MUTE": {
-      if (audioElement.muted) {
-        audioElement.volume = action.unmuteVolume;
-      }
       audioElement.muted = !audioElement.muted;
       break;
     }
@@ -78,6 +74,14 @@ export function handleSideEffect(
       }
       break;
     }
+    case "DRAG_START": {
+      if (action.component === "volume") {
+        // Store the current volume when starting to drag
+        audioElement.dataset["dragStartVolume"] =
+          audioElement.volume.toString();
+      }
+      break;
+    }
     case "DRAG_END": {
       if (action.component === "timeline") {
         const time = calculateSliderValue({
@@ -91,7 +95,17 @@ export function handleSideEffect(
         audioElement.currentTime = time;
       }
       if (action.component === "volume") {
-        return;
+        if (areNumbersClose(audioElement.volume, 0)) {
+          // Restore the volume from when we started dragging
+          const dragStartVolume = parseFloat(
+            audioElement.dataset["dragStartVolume"] ?? "1",
+          );
+          audioElement.volume = dragStartVolume;
+          audioElement.muted = true;
+          // Clean up the stored value
+          delete audioElement.dataset["dragStartVolume"];
+        }
+        return true;
       }
       if (action.component === "playbackRate") {
         return;
@@ -106,6 +120,9 @@ export function handleSideEffect(
         const isCloseToZero = areNumbersClose(action.value, 0);
         if (audioElement.muted && !isCloseToZero) {
           audioElement.muted = false;
+        }
+        if (isCloseToZero) {
+          audioElement.muted = true;
         }
         audioElement.volume = action.value;
       }
@@ -147,6 +164,57 @@ export function handleSideEffect(
     }
     case "SET_PLAYBACK_RATE": {
       audioElement.playbackRate = action.playbackRate;
+      break;
+    }
+    case "INCREASE_VOLUME": {
+      const newVolume = Math.min(audioElement.volume + action.value, 1);
+      audioElement.volume = newVolume;
+      break;
+    }
+    case "DECREASE_VOLUME": {
+      const newVolume = Math.max(audioElement.volume - action.value, 0);
+      const isCloseToZero = areNumbersClose(newVolume, 0);
+      if (isCloseToZero) {
+        audioElement.muted = true;
+        return true;
+      }
+      audioElement.volume = newVolume;
+      break;
+    }
+    case "INCREASE_PLAYBACK_RATE": {
+      const newRate = Math.min(audioElement.playbackRate + action.value, 4);
+      audioElement.playbackRate = newRate;
+      break;
+    }
+    case "DECREASE_PLAYBACK_RATE": {
+      const newRate = Math.max(audioElement.playbackRate - action.value, 0.5);
+      audioElement.playbackRate = newRate;
+      break;
+    }
+    case "RESET_PLAYBACK_RATE": {
+      audioElement.playbackRate = 1;
+      break;
+    }
+    case "SET_TIME_FORWARD": {
+      const newTime = Math.min(
+        audioElement.currentTime + action.value,
+        audioElement.duration,
+      );
+      audioElement.currentTime = newTime;
+      break;
+    }
+    case "SET_TIME_BACKWARD": {
+      const newTime = Math.max(audioElement.currentTime - action.value, 0);
+      audioElement.currentTime = newTime;
+      break;
+    }
+    case "SET_TIME_TO_START": {
+      audioElement.currentTime = 0;
+      break;
+    }
+    case "SET_TIME_TO_PERCENT": {
+      const newTime = audioElement.duration * action.percent;
+      audioElement.currentTime = newTime;
       break;
     }
   }

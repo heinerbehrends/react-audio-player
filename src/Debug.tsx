@@ -20,7 +20,6 @@ export function Debug({
     playerState: state,
     volumeState,
     isMuted,
-    unmuteVolumeRef: { current: unmuteVolume },
   } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
@@ -51,7 +50,6 @@ export function Debug({
       <p>X Offset: {context.clientXY}</p>
       <p>Offset From Middle: {context.offsetFromMiddle}</p>
       <p>Orientation: {context.orientation}</p>
-      <p>Unmute Volume: {unmuteVolume}</p>
       <p>Volume state: {volumeState}</p>
       <p>Min Value: {context.minValue}</p>
       <p>Max Value: {context.maxValue}</p>

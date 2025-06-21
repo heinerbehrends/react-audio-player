@@ -19,7 +19,6 @@ describe("PlayerContext", () => {
         isMuted: false,
         playbackRate: 1,
         volumeState: "high",
-        unmuteVolumeRef: { current: 1 },
         getPlayerState: expect.any(Function),
         timeDisplay: "elapsed",
         audioFiles: [],
@@ -35,7 +34,6 @@ describe("PlayerContext", () => {
         volume: 1,
         playbackRate: 1,
         volumeState: "high",
-        unmuteVolumeRef: { current: 1 },
       });
     });
   });
@@ -48,7 +46,6 @@ describe("PlayerContext", () => {
       volume: 0.5,
       playbackRate: 1,
       volumeState: "high" as VolumeState,
-      unmuteVolumeRef: { current: 0.5 },
     }));
 
     const TestComponent = () => {
@@ -127,7 +124,6 @@ describe("PlayerContext", () => {
         volume: 0.5,
         playbackRate: 1,
         volumeState: "high",
-        unmuteVolumeRef: { current: 0.5 },
       });
     });
   });

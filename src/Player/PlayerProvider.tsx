@@ -1,11 +1,4 @@
-import {
-  useMemo,
-  useReducer,
-  memo,
-  useContext,
-  useCallback,
-  useRef,
-} from "react";
+import { useMemo, useReducer, memo, useContext, useCallback } from "react";
 import {
   initialPlayerState,
   PlayerContext,
@@ -34,7 +27,6 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
     ...initialPlayerState,
     audioFiles,
   });
-  const unmuteVolumeRef = useRef(initialPlayerState.unmuteVolumeRef.current);
 
   const {
     audioElementRef: { current: audioElement },
@@ -46,7 +38,6 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
       volume: audioElement?.volume ?? 1,
       playbackRate: audioElement?.playbackRate ?? 1,
       volumeState: state.volumeState,
-      unmuteVolumeRef: unmuteVolumeRef,
     };
   }, [audioElement, state.volumeState]);
   const handlePlayerAction = useCallback(
@@ -62,7 +53,6 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
         ...state,
         handlePlayerAction,
         getPlayerState,
-        unmuteVolumeRef,
       }) satisfies PlayerContextType,
     [state, handlePlayerAction, getPlayerState],
   );

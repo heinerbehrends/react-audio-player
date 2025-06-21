@@ -54,8 +54,7 @@ describe("PlayerContextProvider", () => {
         <button
           onClick={() =>
             mockHandleSideEffect({
-              type: "SET_UNMUTE_VOLUME",
-              unmuteVolume: 0.7,
+              type: "UNMUTE",
             })
           }
         >
@@ -69,9 +68,6 @@ describe("PlayerContextProvider", () => {
         </div>
         <div data-testid={`${testId}-playback-rate`}>
           {contextValue.playbackRate}
-        </div>
-        <div data-testid={`${testId}-unmute-volume`}>
-          {contextValue.unmuteVolumeRef.current}
         </div>
       </div>
     );
@@ -112,7 +108,6 @@ describe("PlayerContextProvider", () => {
         volume: 0.5,
         playbackRate: 1,
         volumeState: "high",
-        unmuteVolumeRef: expect.any(Object),
       });
     });
 
@@ -144,7 +139,6 @@ describe("PlayerContextProvider", () => {
         volume: 1,
         playbackRate: 1,
         volumeState: "high",
-        unmuteVolumeRef: expect.any(Object),
       });
     });
   });

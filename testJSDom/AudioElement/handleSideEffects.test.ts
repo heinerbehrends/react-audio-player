@@ -51,7 +51,6 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "TOGGLE_MUTE",
-        unmuteVolume: 0.5,
       },
       audioElement,
     );
@@ -60,12 +59,11 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "TOGGLE_MUTE",
-        unmuteVolume: 0.5,
       },
       audioElement,
     );
     expect(audioElement.muted).toBe(false);
-    expect(audioElement.volume).toBe(0.5);
+    expect(audioElement.volume).toBe(1);
   });
 
   it("should handle UNMUTE action", () => {

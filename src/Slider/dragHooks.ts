@@ -1,7 +1,6 @@
-import { useCallback, useContext } from "react";
+import { useCallback } from "react";
 import type { SliderContextType, SliderEvent } from "./SliderContext";
 import { getClientXY, calculateValue } from "../Shared/sharedFunctions";
-import { PlayerContext } from "../Player/PlayerContext";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 export function useHandleDragEnd(context: SliderContextType) {
@@ -21,14 +20,14 @@ export function useHandleDragEnd(context: SliderContextType) {
 }
 
 export function useHandleDragStart(context: SliderContextType) {
-  const { getPlayerState } = useContext(PlayerContext);
-  const { unmuteVolumeRef } = getPlayerState();
-
+  const handleSideEffect = useHandleSideEffect();
   return useCallback(
     (event: SliderEvent) => {
       const { handleSliderAction: handleTimelineAction } = context;
       if (context.component === "volume") {
-        unmuteVolumeRef.current = context.value;
+        handleSideEffect({
+          type: "UNMUTE",
+        });
       }
       const clientXY = getClientXY(event, context.orientation);
       const buttonElement = event.currentTarget;
@@ -44,8 +43,14 @@ export function useHandleDragStart(context: SliderContextType) {
         clientXY,
         offsetFromMiddle,
       });
+      handleSideEffect({
+        type: "DRAG_START",
+        ...context,
+        clientXY,
+        offsetFromMiddle,
+      });
     },
-    [context, unmuteVolumeRef],
+    [context, handleSideEffect],
   );
 }
 

@@ -10,7 +10,6 @@ export type TogglePlayAction = {
 
 export type ToggleMuteAction = {
   type: "TOGGLE_MUTE";
-  unmuteVolume: number;
 };
 
 type ToggleTimeDisplayAction = {
@@ -76,7 +75,6 @@ export type PlayerStateReturnType = {
   volume: number;
   playbackRate: number;
   volumeState: VolumeState;
-  unmuteVolumeRef: React.MutableRefObject<number>;
 };
 
 export type PlayerState = "loading" | "playing" | "paused" | "error";
@@ -87,7 +85,6 @@ export type PlayerContextType = {
   isMuted: boolean;
   playbackRate: number;
   volumeState: VolumeState;
-  unmuteVolumeRef: React.MutableRefObject<number>;
   getPlayerState: () => PlayerStateReturnType;
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
@@ -101,14 +98,12 @@ export const initialPlayerState: PlayerContextType = {
   isMuted: false,
   playbackRate: 1,
   volumeState: "high",
-  unmuteVolumeRef: { current: 1 } as React.MutableRefObject<number>,
   getPlayerState: () => ({
     duration: 0,
     currentTime: 0,
     volume: 1,
     playbackRate: 1,
     volumeState: "high",
-    unmuteVolumeRef: { current: 1 } as React.MutableRefObject<number>,
   }),
   timeDisplay: "elapsed",
   audioFiles: [],

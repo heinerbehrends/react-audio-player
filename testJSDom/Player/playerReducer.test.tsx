@@ -46,7 +46,6 @@ describe("playerReducer", () => {
     it("toggles mute state and updates volume state", () => {
       const action = {
         type: "TOGGLE_MUTE" as const,
-        unmuteVolume: 1,
       };
       const newState = playerReducer(playerContext, action);
       expect(newState.isMuted).toBe(true);

@@ -11,6 +11,11 @@ import { PlayerContext } from "../../src/Player/PlayerContext";
 import type { PointerEvent } from "react";
 import { createSliderContext, createPlayerContext } from "../testUtils";
 
+const mockHandleSideEffect = vi.fn();
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
+
 describe("dragHooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -52,16 +57,9 @@ describe("dragHooks", () => {
 
     it("handles drag start for volume slider", () => {
       const context = createSliderContext({ component: "volume" });
-      const unmuteVolumeRef = { current: 0.5 };
       const { result } = renderHook(() => useHandleDragStart(context), {
         wrapper: ({ children }) => (
-          <PlayerContext.Provider
-            value={createPlayerContext({
-              overrides: {
-                unmuteVolumeRef,
-              },
-            })}
-          >
+          <PlayerContext.Provider value={createPlayerContext()}>
             {children}
           </PlayerContext.Provider>
         ),
@@ -81,7 +79,16 @@ describe("dragHooks", () => {
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
-      expect(unmuteVolumeRef.current).toBe(0.5);
+      expect(mockHandleSideEffect).toHaveBeenCalledTimes(2);
+      expect(mockHandleSideEffect).toHaveBeenNthCalledWith(1, {
+        type: "UNMUTE",
+      });
+      expect(mockHandleSideEffect).toHaveBeenNthCalledWith(2, {
+        type: "DRAG_START",
+        ...context,
+        clientXY: 50,
+        offsetFromMiddle: 30,
+      });
       expect(context.handleSliderAction).toHaveBeenCalledTimes(1);
       expect(context.handleSliderAction).toHaveBeenCalledWith({
         type: "DRAG_START",

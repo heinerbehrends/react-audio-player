@@ -1,9 +1,7 @@
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../Player/PlayerContext";
-import { AudioContext } from "../AudioElement/AudioContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useIsDisabled } from "../Shared/useIsDisabled";
-import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 type MuteButtonComponentProps = {
@@ -38,25 +36,10 @@ type MutedProps = {
 };
 
 function useToggleMute() {
-  const { getPlayerState } = useContext(PlayerContext);
-  const {
-    volumeCallbackRef: { current: volumeCallback },
-  } = useContext(AudioContext);
-  const { volume, unmuteVolumeRef } = getPlayerState();
   const handleSideEffect = useHandleSideEffect();
   return useCallback(() => {
-    if (!volumeCallback?.handleVolumeAction) return;
-
-    const unmuteVolume = areNumbersClose(volume, 0)
-      ? unmuteVolumeRef.current
-      : volume;
-    handleSideEffect({ type: "TOGGLE_MUTE", unmuteVolume });
-  }, [
-    volumeCallback?.handleVolumeAction,
-    volume,
-    unmuteVolumeRef,
-    handleSideEffect,
-  ]);
+    handleSideEffect({ type: "TOGGLE_MUTE" });
+  }, [handleSideEffect]);
 }
 
 function Muted({ children }: MutedProps): React.ReactElement | null {

@@ -14,7 +14,6 @@ describe("Seek", () => {
     currentTime: 30,
     duration: 100,
     volume: 0.5,
-    unmuteVolumeRef: { current: 0.7 },
   });
 
   const defaultContext = createPlayerContext({
@@ -79,9 +78,8 @@ describe("Seek", () => {
       });
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: 35, // 30 + 5
-        component: "timeline",
+        type: "SET_TIME_FORWARD",
+        value: 5,
       });
     });
 

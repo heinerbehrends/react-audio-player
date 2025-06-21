@@ -6,13 +6,8 @@ import React from "react";
 import { createPlayerContext } from "../testUtils";
 
 describe("useIsDisabled", () => {
-  const playerContext = createPlayerContext({
-    overrides: {
-      unmuteVolumeRef: { current: 0.7 },
-    },
-  });
   const createWrapper = (playerState: PlayerState) => {
-    playerContext.playerState = playerState;
+    const playerContext = createPlayerContext({ overrides: { playerState } });
     return ({ children }: { children: React.ReactNode }) => (
       <PlayerContext.Provider value={playerContext}>
         {children}

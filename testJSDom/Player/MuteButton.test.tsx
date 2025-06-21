@@ -61,7 +61,6 @@ describe("MuteButton", () => {
       fireEvent.click(button);
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
-        unmuteVolume: 0.5,
       });
     });
 
@@ -176,7 +175,6 @@ describe("MuteButton", () => {
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
-        unmuteVolume: 0.5,
       });
     });
 
@@ -199,7 +197,6 @@ describe("MuteButton", () => {
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "TOGGLE_MUTE",
-        unmuteVolume: 0.5,
       });
     });
   });

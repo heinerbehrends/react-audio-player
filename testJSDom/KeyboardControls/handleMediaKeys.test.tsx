@@ -4,16 +4,9 @@ import {
   useHandleMediaKeys,
 } from "../../src/KeyboardControls/handleMediaKeys";
 import { renderHook } from "@testing-library/react";
-import type {
-  PlayerContextType,
-  PlayerContextAction,
-} from "../../src/Player/PlayerContext";
+import type { PlayerContextAction } from "../../src/Player/PlayerContext";
 import React from "react";
 import { createPlayerContext } from "../testUtils";
-import {
-  SliderComponent,
-  SliderContextAction,
-} from "../../src/Slider/SliderContext";
 import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions";
 import { createAudioContext, createMockAudioElement } from "../testUtils";
 import { createContextWrapper } from "../testComponents";
@@ -26,18 +19,11 @@ vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
 
 describe("handleMediaKeys", () => {
   const mockHandlePlayerAction = vi.fn();
-  const mockHandleVolumeAction = vi.fn();
   let defaultArgs: {
     event: React.KeyboardEvent<HTMLButtonElement>;
-    unmuteVolume: number;
-    component: SliderComponent;
-    isMuted: boolean;
     handlePlayerAction: (action: PlayerContextAction) => void;
     handleSideEffect: (action: SideEffectAction) => void;
-    volumeCallbackRef: {
-      current: { handleVolumeAction: (action: SliderContextAction) => void };
-    };
-  } & ReturnType<PlayerContextType["getPlayerState"]>;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,21 +32,14 @@ describe("handleMediaKeys", () => {
         key: "",
         preventDefault: vi.fn(),
       } as unknown as React.KeyboardEvent<HTMLButtonElement>,
-      ...createPlayerContext().getPlayerState(),
-      unmuteVolume: 0.7,
-      component: "timeline",
-      isMuted: false,
       handlePlayerAction: mockHandlePlayerAction,
       handleSideEffect: mockHandleSideEffect,
-      volumeCallbackRef: {
-        current: { handleVolumeAction: mockHandleVolumeAction },
-      },
     };
   });
 
   describe("Playback control keys", () => {
     it("should handle play/pause keys (p, k, MediaPlayPause)", () => {
-      const playPauseKeys = ["p", "P", "k", "K", "MediaPlayPause"];
+      const playPauseKeys = ["p", "P", "k", "K", "MediaPlayPause", " "];
 
       playPauseKeys.forEach((key) => {
         mockHandleSideEffect.mockClear();
@@ -91,29 +70,6 @@ describe("handleMediaKeys", () => {
         });
       });
     });
-
-    it("should not handle space and on sliders", () => {
-      const key = " ";
-      mockHandleSideEffect.mockClear();
-
-      const result1 = handleMediaKeys(defaultArgs);
-
-      expect(result1).toBe(false);
-      expect(mockHandleSideEffect).not.toHaveBeenCalled();
-
-      // Component defined
-      mockHandleSideEffect.mockClear();
-      defaultArgs.event.key = key;
-      defaultArgs.component = "timeline";
-
-      const result2 = handleMediaKeys(defaultArgs);
-
-      expect(result2).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
-      });
-    });
   });
 
   describe("Volume control keys", () => {
@@ -130,193 +86,111 @@ describe("handleMediaKeys", () => {
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandleSideEffect).toHaveBeenCalledWith({
           type: "TOGGLE_MUTE",
-          unmuteVolume: 0.5, // current volume
         });
       });
     });
 
-    it("should use unmuteVolume when current volume is close to zero", () => {
-      defaultArgs.event.key = "m";
-      defaultArgs.volume = 0.001; // Nearly zero
+    it("should handle volume up key (ArrowUp, MediaVolumeUp)", () => {
+      const volumeUpKeys = ["ArrowUp", "MediaVolumeUp"];
 
-      const result = handleMediaKeys(defaultArgs);
-      expect(result).toBe(true);
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_MUTE",
-        unmuteVolume: 0.7, // unmuteVolume
-      });
-    });
-
-    it("should handle volume up key (ArrowUp)", () => {
-      defaultArgs.event.key = "ArrowUp";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: 0.525, // 0.5 + 0.025
-        component: "volume",
-      });
-    });
-
-    it("should handle volume down key (ArrowDown)", () => {
-      defaultArgs.event.key = "ArrowDown";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "UNMUTE",
-      });
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: 0.475, // 0.5 - 0.025
-        component: "volume",
-      });
-    });
-
-    it("should handle volume down to near zero case", () => {
-      defaultArgs.event.key = "ArrowDown";
-      defaultArgs.volume = 0.02; // Just above zero
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "SET_UNMUTE_VOLUME",
-        unmuteVolume: 0.025,
-      });
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: 0, // clamped at 0
-        component: "volume",
-      });
-    });
-
-    describe("Mute toggle behavior", () => {
-      it("should handle mute toggle with unmuteVolumeRef when volume is near zero", () => {
-        defaultArgs.event.key = "m";
-        defaultArgs.volume = 0.001;
-        defaultArgs.unmuteVolumeRef = { current: 0.7 };
-        defaultArgs.isMuted = false;
-
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "TOGGLE_MUTE",
-          unmuteVolume: 0.7,
-        });
-      });
-
-      it("should handle mute toggle with current volume when volume is not near zero", () => {
-        defaultArgs.event.key = "m";
-        defaultArgs.volume = 0.5;
-        defaultArgs.unmuteVolumeRef = { current: 0.7 };
-        defaultArgs.isMuted = false;
-
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "TOGGLE_MUTE",
-          unmuteVolume: 0.5,
-        });
-      });
-    });
-  });
-
-  describe("Seeking keys", () => {
-    it("should handle seek forward (ArrowRight)", () => {
-      mockHandleSideEffect.mockClear();
-      defaultArgs.event.key = "ArrowRight";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: 5, // Relative forward seek of 5 seconds
-        component: "timeline",
-      });
-    });
-
-    it("should handle seek backward (ArrowLeft)", () => {
-      defaultArgs.event.key = "ArrowLeft";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: -5, // Relative backward seek of 5 seconds
-        component: "timeline",
-      });
-    });
-
-    it("should handle larger seek forward (l)", () => {
-      defaultArgs.event.key = "l";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: 5, // Relative forward seek of 10 seconds
-        component: "timeline",
-      });
-    });
-
-    it("should handle larger seek backward (j)", () => {
-      defaultArgs.event.key = "j";
-
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "CHANGE_VALUE",
-        value: -5, // Relative backward seek of 10 seconds
-        component: "timeline",
-      });
-    });
-  });
-
-  describe("Numeric seek keys", () => {
-    it("should handle numeric keys to seek to percentage of duration", () => {
-      // Set up test data with a specific duration
-      mockHandleSideEffect.mockClear();
-      defaultArgs = {
-        ...defaultArgs,
-        duration: 100,
-        currentTime: 30,
-      };
-
-      const numericTests = [
-        { key: "0", expected: 0 },
-        { key: "1", expected: 10 }, // 10% of 100
-        { key: "5", expected: 50 }, // 50% of 100
-        { key: "9", expected: 90 }, // 90% of 100
-      ];
-
-      numericTests.forEach((test) => {
-        defaultArgs.event.key = test.key;
+      volumeUpKeys.forEach((key) => {
+        mockHandleSideEffect.mockClear();
+        defaultArgs.event.key = key;
 
         const result = handleMediaKeys(defaultArgs);
 
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "CHANGE_VALUE",
-          value: test.expected,
-          component: "timeline",
+          type: "INCREASE_VOLUME",
+          value: 0.025,
         });
+      });
+    });
+
+    it("should handle volume down key (ArrowDown, MediaVolumeDown)", () => {
+      const volumeDownKeys = ["ArrowDown", "MediaVolumeDown"];
+
+      volumeDownKeys.forEach((key) => {
+        mockHandleSideEffect.mockClear();
+        defaultArgs.event.key = key;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+        expect(mockHandleSideEffect).toHaveBeenCalledWith({
+          type: "DECREASE_VOLUME",
+          value: 0.025,
+        });
+      });
+    });
+  });
+
+  describe("Seeking keys", () => {
+    it("should handle seek forward (ArrowRight, l)", () => {
+      const seekForwardTests = [
+        { key: "ArrowRight", value: 5 },
+        { key: "l", value: 10 },
+        { key: "L", value: 10 },
+      ];
+
+      seekForwardTests.forEach(({ key, value }) => {
+        mockHandleSideEffect.mockClear();
+        defaultArgs.event.key = key;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+        expect(mockHandleSideEffect).toHaveBeenCalledWith({
+          type: "SET_TIME_FORWARD",
+          value,
+        });
+      });
+    });
+
+    it("should handle seek backward (ArrowLeft, j)", () => {
+      const seekBackwardTests = [
+        { key: "ArrowLeft", value: 5 },
+        { key: "j", value: 10 },
+        { key: "J", value: 10 },
+      ];
+
+      seekBackwardTests.forEach(({ key, value }) => {
+        mockHandleSideEffect.mockClear();
+        defaultArgs.event.key = key;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+        expect(mockHandleSideEffect).toHaveBeenCalledWith({
+          type: "SET_TIME_BACKWARD",
+          value,
+        });
+      });
+    });
+  });
+
+  describe("Numeric seek keys", () => {
+    it("should handle numeric keys to seek to percentage of duration", () => {
+      const numericTests = [
+        { key: "0", expected: { type: "SET_TIME_TO_START" } },
+        { key: "1", expected: { type: "SET_TIME_TO_PERCENT", percent: 0.1 } },
+        { key: "5", expected: { type: "SET_TIME_TO_PERCENT", percent: 0.5 } },
+        { key: "9", expected: { type: "SET_TIME_TO_PERCENT", percent: 0.9 } },
+      ];
+
+      numericTests.forEach((test) => {
+        mockHandleSideEffect.mockClear();
+        defaultArgs.event.key = test.key;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+        expect(mockHandleSideEffect).toHaveBeenCalledWith(test.expected);
       });
     });
   });
@@ -333,8 +207,8 @@ describe("handleMediaKeys", () => {
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "SET_PLAYBACK_RATE",
-          playbackRate: 1.25, // 1 + 0.25
+          type: "INCREASE_PLAYBACK_RATE",
+          value: 0.05,
         });
       });
     });
@@ -350,23 +224,40 @@ describe("handleMediaKeys", () => {
         expect(result).toBe(true);
         expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
         expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "SET_PLAYBACK_RATE",
-          playbackRate: 0.95, // 1 - 0.05
+          type: "DECREASE_PLAYBACK_RATE",
+          value: 0.05,
         });
       });
     });
 
     it("should handle reset playback rate key (Backspace)", () => {
       defaultArgs.event.key = "Backspace";
-      defaultArgs.playbackRate = 2;
 
       const result = handleMediaKeys(defaultArgs);
 
       expect(result).toBe(true);
       expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "SET_PLAYBACK_RATE",
-        playbackRate: 1, // reset to 1
+        type: "RESET_PLAYBACK_RATE",
+      });
+    });
+  });
+
+  describe("Caption control keys", () => {
+    it("should handle caption toggle keys (c, C)", () => {
+      const captionKeys = ["c", "C"];
+
+      captionKeys.forEach((key) => {
+        mockHandlePlayerAction.mockClear();
+        defaultArgs.event.key = key;
+
+        const result = handleMediaKeys(defaultArgs);
+
+        expect(result).toBe(true);
+        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
+          type: "TOGGLE_CAPTIONS",
+        });
       });
     });
   });
@@ -388,46 +279,19 @@ describe("useHandleMediaKeys", () => {
     vi.clearAllMocks();
   });
 
-  it("should handle play/pause key correctly", () => {
-    // Clear any previous mock calls
-    mockHandleSideEffect.mockClear();
-
+  it("should handle key events correctly", () => {
     const audioContext = createAudioContext({
       audioElementRef: {
         current: createMockAudioElement() as HTMLAudioElement,
       },
     });
 
-    // Mock the handleSideEffect to return true
-    mockHandleSideEffect.mockImplementation(() => true);
-
-    const playerContext = createPlayerContext({
-      overrides: {
-        getPlayerState: () => ({
-          duration: 100,
-          currentTime: 30,
-          volume: 0.5,
-          playbackRate: 1,
-          volumeState: "high",
-          unmuteVolumeRef: { current: 0.7 },
-          handlePlayerAction: vi.fn(),
-          playerState: "paused",
-          showCaptions: false,
-          isMuted: false,
-        }),
-        playbackRate: 1,
-        volumeState: "high",
-        isMuted: false,
-      },
-    });
+    const playerContext = createPlayerContext();
     const wrapper = createContextWrapper({ audioContext, playerContext });
 
-    const { result } = renderHook(
-      () => useHandleMediaKeys("timeline" as SliderComponent),
-      {
-        wrapper,
-      },
-    );
+    const { result } = renderHook(() => useHandleMediaKeys(), {
+      wrapper,
+    });
 
     const mockEvent = {
       key: "p",
@@ -442,108 +306,35 @@ describe("useHandleMediaKeys", () => {
     expect(handled).toBe(true);
     expect(mockHandleSideEffect).toHaveBeenCalledWith({
       type: "TOGGLE_PLAY",
-    } satisfies SideEffectAction);
+    });
     expect(mockEvent.preventDefault).toHaveBeenCalled();
     expect(mockEvent.stopPropagation).toHaveBeenCalled();
   });
 
-  it("should handle volume up key correctly", () => {
+  it("should not stop propagation for unhandled keys", () => {
     const audioContext = createAudioContext({
       audioElementRef: {
         current: createMockAudioElement() as HTMLAudioElement,
       },
     });
-    const playerContext = createPlayerContext({
-      overrides: {
-        getPlayerState: () => ({
-          duration: 100,
-          currentTime: 30,
-          volume: 0.5,
-          playbackRate: 1,
-          volumeState: "high",
-          unmuteVolumeRef: { current: 0.7 },
-          handlePlayerAction: vi.fn(),
-          playerState: "paused",
-          showCaptions: false,
-          isMuted: false,
-        }),
-        volumeState: "high",
-        isMuted: false,
-      },
-    });
+    const playerContext = createPlayerContext();
     const wrapper = createContextWrapper({ audioContext, playerContext });
 
-    const { result } = renderHook(
-      () => useHandleMediaKeys("volume" as SliderComponent),
-      {
-        wrapper,
-      },
-    );
+    const { result } = renderHook(() => useHandleMediaKeys(), {
+      wrapper,
+    });
 
     const mockEvent = {
-      key: "ArrowUp",
+      key: "x", // Unhandled key
       preventDefault: vi.fn(),
       stopPropagation: vi.fn(),
     } as unknown as React.KeyboardEvent<HTMLButtonElement>;
 
-    result.current(mockEvent);
+    const handled = result.current(mockEvent);
 
-    expect(mockHandleSideEffect).toHaveBeenCalledWith({
-      type: "CHANGE_VALUE",
-      value: 0.525,
-      component: "volume",
-    } satisfies SideEffectAction);
-    expect(mockEvent.preventDefault).toHaveBeenCalled();
-    expect(mockEvent.stopPropagation).toHaveBeenCalled();
-  });
-
-  it("should handle volume down key correctly", () => {
-    const audioContext = createAudioContext({
-      audioElementRef: {
-        current: createMockAudioElement() as HTMLAudioElement,
-      },
-    });
-    const playerContext = createPlayerContext({
-      overrides: {
-        getPlayerState: () => ({
-          duration: 100,
-          currentTime: 30,
-          volume: 0.5,
-          playbackRate: 1,
-          volumeState: "high",
-          unmuteVolumeRef: { current: 0.7 },
-          handlePlayerAction: vi.fn(),
-          playerState: "paused",
-          showCaptions: false,
-          isMuted: false,
-        }),
-        volumeState: "high",
-        isMuted: false,
-      },
-    });
-    const wrapper = createContextWrapper({ audioContext, playerContext });
-
-    const { result } = renderHook(
-      () => useHandleMediaKeys("volume" as SliderComponent),
-      {
-        wrapper,
-      },
-    );
-
-    const mockEvent = {
-      key: "ArrowDown",
-      preventDefault: vi.fn(),
-      stopPropagation: vi.fn(),
-    } as unknown as React.KeyboardEvent<HTMLButtonElement>;
-
-    result.current(mockEvent);
-
-    expect(mockHandleSideEffect).toHaveBeenCalledWith({
-      type: "CHANGE_VALUE",
-      value: 0.475,
-      component: "volume",
-    } satisfies SideEffectAction);
-    expect(mockEvent.preventDefault).toHaveBeenCalled();
-    expect(mockEvent.stopPropagation).toHaveBeenCalled();
+    expect(handled).toBe(false);
+    expect(mockHandleSideEffect).not.toHaveBeenCalled();
+    expect(mockEvent.preventDefault).not.toHaveBeenCalled();
+    expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
   });
 });
