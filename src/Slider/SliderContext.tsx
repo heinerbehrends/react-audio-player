@@ -1,4 +1,4 @@
-import type { SideEffectAction } from "../AudioElement/AudioContext";
+import type { SideEffectAction } from "../AudioElement/sideEffectActions";
 
 export type SliderComponent = "timeline" | "volume" | "playbackRate";
 export type SliderEvent =
@@ -58,27 +58,30 @@ type SideEffectActionType = SideEffectAction["type"];
 type SliderActionType = SliderContextAction["type"];
 
 type SliderSideEffectAction = Exclude<SideEffectActionType, "UNMUTE">;
-const SLIDER_SIDE_EFFECT_MAP: Record<SliderSideEffectAction, boolean> = {
-  DRAG: true,
-  DRAG_END: true,
-  CHANGE_VALUE: true,
-  TOGGLE_PLAY: true,
-  TOGGLE_MUTE: true,
-  AUDIO_FILE_ENDED: true,
-  STOP_AUDIO: true,
-  SET_PLAYBACK_RATE: true,
-  SET_SLIDER_VALUE: true,
-};
+const SLIDER_SIDE_EFFECT_MAP: Partial<Record<SliderSideEffectAction, boolean>> =
+  {
+    DRAG: true,
+    DRAG_END: true,
+    CHANGE_VALUE: true,
+    TOGGLE_PLAY: true,
+    TOGGLE_MUTE: true,
+    AUDIO_FILE_ENDED: true,
+    STOP_AUDIO: true,
+    SET_PLAYBACK_RATE: true,
+    SET_SLIDER_VALUE: true,
+  };
 
-const SLIDER_DISPATCH_MAP: Record<SliderActionType, true> = {
-  SLIDER_LOADED: true,
-  DRAG_START: true,
-  DRAG: true,
-  DRAG_END: true,
-  UPDATE_UI_VALUE: true,
-  CANCEL_DRAG: true,
-  SET_MAX_VALUE: true,
-};
+const SLIDER_DISPATCH_MAP: Partial<Record<SliderActionType | "UNMUTE", true>> =
+  {
+    SLIDER_LOADED: true,
+    DRAG_START: true,
+    DRAG: true,
+    DRAG_END: true,
+    UPDATE_UI_VALUE: true,
+    CANCEL_DRAG: true,
+    SET_MAX_VALUE: true,
+    UNMUTE: true,
+  };
 
 export function isSliderSideEffect(
   action: SliderProviderAction,
