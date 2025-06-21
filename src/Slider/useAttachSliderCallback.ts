@@ -7,22 +7,20 @@ import {
 } from "./SliderContext";
 import { SliderComponent } from "./SliderContext";
 import { AudioContext } from "../AudioElement/AudioContext";
+import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 function useHandleSliderAction(dispatch: React.Dispatch<SliderContextAction>) {
-  const {
-    audioElementRef: { current: audioElement },
-    handleSideEffect,
-  } = useContext(AudioContext);
+  const handleSideEffect = useHandleSideEffect();
   return useCallback(
     function handleSliderAction(action: SliderProviderAction) {
       if (isSliderSideEffect(action)) {
-        handleSideEffect(action, audioElement);
+        handleSideEffect(action);
       }
       if (isSliderAction(action)) {
         dispatch(action);
       }
     },
-    [audioElement, handleSideEffect, dispatch],
+    [handleSideEffect, dispatch],
   );
 }
 

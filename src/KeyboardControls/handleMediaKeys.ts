@@ -11,12 +11,14 @@ export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   handleSideEffect: ActionHandler<SideEffectAction>;
   handlePlayerAction: ActionHandler<PlayerContextAction>;
+  customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
-// Map of keyboard keys to their corresponding actions
-const defaultKeyToActionMap: {
+export type KeyToActionMap = {
   [key: string]: SideEffectAction | ToggleCaptionsAction;
-} = {
+};
+
+export const defaultKeyToActionMap: KeyToActionMap = {
   p: { type: "TOGGLE_PLAY" },
   P: { type: "TOGGLE_PLAY" },
   k: { type: "TOGGLE_PLAY" },
@@ -59,8 +61,17 @@ const defaultKeyToActionMap: {
 };
 
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
-  const { event, handleSideEffect, handlePlayerAction } = args;
-  const action = defaultKeyToActionMap[event.key];
+  const {
+    event,
+    handleSideEffect,
+    handlePlayerAction,
+    customKeyboardShortcuts,
+  } = args;
+  const keyToActionMap = {
+    ...defaultKeyToActionMap,
+    ...customKeyboardShortcuts,
+  };
+  const action = keyToActionMap[event.key];
 
   if (!action) return false;
 
@@ -75,7 +86,8 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 }
 
 export function useHandleMediaKeys() {
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const { handlePlayerAction, customKeyboardShortcuts } =
+    useContext(PlayerContext);
   const handleSideEffect = useHandleSideEffect();
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -83,6 +95,7 @@ export function useHandleMediaKeys() {
         event,
         handleSideEffect,
         handlePlayerAction,
+        customKeyboardShortcuts,
       });
 
       if (result) {
@@ -91,6 +104,6 @@ export function useHandleMediaKeys() {
 
       return result;
     },
-    [handleSideEffect, handlePlayerAction],
+    [handleSideEffect, handlePlayerAction, customKeyboardShortcuts],
   );
 }

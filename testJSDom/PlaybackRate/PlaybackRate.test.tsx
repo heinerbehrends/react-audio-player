@@ -73,6 +73,9 @@ describe("PlaybackRate", () => {
           <PlaybackRate.Set rate={2.0} data-testid="set-button">
             2.0x
           </PlaybackRate.Set>
+          <PlaybackRate.Set rate={1.5} data-testid="set-button">
+            1.5x
+          </PlaybackRate.Set>
           <PlaybackRate.Display />
         </PlaybackRate>
       ),

@@ -1,17 +1,17 @@
-import { useMemo, useReducer, memo, useContext, useCallback } from "react";
+import { useMemo, useReducer, memo, useCallback } from "react";
 import {
   initialPlayerState,
   PlayerContext,
   type PlayerContextAction,
   type PlayerContextType,
-  type PlayerStateReturnType,
 } from "./PlayerContext";
 import { playerReducer } from "./playerReducer";
-import { AudioContext } from "../AudioElement/AudioContext";
+import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 
 type PlayerContextProviderProps = {
   children: React.ReactNode;
   audioFiles: AudioFile[];
+  customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
 export type AudioFile = {
@@ -22,24 +22,14 @@ export type AudioFile = {
 export const PlayerContextProvider = memo(function PlayerContextProvider({
   children,
   audioFiles,
+  customKeyboardShortcuts,
 }: PlayerContextProviderProps) {
   const [state, dispatch] = useReducer(playerReducer, {
     ...initialPlayerState,
     audioFiles,
+    customKeyboardShortcuts,
   });
 
-  const {
-    audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
-  const getPlayerState = useCallback((): PlayerStateReturnType => {
-    return {
-      duration: audioElement?.duration ?? 0,
-      currentTime: audioElement?.currentTime ?? 0,
-      volume: audioElement?.volume ?? 1,
-      playbackRate: audioElement?.playbackRate ?? 1,
-      volumeState: state.volumeState,
-    };
-  }, [audioElement, state.volumeState]);
   const handlePlayerAction = useCallback(
     (action: PlayerContextAction) => {
       dispatch(action);
@@ -52,9 +42,8 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
       ({
         ...state,
         handlePlayerAction,
-        getPlayerState,
       }) satisfies PlayerContextType,
-    [state, handlePlayerAction, getPlayerState],
+    [state, handlePlayerAction],
   );
 
   return (

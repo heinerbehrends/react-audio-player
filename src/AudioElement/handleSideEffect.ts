@@ -33,11 +33,21 @@ export function handleSideEffect(
       break;
     }
     case "TOGGLE_MUTE": {
+      const dragStartVolume = audioElement.dataset["dragStartVolume"];
+      if (dragStartVolume && audioElement.muted) {
+        audioElement.volume = Number(dragStartVolume);
+      }
       audioElement.muted = !audioElement.muted;
+      delete audioElement.dataset["dragStartVolume"];
       break;
     }
     case "UNMUTE": {
+      const dragStartVolume = audioElement.dataset["dragStartVolume"];
+      if (dragStartVolume && audioElement.muted) {
+        audioElement.volume = Number(dragStartVolume);
+      }
       audioElement.muted = false;
+      delete audioElement.dataset["dragStartVolume"];
       break;
     }
     case "SET_SLIDER_VALUE": {

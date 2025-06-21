@@ -263,7 +263,7 @@ describe("audioElementHooks", () => {
 
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      result.current.handlePause();
+      result.current.handlePlayPause();
 
       expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
         type: "TOGGLE_PLAY",
@@ -275,7 +275,7 @@ describe("audioElementHooks", () => {
     it("should update UI value", () => {
       mockAudioElement = {
         playbackRate: 1.5,
-      } as unknown as HTMLAudioElement;
+      } as HTMLAudioElement;
       const audioContext = createAudioContext({
         audioElementRef: {
           current: mockAudioElement,

@@ -1,4 +1,5 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
+import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 
 type AudioFileLoadedAction = {
   type: "AUDIO_FILE_LOADED";
@@ -10,6 +11,10 @@ export type TogglePlayAction = {
 
 export type ToggleMuteAction = {
   type: "TOGGLE_MUTE";
+};
+
+export type UnmuteAction = {
+  type: "UNMUTE";
 };
 
 type ToggleTimeDisplayAction = {
@@ -29,13 +34,9 @@ type CaptionCueChangeAction = {
   cues: TextTrackCue[];
 };
 
-export type SetVolumeStateAction = {
+type SetVolumeStateAction = {
   type: "SET_VOLUME_STATE";
   volumeState: "muted" | "low" | "high";
-};
-
-export type UnmuteAction = {
-  type: "UNMUTE";
 };
 
 export type PauseAction = {
@@ -46,18 +47,24 @@ export type ToggleCaptionsAction = {
   type: "TOGGLE_CAPTIONS";
 };
 
+type SetPlaybackRateAction = {
+  type: "SET_PLAYBACK_RATE";
+  playbackRate: number;
+};
+
 export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
   | ToggleMuteAction
+  | UnmuteAction
   | ToggleTimeDisplayAction
   | AudioFileEndedAction
   | AudioFileErrorAction
   | CaptionCueChangeAction
   | SetVolumeStateAction
-  | UnmuteAction
   | PauseAction
-  | ToggleCaptionsAction;
+  | ToggleCaptionsAction
+  | SetPlaybackRateAction;
 
 export type PlayerContextActionType = PlayerContextAction["type"];
 
@@ -66,6 +73,7 @@ export type VolumeState = "muted" | "low" | "high";
 export type PlayerState = "loading" | "playing" | "paused" | "error";
 export type PlayerContextType = {
   isMuted: boolean;
+  playbackRate: number;
   handlePlayerAction: (action: PlayerContextAction) => void;
   playerState: PlayerState;
   showCaptions: boolean;
@@ -73,10 +81,12 @@ export type PlayerContextType = {
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
   cues: VTTCue[];
+  customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
 export const initialPlayerState: PlayerContextType = {
   isMuted: false,
+  playbackRate: 1,
   handlePlayerAction: () => {},
   playerState: "loading",
   showCaptions: true,
@@ -84,7 +94,16 @@ export const initialPlayerState: PlayerContextType = {
   timeDisplay: "elapsed",
   audioFiles: [],
   cues: [],
+  customKeyboardShortcuts: undefined,
 };
 
 export const PlayerContext =
   createContext<PlayerContextType>(initialPlayerState);
+
+export function usePlayerContext(): PlayerContextType {
+  const context = useContext(PlayerContext);
+  if (!context) {
+    throw new Error("usePlayerContext must be used within a PlayerContext");
+  }
+  return context;
+}

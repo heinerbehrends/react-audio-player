@@ -61,6 +61,7 @@ export function useHandleVolumeChange() {
 export function usePlayerCallbacks() {
   const { handlePlayerAction } = useContext(PlayerContext);
   const { audioElementRef } = useContext(AudioContext);
+
   const handleEnded = useCallback(() => {
     handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
   }, [handlePlayerAction]);
@@ -81,11 +82,7 @@ export function usePlayerCallbacks() {
     [handlePlayerAction, audioElementRef],
   );
 
-  const handlePause = useCallback(() => {
-    handlePlayerAction({ type: "TOGGLE_PLAY" });
-  }, [handlePlayerAction]);
-
-  const handlePlay = useCallback(() => {
+  const handlePlayPause = useCallback(() => {
     handlePlayerAction({ type: "TOGGLE_PLAY" });
   }, [handlePlayerAction]);
 
@@ -93,13 +90,14 @@ export function usePlayerCallbacks() {
     handleEnded,
     handleError,
     handleLoadedMetadata,
-    handlePause,
-    handlePlay,
+    handlePlayPause,
   };
 }
 
 export function useHandlePlaybackRateChange() {
   const { audioElementRef, playbackRateCallbackRef } = useContext(AudioContext);
+  const { handlePlayerAction } = useContext(PlayerContext);
+
   return useCallback(() => {
     if (playbackRateCallbackRef?.current?.handlePlaybackRateAction) {
       playbackRateCallbackRef.current.handlePlaybackRateAction({
@@ -108,5 +106,9 @@ export function useHandlePlaybackRateChange() {
         component: "playbackRate",
       });
     }
-  }, [playbackRateCallbackRef, audioElementRef]);
+    handlePlayerAction({
+      type: "SET_PLAYBACK_RATE",
+      playbackRate: audioElementRef.current?.playbackRate ?? 1,
+    });
+  }, [playbackRateCallbackRef, audioElementRef, handlePlayerAction]);
 }

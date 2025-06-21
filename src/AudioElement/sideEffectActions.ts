@@ -1,9 +1,9 @@
 import type {
   ToggleMuteAction,
-  UnmuteAction,
   AudioFileEndedAction,
   PauseAction,
   TogglePlayAction,
+  UnmuteAction,
 } from "../Player/PlayerContext";
 import type {
   DragAction,
@@ -12,11 +12,11 @@ import type {
   SliderData,
 } from "../Slider/SliderContext";
 
-export type StopAudioAction = {
+type StopAudioAction = {
   type: "STOP_AUDIO";
 };
 
-export type ChangeValueAction = {
+type ChangeValueAction = {
   type: "CHANGE_VALUE";
   component: "timeline" | "volume" | "playbackRate";
   value: number;

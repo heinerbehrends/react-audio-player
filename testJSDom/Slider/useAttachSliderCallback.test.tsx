@@ -15,6 +15,11 @@ const actionContext = createSliderContext({
   maxValue: 1,
   step: 0.1,
 });
+const mockHandleSideEffect = vi.fn();
+
+vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+  useHandleSideEffect: () => mockHandleSideEffect,
+}));
 
 describe("useAttachSliderCallback", () => {
   const createWrapper =
@@ -128,10 +133,7 @@ describe("useAttachSliderCallback", () => {
     const action: SliderContextAction = { type: "DRAG", ...actionContext };
     result.current(action);
 
-    expect(context.handleSideEffect).toHaveBeenCalledWith(
-      action,
-      context.audioElementRef.current,
-    );
+    expect(mockHandleSideEffect).toHaveBeenCalledWith(action);
   });
 
   it("handles missing callback refs", () => {

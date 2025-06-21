@@ -128,11 +128,21 @@ describe("SetPlaybackRate", () => {
 });
 
 describe("CurrentIndicator", () => {
-  const testContext = createPlayerContext();
+  beforeEach(() => {
+    mockAudioElement = {
+      playbackRate: 1,
+    } as unknown as HTMLAudioElement;
+  });
 
   it("renders children when rate matches current playback rate", () => {
+    const contextWithPlaybackRate = createPlayerContext({
+      overrides: {
+        playbackRate: 1,
+      },
+    });
+
     renderWithPlayerContext({
-      playerContext: testContext,
+      playerContext: contextWithPlaybackRate,
       component: (
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
@@ -147,8 +157,14 @@ describe("CurrentIndicator", () => {
   });
 
   it("hides children when rate doesn't match current playback rate", () => {
+    const contextWithPlaybackRate = createPlayerContext({
+      overrides: {
+        playbackRate: 1,
+      },
+    });
+
     renderWithPlayerContext({
-      playerContext: testContext,
+      playerContext: contextWithPlaybackRate,
       component: (
         <CurrentIndicator rate={2}>
           <span data-testid="indicator">Current</span>
@@ -163,12 +179,14 @@ describe("CurrentIndicator", () => {
   });
 
   it("handles close but not exact rate values", () => {
-    mockAudioElement = {
-      playbackRate: 1.001,
-    } as unknown as HTMLAudioElement;
+    const contextWithPlaybackRate = createPlayerContext({
+      overrides: {
+        playbackRate: 1.001,
+      },
+    });
 
     renderWithPlayerContext({
-      playerContext: testContext,
+      playerContext: contextWithPlaybackRate,
       component: (
         <CurrentIndicator rate={1}>
           <span data-testid="indicator">Current</span>
@@ -183,11 +201,14 @@ describe("CurrentIndicator", () => {
 
 describe("RateDisplay", () => {
   it("displays the current playback rate with 'x' suffix", () => {
-    mockAudioElement = {
-      playbackRate: 1.5,
-    } as unknown as HTMLAudioElement;
+    const contextWithPlaybackRate = createPlayerContext({
+      overrides: {
+        playbackRate: 1.5,
+      },
+    });
+
     renderWithPlayerContext({
-      playerContext: defaultContext,
+      playerContext: contextWithPlaybackRate,
       component: <RateDisplay />,
     });
 
@@ -196,11 +217,14 @@ describe("RateDisplay", () => {
   });
 
   it("rounds the playback rate to 2 decimal places", () => {
-    mockAudioElement = {
-      playbackRate: 1.755,
-    } as unknown as HTMLAudioElement;
+    const contextWithPlaybackRate = createPlayerContext({
+      overrides: {
+        playbackRate: 1.755,
+      },
+    });
+
     renderWithPlayerContext({
-      playerContext: defaultContext,
+      playerContext: contextWithPlaybackRate,
       component: <RateDisplay />,
     });
 

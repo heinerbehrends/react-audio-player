@@ -30,6 +30,8 @@ const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   audioFiles: [] as AudioFile[],
   cues: [],
   handlePlayerAction: vi.fn(),
+  playbackRate: 1,
+  customKeyboardShortcuts: undefined,
 };
 
 // Default values for audio context

@@ -22,13 +22,8 @@ export const AudioElement = memo(function AudioElement() {
   const handleVolumeChange = useHandleVolumeChange();
   const handlePlaybackRateChange = useHandlePlaybackRateChange();
 
-  const {
-    handleEnded,
-    handleError,
-    handleLoadedMetadata,
-    handlePause,
-    handlePlay,
-  } = usePlayerCallbacks();
+  const { handleEnded, handleError, handleLoadedMetadata, handlePlayPause } =
+    usePlayerCallbacks();
 
   const hasTimelineCallback =
     !!timelineCallbackRef?.current?.handleTimelineAction;
@@ -47,8 +42,8 @@ export const AudioElement = memo(function AudioElement() {
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
       onEnded={handleEnded}
       onError={handleError}
-      onPause={handlePause}
-      onPlay={handlePlay}
+      onPause={handlePlayPause}
+      onPlay={handlePlayPause}
       onLoadedMetadata={() => {
         handleLoadedMetadata(
           timelineCallbackRef?.current?.handleTimelineAction,

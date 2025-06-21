@@ -3,7 +3,7 @@ import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-import { useAudioElement } from "../AudioElement/useAudioElement";
+import { usePlayerContext } from "../Player/PlayerContext";
 
 type SetPlaybackRateProps = {
   rate: number;
@@ -53,7 +53,7 @@ export function CurrentIndicator({
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 export function RateDisplay({ ...props }: RateDisplayProps) {
-  const { playbackRate } = useAudioElement();
+  const { playbackRate } = usePlayerContext();
   const roundedRate = Math.round(playbackRate * 100) / 100;
   return (
     <span aria-label="Current playback rate" {...props}>
@@ -71,6 +71,6 @@ function useSetPlaybackRate(rate: number) {
 }
 
 function useIsCurrent(rate: number) {
-  const { playbackRate } = useAudioElement();
+  const { playbackRate } = usePlayerContext();
   return areNumbersClose(rate, playbackRate);
 }

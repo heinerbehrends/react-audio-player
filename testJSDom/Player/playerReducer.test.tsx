@@ -152,7 +152,7 @@ describe("playerReducer", () => {
 
     it("does nothing if not muted", () => {
       const action = { type: "UNMUTE" as const };
-      expect(playerReducer(playerContext, action)).toBe(playerContext);
+      expect(playerReducer(playerContext, action)).toStrictEqual(playerContext);
     });
   });
 

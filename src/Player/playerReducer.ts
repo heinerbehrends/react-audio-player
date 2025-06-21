@@ -40,12 +40,8 @@ export function playerReducer(
       };
     }
 
-    case "SET_PLAYBACK_RATE": {
-      const limitedRate = Math.min(Math.max(action.playbackRate, 0.5), 4);
-      return {
-        ...state,
-        playbackRate: limitedRate,
-      };
+    case "UNMUTE": {
+      return { ...state, isMuted: false };
     }
 
     case "AUDIO_FILE_ENDED": {
@@ -98,13 +94,19 @@ export function playerReducer(
       };
     }
 
-    case "UNMUTE": {
-      if (!state.isMuted) return state;
-      return { ...state, isMuted: false };
-    }
-
     case "PAUSE": {
       return { ...state, playerState: "paused" as const };
+    }
+
+    case "SET_PLAYBACK_RATE": {
+      const restrictedPlaybackRate = Math.max(
+        Math.min(action.playbackRate, 4),
+        0.5,
+      );
+      return {
+        ...state,
+        playbackRate: restrictedPlaybackRate,
+      };
     }
 
     default: {

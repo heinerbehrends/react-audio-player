@@ -74,7 +74,10 @@ describe("PlayerContextProvider", () => {
     return renderWithAudioContext({
       audioContext: mockAudioContext,
       component: (
-        <PlayerContextProvider audioFiles={audioFiles}>
+        <PlayerContextProvider
+          audioFiles={audioFiles}
+          customKeyboardShortcuts={{}}
+        >
           <TestConsumer />
         </PlayerContextProvider>
       ),
@@ -87,7 +90,10 @@ describe("PlayerContextProvider", () => {
       renderWithAudioContext({
         audioContext: mockAudioContext,
         component: (
-          <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={{}}
+          >
             <TestConsumer
               onMount={(context) => {
                 contextValue = context;
@@ -110,7 +116,10 @@ describe("PlayerContextProvider", () => {
       renderWithAudioContext({
         audioContext: nullAudioContext,
         component: (
-          <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={{}}
+          >
             <TestConsumer
               onMount={(context) => {
                 contextValue = context;
@@ -146,7 +155,10 @@ describe("PlayerContextProvider", () => {
 
       const { rerender } = render(
         <AudioContext.Provider value={mockAudioContext}>
-          <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={{}}
+          >
             <ContextTracker />
           </PlayerContextProvider>
         </AudioContext.Provider>,
@@ -156,7 +168,10 @@ describe("PlayerContextProvider", () => {
 
       rerender(
         <AudioContext.Provider value={mockAudioContext}>
-          <PlayerContextProvider audioFiles={[{ src: "test.mp3" }]}>
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={{}}
+          >
             <ContextTracker />
           </PlayerContextProvider>
         </AudioContext.Provider>,
