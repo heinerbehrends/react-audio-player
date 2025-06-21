@@ -82,6 +82,17 @@ export function usePlayerCallbacks() {
     [handlePlayerAction, audioElementRef],
   );
 
+  const handleDurationChange = useCallback(
+    (handleTimelineAction: ((action: SliderContextAction) => void) | null) => {
+      if (!handleTimelineAction) return;
+      handleTimelineAction({
+        type: "SET_MAX_VALUE",
+        maxValue: audioElementRef.current?.duration ?? 1,
+      });
+    },
+    [audioElementRef],
+  );
+
   const handlePlayPause = useCallback(() => {
     handlePlayerAction({ type: "TOGGLE_PLAY" });
   }, [handlePlayerAction]);
@@ -91,6 +102,7 @@ export function usePlayerCallbacks() {
     handleError,
     handleLoadedMetadata,
     handlePlayPause,
+    handleDurationChange,
   };
 }
 
