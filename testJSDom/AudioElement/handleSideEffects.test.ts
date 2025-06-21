@@ -1,6 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleSideEffect } from "../../src/AudioElement/handleSideEffect";
 
+const defaultSliderState = {
+  component: "timeline" as const,
+  clientXY: 50,
+  sliderLength: 100,
+  sliderStart: 0,
+  orientation: "horizontal" as const,
+  maxValue: 200,
+  minValue: 0,
+  step: 0,
+  offsetFromMiddle: 0,
+};
+
 describe("handleSideEffect", () => {
   let audioElement: HTMLAudioElement;
 
@@ -98,31 +110,20 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "SET_SLIDER_VALUE",
-        component: "timeline",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
-        maxValue: 200,
-        minValue: 0,
-        step: 0,
+        ...defaultSliderState,
       },
       audioElement,
     );
     expect(audioElement.currentTime).toBe(100); // 50% of maxValue 200
   });
+
   it("should handle SET_SLIDER_VALUE action for volume", () => {
     handleSideEffect(
       {
         type: "SET_SLIDER_VALUE",
+        ...defaultSliderState,
         component: "volume",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
         maxValue: 1,
-        minValue: 0,
-        step: 0,
       },
       audioElement,
     );
@@ -133,12 +134,10 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "SET_SLIDER_VALUE",
-        component: "playbackRate",
-        clientXY: 30, // 30% of 100 = 0.3, range 0.5-2, so value = 0.5 + 0.3*(2-0.5) = 0.5 + 0.45 = 0.95
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
+        ...defaultSliderState,
+        clientXY: 30,
         maxValue: 2,
+        component: "playbackRate",
         minValue: 0.5,
         step: 0.25,
       },
@@ -148,32 +147,23 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "SET_SLIDER_VALUE",
-        component: "playbackRate",
-        clientXY: 60, // 60% of 100 = 0.6, range 0.5-2, so value = 0.5 + 0.6*(2-0.5) = 0.5 + 0.9 = 1.4
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
+        ...defaultSliderState,
         maxValue: 2,
         minValue: 0.5,
         step: 0.25,
+        component: "playbackRate",
+        clientXY: 60, // 60% of 100 = 0.6, range 0.5-2, so value = 0.5 + 0.6*(2-0.5) = 0.5 + 0.9 = 1.4
       },
       audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });
+
   it("should handle DRAG_END action for timeline", () => {
     handleSideEffect(
       {
         type: "DRAG_END",
-        component: "timeline",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
-        maxValue: 200,
-        minValue: 0,
-        step: 0,
-        offsetFromMiddle: 0,
+        ...defaultSliderState,
       },
       audioElement,
     );
@@ -184,15 +174,11 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "DRAG_END",
-        component: "playbackRate",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
+        ...defaultSliderState,
         maxValue: 2,
         minValue: 0.5,
         step: 0.1,
-        offsetFromMiddle: 0,
+        component: "playbackRate",
       },
       audioElement,
     );
@@ -200,15 +186,9 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "DRAG_END",
+        ...defaultSliderState,
         component: "volume",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
         maxValue: 1,
-        minValue: 0,
-        step: 0,
-        offsetFromMiddle: 0,
       },
       audioElement,
     );
@@ -230,6 +210,7 @@ describe("handleSideEffect", () => {
     );
     expect(audioElement.volume).toBe(0.5);
   });
+
   it("should change the playback rate on CHANGE_VALUE action for playback rate", () => {
     handleSideEffect(
       { type: "CHANGE_VALUE", component: "playbackRate", value: 1.5 },
@@ -237,37 +218,25 @@ describe("handleSideEffect", () => {
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });
+
   it("should ignore DRAG action for timeline", () => {
     handleSideEffect(
       {
         type: "DRAG",
-        component: "timeline",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
-        maxValue: 200,
-        minValue: 0,
-        step: 0,
-        offsetFromMiddle: 0,
+        ...defaultSliderState,
       },
       audioElement,
     );
     expect(audioElement.currentTime).toBe(0);
   });
+
   it("should set the right volume value on DRAG event for volume", () => {
     handleSideEffect(
       {
         type: "DRAG",
-        component: "volume",
-        clientXY: 50,
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
+        ...defaultSliderState,
         maxValue: 1,
-        minValue: 0,
-        step: 0,
-        offsetFromMiddle: 0,
+        component: "volume",
       },
       audioElement,
     );
@@ -278,32 +247,25 @@ describe("handleSideEffect", () => {
     handleSideEffect(
       {
         type: "DRAG",
-        component: "playbackRate",
+        ...defaultSliderState,
         clientXY: 30, // 30% of 100 = 0.3, range 0.5-2, so value = 0.5 + 0.3*(2-0.5) = 0.5 + 0.45 = 0.95
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
+        component: "playbackRate",
         maxValue: 2,
         minValue: 0.5,
         step: 0.25,
-        offsetFromMiddle: 0,
       },
       audioElement,
     );
-    // 0.95 rounded to nearest 0.25 is 1.0
     expect(audioElement.playbackRate).toBe(1);
     handleSideEffect(
       {
         type: "DRAG",
+        ...defaultSliderState,
         component: "playbackRate",
         clientXY: 60, // 60% of 100 = 0.6, range 0.5-2, so value = 0.5 + 0.6*(2-0.5) = 0.5 + 0.9 = 1.4
-        sliderLength: 100,
-        sliderStart: 0,
-        orientation: "horizontal",
         maxValue: 2,
         minValue: 0.5,
         step: 0.25,
-        offsetFromMiddle: 0,
       },
       audioElement,
     );

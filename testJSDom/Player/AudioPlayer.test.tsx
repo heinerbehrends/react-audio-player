@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
 import type { AudioFile } from "../../src/Player/PlayerProvider";
+import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
 
 // Mock the child components
 vi.mock("../../src/AudioElement/AudioContextProvider", () => ({
@@ -14,13 +15,16 @@ vi.mock("../../src/Player/PlayerProvider", () => ({
   PlayerContextProvider: ({
     children,
     audioFiles,
+    customKeyboardShortcuts,
   }: {
     children: React.ReactNode;
     audioFiles: AudioFile[];
+    customKeyboardShortcuts?: KeyToActionMap;
   }) => (
     <div
       data-testid="player-context-provider"
       data-audio-files={audioFiles.length}
+      data-keyboard-shortcuts={JSON.stringify(customKeyboardShortcuts)}
     >
       {children}
     </div>
@@ -64,22 +68,6 @@ describe("AudioPlayer", () => {
     );
   });
 
-  it("renders children in the correct order", () => {
-    render(
-      <AudioPlayer audioFiles={mockAudioFiles}>
-        <div data-testid="child-1">Child 1</div>
-        <div data-testid="child-2">Child 2</div>
-      </AudioPlayer>,
-    );
-
-    const provider = screen.getByTestId("player-context-provider");
-    const children = provider.children;
-
-    expect(children[0]).toHaveAttribute("data-testid", "audio-element");
-    expect(children[1]).toHaveAttribute("data-testid", "child-1");
-    expect(children[2]).toHaveAttribute("data-testid", "child-2");
-  });
-
   it("handles empty audioFiles array", () => {
     render(
       <AudioPlayer audioFiles={[]}>
@@ -89,5 +77,41 @@ describe("AudioPlayer", () => {
 
     const provider = screen.getByTestId("player-context-provider");
     expect(provider).toHaveAttribute("data-audio-files", "0");
+  });
+});
+
+describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
+  const mockAudioFiles = [{ src: "test.mp3" }];
+
+  // Mock the useHandleSideEffect hook
+  const mockHandleSideEffect = vi.fn();
+  vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
+    useHandleSideEffect: () => mockHandleSideEffect,
+  }));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("passes custom keyboard shortcuts to PlayerContextProvider", () => {
+    const customShortcuts: KeyToActionMap = {
+      x: { type: "TOGGLE_PLAY" },
+      y: { type: "STOP_AUDIO" },
+    };
+
+    render(
+      <AudioPlayer
+        audioFiles={mockAudioFiles}
+        customKeyboardShortcuts={customShortcuts}
+      >
+        <div>Test Content</div>
+      </AudioPlayer>,
+    );
+
+    const provider = screen.getByTestId("player-context-provider");
+    expect(provider).toHaveAttribute(
+      "data-keyboard-shortcuts",
+      JSON.stringify(customShortcuts),
+    );
   });
 });

@@ -203,18 +203,15 @@ describe("audioElementHooks", () => {
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      // Call with handleTimelineAction parameter
       result.current.handleLoadedMetadata(mockTimelineAction);
 
-      // Should dispatch AUDIO_FILE_LOADED
       expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
         type: "AUDIO_FILE_LOADED",
       });
 
-      // Should call handleTimelineAction with SET_MAX_VALUE
       expect(mockTimelineAction).toHaveBeenCalledWith({
         type: "SET_MAX_VALUE",
-        maxValue: 100, // duration from mockAudioElement
+        maxValue: 100,
       });
     });
 
@@ -226,15 +223,11 @@ describe("audioElementHooks", () => {
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      // Call with null handleTimelineAction
       result.current.handleLoadedMetadata(null);
 
-      // Should still dispatch AUDIO_FILE_LOADED
       expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
         type: "AUDIO_FILE_LOADED",
       });
-
-      // But not throw any errors
     });
 
     it("should handle null audio element in handleLoadedMetadata", () => {
@@ -250,7 +243,7 @@ describe("audioElementHooks", () => {
 
       expect(mockTimelineAction).toHaveBeenCalledWith({
         type: "SET_MAX_VALUE",
-        maxValue: 1, // default value when audio element is null
+        maxValue: 1,
       });
     });
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   handleMediaKeys,
+  KeyToActionMap,
   useHandleMediaKeys,
 } from "../../src/KeyboardControls/handleMediaKeys";
 import { renderHook } from "@testing-library/react";
@@ -23,6 +24,7 @@ describe("handleMediaKeys", () => {
     event: React.KeyboardEvent<HTMLButtonElement>;
     handlePlayerAction: (action: PlayerContextAction) => void;
     handleSideEffect: (action: SideEffectAction) => void;
+    customKeyboardShortcuts: KeyToActionMap;
   };
 
   beforeEach(() => {
@@ -34,6 +36,9 @@ describe("handleMediaKeys", () => {
       } as unknown as React.KeyboardEvent<HTMLButtonElement>,
       handlePlayerAction: mockHandlePlayerAction,
       handleSideEffect: mockHandleSideEffect,
+      customKeyboardShortcuts: {
+        "`": { type: "TOGGLE_PLAY" },
+      },
     };
   });
 
@@ -258,6 +263,96 @@ describe("handleMediaKeys", () => {
         expect(mockHandlePlayerAction).toHaveBeenCalledWith({
           type: "TOGGLE_CAPTIONS",
         });
+      });
+    });
+  });
+
+  describe("Custom keyboard shortcuts", () => {
+    it("should handle custom shortcuts that override default ones while preserving other defaults", () => {
+      // Override the default 'p' key with 'x' for TOGGLE_PLAY
+      defaultArgs.customKeyboardShortcuts = {
+        x: { type: "TOGGLE_PLAY" },
+      };
+
+      // Test that the custom shortcut works
+      defaultArgs.event.key = "x";
+      let result = handleMediaKeys(defaultArgs);
+      expect(result).toBe(true);
+      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "TOGGLE_PLAY",
+      });
+
+      // Test that the default 'p' key still works (since defaults are preserved)
+      vi.clearAllMocks();
+      defaultArgs.event.key = "p";
+      result = handleMediaKeys(defaultArgs);
+      expect(result).toBe(true);
+      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "TOGGLE_PLAY",
+      });
+
+      // Test that another default shortcut still works
+      vi.clearAllMocks();
+      defaultArgs.event.key = "s";
+      result = handleMediaKeys(defaultArgs);
+      expect(result).toBe(true);
+      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({ type: "STOP_AUDIO" });
+    });
+
+    it("should handle custom shortcuts with different actions", () => {
+      // Add a custom shortcut for a 30-second jump
+      defaultArgs.customKeyboardShortcuts = {
+        z: { type: "SET_TIME_FORWARD", value: 30 },
+      };
+
+      defaultArgs.event.key = "z";
+      const result = handleMediaKeys(defaultArgs);
+
+      expect(result).toBe(true);
+      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "SET_TIME_FORWARD",
+        value: 30,
+      });
+    });
+
+    it("should handle a custom shortcut", () => {
+      // The backtick shortcut is already set in defaultArgs
+      defaultArgs.event.key = "`";
+      const result = handleMediaKeys(defaultArgs);
+
+      expect(result).toBe(true);
+      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "TOGGLE_PLAY",
+      });
+    });
+
+    it("should handle multiple custom shortcuts", () => {
+      defaultArgs.customKeyboardShortcuts = {
+        x: { type: "TOGGLE_PLAY" },
+        y: { type: "STOP_AUDIO" },
+        z: { type: "SET_TIME_FORWARD", value: 30 },
+      };
+
+      // Test each custom shortcut
+      const shortcuts = [
+        { key: "x", action: { type: "TOGGLE_PLAY" } },
+        { key: "y", action: { type: "STOP_AUDIO" } },
+        { key: "z", action: { type: "SET_TIME_FORWARD", value: 30 } },
+      ];
+
+      shortcuts.forEach(({ key, action }) => {
+        vi.clearAllMocks();
+        defaultArgs.event.key = key;
+
+        const result = handleMediaKeys(defaultArgs);
+        expect(result).toBe(true);
+        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
+        expect(mockHandleSideEffect).toHaveBeenCalledWith(action);
       });
     });
   });

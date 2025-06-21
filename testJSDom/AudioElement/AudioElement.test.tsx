@@ -11,7 +11,6 @@ import {
 } from "../testUtils";
 import { renderWithContexts } from "../testComponents";
 
-// Mock the Track component
 vi.mock("../../src/Captions/Track", () => ({
   Track: ({ src }: { src: string }) => (
     <track data-testid="caption-track" src={src} />

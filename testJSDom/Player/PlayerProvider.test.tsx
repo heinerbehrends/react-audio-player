@@ -197,4 +197,89 @@ describe("PlayerContextProvider", () => {
       );
     });
   });
+
+  describe("Custom Keyboard Shortcuts", () => {
+    it("properly passes custom keyboard shortcuts to context", () => {
+      const customShortcuts = {
+        x: { type: "TOGGLE_PLAY" as const },
+        y: { type: "STOP_AUDIO" as const },
+      };
+
+      let contextValue: PlayerContextType | undefined;
+      renderWithAudioContext({
+        audioContext: mockAudioContext,
+        component: (
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={customShortcuts}
+          >
+            <TestConsumer
+              onMount={(context) => {
+                contextValue = context;
+              }}
+            />
+          </PlayerContextProvider>
+        ),
+      });
+
+      expect(contextValue?.customKeyboardShortcuts).toEqual(customShortcuts);
+    });
+
+    it("handles undefined custom keyboard shortcuts", () => {
+      let contextValue: PlayerContextType | undefined;
+      renderWithAudioContext({
+        audioContext: mockAudioContext,
+        component: (
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={undefined}
+          >
+            <TestConsumer
+              onMount={(context) => {
+                contextValue = context;
+              }}
+            />
+          </PlayerContextProvider>
+        ),
+      });
+
+      expect(contextValue?.customKeyboardShortcuts).toBeUndefined();
+    });
+
+    it("preserves custom keyboard shortcuts through re-renders", () => {
+      const customShortcuts = {
+        z: { type: "TOGGLE_PLAY" as const },
+      };
+
+      const { rerender } = renderWithAudioContext({
+        audioContext: mockAudioContext,
+        component: (
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={customShortcuts}
+          >
+            <TestConsumer />
+          </PlayerContextProvider>
+        ),
+      });
+
+      let contextValue: PlayerContextType | undefined;
+      rerender(
+        <AudioContext.Provider value={mockAudioContext}>
+          <PlayerContextProvider
+            audioFiles={[{ src: "test.mp3" }]}
+            customKeyboardShortcuts={customShortcuts}
+          >
+            <TestConsumer
+              onMount={(context) => {
+                contextValue = context;
+              }}
+            />
+          </PlayerContextProvider>
+        </AudioContext.Provider>,
+      );
+
+      expect(contextValue?.customKeyboardShortcuts).toEqual(customShortcuts);
+    });
+  });
 });
