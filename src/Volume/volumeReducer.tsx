@@ -18,7 +18,6 @@ export function volumeReducer(
         value: action.value,
       };
     }
-
     case "SLIDER_LOADED": {
       return {
         ...state,
@@ -26,7 +25,6 @@ export function volumeReducer(
         sliderLength: action.sliderLength,
       };
     }
-
     case "DRAG_START": {
       if (state.dragState === "dragging") {
         return state;
@@ -42,7 +40,6 @@ export function volumeReducer(
         offsetFromMiddle: action.offsetFromMiddle,
       };
     }
-
     case "DRAG": {
       if (state.dragState !== "dragging") {
         return state;
@@ -54,14 +51,13 @@ export function volumeReducer(
         Math.max(action.clientXY, state.sliderStart),
         state.sliderStart + state.sliderLength,
       );
-      const xOffset =
+      const clientXY =
         restrictedClientXY - state.sliderStart - state.offsetFromMiddle;
       return {
         ...state,
-        clientXY: xOffset,
+        clientXY,
       };
     }
-
     case "DRAG_END": {
       if (state.dragState !== "dragging") return state;
       if (action.component !== "volume") return state;
@@ -71,7 +67,6 @@ export function volumeReducer(
         clientXY: 0,
       };
     }
-
     case "CANCEL_DRAG": {
       return {
         ...state,
@@ -79,7 +74,6 @@ export function volumeReducer(
         clientXY: 0,
       };
     }
-
     default: {
       return state;
     }

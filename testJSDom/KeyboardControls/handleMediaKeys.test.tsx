@@ -12,7 +12,6 @@ import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions"
 import { createAudioContext, createMockAudioElement } from "../testUtils";
 import { createContextWrapper } from "../testComponents";
 
-// Mock useHandleSideEffect hook
 const mockHandleSideEffect = vi.fn();
 vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
   useHandleSideEffect: () => mockHandleSideEffect,

@@ -24,13 +24,13 @@ export function useHandleTimeUpdate() {
 export function useHandleVolumeChange() {
   const { handlePlayerAction } = useContext(PlayerContext);
   const { audioElementRef, volumeCallbackRef } = useContext(AudioContext);
-  return useCallback(() => {
-    const isMuted =
-      audioElementRef.current?.muted ??
-      areNumbersClose(audioElementRef.current?.volume ?? 0, 0);
-    const volume = audioElementRef.current?.volume ?? 0;
 
+  return useCallback(() => {
     if (!volumeCallbackRef?.current?.handleVolumeAction) return;
+
+    const volume = audioElementRef.current?.volume ?? 0;
+    const isMuted =
+      audioElementRef.current?.muted || areNumbersClose(volume, 0);
 
     if (isMuted) {
       volumeCallbackRef.current.handleVolumeAction({
@@ -44,6 +44,7 @@ export function useHandleVolumeChange() {
       });
       return;
     }
+
     const volumeState = volume < 0.5 ? "low" : "high";
     handlePlayerAction({
       type: "SET_VOLUME_STATE",
@@ -52,7 +53,7 @@ export function useHandleVolumeChange() {
 
     volumeCallbackRef.current.handleVolumeAction({
       type: "UPDATE_UI_VALUE",
-      value: audioElementRef.current?.volume ?? 0,
+      value: volume,
       component: "volume",
     });
   }, [volumeCallbackRef, audioElementRef, handlePlayerAction]);
@@ -73,6 +74,7 @@ export function usePlayerCallbacks() {
   const handleLoadedMetadata = useCallback(
     (handleTimelineAction: ((action: SliderContextAction) => void) | null) => {
       handlePlayerAction({ type: "AUDIO_FILE_LOADED" });
+
       if (!handleTimelineAction) return;
       handleTimelineAction({
         type: "SET_MAX_VALUE",

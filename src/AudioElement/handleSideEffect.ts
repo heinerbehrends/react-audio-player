@@ -21,9 +21,9 @@ export function handleSideEffect(
     case "TOGGLE_PLAY": {
       if (audioElement.paused) {
         audioElement.play();
-      } else {
-        audioElement.pause();
+        break;
       }
+      audioElement.pause();
       break;
     }
     case "AUDIO_FILE_ENDED":
@@ -53,36 +53,17 @@ export function handleSideEffect(
     case "SET_SLIDER_VALUE": {
       switch (action.component) {
         case "timeline": {
-          const time = calculateSliderValue({
-            clientXY: action.clientXY,
-            sliderLength: action.sliderLength,
-            maxValue: action.maxValue,
-            sliderStart: action.sliderStart,
-            orientation: action.orientation,
-            step: action.step,
-          });
+          const time = calculateSliderValue(action);
           audioElement.currentTime = time;
           break;
         }
         case "volume": {
-          const volume = calculateSliderValue({
-            clientXY: action.clientXY,
-            sliderLength: action.sliderLength,
-            sliderStart: action.sliderStart,
-            orientation: action.orientation,
-          });
+          const volume = calculateSliderValue(action);
           audioElement.volume = volume;
           break;
         }
         case "playbackRate": {
-          const playbackRate = calculateSliderValue({
-            clientXY: action.clientXY,
-            sliderLength: action.sliderLength,
-            sliderStart: action.sliderStart,
-            minValue: action.minValue,
-            maxValue: action.maxValue,
-            step: action.step,
-          });
+          const playbackRate = calculateSliderValue(action);
           audioElement.playbackRate = playbackRate;
           break;
         }
@@ -101,12 +82,8 @@ export function handleSideEffect(
       switch (action.component) {
         case "timeline": {
           const time = calculateSliderValue({
+            ...action,
             clientXY: action.clientXY - action.offsetFromMiddle,
-            sliderLength: action.sliderLength,
-            maxValue: action.maxValue,
-            sliderStart: action.sliderStart,
-            orientation: action.orientation,
-            step: action.step,
           });
           audioElement.currentTime = time;
           break;
@@ -153,12 +130,7 @@ export function handleSideEffect(
           return;
         }
         case "volume": {
-          const volume = calculateSliderValue({
-            clientXY: action.clientXY - action.offsetFromMiddle,
-            sliderLength: action.sliderLength,
-            sliderStart: action.sliderStart,
-            orientation: action.orientation,
-          });
+          const volume = calculateSliderValue(action);
           audioElement.muted = false;
           audioElement.volume = volume;
           break;
@@ -168,12 +140,10 @@ export function handleSideEffect(
           const minValue = action.minValue || 0.5;
           const maxValue = action.maxValue || 4;
           const playbackRate = calculateSliderValue({
+            ...action,
             minValue,
             maxValue,
             step,
-            sliderLength: action.sliderLength,
-            sliderStart: action.sliderStart,
-            clientXY: action.clientXY,
           });
           audioElement.playbackRate = playbackRate;
           break;

@@ -14,23 +14,25 @@ export function playerReducer(
       }
       return state;
     }
-
     case "TOGGLE_PLAY": {
-      if (state.playerState === "playing") {
-        return {
-          ...state,
-          playerState: "paused" as const,
-        };
+      switch (state.playerState) {
+        case "playing": {
+          return {
+            ...state,
+            playerState: "paused" as const,
+          };
+        }
+        case "paused": {
+          return {
+            ...state,
+            playerState: "playing" as const,
+          };
+        }
+        default: {
+          return state;
+        }
       }
-      if (state.playerState === "paused") {
-        return {
-          ...state,
-          playerState: "playing" as const,
-        };
-      }
-      return state;
     }
-
     case "TOGGLE_MUTE": {
       const newVolumeState = state.isMuted ? state.volumeState : "muted";
       return {
@@ -39,18 +41,15 @@ export function playerReducer(
         volumeState: newVolumeState,
       };
     }
-
     case "UNMUTE": {
       return { ...state, isMuted: false };
     }
-
     case "AUDIO_FILE_ENDED": {
       return {
         ...state,
         playerState: "paused" as const,
       };
     }
-
     case "TOGGLE_TIME_DISPLAY": {
       return {
         ...state,
@@ -60,25 +59,21 @@ export function playerReducer(
             : ("elapsed" as const),
       };
     }
-
     case "TOGGLE_CAPTIONS": {
       return {
         ...state,
         showCaptions: !state.showCaptions,
       };
     }
-
     case "AUDIO_FILE_ERROR": {
       return { ...state, playerState: "error" as const };
     }
-
     case "CAPTION_CUE_CHANGE": {
       return {
         ...state,
         cues: action.cues as VTTCue[],
       };
     }
-
     case "SET_VOLUME_STATE": {
       if (action.volumeState === "muted") {
         return {
@@ -93,11 +88,9 @@ export function playerReducer(
         volumeState: action.volumeState,
       };
     }
-
     case "PAUSE": {
       return { ...state, playerState: "paused" as const };
     }
-
     case "SET_PLAYBACK_RATE": {
       const restrictedPlaybackRate = Math.max(
         Math.min(action.playbackRate, 4),
@@ -108,7 +101,6 @@ export function playerReducer(
         playbackRate: restrictedPlaybackRate,
       };
     }
-
     default: {
       return state;
     }

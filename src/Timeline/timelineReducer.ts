@@ -74,7 +74,7 @@ export function timelineReducer(
       return {
         ...state,
         clientXY,
-        value: value,
+        value,
       };
     }
 
