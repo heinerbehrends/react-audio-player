@@ -3,7 +3,6 @@ import { PlayerContext } from "../Player/PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useAudioElement } from "../AudioElement/useAudioElement";
 import { formatTime } from "../Shared/sharedFunctions";
 
 type ChildrenProps = {
@@ -66,7 +65,8 @@ const Remaining = memo(function Remaining() {
 });
 
 const Duration = memo(function Duration() {
-  const { duration } = useAudioElement();
+  const { duration } = useContext(PlayerContext);
+  console.log("duration", duration);
   return <time aria-label="duration">{formatTime(duration)}</time>;
 });
 

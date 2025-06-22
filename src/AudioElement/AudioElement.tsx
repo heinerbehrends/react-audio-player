@@ -46,7 +46,9 @@ export const AudioElement = memo(function AudioElement() {
         hasPlaybackRateCallback ? handlePlaybackRateChange : undefined
       }
       onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
-      onEnded={handleEnded}
+      onEnded={() =>
+        handleEnded(timelineCallbackRef?.current?.handleTimelineAction)
+      }
       onError={handleError}
       onPause={handlePlayPause}
       onPlay={handlePlayPause}

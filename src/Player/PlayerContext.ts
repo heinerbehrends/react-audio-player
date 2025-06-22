@@ -52,6 +52,11 @@ type SetPlaybackRateAction = {
   playbackRate: number;
 };
 
+type SetDurationAction = {
+  type: "SET_DURATION";
+  duration: number;
+};
+
 export type PlayerContextAction =
   | AudioFileLoadedAction
   | TogglePlayAction
@@ -64,7 +69,8 @@ export type PlayerContextAction =
   | SetVolumeStateAction
   | PauseAction
   | ToggleCaptionsAction
-  | SetPlaybackRateAction;
+  | SetPlaybackRateAction
+  | SetDurationAction;
 
 export type PlayerContextActionType = PlayerContextAction["type"];
 
@@ -74,6 +80,7 @@ export type PlayerState = "loading" | "playing" | "paused" | "error";
 export type PlayerContextType = {
   isMuted: boolean;
   playbackRate: number;
+  duration: number;
   handlePlayerAction: (action: PlayerContextAction) => void;
   playerState: PlayerState;
   showCaptions: boolean;
@@ -87,6 +94,7 @@ export type PlayerContextType = {
 export const initialPlayerState: PlayerContextType = {
   isMuted: false,
   playbackRate: 1,
+  duration: 0,
   handlePlayerAction: () => {},
   playerState: "loading",
   showCaptions: true,

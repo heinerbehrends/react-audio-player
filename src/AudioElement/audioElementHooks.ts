@@ -63,9 +63,18 @@ export function usePlayerCallbacks() {
   const { handlePlayerAction } = useContext(PlayerContext);
   const { audioElementRef } = useContext(AudioContext);
 
-  const handleEnded = useCallback(() => {
-    handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
-  }, [handlePlayerAction]);
+  const handleEnded = useCallback(
+    (handleTimelineAction: ((action: SliderContextAction) => void) | null) => {
+      handlePlayerAction({ type: "AUDIO_FILE_ENDED" });
+      if (!handleTimelineAction) return;
+      handleTimelineAction({
+        type: "UPDATE_UI_VALUE",
+        value: 0,
+        component: "timeline",
+      });
+    },
+    [handlePlayerAction],
+  );
 
   const handleError = useCallback(() => {
     handlePlayerAction({ type: "AUDIO_FILE_ERROR" });
@@ -80,19 +89,27 @@ export function usePlayerCallbacks() {
         type: "SET_MAX_VALUE",
         maxValue: audioElementRef.current?.duration ?? 1,
       });
+      handlePlayerAction({
+        type: "SET_DURATION",
+        duration: audioElementRef.current?.duration ?? 1,
+      });
     },
-    [handlePlayerAction, audioElementRef],
+    [audioElementRef, handlePlayerAction],
   );
 
   const handleDurationChange = useCallback(
     (handleTimelineAction: ((action: SliderContextAction) => void) | null) => {
+      handlePlayerAction({
+        type: "SET_DURATION",
+        duration: audioElementRef.current?.duration ?? 1,
+      });
       if (!handleTimelineAction) return;
       handleTimelineAction({
         type: "SET_MAX_VALUE",
         maxValue: audioElementRef.current?.duration ?? 1,
       });
     },
-    [audioElementRef],
+    [audioElementRef, handlePlayerAction],
   );
 
   const handlePlayPause = useCallback(() => {

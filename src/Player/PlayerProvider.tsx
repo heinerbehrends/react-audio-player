@@ -1,8 +1,7 @@
-import { useMemo, useReducer, memo, useCallback } from "react";
+import { useMemo, useReducer, memo } from "react";
 import {
   initialPlayerState,
   PlayerContext,
-  type PlayerContextAction,
   type PlayerContextType,
 } from "./PlayerContext";
 import { playerReducer } from "./playerReducer";
@@ -30,20 +29,13 @@ export const PlayerContextProvider = memo(function PlayerContextProvider({
     customKeyboardShortcuts,
   });
 
-  const handlePlayerAction = useCallback(
-    (action: PlayerContextAction) => {
-      dispatch(action);
-    },
-    [dispatch],
-  );
-
   const value = useMemo(
     () =>
       ({
         ...state,
-        handlePlayerAction,
+        handlePlayerAction: dispatch,
       }) satisfies PlayerContextType,
-    [state, handlePlayerAction],
+    [state],
   );
 
   return (

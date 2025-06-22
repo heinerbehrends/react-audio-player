@@ -101,6 +101,12 @@ export function playerReducer(
         playbackRate: restrictedPlaybackRate,
       };
     }
+    case "SET_DURATION": {
+      return {
+        ...state,
+        duration: action.duration,
+      };
+    }
     default: {
       return state;
     }

@@ -71,10 +71,12 @@ export function handleSideEffect(
       break;
     }
     case "DRAG_START": {
-      if (action.component === "volume") {
-        // Store the current volume when starting to drag
-        audioElement.dataset["dragStartVolume"] =
-          audioElement.volume.toString();
+      switch (action.component) {
+        case "volume": {
+          audioElement.dataset["dragStartVolume"] =
+            audioElement.volume.toString();
+          break;
+        }
       }
       break;
     }
