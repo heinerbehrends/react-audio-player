@@ -163,4 +163,16 @@ describe("playerReducer", () => {
       expect(playerReducer(state, action).playerState).toBe("paused");
     });
   });
+
+  describe("SET_DURATION", () => {
+    it("updates duration state", () => {
+      const action = { type: "SET_DURATION" as const, duration: 120.5 };
+      expect(playerReducer(playerContext, action).duration).toBe(120.5);
+    });
+
+    it("handles zero duration", () => {
+      const action = { type: "SET_DURATION" as const, duration: 0 };
+      expect(playerReducer(playerContext, action).duration).toBe(0);
+    });
+  });
 });

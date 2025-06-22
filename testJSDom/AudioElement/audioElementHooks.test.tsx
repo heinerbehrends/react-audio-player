@@ -172,7 +172,9 @@ describe("audioElementHooks", () => {
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      result.current.handleEnded();
+      result.current.handleEnded(
+        audioContext.timelineCallbackRef.current.handleTimelineAction,
+      );
 
       expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
         type: "AUDIO_FILE_ENDED",
@@ -244,6 +246,40 @@ describe("audioElementHooks", () => {
       expect(mockTimelineAction).toHaveBeenCalledWith({
         type: "SET_MAX_VALUE",
         maxValue: 1,
+      });
+    });
+
+    it("should dispatch SET_DURATION action with audio duration when metadata is loaded", () => {
+      const mockTimelineAction = vi.fn();
+      const audioContext = createAudioContext({
+        audioElementRef: { current: { ...mockAudioElement, duration: 150.5 } },
+      });
+      const playerContext = createPlayerContext();
+      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
+
+      result.current.handleLoadedMetadata(mockTimelineAction);
+
+      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
+        type: "SET_DURATION",
+        duration: 150.5,
+      });
+    });
+
+    it("should dispatch SET_DURATION action when duration changes", () => {
+      const mockTimelineAction = vi.fn();
+      const audioContext = createAudioContext({
+        audioElementRef: { current: { ...mockAudioElement, duration: 180.75 } },
+      });
+      const playerContext = createPlayerContext();
+      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
+
+      result.current.handleDurationChange(mockTimelineAction);
+
+      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
+        type: "SET_DURATION",
+        duration: 180.75,
       });
     });
 
