@@ -68,12 +68,6 @@ export function playerReducer(
     case "AUDIO_FILE_ERROR": {
       return { ...state, playerState: "error" as const };
     }
-    case "CAPTION_CUE_CHANGE": {
-      return {
-        ...state,
-        cues: action.cues as VTTCue[],
-      };
-    }
     case "SET_VOLUME_STATE": {
       if (action.volumeState === "muted") {
         return {

@@ -29,11 +29,6 @@ type AudioFileErrorAction = {
   type: "AUDIO_FILE_ERROR";
 };
 
-type CaptionCueChangeAction = {
-  type: "CAPTION_CUE_CHANGE";
-  cues: TextTrackCue[];
-};
-
 type SetVolumeStateAction = {
   type: "SET_VOLUME_STATE";
   volumeState: "muted" | "low" | "high";
@@ -65,7 +60,6 @@ export type PlayerContextAction =
   | ToggleTimeDisplayAction
   | AudioFileEndedAction
   | AudioFileErrorAction
-  | CaptionCueChangeAction
   | SetVolumeStateAction
   | PauseAction
   | ToggleCaptionsAction
