@@ -1,5 +1,5 @@
-import { useContext, useCallback } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
+import { useCallback } from "react";
+import { usePlayerContext } from "../Player/PlayerContext";
 import type { PlayerContextAction } from "../Player/PlayerContext";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
@@ -86,8 +86,7 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 }
 
 export function useHandleMediaKeys() {
-  const { handlePlayerAction, customKeyboardShortcuts } =
-    useContext(PlayerContext);
+  const { handlePlayerAction, customKeyboardShortcuts } = usePlayerContext();
   const handleSideEffect = useHandleSideEffect();
   return useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {

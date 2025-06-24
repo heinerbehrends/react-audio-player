@@ -1,12 +1,11 @@
-import { useContext } from "react";
-import { PlayerContext } from "./PlayerContext";
+import { usePlayerContext } from "./PlayerContext";
 
-interface ErrorProps {
+type ErrorProps = {
   children: React.ReactNode;
-}
+};
 
 export function Error({ children }: ErrorProps) {
-  const { playerState: player } = useContext(PlayerContext);
+  const { playerState: player } = usePlayerContext();
   if (player === "error") {
     return (
       <div role="alert" aria-live="assertive" className="audio-player-error">

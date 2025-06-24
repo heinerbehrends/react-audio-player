@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { PlayerContext } from "./PlayerContext";
+import { usePlayerContext } from "./PlayerContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
@@ -34,7 +33,7 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
 }
 
 function useHandleClick() {
-  const { playerState } = useContext(PlayerContext);
+  const { playerState } = usePlayerContext();
   const handleSideEffect = useHandleSideEffect();
   return () => {
     if (playerState === "playing") {
@@ -46,7 +45,7 @@ function useHandleClick() {
 }
 
 function usePlayButtonProps() {
-  const { playerState } = useContext(PlayerContext);
+  const { playerState } = usePlayerContext();
   const isPlaying = playerState === "playing";
   const isDisabled = playerState === "loading" || playerState === "error";
   const ariaLabel = ariaLabelMap[playerState];
@@ -58,7 +57,7 @@ function Playing({
 }: {
   children: React.ReactNode;
 }): React.ReactElement | null {
-  const { playerState } = useContext(PlayerContext);
+  const { playerState } = usePlayerContext();
   const isPlaying = playerState === "playing";
   if (!isPlaying) {
     return null;
@@ -72,7 +71,7 @@ function Paused({
 }: {
   children: React.ReactNode;
 }): React.ReactElement | null {
-  const { playerState } = useContext(PlayerContext);
+  const { playerState } = usePlayerContext();
   const isPlaying = playerState === "playing";
   if (isPlaying) {
     return null;

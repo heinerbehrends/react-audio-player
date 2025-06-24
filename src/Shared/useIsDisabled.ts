@@ -1,7 +1,6 @@
-import { useContext } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
+import { usePlayerContext } from "../Player/PlayerContext";
 
 export function useIsDisabled() {
-  const { playerState } = useContext(PlayerContext);
+  const { playerState } = usePlayerContext();
   return playerState === "loading" || playerState === "error";
 }

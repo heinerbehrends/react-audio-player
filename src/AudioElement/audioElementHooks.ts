@@ -1,13 +1,13 @@
-import { useContext, useCallback } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
-import { AudioContext } from "./AudioContext";
+import { useCallback } from "react";
+import { usePlayerContext } from "../Player/PlayerContext";
+import { useAudioContext } from "./AudioContext";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { SliderContextAction } from "../Slider/SliderContext";
-import { TimelineContext } from "../Timeline/TimelineContext";
+import { useTimelineContext } from "../Timeline/TimelineContext";
 
 export function useHandleTimeUpdate() {
-  const { audioElementRef, timelineCallbackRef } = useContext(AudioContext);
-  const { dragState } = useContext(TimelineContext);
+  const { audioElementRef, timelineCallbackRef } = useAudioContext();
+  const { dragState } = useTimelineContext();
 
   return useCallback(() => {
     if (dragState === "dragging") return;
@@ -22,8 +22,8 @@ export function useHandleTimeUpdate() {
 }
 
 export function useHandleVolumeChange() {
-  const { handlePlayerAction } = useContext(PlayerContext);
-  const { audioElementRef, volumeCallbackRef } = useContext(AudioContext);
+  const { handlePlayerAction } = usePlayerContext();
+  const { audioElementRef, volumeCallbackRef } = useAudioContext();
 
   return useCallback(() => {
     if (!volumeCallbackRef?.current?.handleVolumeAction) return;
@@ -60,8 +60,8 @@ export function useHandleVolumeChange() {
 }
 
 export function usePlayerCallbacks() {
-  const { handlePlayerAction } = useContext(PlayerContext);
-  const { audioElementRef } = useContext(AudioContext);
+  const { handlePlayerAction } = usePlayerContext();
+  const { audioElementRef } = useAudioContext();
 
   const handleEnded = useCallback(
     (handleTimelineAction: ((action: SliderContextAction) => void) | null) => {
@@ -126,8 +126,8 @@ export function usePlayerCallbacks() {
 }
 
 export function useHandlePlaybackRateChange() {
-  const { audioElementRef, playbackRateCallbackRef } = useContext(AudioContext);
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const { audioElementRef, playbackRateCallbackRef } = useAudioContext();
+  const { handlePlayerAction } = usePlayerContext();
 
   return useCallback(() => {
     if (playbackRateCallbackRef?.current?.handlePlaybackRateAction) {

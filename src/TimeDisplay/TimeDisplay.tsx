@@ -1,5 +1,5 @@
-import { useContext, memo, useCallback } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
+import { memo, useCallback } from "react";
+import { usePlayerContext } from "../Player/PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
 import { useIsDisabled } from "../Shared/useIsDisabled";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
@@ -10,7 +10,7 @@ type ChildrenProps = {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Toggle = memo(function Toggle({ children, ...props }: ChildrenProps) {
-  const { timeDisplay } = useContext(PlayerContext);
+  const { timeDisplay } = usePlayerContext();
 
   const handleClick = useToggleTimeDisplay();
   const isDisabled = useIsDisabled();
@@ -31,7 +31,7 @@ const Toggle = memo(function Toggle({ children, ...props }: ChildrenProps) {
 });
 
 function useToggleTimeDisplay() {
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const { handlePlayerAction } = usePlayerContext();
 
   return useCallback(() => {
     handlePlayerAction({ type: "TOGGLE_TIME_DISPLAY" });
@@ -39,7 +39,7 @@ function useToggleTimeDisplay() {
 }
 
 const Elapsed = memo(function Elapsed() {
-  const { playerState: player, timeDisplay } = useContext(PlayerContext);
+  const { playerState: player, timeDisplay } = usePlayerContext();
   const { elapsed } = useTimeDisplay();
 
   if (timeDisplay === "remaining") {
@@ -52,7 +52,7 @@ const Elapsed = memo(function Elapsed() {
 });
 
 const Remaining = memo(function Remaining() {
-  const { playerState: player, timeDisplay } = useContext(PlayerContext);
+  const { playerState: player, timeDisplay } = usePlayerContext();
   const { remaining } = useTimeDisplay();
 
   if (timeDisplay === "elapsed") {
@@ -65,7 +65,7 @@ const Remaining = memo(function Remaining() {
 });
 
 const Duration = memo(function Duration() {
-  const { duration } = useContext(PlayerContext);
+  const { duration } = usePlayerContext();
   return <time aria-label="duration">{formatTime(duration)}</time>;
 });
 

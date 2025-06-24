@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ToggleCaptions } from "../../src/Captions/ToggleCaptions";
 import { PlayerContext } from "../../src/Player/PlayerContext";
-import React from "react";
 
 // Create a variable to control the hook's return value
 let isDisabledMockValue = false;
@@ -17,18 +16,7 @@ describe("ToggleCaptions", () => {
   const mockHandlePlayerAction = vi.fn();
 
   // Default player context with captions off
-  const defaultContext = {
-    handlePlayerAction: mockHandlePlayerAction,
-    showCaptions: false,
-    playerState: "paused" as const,
-    isMuted: false,
-    audioFiles: [],
-    cues: [],
-    getPlayerState: vi.fn(),
-    playbackRate: 1,
-    volumeState: "high" as const,
-    timeDisplay: "elapsed" as const,
-  };
+  const defaultContext = createDefaultContext();
 
   beforeEach(() => {
     vi.clearAllMocks();

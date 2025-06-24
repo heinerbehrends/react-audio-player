@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState, useCallback } from "react";
-import { AudioContext } from "../AudioElement/AudioContext";
+import { useEffect, useState, useCallback } from "react";
+import { useAudioContext } from "../AudioElement/AudioContext";
 
 export function useTimeDisplay() {
   const {
     audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
+  } = useAudioContext();
 
   const [displayTime, setDisplayTime] = useState({
     elapsed: 0,

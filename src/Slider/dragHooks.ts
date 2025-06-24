@@ -114,7 +114,6 @@ export function useSetValue(context: SliderContextType) {
         document.removeEventListener("pointerup", cleanup);
       }
 
-      // Add listeners for movement detection and pointer release
       document.addEventListener("pointermove", handlePointerMove);
       document.addEventListener("pointerup", cleanup);
 

@@ -1,6 +1,6 @@
-import { useContext, memo } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
-import { AudioContext } from "./AudioContext";
+import { memo } from "react";
+import { usePlayerContext } from "../Player/PlayerContext";
+import { useAudioContext } from "./AudioContext";
 import { Track } from "../Captions/Track";
 import {
   useHandleTimeUpdate,
@@ -10,13 +10,13 @@ import {
 } from "./audioElementHooks";
 
 export const AudioElement = memo(function AudioElement() {
-  const { audioFiles } = useContext(PlayerContext);
+  const { audioFiles } = usePlayerContext();
   const {
     audioElementRef,
     timelineCallbackRef,
     volumeCallbackRef,
     playbackRateCallbackRef,
-  } = useContext(AudioContext);
+  } = useAudioContext();
   const { src, captionSrc } = audioFiles?.[0] || {};
   const handleTimeUpdate = useHandleTimeUpdate();
   const handleVolumeChange = useHandleVolumeChange();

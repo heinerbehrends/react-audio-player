@@ -2,39 +2,50 @@ import { useRef, useCallback, useEffect } from "react";
 import { SliderContextType } from "./SliderContext";
 
 export function useHandleRef(context: SliderContextType) {
-  const { handleSliderAction: handleTimelineAction, orientation } = context;
-  const observerRef = useRef<ResizeObserver>();
-
+  const { handleSliderAction, orientation } = context;
   const handleRef = useCallback(
     (element: HTMLButtonElement | null) => {
       if (!element) {
         return;
       }
-
-      observerRef.current = new ResizeObserver(() => {
-        const rect = element.getBoundingClientRect();
-        handleTimelineAction({
-          type: "SLIDER_LOADED",
-          sliderStart: orientation === "horizontal" ? rect.left : rect.top,
-          sliderLength: orientation === "horizontal" ? rect.width : rect.height,
-        });
-      });
-
       const rect = element.getBoundingClientRect();
-      handleTimelineAction({
+      handleSliderAction({
         type: "SLIDER_LOADED",
         sliderStart: orientation === "horizontal" ? rect.left : rect.top,
         sliderLength: orientation === "horizontal" ? rect.width : rect.height,
       });
-
-      observerRef.current.observe(element);
+      return element;
     },
-    [handleTimelineAction, orientation],
+    [handleSliderAction, orientation],
   );
+  return handleRef;
+}
+
+export function useResizeObserver(
+  context: SliderContextType,
+  buttonRef: React.RefObject<HTMLButtonElement>,
+) {
+  const { handleSliderAction, orientation } = context;
+  const observerRef = useRef<ResizeObserver>();
 
   useEffect(() => {
-    return () => observerRef.current?.disconnect();
-  }, []);
+    observerRef.current = new ResizeObserver(() => {
+      const buttonRect = buttonRef.current?.getBoundingClientRect();
+      if (!buttonRect) return;
 
-  return handleRef;
+      handleSliderAction({
+        type: "SLIDER_LOADED",
+        sliderStart:
+          orientation === "horizontal" ? buttonRect.left : buttonRect.top,
+        sliderLength:
+          orientation === "horizontal" ? buttonRect.width : buttonRect.height,
+      });
+    });
+
+    if (buttonRef.current) {
+      observerRef.current?.observe(buttonRef.current);
+    }
+
+    return () => observerRef.current?.disconnect();
+  }, [handleSliderAction, orientation, buttonRef]);
 }

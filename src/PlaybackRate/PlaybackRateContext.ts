@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 import { SliderContextType } from "../Slider/SliderContext";
 
 export const PlaybackRateContext = createContext<SliderContextType>({
@@ -15,3 +15,13 @@ export const PlaybackRateContext = createContext<SliderContextType>({
   handleSliderAction: () => {},
   offsetFromMiddle: 0,
 });
+
+export function usePlaybackRateContext() {
+  const context = useContext(PlaybackRateContext);
+  if (!context) {
+    throw new Error(
+      "usePlaybackRateContext must be used within a PlaybackRateContext",
+    );
+  }
+  return context;
+}

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { useHandleRef } from "./useHandleRef";
+import { useMemo, useRef, useCallback } from "react";
+import { useHandleRef, useResizeObserver } from "./useHandleRef";
 import { useTimelineAriaAttributes } from "../Timeline/useTimelineAria";
 import { useSetValue } from "./dragHooks";
 import { SliderContextType } from "./SliderContext";
@@ -20,7 +20,18 @@ export function SetSliderValue({
   ...props
 }: SetSliderValueProps) {
   const ariaAttributes = useTimelineAriaAttributes(sliderContext);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const handleRef = useHandleRef(sliderContext);
+
+  const combinedRef = useCallback(
+    (element: HTMLButtonElement | null) => {
+      buttonRef.current = element;
+      handleRef(element);
+    },
+    [handleRef],
+  );
+
+  useResizeObserver(sliderContext, buttonRef);
   const handlePointerDown = useSetValue(sliderContext);
 
   const style = useMemo(
@@ -35,7 +46,7 @@ export function SetSliderValue({
 
   return (
     <button
-      ref={handleRef}
+      ref={combinedRef}
       onPointerDown={handlePointerDown}
       tabIndex={-1}
       {...ariaAttributes}

@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { AudioContext } from "./AudioContext";
+import { useAudioContext } from "./AudioContext";
 
 type AudioElementState = {
   duration: number;
@@ -15,7 +14,7 @@ type AudioElementState = {
 };
 
 export function useAudioElement(): AudioElementState {
-  const { audioElementRef } = useContext(AudioContext);
+  const { audioElementRef } = useAudioContext();
   const audioElement = audioElementRef.current;
   return {
     duration: audioElement?.duration ?? 0,

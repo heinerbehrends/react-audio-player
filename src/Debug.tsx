@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { PlayerContext } from "./Player/PlayerContext";
+import { usePlayerContext } from "./Player/PlayerContext";
 import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
 import { useAudioContext } from "./AudioElement/AudioContext";
@@ -16,7 +16,7 @@ export function Debug({
 }: {
   type: "timeline" | "volume" | "playbackRate";
 }) {
-  const { playerState: state, volumeState } = useContext(PlayerContext);
+  const { playerState: state, volumeState } = usePlayerContext();
   const {
     audioElementRef: { current: audioElement },
   } = useAudioContext();

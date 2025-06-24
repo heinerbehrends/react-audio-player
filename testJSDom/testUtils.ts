@@ -28,10 +28,10 @@ const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   volumeState: "high" as const,
   timeDisplay: "elapsed" as const,
   audioFiles: [] as AudioFile[],
-  cues: [],
   handlePlayerAction: vi.fn(),
   playbackRate: 1,
   customKeyboardShortcuts: undefined,
+  duration: 100,
 };
 
 // Default values for audio context
@@ -89,6 +89,7 @@ const DEFAULT_AUDIO_CONTEXT = {
   timelineCallbackRef: { current: { handleTimelineAction: vi.fn() } },
   volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
+  captionsCallbackRef: { current: { handleCueChange: vi.fn() } },
 };
 
 /**

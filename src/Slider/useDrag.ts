@@ -1,5 +1,5 @@
-import { useContext, useEffect } from "react";
-import { AudioContext } from "../AudioElement/AudioContext";
+import { useEffect } from "react";
+import { useAudioContext } from "../AudioElement/AudioContext";
 import { SliderContextType } from "./SliderContext";
 
 export function useDrag({
@@ -15,7 +15,7 @@ export function useDrag({
 }) {
   const {
     audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
+  } = useAudioContext();
 
   useEffect(() => {
     if (dragState !== "dragging") {

@@ -1,4 +1,4 @@
-import { useContext, useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   SliderContextAction,
   SliderProviderAction,
@@ -6,7 +6,7 @@ import {
   isSliderAction,
 } from "./SliderContext";
 import { SliderComponent } from "./SliderContext";
-import { AudioContext } from "../AudioElement/AudioContext";
+import { useAudioContext } from "../AudioElement/AudioContext";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 function useHandleSliderAction(dispatch: React.Dispatch<SliderContextAction>) {
@@ -34,7 +34,7 @@ export function useAttachSliderCallback({
   component,
 }: UseAttachSliderCallbackArgs) {
   const { timelineCallbackRef, volumeCallbackRef, playbackRateCallbackRef } =
-    useContext(AudioContext);
+    useAudioContext();
   const handleSliderAction = useHandleSliderAction(dispatch);
   useEffect(() => {
     if (component === "timeline") {

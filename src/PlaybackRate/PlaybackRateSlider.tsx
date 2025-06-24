@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { PlaybackRateContext } from "./PlaybackRateContext";
+import { usePlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { SetSliderValue } from "../Slider/SetSliderValue";
 import { progressStyles } from "../Slider/calculateStyle";
@@ -20,7 +19,7 @@ type PlaybackRateSliderComponent = React.FC<
 import { DragButton } from "../Slider/DragButton";
 
 function Drag(props: React.HTMLAttributes<HTMLButtonElement>) {
-  const playbackRateContext = useContext(PlaybackRateContext);
+  const playbackRateContext = usePlaybackRateContext();
   return (
     <DragButton
       sliderContext={playbackRateContext}
@@ -31,7 +30,7 @@ function Drag(props: React.HTMLAttributes<HTMLButtonElement>) {
 }
 
 function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
-  const context = useContext(PlaybackRateContext);
+  const context = usePlaybackRateContext();
   return (
     <SetSliderValue sliderContext={context} {...props}>
       {children}

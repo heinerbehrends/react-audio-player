@@ -1,6 +1,6 @@
-import { useContext, type HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { TimelineProvider } from "./TimelineProvider";
-import { TimelineContext } from "./TimelineContext";
+import { useTimelineContext } from "./TimelineContext";
 import {
   calculateProgressStyle,
   progressStyles,
@@ -10,7 +10,7 @@ import { DragButton } from "../Slider/DragButton";
 import { SetSliderValue } from "../Slider/SetSliderValue";
 
 function DragTimeline(props: React.HTMLAttributes<HTMLButtonElement>) {
-  const timelineContext = useContext(TimelineContext);
+  const timelineContext = useTimelineContext();
   return (
     <DragButton
       sliderContext={timelineContext}
@@ -24,7 +24,7 @@ function SeekTime({
   children,
   ...props
 }: React.HTMLAttributes<HTMLButtonElement>) {
-  const timelineContext = useContext(TimelineContext);
+  const timelineContext = useTimelineContext();
   return (
     <SetSliderValue sliderContext={timelineContext} {...props}>
       {children}
@@ -35,7 +35,7 @@ function SeekTime({
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
 function TimelineProgress(props: ProgressProps) {
-  const context = useContext(TimelineContext);
+  const context = useTimelineContext();
   const style = {
     ...progressStyles,
     ...calculateProgressStyle(context),
