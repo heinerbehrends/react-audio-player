@@ -15,7 +15,6 @@ type PlayerContextProviderProps = {
 
 export type AudioFile = {
   src: string;
-  captionSrc?: string;
 };
 
 export const PlayerContextProvider = memo(function PlayerContextProvider({

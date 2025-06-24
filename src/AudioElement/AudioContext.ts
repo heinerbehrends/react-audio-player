@@ -17,16 +17,11 @@ export type SliderProviderRef = {
   handleSliderAction: ((action: SliderContextAction) => void) | null;
 };
 
-export type CaptionsProviderRef = {
-  handleCueChange: ((cues: VTTCue[]) => void) | null;
-};
-
 export type AudioContextType = {
   audioElementRef: React.MutableRefObject<HTMLAudioElement | null>;
   timelineCallbackRef: React.MutableRefObject<TimelineProviderRef>;
   volumeCallbackRef: React.MutableRefObject<VolumeProviderRef>;
   playbackRateCallbackRef: React.MutableRefObject<PlaybackRateProviderRef>;
-  captionsCallbackRef: React.MutableRefObject<CaptionsProviderRef>;
 };
 
 export const AudioContext = createContext<AudioContextType>({
@@ -34,7 +29,6 @@ export const AudioContext = createContext<AudioContextType>({
   timelineCallbackRef: { current: { handleTimelineAction: null } },
   volumeCallbackRef: { current: { handleVolumeAction: null } },
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
-  captionsCallbackRef: { current: { handleCueChange: null } },
 });
 
 AudioContext.displayName = "AudioContext";

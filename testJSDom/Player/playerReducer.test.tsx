@@ -93,17 +93,6 @@ describe("playerReducer", () => {
     });
   });
 
-  describe("TOGGLE_CAPTIONS", () => {
-    it("toggles captions visibility", () => {
-      const action = { type: "TOGGLE_CAPTIONS" as const };
-      expect(playerReducer(playerContext, action).showCaptions).toBe(true);
-      expect(
-        playerReducer({ ...playerContext, showCaptions: true }, action)
-          .showCaptions,
-      ).toBe(false);
-    });
-  });
-
   describe("AUDIO_FILE_ERROR", () => {
     it("sets state to error", () => {
       const action = { type: "AUDIO_FILE_ERROR" as const };

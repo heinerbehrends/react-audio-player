@@ -8,7 +8,6 @@ export default defineConfig({
     timeline: "src/Timeline/index.ts",
     "playback-rate": "src/PlaybackRate/index.ts",
     "time-display": "src/TimeDisplay/index.ts",
-    captions: "src/Captions/index.ts",
   },
   format: ["esm"],
   dts: true,

@@ -3,7 +3,6 @@ import { type AudioContextType } from "../src/AudioElement/AudioContext";
 import { vi } from "vitest";
 import React from "react";
 import { PlayerContextType } from "../src/Player/PlayerContext";
-import { CaptionsContextType } from "../src/Captions/CaptionsContext";
 
 // Default values for slider context
 const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
@@ -24,7 +23,6 @@ const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
 // Default values for player context
 const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   playerState: "paused" as const,
-  showCaptions: false,
   isMuted: false,
   volumeState: "high" as const,
   timeDisplay: "elapsed" as const,
@@ -90,7 +88,6 @@ const DEFAULT_AUDIO_CONTEXT = {
   timelineCallbackRef: { current: { handleTimelineAction: vi.fn() } },
   volumeCallbackRef: { current: { handleVolumeAction: vi.fn() } },
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
-  captionsCallbackRef: { current: { handleCueChange: vi.fn() } },
 };
 
 /**
@@ -141,7 +138,6 @@ export function createMockAudioElement(overrides = {}) {
 
 type AudioFile = {
   src: string;
-  captionSrc?: string;
 };
 
 type MockProviderProps<T> = {
@@ -177,30 +173,3 @@ export const mockProviders = {
   SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),
   AudioProvider: createMockProvider(createAudioContext(), "AudioProvider"),
 } as const;
-
-const DEFAULT_CAPTIONS_CONTEXT: CaptionsContextType = {
-  cues: [
-    {
-      text: "Hello world",
-      startTime: 0,
-      endTime: 10,
-    } as VTTCue,
-    {
-      text: "This is a test",
-      startTime: 10,
-      endTime: 20,
-    } as VTTCue,
-  ],
-  showCaptions: true,
-  setCues: vi.fn(),
-  setShowCaptions: vi.fn(),
-};
-
-export function createCaptionsContext(
-  overrides: Partial<CaptionsContextType> = {},
-): CaptionsContextType {
-  return {
-    ...DEFAULT_CAPTIONS_CONTEXT,
-    ...overrides,
-  };
-}

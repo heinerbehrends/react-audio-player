@@ -11,12 +11,6 @@ import {
 } from "../testUtils";
 import { renderWithContexts } from "../testComponents";
 
-vi.mock("../../src/Captions/Track", () => ({
-  Track: ({ src }: { src: string }) => (
-    <track data-testid="caption-track" src={src} />
-  ),
-}));
-
 describe("AudioElement", () => {
   let audioElement: HTMLAudioElement;
 
@@ -87,28 +81,6 @@ describe("AudioElement", () => {
 
     expect(audio.ontimeupdate).toBe(initialTimeUpdateHandler);
     expect(audio.onvolumechange).toBe(initialVolumeChangeHandler);
-  });
-
-  it("renders with captions track when captionSrc is provided", () => {
-    const contextWithCaptions = createPlayerContext({
-      overrides: {
-        audioFiles: [
-          {
-            src: "test-audio.mp3",
-            captionSrc: "captions.vtt",
-          },
-        ],
-      },
-    });
-
-    renderWithContexts({
-      playerContext: contextWithCaptions,
-      audioContext: createAudioContext(),
-      component: <AudioElement />,
-    });
-    const track = screen.getByTestId("caption-track");
-    expect(track).toBeInTheDocument();
-    expect(track).toHaveAttribute("src", "captions.vtt");
   });
 
   it("sets the correct src from audioFiles when provided", () => {

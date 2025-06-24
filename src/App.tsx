@@ -5,7 +5,6 @@ import { Timeline } from "./Timeline/Timeline";
 import { MuteButton } from "./Player/MuteButton";
 import { Volume } from "./Volume/Volume";
 import { Time } from "./TimeDisplay/TimeDisplay";
-import { Captions } from "./Captions/Captions";
 import { Seek } from "./Player/Seek";
 import { Error } from "./Player/Error";
 import { AudioPlayer } from "./Player/AudioPlayer";
@@ -20,9 +19,7 @@ function App() {
     "horizontal";
 
   return (
-    <AudioPlayer
-      audioFiles={[{ src: "The-Race.mp3", captionSrc: "captions.vtt" }]}
-    >
+    <AudioPlayer audioFiles={[{ src: "The-Race.mp3" }]}>
       <Timeline style={{ height: "40px" }}>
         <Timeline.Seek
           style={{
@@ -136,10 +133,6 @@ function App() {
       </PlaybackRate>
       <PlaybackRate.Change amount={-0.1}>-0.1x</PlaybackRate.Change>
       <PlaybackRate.Change amount={0.1}>+0.1x</PlaybackRate.Change>
-      <Captions>
-        <Captions.Toggle />
-        <Captions.Display />
-      </Captions>
       <Error>There was an error loading the audio file.</Error>
     </AudioPlayer>
   );

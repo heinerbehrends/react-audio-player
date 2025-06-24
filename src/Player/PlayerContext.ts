@@ -38,10 +38,6 @@ export type PauseAction = {
   type: "PAUSE";
 };
 
-export type ToggleCaptionsAction = {
-  type: "TOGGLE_CAPTIONS";
-};
-
 type SetPlaybackRateAction = {
   type: "SET_PLAYBACK_RATE";
   playbackRate: number;
@@ -62,7 +58,6 @@ export type PlayerContextAction =
   | AudioFileErrorAction
   | SetVolumeStateAction
   | PauseAction
-  | ToggleCaptionsAction
   | SetPlaybackRateAction
   | SetDurationAction;
 
@@ -77,10 +72,9 @@ export type PlayerContextType = {
   duration: number;
   handlePlayerAction: (action: PlayerContextAction) => void;
   playerState: PlayerState;
-  showCaptions: boolean;
   volumeState: VolumeState;
   timeDisplay: "elapsed" | "remaining";
-  audioFiles: { src: string; captionSrc?: string }[];
+  audioFiles: { src: string }[];
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
@@ -90,7 +84,6 @@ export const initialPlayerState: PlayerContextType = {
   duration: 0,
   handlePlayerAction: () => {},
   playerState: "loading",
-  showCaptions: true,
   volumeState: "high",
   timeDisplay: "elapsed",
   audioFiles: [],

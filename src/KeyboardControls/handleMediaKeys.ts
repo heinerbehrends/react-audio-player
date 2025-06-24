@@ -3,7 +3,6 @@ import { usePlayerContext } from "../Player/PlayerContext";
 import type { PlayerContextAction } from "../Player/PlayerContext";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-import type { ToggleCaptionsAction } from "../Player/PlayerContext";
 
 type ActionHandler<Action> = (action: Action) => void;
 
@@ -15,7 +14,7 @@ export type HandleMediaKeysArgs = {
 };
 
 export type KeyToActionMap = {
-  [key: string]: SideEffectAction | ToggleCaptionsAction;
+  [key: string]: SideEffectAction;
 };
 
 export const defaultKeyToActionMap: KeyToActionMap = {
@@ -56,17 +55,10 @@ export const defaultKeyToActionMap: KeyToActionMap = {
   "7": { type: "SET_TIME_TO_PERCENT", percent: 0.7 },
   "8": { type: "SET_TIME_TO_PERCENT", percent: 0.8 },
   "9": { type: "SET_TIME_TO_PERCENT", percent: 0.9 },
-  c: { type: "TOGGLE_CAPTIONS" },
-  C: { type: "TOGGLE_CAPTIONS" },
 };
 
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
-  const {
-    event,
-    handleSideEffect,
-    handlePlayerAction,
-    customKeyboardShortcuts,
-  } = args;
+  const { event, handleSideEffect, customKeyboardShortcuts } = args;
   const keyToActionMap = {
     ...defaultKeyToActionMap,
     ...customKeyboardShortcuts,
@@ -75,11 +67,6 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 
   if (!action) return false;
 
-  if (action.type === "TOGGLE_CAPTIONS") {
-    handlePlayerAction(action);
-    event.preventDefault();
-    return true;
-  }
   handleSideEffect(action);
   event.preventDefault();
   return true;

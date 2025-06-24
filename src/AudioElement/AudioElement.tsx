@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { usePlayerContext } from "../Player/PlayerContext";
 import { useAudioContext } from "./AudioContext";
-import { Track } from "../Captions/Track";
 import {
   useHandleTimeUpdate,
   useHandleVolumeChange,
@@ -9,7 +8,14 @@ import {
   usePlayerCallbacks,
 } from "./audioElementHooks";
 
-export const AudioElement = memo(function AudioElement() {
+type AudioElementProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
+  children?: React.ReactNode;
+};
+
+export const AudioElement = memo(function AudioElement({
+  children,
+  ...props
+}: AudioElementProps) {
   const { audioFiles } = usePlayerContext();
   const {
     audioElementRef,
@@ -17,7 +23,7 @@ export const AudioElement = memo(function AudioElement() {
     volumeCallbackRef,
     playbackRateCallbackRef,
   } = useAudioContext();
-  const { src, captionSrc } = audioFiles?.[0] || {};
+  const { src } = audioFiles?.[0] || {};
   const handleTimeUpdate = useHandleTimeUpdate();
   const handleVolumeChange = useHandleVolumeChange();
   const handlePlaybackRateChange = useHandlePlaybackRateChange();
@@ -37,6 +43,7 @@ export const AudioElement = memo(function AudioElement() {
     !!playbackRateCallbackRef?.current?.handlePlaybackRateAction;
   return (
     <audio
+      {...props}
       src={src}
       aria-label="audio player"
       ref={audioElementRef}
@@ -63,7 +70,7 @@ export const AudioElement = memo(function AudioElement() {
         );
       }}
     >
-      {captionSrc && <Track src={captionSrc} />}
+      {children ? children : undefined}
     </audio>
   );
 });

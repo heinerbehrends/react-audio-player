@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import {
   AudioContext,
-  CaptionsProviderRef,
   PlaybackRateProviderRef,
   VolumeProviderRef,
   type TimelineProviderRef,
@@ -23,9 +22,6 @@ export function AudioContextProvider({ children }: TimelineProviderProps) {
   const playbackRateCallbackRef = useRef<PlaybackRateProviderRef>({
     handlePlaybackRateAction: null,
   });
-  const captionsCallbackRef = useRef<CaptionsProviderRef>({
-    handleCueChange: null,
-  });
 
   return (
     <AudioContext.Provider
@@ -34,7 +30,6 @@ export function AudioContextProvider({ children }: TimelineProviderProps) {
         timelineCallbackRef,
         volumeCallbackRef,
         playbackRateCallbackRef,
-        captionsCallbackRef,
       }}
     >
       {children}

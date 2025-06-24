@@ -247,25 +247,6 @@ describe("handleMediaKeys", () => {
     });
   });
 
-  describe("Caption control keys", () => {
-    it("should handle caption toggle keys (c, C)", () => {
-      const captionKeys = ["c", "C"];
-
-      captionKeys.forEach((key) => {
-        mockHandlePlayerAction.mockClear();
-        defaultArgs.event.key = key;
-
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandlePlayerAction).toHaveBeenCalledWith({
-          type: "TOGGLE_CAPTIONS",
-        });
-      });
-    });
-  });
-
   describe("Custom keyboard shortcuts", () => {
     it("should handle custom shortcuts that override default ones while preserving other defaults", () => {
       // Override the default 'p' key with 'x' for TOGGLE_PLAY

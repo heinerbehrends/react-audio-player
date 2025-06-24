@@ -58,11 +58,7 @@ This player fully supports:
 The root component that provides context to all child components.
 
 ```jsx
-<AudioPlayer
-  audioFiles={[
-    { src: "audio.mp3", type: "audio/mpeg", captionSrc: "captions.vtt" },
-  ]}
->
+<AudioPlayer audioFiles={[{ src: "audio.mp3", type: "audio/mpeg" }]}>
   {/* Player UI components */}
 </AudioPlayer>
 ```
@@ -99,10 +95,6 @@ The root component that provides context to all child components.
 - `<PlaybackRate.Display>` - Shows current playback rate
 - `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
 - `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
-
-### Caption Component
-
-- `<Captions>` - Display synchronized captions/subtitles
 
 ### Error Component
 

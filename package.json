@@ -91,11 +91,6 @@
       "import": "./dist/timeline.mjs",
       "default": "./dist/timeline.mjs"
     },
-    "./captions": {
-      "types": "./dist/captions.d.ts",
-      "import": "./dist/captions.mjs",
-      "default": "./dist/captions.mjs"
-    },
     "./playback-rate": {
       "types": "./dist/playback-rate.d.ts",
       "import": "./dist/playback-rate.mjs",
