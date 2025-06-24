@@ -111,14 +111,6 @@ describe("playerReducer", () => {
     });
   });
 
-  describe("CAPTION_CUE_CHANGE", () => {
-    it("updates cues", () => {
-      const cues = [{ text: "test" }] as VTTCue[];
-      const action = { type: "CAPTION_CUE_CHANGE" as const, cues };
-      expect(playerReducer(playerContext, action).cues).toBe(cues);
-    });
-  });
-
   describe("SET_VOLUME_STATE", () => {
     it("updates volume state", () => {
       const action = {

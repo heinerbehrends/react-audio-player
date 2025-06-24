@@ -34,7 +34,6 @@ describe("Track", () => {
     expect(useCueChangeMock).toHaveBeenCalledTimes(1);
     expect(useCueChangeMock).toHaveBeenCalledWith({
       trackRef: expect.any(Object),
-      handlePlayerAction: expect.any(Function),
     });
   });
 
@@ -45,7 +44,7 @@ describe("Track", () => {
     const trackRef = useCueChangeMock.mock.calls[0]![0].trackRef;
 
     // The ref should be properly connected to the track element
-    expect(trackRef.current).toBeInstanceOf(HTMLTrackElement);
+    expect(trackRef?.current).toBeInstanceOf(HTMLTrackElement);
   });
 
   it("passes different track refs for different instances", () => {

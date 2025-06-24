@@ -5,6 +5,10 @@ import {
 } from "../src/AudioElement/AudioContext";
 import { PlayerContextType } from "../src/Player/PlayerContext";
 import { PlayerContext } from "../src/Player/PlayerContext";
+import {
+  CaptionsContext,
+  CaptionsContextType,
+} from "../src/Captions/CaptionsContext";
 
 type CreateContextWrapperArgs = {
   playerContext: PlayerContextType;
@@ -83,5 +87,19 @@ export function renderWithAudioContext({
     <AudioContext.Provider value={audioContext}>
       {component}
     </AudioContext.Provider>,
+  );
+}
+
+export function renderWithCaptionsContext({
+  captionsContext,
+  component,
+}: {
+  captionsContext: CaptionsContextType;
+  component: React.ReactNode;
+}) {
+  return render(
+    <CaptionsContext.Provider value={captionsContext}>
+      {component}
+    </CaptionsContext.Provider>,
   );
 }

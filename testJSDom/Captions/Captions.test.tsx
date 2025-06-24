@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { Captions } from "../../src/Captions/Captions";
-import { createPlayerContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
+import { createCaptionsContext } from "../testUtils";
+import { renderWithCaptionsContext } from "../testComponents";
 
 // Mock ToggleCaptions
 vi.mock("../../src/Captions/ToggleCaptions", () => ({
@@ -11,22 +11,15 @@ vi.mock("../../src/Captions/ToggleCaptions", () => ({
 }));
 
 describe("Captions", () => {
-  const mockCue1 = { text: "Hello world" };
-  const mockCue2 = { text: "This is a test" };
-  const defaultContext = {
-    ...createPlayerContext(),
-    cues: [mockCue1, mockCue2] as VTTCue[],
-    showCaptions: true,
-  };
-
+  const captionsContext = createCaptionsContext();
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renders caption text when showCaptions is true", () => {
-    renderWithPlayerContext({
-      playerContext: defaultContext,
-      component: <Captions />,
+    renderWithCaptionsContext({
+      captionsContext,
+      component: <Captions.Display />,
     });
 
     const captionsSection = screen.getByRole("region", { name: /captions/i });
@@ -37,13 +30,13 @@ describe("Captions", () => {
 
   it("does not render captions when showCaptions is false", () => {
     const contextWithoutCaptions = {
-      ...defaultContext,
+      ...captionsContext,
       showCaptions: false,
     };
 
-    renderWithPlayerContext({
-      playerContext: contextWithoutCaptions,
-      component: <Captions />,
+    renderWithCaptionsContext({
+      captionsContext: contextWithoutCaptions,
+      component: <Captions.Display />,
     });
 
     expect(screen.queryByRole("region")).not.toBeInTheDocument();
@@ -51,9 +44,9 @@ describe("Captions", () => {
   });
 
   it("renders with proper accessibility attributes", () => {
-    renderWithPlayerContext({
-      playerContext: defaultContext,
-      component: <Captions />,
+    renderWithCaptionsContext({
+      captionsContext,
+      component: <Captions.Display />,
     });
 
     const captionsSection = screen.getByRole("region");
@@ -65,9 +58,11 @@ describe("Captions", () => {
   });
 
   it("passes additional props to the section element", () => {
-    renderWithPlayerContext({
-      playerContext: defaultContext,
-      component: <Captions className="custom-class" data-testid="captions" />,
+    renderWithCaptionsContext({
+      captionsContext,
+      component: (
+        <Captions.Display className="custom-class" data-testid="captions" />
+      ),
     });
 
     const captionsSection = screen.getByRole("region");
@@ -77,13 +72,13 @@ describe("Captions", () => {
 
   it("renders empty section when there are no cues", () => {
     const contextWithoutCues = {
-      ...defaultContext,
+      ...captionsContext,
       cues: [],
     };
 
-    renderWithPlayerContext({
-      playerContext: contextWithoutCues,
-      component: <Captions />,
+    renderWithCaptionsContext({
+      captionsContext: contextWithoutCues,
+      component: <Captions.Display />,
     });
 
     const captionsSection = screen.getByRole("region");
@@ -96,23 +91,6 @@ describe("Captions", () => {
 
     render(<Captions.Toggle />);
     expect(screen.getByTestId("toggle-captions")).toBeInTheDocument();
-  });
-
-  it("renders with children", () => {
-    renderWithPlayerContext({
-      playerContext: defaultContext,
-      component: (
-        <Captions>
-          <div data-testid="custom-child">Custom Child</div>
-        </Captions>
-      ),
-    });
-
-    // Should still render captions text
-    expect(screen.getByText("Hello world")).toBeInTheDocument();
-
-    // But children aren't rendered because they're not used in the component
-    expect(screen.queryByTestId("custom-child")).not.toBeInTheDocument();
   });
 });
 

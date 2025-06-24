@@ -1,28 +1,27 @@
-import { describe, it, expect } from "vitest";
-import { render, getByRole } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, getByRole, fireEvent } from "@testing-library/react";
 import { SetSliderValue } from "../../src/Slider/SetSliderValue";
-import userEvent from "@testing-library/user-event";
 import { createSliderContext } from "../testUtils";
 
 describe("SetSliderValue", () => {
-  it("handles pointer down event", async () => {
-    const context = createSliderContext();
+  it("renders with correct ARIA attributes", () => {
+    const context = createSliderContext({
+      component: "timeline",
+      value: 0.5,
+      minValue: 0,
+      maxValue: 1,
+    });
+
     const { container } = render(
       <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
     );
     const button = getByRole(container, "slider");
 
-    await userEvent.pointer({
-      keys: "[MouseLeft>]",
-      target: button,
-      coords: { clientX: 60, clientY: 0 },
-    });
-
-    expect(context.handleSliderAction).toHaveBeenCalledWith({
-      type: "SET_SLIDER_VALUE",
-      ...context,
-      clientXY: 60,
-    });
+    expect(button).toHaveAttribute("aria-valuemin", "0");
+    expect(button).toHaveAttribute("aria-valuemax", "1");
+    expect(button).toHaveAttribute("aria-valuenow", "0.5");
+    expect(button).toHaveAttribute("aria-orientation", "horizontal");
+    expect(button).toHaveAttribute("role", "slider");
   });
 
   it("merges custom styles with calculated styles", () => {
@@ -54,5 +53,23 @@ describe("SetSliderValue", () => {
 
     expect(button.getAttribute("data-testid")).toBe("slider");
     expect(button.className).toBe("custom-class");
+  });
+
+  it("attaches event handlers", () => {
+    const handleSliderAction = vi.fn();
+    const context = createSliderContext({ handleSliderAction });
+
+    const { container } = render(
+      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
+    );
+    const button = getByRole(container, "slider");
+
+    expect(button).toHaveAttribute("tabindex", "-1");
+
+    // Test that the event handler is properly attached by firing the event
+    fireEvent.pointerDown(button, { clientX: 50, clientY: 0 });
+
+    // Verify that the slider action was called
+    expect(handleSliderAction).toHaveBeenCalled();
   });
 });

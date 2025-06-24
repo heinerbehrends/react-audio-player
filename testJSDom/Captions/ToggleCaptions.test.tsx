@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ToggleCaptions } from "../../src/Captions/ToggleCaptions";
-import { PlayerContext } from "../../src/Player/PlayerContext";
+import { CaptionsContext } from "../../src/Captions/CaptionsContext";
 
 // Create a variable to control the hook's return value
 let isDisabledMockValue = false;
@@ -13,10 +13,15 @@ vi.mock("../../src/Shared/useIsDisabled", () => ({
 }));
 
 describe("ToggleCaptions", () => {
-  const mockHandlePlayerAction = vi.fn();
+  const mockSetShowCaptions = vi.fn();
 
-  // Default player context with captions off
-  const defaultContext = createDefaultContext();
+  // Default captions context
+  const defaultContext = {
+    cues: [],
+    showCaptions: false,
+    setCues: vi.fn(),
+    setShowCaptions: mockSetShowCaptions,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -26,9 +31,9 @@ describe("ToggleCaptions", () => {
 
   it("renders button with correct text", () => {
     render(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const button = screen.getByRole("button", { name: /toggle captions/i });
@@ -38,9 +43,9 @@ describe("ToggleCaptions", () => {
 
   it("has correct ARIA attributes when captions are off", () => {
     render(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -55,28 +60,26 @@ describe("ToggleCaptions", () => {
     };
 
     render(
-      <PlayerContext.Provider value={contextWithCaptions}>
+      <CaptionsContext.Provider value={contextWithCaptions}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("dispatches TOGGLE_CAPTIONS action when clicked", () => {
+  it("calls setShowCaptions with opposite value when clicked", () => {
     render(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const button = screen.getByRole("button");
     fireEvent.click(button);
 
-    expect(mockHandlePlayerAction).toHaveBeenCalledWith({
-      type: "TOGGLE_CAPTIONS",
-    });
+    expect(mockSetShowCaptions).toHaveBeenCalledWith(true);
   });
 
   it("is disabled when useIsDisabled returns true", () => {
@@ -84,9 +87,9 @@ describe("ToggleCaptions", () => {
     isDisabledMockValue = true;
 
     render(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -98,9 +101,9 @@ describe("ToggleCaptions", () => {
     isDisabledMockValue = false;
 
     render(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const button = screen.getByRole("button");
@@ -109,9 +112,9 @@ describe("ToggleCaptions", () => {
 
   it("memoizes the click handler to prevent unnecessary rerenders", () => {
     const { rerender } = render(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const initialButton = screen.getByRole("button");
@@ -119,9 +122,9 @@ describe("ToggleCaptions", () => {
 
     // Force a rerender with the same props
     rerender(
-      <PlayerContext.Provider value={defaultContext}>
+      <CaptionsContext.Provider value={defaultContext}>
         <ToggleCaptions />
-      </PlayerContext.Provider>,
+      </CaptionsContext.Provider>,
     );
 
     const updatedButton = screen.getByRole("button");

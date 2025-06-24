@@ -27,18 +27,10 @@ test("seek 5 seconds forward when right arrow is pressed", async ({ page }) => {
   await page.goto("/");
   await waitForAudio(page);
 
-  // Log initial state for debugging
-  const initialState = await getAudioState(page);
-  console.log("Initial state:", initialState);
-
   await page.getByLabel("Seek forward by 10 seconds").focus();
   await page.keyboard.press("ArrowRight");
-
-  // Log state after key press
   const { currentTime } = await getAudioState(page);
-  console.log("After arrow press:", { currentTime });
 
-  // Should seek 5 seconds forward from the start
   expect(currentTime).toBeCloseTo(5, PRECISION);
 });
 
@@ -46,10 +38,6 @@ test("seek 5 seconds backward when left arrow is pressed", async () => {
   // Reset state
   await page.goto("/");
   await waitForAudio(page);
-
-  // Log initial state for debugging
-  const initialState = await getAudioState(page);
-  console.log("Initial state:", initialState);
 
   // Move forward 10 seconds (two 5-second jumps)
   await page.getByLabel("Seek forward by 10 seconds").focus();
@@ -59,11 +47,8 @@ test("seek 5 seconds backward when left arrow is pressed", async () => {
   // Then move back 5 seconds
   await page.keyboard.press("ArrowLeft");
 
-  // Log state after key press
   const { currentTime } = await getAudioState(page);
-  console.log("After arrow press:", { currentTime });
 
-  // Should be at 5 seconds (10 seconds forward - 5 seconds back)
   expect(currentTime).toBeCloseTo(5, PRECISION);
 });
 

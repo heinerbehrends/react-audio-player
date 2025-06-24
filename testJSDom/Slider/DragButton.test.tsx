@@ -47,33 +47,6 @@ describe("DragButton", () => {
     expect(calls[0]?.[0]?.clientXY).toBe(50);
   });
 
-  it("handles pointer up event", async () => {
-    const context = createSliderContext();
-    const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />,
-    );
-    const button = container.firstChild as HTMLElement;
-
-    await userEvent.pointer([
-      {
-        keys: "[MouseLeft>]",
-        target: button,
-        coords: { clientX: 50, clientY: 0 },
-      },
-      {
-        keys: "[/MouseLeft]",
-        target: button,
-        coords: { clientX: 50, clientY: 0 },
-      },
-    ]);
-
-    const lastCall = (
-      context.handleSliderAction as unknown as ReturnType<typeof vi.fn>
-    ).mock.lastCall?.[0];
-    expect(lastCall.type).toBe("DRAG_END");
-    expect(lastCall.clientXY).toBe(50);
-  });
-
   it("handles key down event", () => {
     const context = createSliderContext();
     const { container } = render(

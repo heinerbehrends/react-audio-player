@@ -3,6 +3,7 @@ import { type AudioContextType } from "../src/AudioElement/AudioContext";
 import { vi } from "vitest";
 import React from "react";
 import { PlayerContextType } from "../src/Player/PlayerContext";
+import { CaptionsContextType } from "../src/Captions/CaptionsContext";
 
 // Default values for slider context
 const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
@@ -176,3 +177,30 @@ export const mockProviders = {
   SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),
   AudioProvider: createMockProvider(createAudioContext(), "AudioProvider"),
 } as const;
+
+const DEFAULT_CAPTIONS_CONTEXT: CaptionsContextType = {
+  cues: [
+    {
+      text: "Hello world",
+      startTime: 0,
+      endTime: 10,
+    } as VTTCue,
+    {
+      text: "This is a test",
+      startTime: 10,
+      endTime: 20,
+    } as VTTCue,
+  ],
+  showCaptions: true,
+  setCues: vi.fn(),
+  setShowCaptions: vi.fn(),
+};
+
+export function createCaptionsContext(
+  overrides: Partial<CaptionsContextType> = {},
+): CaptionsContextType {
+  return {
+    ...DEFAULT_CAPTIONS_CONTEXT,
+    ...overrides,
+  };
+}

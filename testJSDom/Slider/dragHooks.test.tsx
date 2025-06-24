@@ -135,7 +135,7 @@ describe("dragHooks", () => {
 
   describe("useHandleDragEnd", () => {
     it("handles drag end", () => {
-      const context = createSliderContext();
+      const context = createSliderContext({ dragState: "dragging" });
       const { result } = renderHook(() => useHandleDragEnd(context));
 
       const event = {
@@ -178,21 +178,13 @@ describe("dragHooks", () => {
       } as PointerEvent<HTMLButtonElement>;
       result.current(event);
 
-      expect(context.handleSliderAction).toHaveBeenCalledTimes(3);
-      expect(context.handleSliderAction).toHaveBeenNthCalledWith(1, {
+      expect(mockHandleSideEffect).toHaveBeenCalledTimes(1);
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "SET_SLIDER_VALUE",
         ...context,
         clientXY: 60,
       });
-      expect(context.handleSliderAction).toHaveBeenNthCalledWith(2, {
-        type: "UPDATE_UI_VALUE",
-        component: "timeline",
-        value: expect.closeTo(2.25, 5),
-      });
-      expect(context.handleSliderAction).toHaveBeenNthCalledWith(3, {
-        type: "DRAG_START",
-        ...context,
-      });
+      expect(context.handleSliderAction).not.toHaveBeenCalled();
     });
   });
 });

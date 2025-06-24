@@ -80,13 +80,7 @@ describe("ChangePlaybackRate", () => {
   });
 
   it("calls handlePlayerAction when clicked", () => {
-    // Log to confirm our test is running
-    console.log("Running click test");
-
-    // Use a fresh mock
-    // Create minimal context with only required values
     const playerContext = createPlayerContext();
-    // Render with the fresh context
     renderWithPlayerContext({
       playerContext,
       component: <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,

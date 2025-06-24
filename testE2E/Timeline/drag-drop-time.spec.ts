@@ -23,8 +23,6 @@ test("drag timeline button to seek when paused", async ({ page }) => {
 
   // Verify the audio time was updated
   const { currentTime } = await getAudioState(page);
-  console.log("currentTime", currentTime);
-  console.log("duration", duration);
   // Should be at approximately half duration
   expect(currentTime).toBeCloseTo(duration / 2, PRECISION);
 });
@@ -73,11 +71,9 @@ test("drag button cannot move beyond timeline bounds", async ({
 
   // Get the timeline dimensions
   const { sliderStart, sliderLength } = await getTimelineState(page);
-  console.log("Timeline:", { sliderStart, sliderLength });
 
   const dragButton = page.getByLabel("Drag to seek");
   const initialBox = await dragButton.boundingBox();
-  console.log("Initial button position:", initialBox);
 
   // Try to drag before the start of timeline
   await dragButton.hover();
@@ -86,7 +82,7 @@ test("drag button cannot move beyond timeline bounds", async ({
 
   // Get button position, should be at start
   let buttonBox = await dragButton.boundingBox();
-  console.log("Button at start:", buttonBox);
+
   expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
 
   // Try to drag past end of timeline
