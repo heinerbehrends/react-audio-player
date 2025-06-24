@@ -87,7 +87,6 @@ export type PlayerContextType = {
   volumeState: VolumeState;
   timeDisplay: "elapsed" | "remaining";
   audioFiles: { src: string; captionSrc?: string }[];
-  cues: VTTCue[];
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
@@ -101,7 +100,6 @@ export const initialPlayerState: PlayerContextType = {
   volumeState: "high",
   timeDisplay: "elapsed",
   audioFiles: [],
-  cues: [],
   customKeyboardShortcuts: undefined,
 };
 

@@ -136,8 +136,10 @@ function App() {
       </PlaybackRate>
       <PlaybackRate.Change amount={-0.1}>-0.1x</PlaybackRate.Change>
       <PlaybackRate.Change amount={0.1}>+0.1x</PlaybackRate.Change>
-      <Captions.Toggle />
-      <Captions />
+      <Captions>
+        <Captions.Toggle />
+        <Captions.Display />
+      </Captions>
       <Error>There was an error loading the audio file.</Error>
     </AudioPlayer>
   );

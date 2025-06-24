@@ -1,24 +1,22 @@
-import { useCallback, useContext, useEffect } from "react";
-import { PlayerContext, PlayerContextAction } from "../Player/PlayerContext";
+import { useCallback, useEffect } from "react";
+import { useAudioContext } from "../AudioElement/AudioContext";
+import { useCaptionsContext } from "./CaptionsContext";
 
 export function useToggleCaptions() {
-  const { handlePlayerAction } = useContext(PlayerContext);
+  const { showCaptions, setShowCaptions } = useCaptionsContext();
   return useCallback(() => {
-    handlePlayerAction({ type: "TOGGLE_CAPTIONS" });
-  }, [handlePlayerAction]);
+    setShowCaptions(!showCaptions);
+  }, [showCaptions, setShowCaptions]);
 }
 
 type UseCueChangeArgs = {
-  trackRef: React.RefObject<HTMLTrackElement | null>;
-  handlePlayerAction: (action: PlayerContextAction) => void;
+  trackRef?: React.RefObject<HTMLTrackElement | null>;
 };
 
-export function useCueChange({
-  trackRef,
-  handlePlayerAction,
-}: UseCueChangeArgs) {
+export function useCueChange({ trackRef }: UseCueChangeArgs) {
+  const { captionsCallbackRef } = useAudioContext();
   const handleCueChange = useCallback(
-    (event: Event) => {
+    function handleCueChange(event: Event) {
       const trackElement = event.currentTarget as HTMLTrackElement;
       if (!trackElement || !isTextTrack(trackElement.track)) {
         console.error("Current target is not a TextTrack or is null");
@@ -26,15 +24,15 @@ export function useCueChange({
       }
       const track = trackElement.track;
       const cuesArray = Array.from(track.activeCues || []);
-      handlePlayerAction({
-        type: "CAPTION_CUE_CHANGE",
-        cues: cuesArray as VTTCue[],
-      });
+      captionsCallbackRef.current?.handleCueChange?.(cuesArray as VTTCue[]);
     },
-    [handlePlayerAction],
+    [captionsCallbackRef],
   );
 
   useEffect(() => {
+    if (!trackRef) {
+      return;
+    }
     if (!trackRef.current) {
       return;
     }

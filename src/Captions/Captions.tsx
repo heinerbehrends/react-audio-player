@@ -1,10 +1,10 @@
-import { useContext } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
 import { ToggleCaptions } from "./ToggleCaptions";
+import { useCaptionsContext } from "./CaptionsContext";
+import { CaptionsProvider } from "./CaptionsProvider";
 
-function CaptionsComponent(props: React.HTMLAttributes<HTMLElement>) {
-  const { cues, showCaptions } = useContext(PlayerContext);
-
+// The base display component
+function CaptionsDisplay(props: React.HTMLAttributes<HTMLElement>) {
+  const { cues, showCaptions } = useCaptionsContext();
   if (!showCaptions) return null;
 
   return (
@@ -24,12 +24,12 @@ function CaptionsComponent(props: React.HTMLAttributes<HTMLElement>) {
   );
 }
 
-type Captions = React.NamedExoticComponent<{
-  children: React.ReactNode;
-}> & {
-  Toggle: React.NamedExoticComponent;
-};
+// Root component that includes the provider
+function CaptionsRoot({ children }: { children?: React.ReactNode }) {
+  return <CaptionsProvider>{children}</CaptionsProvider>;
+}
 
-export const Captions = Object.assign(CaptionsComponent, {
+export const Captions = Object.assign(CaptionsRoot, {
+  Display: CaptionsDisplay,
   Toggle: ToggleCaptions,
 });
