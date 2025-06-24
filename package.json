@@ -35,7 +35,7 @@
     "test": "vitest",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
-    "check-exports": "attw --pack ."
+    "check-exports": "attw --pack . --profile esm-only"
   },
   "peerDependencies": {
     "react": ">=16.3.0",

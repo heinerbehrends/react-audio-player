@@ -2,6 +2,24 @@ import "@testing-library/jest-dom";
 import { afterEach, beforeAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
+// Mock ResizeObserver immediately to prevent any timing issues
+try {
+  if (typeof global.ResizeObserver === "undefined") {
+    global.ResizeObserver = class ResizeObserver {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    };
+  }
+} catch {
+  // Fallback mock if the above fails
+  global.ResizeObserver = class ResizeObserver {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  };
+}
+
 // Automatically cleanup after each test
 afterEach(() => {
   cleanup();
@@ -71,20 +89,20 @@ beforeAll(() => {
 
 // Mock browser APIs used in your components
 beforeAll(() => {
-  // Mock ResizeObserver
-  global.ResizeObserver = class ResizeObserver {
-    observe = vi.fn();
-    unobserve = vi.fn();
-    disconnect = vi.fn();
-  };
-
   // Mock TextTrack API if used for captions
   if (!window.TextTrack) {
     // Create mock TextTrackCueList
     const createCueList = () => ({
       length: 0,
       getCueById: vi.fn(),
-      [Symbol.iterator]: function* () {},
+      [Symbol.iterator]: function* (): Generator<
+        TextTrackCue,
+        undefined,
+        undefined
+      > {
+        yield {} as TextTrackCue;
+        return undefined;
+      },
     });
 
     window.TextTrack = class TextTrack {

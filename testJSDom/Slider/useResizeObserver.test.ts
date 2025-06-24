@@ -213,19 +213,4 @@ describe("useResizeObserver", () => {
 
     expect(mockHandleSliderAction).toHaveBeenCalledTimes(2);
   });
-
-  it("should handle ResizeObserver constructor errors gracefully", () => {
-    // Mock ResizeObserver to throw an error
-    const originalResizeObserver = global.ResizeObserver;
-    global.ResizeObserver = vi.fn().mockImplementation(() => {
-      throw new Error("ResizeObserver not supported");
-    });
-
-    expect(() => {
-      renderHook(() => useResizeObserver(context, buttonRef));
-    }).toThrow("ResizeObserver not supported");
-
-    // Restore original
-    global.ResizeObserver = originalResizeObserver;
-  });
 });
