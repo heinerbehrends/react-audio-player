@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useHandleRef } from "./useHandleRef";
 import { useTimelineAriaAttributes } from "../Timeline/useTimelineAria";
-import { useSetValue } from "./dragHooks";
+import { useHandleDrag, useSetValue } from "./dragHooks";
 import { SliderContextType } from "./SliderContext";
 import {
   progressStyles,
@@ -22,6 +22,8 @@ export function SetSliderValue({
   const ariaAttributes = useTimelineAriaAttributes(sliderContext);
   const handleRef = useHandleRef(sliderContext);
   const handlePointerDown = useSetValue(sliderContext);
+  const handlePointerMove = useHandleDrag(sliderContext);
+
   const style = useMemo(
     () => ({
       ...progressStyles,
@@ -36,6 +38,7 @@ export function SetSliderValue({
     <button
       ref={handleRef}
       onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
       tabIndex={-1}
       {...ariaAttributes}
       {...props}

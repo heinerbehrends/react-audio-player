@@ -43,7 +43,7 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        {/* <Debug type="timeline" /> */}
+        <Debug type="timeline" />
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -88,7 +88,7 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        <Debug type="volume" />
+        {/* <Debug type="volume" /> */}
       </Volume>
       <PlaybackRateSlider
         style={{ height: "40px" }}

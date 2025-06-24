@@ -8,6 +8,7 @@ export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null,
 ) {
+  console.log("handleSideEffect", action);
   if (!audioElement) return;
   switch (action.type) {
     case "PLAY": {

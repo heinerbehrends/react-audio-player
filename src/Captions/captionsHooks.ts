@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect } from "react";
-import { PlayerContext, PlayerProviderAction } from "../Player/PlayerContext";
+import { PlayerContext, PlayerContextAction } from "../Player/PlayerContext";
 
 export function useToggleCaptions() {
   const { handlePlayerAction } = useContext(PlayerContext);
@@ -10,7 +10,7 @@ export function useToggleCaptions() {
 
 type UseCueChangeArgs = {
   trackRef: React.RefObject<HTMLTrackElement | null>;
-  handlePlayerAction: (action: PlayerProviderAction) => void;
+  handlePlayerAction: (action: PlayerContextAction) => void;
 };
 
 export function useCueChange({

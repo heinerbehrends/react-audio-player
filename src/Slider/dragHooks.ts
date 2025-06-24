@@ -1,11 +1,12 @@
 import { useCallback } from "react";
 import type { SliderContextType, SliderEvent } from "./SliderContext";
-import { getClientXY, calculateValue } from "../Shared/sharedFunctions";
+import { getClientXY } from "../Shared/sharedFunctions";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 
 export function useHandleDragEnd(context: SliderContextType) {
   return useCallback(
     (event: SliderEvent) => {
+      console.log("useHandleDragEnd", event);
       const { handleSliderAction, offsetFromMiddle } = context;
       const clientXY = getClientXY(event, context.orientation);
       handleSliderAction({
@@ -83,32 +84,22 @@ export function useOnPointerCancel(context: SliderContextType) {
 }
 
 export function useSetValue(context: SliderContextType) {
-  const { handleSliderAction: handleTimelineAction } = context;
   const handleSideEffect = useHandleSideEffect();
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
-      const value = calculateValue({ ...context, clientXY });
-      handleTimelineAction({
+      handleSideEffect({
         type: "SET_SLIDER_VALUE",
         ...context,
         clientXY,
       });
-      handleTimelineAction({
-        type: "UPDATE_UI_VALUE",
-        component: "timeline",
-        value,
-      });
-      handleTimelineAction({
-        type: "DRAG_START",
-        ...context,
-      });
+
       if (context.component === "volume") {
         handleSideEffect({
           type: "UNMUTE",
         });
       }
     },
-    [context, handleSideEffect, handleTimelineAction],
+    [context, handleSideEffect],
   );
 }
