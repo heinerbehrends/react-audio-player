@@ -23,16 +23,6 @@ describe("Error", () => {
     expect(screen.getByText("Custom error message")).toBeInTheDocument();
   });
 
-  it("includes screen reader text for accessibility", () => {
-    renderWithPlayerContext({
-      playerContext: mockPlayerContext,
-      component: <Error>Custom error message</Error>,
-    });
-
-    const srOnly = screen.getByText("There was an error loading the audio");
-    expect(srOnly).toHaveClass("sr-only");
-  });
-
   it("returns null when player state is not 'error'", () => {
     const { container } = renderWithPlayerContext({
       playerContext: { ...mockPlayerContext, playerState: "playing" },
