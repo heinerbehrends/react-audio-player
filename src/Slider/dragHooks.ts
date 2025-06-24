@@ -6,9 +6,11 @@ import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 export function useHandleDragEnd(context: SliderContextType) {
   return useCallback(
     (event: SliderEvent) => {
-      console.log("useHandleDragEnd", event);
       const { handleSliderAction, offsetFromMiddle } = context;
       const clientXY = getClientXY(event, context.orientation);
+      if (context.dragState !== "dragging") {
+        return;
+      }
       handleSliderAction({
         type: "DRAG_END",
         ...context,
@@ -84,10 +86,38 @@ export function useOnPointerCancel(context: SliderContextType) {
 }
 
 export function useSetValue(context: SliderContextType) {
+  const { handleSliderAction } = context;
   const handleSideEffect = useHandleSideEffect();
   return useCallback(
     (event: SliderEvent) => {
       const clientXY = getClientXY(event, context.orientation);
+      const initialPosition = clientXY;
+
+      function handlePointerMove(moveEvent: PointerEvent) {
+        const currentPosition =
+          context.orientation === "horizontal"
+            ? moveEvent.clientX
+            : moveEvent.clientY;
+
+        if (currentPosition !== initialPosition) {
+          handleSliderAction({
+            type: "DRAG_START",
+            ...context,
+            clientXY: currentPosition,
+          });
+          cleanup();
+        }
+      }
+
+      function cleanup() {
+        document.removeEventListener("pointermove", handlePointerMove);
+        document.removeEventListener("pointerup", cleanup);
+      }
+
+      // Add listeners for movement detection and pointer release
+      document.addEventListener("pointermove", handlePointerMove);
+      document.addEventListener("pointerup", cleanup);
+
       handleSideEffect({
         type: "SET_SLIDER_VALUE",
         ...context,
@@ -100,6 +130,6 @@ export function useSetValue(context: SliderContextType) {
         });
       }
     },
-    [context, handleSideEffect],
+    [context, handleSideEffect, handleSliderAction],
   );
 }

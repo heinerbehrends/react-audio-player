@@ -22,7 +22,7 @@ export function DragButton({
   const handleDragStart = useHandleDragStart(sliderContext);
   const handleDragEnd = useHandleDragEnd(sliderContext);
   const handleDrag = useHandleDrag(sliderContext);
-  const handleKeyDown = useHandleMediaKeys(sliderContext.component);
+  const handleKeyDown = useHandleMediaKeys();
   const handleDragCancel = useOnPointerCancel(sliderContext);
   const style = calculateDragStyle(sliderContext);
   useDrag({

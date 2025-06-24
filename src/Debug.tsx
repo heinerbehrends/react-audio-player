@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { PlayerContext } from "./Player/PlayerContext";
 import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
-import { AudioContext } from "./AudioElement/AudioContext";
+import { useAudioContext } from "./AudioElement/AudioContext";
 import { PlaybackRateContext } from "./PlaybackRate/PlaybackRateContext";
 
 const mapContext = {
@@ -19,7 +19,7 @@ export function Debug({
   const { playerState: state, volumeState } = useContext(PlayerContext);
   const {
     audioElementRef: { current: audioElement },
-  } = useContext(AudioContext);
+  } = useAudioContext();
   const context = useContext(mapContext[type]);
 
   return (
