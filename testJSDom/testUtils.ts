@@ -4,7 +4,6 @@ import { vi } from "vitest";
 import React from "react";
 import { PlayerContextType } from "../src/Player/PlayerContext";
 
-// Default values for slider context
 const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
   value: 1,
   minValue: 0.5,
@@ -20,7 +19,6 @@ const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
   handleSliderAction: vi.fn(),
 };
 
-// Default values for player context
 const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   playerState: "paused" as const,
   isMuted: false,
@@ -33,8 +31,6 @@ const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
   duration: 100,
 };
 
-// Default values for audio context
-
 const DEFAULT_AUDIO_ELEMENT: Partial<HTMLAudioElement> = {
   currentTime: 0,
   volume: 1,
@@ -44,9 +40,6 @@ const DEFAULT_AUDIO_ELEMENT: Partial<HTMLAudioElement> = {
   removeEventListener: vi.fn(),
 };
 
-/**
- * Creates a slider context with optional overrides
- */
 export function createSliderContext(
   overrides: Partial<SliderContextType> = {},
 ): SliderContextType {
@@ -57,9 +50,6 @@ export function createSliderContext(
   };
 }
 
-/**
- * Creates a player context with optional overrides
- */
 export function createPlayerContext({
   overrides = {},
 }: {
@@ -90,9 +80,6 @@ const DEFAULT_AUDIO_CONTEXT = {
   playbackRateCallbackRef: { current: { handlePlaybackRateAction: vi.fn() } },
 };
 
-/**
- * Creates a mock pointer event with optional overrides
- */
 export function createPointerEvent(
   overrides: Partial<React.PointerEvent<HTMLButtonElement>> = {},
 ): React.PointerEvent<HTMLButtonElement> {
@@ -111,9 +98,6 @@ export function createPointerEvent(
   } as React.PointerEvent<HTMLButtonElement>;
 }
 
-/**
- * Creates an audio context with optional overrides
- */
 export function createAudioContext(
   overrides: Partial<AudioContextType> = {},
 ): AudioContextType {
@@ -123,9 +107,6 @@ export function createAudioContext(
   };
 }
 
-/**
- * Creates a mock audio element with optional overrides
- */
 export function createMockAudioElement(overrides = {}) {
   return {
     currentTime: 10,
@@ -144,9 +125,6 @@ type MockProviderProps<T> = {
   children: React.ReactNode;
 } & Partial<T>;
 
-/**
- * Creates a mock provider component for testing
- */
 export function createMockProvider<T extends object>(
   context: T,
   displayName: string,
@@ -165,9 +143,6 @@ export function createMockProvider<T extends object>(
   return MockProvider;
 }
 
-/**
- * Creates mock providers for all contexts
- */
 export const mockProviders = {
   PlayerProvider: createMockProvider(createPlayerContext(), "PlayerProvider"),
   SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),

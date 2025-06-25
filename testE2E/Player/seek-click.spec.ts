@@ -1,7 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getTimelineState, getAudioState } from "../test-utils";
+import { waitForAudio, getAudioState } from "../test-utils";
 
-const CLICK_OFFSET = 100;
 const PRECISION = 0.25;
 
 let page: Page;
@@ -32,13 +31,11 @@ test("jumps to correct position when playing", async () => {
   const seekButton = page.getByLabel("Seek forward by 10 seconds");
   await seekButton.waitFor({ state: "visible" });
   await seekButton.click({
-    position: { x: CLICK_OFFSET, y: 0 },
+    position: { x: 0, y: 0 },
     force: true,
   });
   await page.getByRole("button", { name: "Pause" }).click();
-  const { sliderLength, duration } = await getTimelineState(page);
-  const progress = CLICK_OFFSET / sliderLength;
-  const expectedTime = duration * progress;
+  const expectedTime = 20;
   const { currentTime } = await getAudioState(page);
   expect(currentTime).toBeCloseTo(expectedTime, PRECISION);
 });

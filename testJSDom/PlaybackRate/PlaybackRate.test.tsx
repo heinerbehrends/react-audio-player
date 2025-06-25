@@ -4,7 +4,6 @@ import { PlaybackRate } from "../../src/PlaybackRate/PlaybackRate";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
-// Setup player context for testing
 const mockPlayerContext = createPlayerContext();
 
 const mockAudioElement = {
@@ -94,15 +93,12 @@ describe("PlaybackRate", () => {
       </PlaybackRate>,
     );
 
-    // Check that the container is rendered with the correct content
     expect(screen.getByTestId("playback-rate-child")).toBeInTheDocument();
 
-    // Check for proper accessibility attributes
     const container = screen.getByRole("group");
     expect(container).toBeInTheDocument();
     expect(container).toHaveAttribute("aria-label", "Playback rate options");
 
-    // Verify children are rendered inside the container
     expect(container).toContainElement(
       screen.getByTestId("playback-rate-child"),
     );

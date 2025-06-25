@@ -29,7 +29,7 @@ describe("PlayerContextProvider", () => {
   const mockAudioContext = createAudioContext({
     audioElementRef: { current: mockAudioElement },
   });
-  // Create a test component to access context values
+
   const TestConsumer = ({
     testId = "test-value",
     onMount,
@@ -39,7 +39,6 @@ describe("PlayerContextProvider", () => {
   }) => {
     const contextValue = useContext(PlayerContext);
 
-    // Call onMount with context if provided
     React.useEffect(() => {
       if (onMount) {
         onMount(contextValue);

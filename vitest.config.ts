@@ -13,6 +13,6 @@ export default defineConfig({
     outputFile: {
       json: "./test-results.json",
     },
-    slowTestThreshold: 100, // Tests taking more than 1s are considered slow
+    slowTestThreshold: 100,
   },
 });

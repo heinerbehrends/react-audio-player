@@ -7,7 +7,6 @@ import React, { useContext } from "react";
 import * as attachSliderModule from "../../src/Slider/useAttachSliderCallback";
 import { SliderContextType } from "../../src/Slider/SliderContext";
 
-// Create a test component to access context values
 const TestConsumer = ({
   testId = "test-value",
   onMount,
@@ -17,7 +16,6 @@ const TestConsumer = ({
 }) => {
   const context = useContext(PlaybackRateContext);
 
-  // Call onMount with the context when component mounts
   React.useEffect(() => {
     if (!context) return;
     if (!onMount) return;
@@ -47,7 +45,6 @@ describe("PlaybackRateProvider", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Only mock the external hook that's used by the component
     vi.spyOn(attachSliderModule, "useAttachSliderCallback").mockReturnValue(
       mockHandleAction,
     );
@@ -71,7 +68,6 @@ describe("PlaybackRateProvider", () => {
       </PlaybackRateProvider>,
     );
 
-    // Check rendered values
     expect(screen.getByTestId("default-minValue")).toHaveTextContent("0.5");
     expect(screen.getByTestId("default-maxValue")).toHaveTextContent("4");
     expect(screen.getByTestId("default-step")).toHaveTextContent("0.25");
@@ -87,7 +83,6 @@ describe("PlaybackRateProvider", () => {
       </PlaybackRateProvider>,
     );
 
-    // Check rendered values
     expect(screen.getByTestId("custom-minValue")).toHaveTextContent("0.2");
     expect(screen.getByTestId("custom-maxValue")).toHaveTextContent("3");
     expect(screen.getByTestId("custom-step")).toHaveTextContent("0.1");
@@ -113,24 +108,19 @@ describe("PlaybackRateProvider", () => {
       </PlaybackRateProvider>,
     );
 
-    // Trigger the action
     fireEvent.click(screen.getByTestId("test-value-action-button"));
 
-    // Mock handler should be called with the right action
     expect(mockHandleAction).toHaveBeenCalledWith({
       type: "STOP_AUDIO",
     });
   });
 
   it("maintains consistent context between renders", () => {
-    // Create spies to track renders and context
     const renderSpy = vi.fn();
 
-    // Custom component that logs each render
     function ContextTracker() {
       const context = useContext(PlaybackRateContext);
 
-      // Track each render with the current context
       renderSpy(context);
 
       return null;
@@ -145,7 +135,6 @@ describe("PlaybackRateProvider", () => {
     expect(renderSpy).toHaveBeenCalledTimes(1);
     const firstContext = renderSpy.mock.calls[0]![0];
 
-    // Force re-render
     rerender(
       <PlaybackRateProvider>
         <ContextTracker />
@@ -155,12 +144,9 @@ describe("PlaybackRateProvider", () => {
     expect(renderSpy).toHaveBeenCalledTimes(2);
     const secondContext = renderSpy.mock.calls[1]![0];
 
-    // Value should have the same properties
     expect(Object.keys(secondContext)).toEqual(Object.keys(firstContext));
     expect(secondContext.component).toBe("playbackRate");
 
-    // handleSliderAction should be the same function reference
-    // This verifies useMemo is working correctly
     expect(secondContext.handleSliderAction).toBe(
       firstContext.handleSliderAction,
     );

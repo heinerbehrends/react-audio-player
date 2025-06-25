@@ -189,9 +189,8 @@ describe("MuteButton", () => {
       });
       const button = screen.getByRole("button", { name: "Mute" });
 
-      // First click to mute
       fireEvent.click(button);
-      // Second click to unmute
+
       fireEvent.click(button);
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({

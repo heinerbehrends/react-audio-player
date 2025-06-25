@@ -27,11 +27,11 @@ describe("ChangePlaybackRate", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock useHandleMediaKeys
+
     vi.spyOn(mediaKeysModule, "useHandleMediaKeys").mockReturnValue(
       mockHandleMediaKeys,
     );
-    // Mock useIsDisabled
+
     vi.spyOn(isDisabledModule, "useIsDisabled").mockImplementation(
       () => mockIsDisabled,
     );
@@ -114,7 +114,6 @@ describe("ChangePlaybackRate", () => {
 
     expect(button).toBeDisabled();
 
-    // Clicking should not trigger the action
     fireEvent.click(button);
     expect(mockHandlePlayerAction).not.toHaveBeenCalled();
   });
@@ -141,9 +140,7 @@ describe("ChangePlaybackRate", () => {
     mockAudioElement = {
       playbackRate: 2,
     } as unknown as HTMLAudioElement;
-    // Make sure button is enabled
     vi.spyOn(isDisabledModule, "useIsDisabled").mockReturnValue(false);
-    // Create context with specific playback rate
     const playerContext = createPlayerContext();
     renderWithPlayerContext({
       playerContext,

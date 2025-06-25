@@ -66,10 +66,8 @@ describe("SetSliderValue", () => {
 
     expect(button).toHaveAttribute("tabindex", "-1");
 
-    // Test that the event handler is properly attached by firing the event
     fireEvent.pointerDown(button, { clientX: 50, clientY: 0 });
 
-    // Verify that the slider action was called
     expect(handleSliderAction).toHaveBeenCalled();
   });
 });

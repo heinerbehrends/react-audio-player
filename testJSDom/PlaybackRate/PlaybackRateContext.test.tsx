@@ -10,7 +10,6 @@ describe("PlaybackRateContext", () => {
   });
 
   it("should be consumable by React components", () => {
-    // Create a test component that consumes the context
     const TestComponent = () => {
       const context = useContext(PlaybackRateContext);
       return (
@@ -32,7 +31,6 @@ describe("PlaybackRateContext", () => {
   });
 
   it("should allow context values to be overridden with Provider", () => {
-    // Create a test component with a provider
     const TestComponent = () => {
       const testValue = createSliderContext({
         sliderStart: 10,

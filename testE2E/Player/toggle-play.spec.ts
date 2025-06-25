@@ -18,7 +18,7 @@ test("toggle play button has correct name and aria attributes and works", async 
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();
   await expect(playButton).toHaveAttribute("aria-label", "Play audio");
-  // Click the play button
+
   await playButton.click();
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeVisible();
@@ -30,7 +30,6 @@ test("toggle play button has correct name and aria attributes and works", async 
   });
   await expect(isPlaying).toBe(true);
 
-  // Click the pause button
   await pauseButton.click();
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();

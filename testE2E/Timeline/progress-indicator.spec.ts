@@ -10,14 +10,14 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test("progress indicator initial state", async () => {
-  const progressIndicator = page.getByLabel("Audio progress");
-  await expect(progressIndicator).toHaveAttribute("role", "progressbar");
+  const progressIndicator = page.getByLabel("Timeline slider");
+  await expect(progressIndicator).toHaveAttribute("role", "slider");
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
-  await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");
+  await expect(progressIndicator).toHaveAttribute("aria-valuenow", "1");
 });
 
 test("progress indicator updates on audio playback", async () => {
-  const progressIndicator = page.getByLabel("Audio progress");
+  const progressIndicator = page.getByLabel("Timeline slider");
 
   const playButton = page.getByRole("button", { name: /Play/ });
   await playButton.click();

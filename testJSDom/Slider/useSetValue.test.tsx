@@ -4,7 +4,6 @@ import { useSetValue } from "../../src/Slider/dragHooks";
 import { createSliderContext } from "../testUtils";
 import type { SliderEvent } from "../../src/Slider/SliderContext";
 
-// Mock handleSideEffect - must be before any test cases
 const mockHandleSideEffect = vi.fn();
 vi.mock("../../src/AudioElement/useHandleSideEffect.ts", () => ({
   useHandleSideEffect: () => mockHandleSideEffect,
@@ -40,9 +39,7 @@ describe("useSetValue", () => {
     const setValue = result.current;
 
     act(() => {
-      // Create a base event
       const event = new Event("pointerdown", { bubbles: true });
-      // Add pointer event properties
       Object.defineProperties(event, {
         clientX: { value: 50 },
         clientY: { value: 0 },
@@ -50,7 +47,6 @@ describe("useSetValue", () => {
         currentTarget: { value: button },
       });
 
-      // Create a synthetic React event
       const mockEvent = {
         nativeEvent: event,
         currentTarget: button,
@@ -91,9 +87,7 @@ describe("useSetValue", () => {
     const setValue = result.current;
 
     act(() => {
-      // Create a base event
       const event = new Event("pointerdown", { bubbles: true });
-      // Add pointer event properties
       Object.defineProperties(event, {
         clientX: { value: 50 },
         clientY: { value: 0 },
@@ -101,7 +95,6 @@ describe("useSetValue", () => {
         currentTarget: { value: button },
       });
 
-      // Create a synthetic React event
       const reactEvent = {
         nativeEvent: event,
         currentTarget: button,
@@ -157,9 +150,7 @@ describe("useSetValue", () => {
     const setValue = result.current;
 
     act(() => {
-      // Create a base event
       const event = new Event("pointerdown", { bubbles: true });
-      // Add pointer event properties
       Object.defineProperties(event, {
         clientX: { value: 50 },
         clientY: { value: 0 },
@@ -167,7 +158,6 @@ describe("useSetValue", () => {
         currentTarget: { value: button },
       });
 
-      // Create a synthetic React event
       const reactEvent = {
         nativeEvent: event,
         currentTarget: button,
@@ -209,17 +199,14 @@ describe("useSetValue", () => {
     const { result } = renderHook(() => useSetValue(context));
     const setValue = result.current;
 
-    // Initial pointer down
     const event = new Event("pointerdown") as unknown as SliderEvent;
     Object.defineProperty(event, "clientX", { value: 50 });
     Object.defineProperty(event, "clientY", { value: 0 });
     setValue(event);
 
-    // Simulate pointer up
     const upEvent = new Event("pointerup") as unknown as Event;
     document.dispatchEvent(upEvent);
 
-    // Simulate another move - should not trigger action
     const moveEvent = new Event("pointermove") as unknown as Event;
     Object.defineProperty(moveEvent, "clientX", { value: 70 });
     Object.defineProperty(moveEvent, "clientY", { value: 0 });

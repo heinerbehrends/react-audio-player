@@ -17,7 +17,6 @@ describe("handleSideEffect", () => {
   let audioElement: HTMLAudioElement;
 
   beforeEach(() => {
-    // Create a mock audio element
     audioElement = {
       play: vi.fn(),
       pause: vi.fn(),
@@ -114,7 +113,7 @@ describe("handleSideEffect", () => {
       },
       audioElement,
     );
-    expect(audioElement.currentTime).toBe(100); // 50% of maxValue 200
+    expect(audioElement.currentTime).toBe(100);
   });
 
   it("should handle SET_SLIDER_VALUE action for volume", () => {
@@ -152,7 +151,7 @@ describe("handleSideEffect", () => {
         minValue: 0.5,
         step: 0.25,
         component: "playbackRate",
-        clientXY: 60, // 60% of 100 = 0.6, range 0.5-2, so value = 0.5 + 0.6*(2-0.5) = 0.5 + 0.9 = 1.4
+        clientXY: 60,
       },
       audioElement,
     );
@@ -167,7 +166,7 @@ describe("handleSideEffect", () => {
       },
       audioElement,
     );
-    expect(audioElement.currentTime).toBe(100); // 50% of maxValue 200
+    expect(audioElement.currentTime).toBe(100);
   });
 
   it("should ignore DRAG_END action for playback rate and volume", () => {
@@ -182,7 +181,7 @@ describe("handleSideEffect", () => {
       },
       audioElement,
     );
-    expect(audioElement.playbackRate).toBe(1); // the playback rate should not change
+    expect(audioElement.playbackRate).toBe(1);
     handleSideEffect(
       {
         type: "DRAG_END",
@@ -192,7 +191,7 @@ describe("handleSideEffect", () => {
       },
       audioElement,
     );
-    expect(audioElement.volume).toBe(1); // the volume should not change
+    expect(audioElement.volume).toBe(1);
   });
 
   it("should change the current time on CHANGE_VALUE action for timeline", () => {
@@ -248,7 +247,7 @@ describe("handleSideEffect", () => {
       {
         type: "DRAG",
         ...defaultSliderState,
-        clientXY: 30, // 30% of 100 = 0.3, range 0.5-2, so value = 0.5 + 0.3*(2-0.5) = 0.5 + 0.45 = 0.95
+        clientXY: 30,
         component: "playbackRate",
         maxValue: 2,
         minValue: 0.5,
@@ -262,7 +261,7 @@ describe("handleSideEffect", () => {
         type: "DRAG",
         ...defaultSliderState,
         component: "playbackRate",
-        clientXY: 60, // 60% of 100 = 0.6, range 0.5-2, so value = 0.5 + 0.6*(2-0.5) = 0.5 + 0.9 = 1.4
+        clientXY: 60,
         maxValue: 2,
         minValue: 0.5,
         step: 0.25,

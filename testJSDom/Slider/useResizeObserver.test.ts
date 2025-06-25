@@ -4,7 +4,6 @@ import { useResizeObserver } from "../../src/Slider/useHandleRef";
 import { createSliderContext } from "../testUtils";
 import React from "react";
 
-// Mock ResizeObserver
 const mockResizeObserver = vi.fn();
 const mockObserve = vi.fn();
 const mockDisconnect = vi.fn();
@@ -17,7 +16,6 @@ describe("useResizeObserver", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock ResizeObserver constructor
     global.ResizeObserver = mockResizeObserver.mockImplementation(() => ({
       observe: mockObserve,
       disconnect: mockDisconnect,
@@ -59,7 +57,6 @@ describe("useResizeObserver", () => {
     const mockButton = document.createElement("button");
     buttonRef.current = mockButton;
 
-    // Mock getBoundingClientRect for horizontal orientation
     const mockRect = {
       left: 100,
       top: 50,
@@ -70,7 +67,6 @@ describe("useResizeObserver", () => {
 
     renderHook(() => useResizeObserver(context, buttonRef));
 
-    // Simulate ResizeObserver callback
     const resizeCallback = mockResizeObserver.mock.calls[0]?.[0];
     if (resizeCallback) {
       resizeCallback();
@@ -78,8 +74,8 @@ describe("useResizeObserver", () => {
 
     expect(mockHandleSliderAction).toHaveBeenCalledWith({
       type: "SLIDER_LOADED",
-      sliderStart: 100, // left for horizontal
-      sliderLength: 200, // width for horizontal
+      sliderStart: 100,
+      sliderLength: 200,
     });
   });
 
@@ -91,7 +87,6 @@ describe("useResizeObserver", () => {
       orientation: "vertical",
     });
 
-    // Mock getBoundingClientRect for vertical orientation
     const mockRect = {
       left: 100,
       top: 50,
@@ -102,7 +97,6 @@ describe("useResizeObserver", () => {
 
     renderHook(() => useResizeObserver(context, buttonRef));
 
-    // Simulate ResizeObserver callback
     const resizeCallback = mockResizeObserver.mock.calls[0]?.[0];
     if (resizeCallback) {
       resizeCallback();
@@ -110,8 +104,8 @@ describe("useResizeObserver", () => {
 
     expect(mockHandleSliderAction).toHaveBeenCalledWith({
       type: "SLIDER_LOADED",
-      sliderStart: 50, // top for vertical
-      sliderLength: 300, // height for vertical
+      sliderStart: 50,
+      sliderLength: 300,
     });
   });
 
@@ -119,12 +113,10 @@ describe("useResizeObserver", () => {
     const mockButton = document.createElement("button");
     buttonRef.current = mockButton;
 
-    // Mock getBoundingClientRect to return null
     mockButton.getBoundingClientRect = vi.fn().mockReturnValue(null);
 
     renderHook(() => useResizeObserver(context, buttonRef));
 
-    // Simulate ResizeObserver callback
     const resizeCallback = mockResizeObserver.mock.calls[0]?.[0];
     if (resizeCallback) {
       resizeCallback();
@@ -139,7 +131,6 @@ describe("useResizeObserver", () => {
 
     renderHook(() => useResizeObserver(context, buttonRef));
 
-    // Simulate ResizeObserver callback after setting ref to null
     const resizeCallback = mockResizeObserver.mock.calls[0]?.[0];
     buttonRef.current = null;
     if (resizeCallback) {
@@ -165,7 +156,6 @@ describe("useResizeObserver", () => {
       },
     );
 
-    // Change orientation to trigger dependency change
     const newContext = createSliderContext({
       ...context,
       orientation: "vertical",
@@ -195,7 +185,6 @@ describe("useResizeObserver", () => {
       throw new Error("ResizeObserver callback not found");
     }
 
-    // First resize event
     resizeCallback();
     expect(mockHandleSliderAction).toHaveBeenCalledWith({
       type: "SLIDER_LOADED",
@@ -203,7 +192,6 @@ describe("useResizeObserver", () => {
       sliderLength: 200,
     });
 
-    // Second resize event
     resizeCallback();
     expect(mockHandleSliderAction).toHaveBeenCalledWith({
       type: "SLIDER_LOADED",

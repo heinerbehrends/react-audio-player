@@ -4,7 +4,6 @@ import { AudioPlayer } from "../../src/Player/AudioPlayer";
 import type { AudioFile } from "../../src/Player/PlayerProvider";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
 
-// Mock the child components
 vi.mock("../../src/AudioElement/AudioContextProvider", () => ({
   AudioContextProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="audio-context-provider">{children}</div>
@@ -83,7 +82,6 @@ describe("AudioPlayer", () => {
 describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
   const mockAudioFiles = [{ src: "test.mp3" }];
 
-  // Mock the useHandleSideEffect hook
   const mockHandleSideEffect = vi.fn();
   vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
     useHandleSideEffect: () => mockHandleSideEffect,

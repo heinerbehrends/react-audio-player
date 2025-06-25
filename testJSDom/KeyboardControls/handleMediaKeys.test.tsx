@@ -249,12 +249,10 @@ describe("handleMediaKeys", () => {
 
   describe("Custom keyboard shortcuts", () => {
     it("should handle custom shortcuts that override default ones while preserving other defaults", () => {
-      // Override the default 'p' key with 'x' for TOGGLE_PLAY
       defaultArgs.customKeyboardShortcuts = {
         x: { type: "TOGGLE_PLAY" },
       };
 
-      // Test that the custom shortcut works
       defaultArgs.event.key = "x";
       let result = handleMediaKeys(defaultArgs);
       expect(result).toBe(true);
@@ -263,7 +261,6 @@ describe("handleMediaKeys", () => {
         type: "TOGGLE_PLAY",
       });
 
-      // Test that the default 'p' key still works (since defaults are preserved)
       vi.clearAllMocks();
       defaultArgs.event.key = "p";
       result = handleMediaKeys(defaultArgs);
@@ -273,7 +270,6 @@ describe("handleMediaKeys", () => {
         type: "TOGGLE_PLAY",
       });
 
-      // Test that another default shortcut still works
       vi.clearAllMocks();
       defaultArgs.event.key = "s";
       result = handleMediaKeys(defaultArgs);
@@ -283,7 +279,6 @@ describe("handleMediaKeys", () => {
     });
 
     it("should handle custom shortcuts with different actions", () => {
-      // Add a custom shortcut for a 30-second jump
       defaultArgs.customKeyboardShortcuts = {
         z: { type: "SET_TIME_FORWARD", value: 30 },
       };
@@ -300,7 +295,6 @@ describe("handleMediaKeys", () => {
     });
 
     it("should handle a custom shortcut", () => {
-      // The backtick shortcut is already set in defaultArgs
       defaultArgs.event.key = "`";
       const result = handleMediaKeys(defaultArgs);
 
@@ -318,7 +312,6 @@ describe("handleMediaKeys", () => {
         z: { type: "SET_TIME_FORWARD", value: 30 },
       };
 
-      // Test each custom shortcut
       const shortcuts = [
         { key: "x", action: { type: "TOGGLE_PLAY" } },
         { key: "y", action: { type: "STOP_AUDIO" } },
@@ -339,7 +332,7 @@ describe("handleMediaKeys", () => {
 
   it("should return false for unhandled keys", () => {
     mockHandleSideEffect.mockClear();
-    defaultArgs.event.key = "a"; // Unhandled key
+    defaultArgs.event.key = "a";
 
     const result = handleMediaKeys(defaultArgs);
 
@@ -374,10 +367,8 @@ describe("useHandleMediaKeys", () => {
       stopPropagation: vi.fn(),
     } as unknown as React.KeyboardEvent<HTMLButtonElement>;
 
-    // Call the hook result with the mock event
     const handled = result.current(mockEvent);
 
-    // Verify the mock was called with the correct arguments
     expect(handled).toBe(true);
     expect(mockHandleSideEffect).toHaveBeenCalledWith({
       type: "TOGGLE_PLAY",
@@ -400,7 +391,7 @@ describe("useHandleMediaKeys", () => {
     });
 
     const mockEvent = {
-      key: "x", // Unhandled key
+      key: "x",
       preventDefault: vi.fn(),
       stopPropagation: vi.fn(),
     } as unknown as React.KeyboardEvent<HTMLButtonElement>;

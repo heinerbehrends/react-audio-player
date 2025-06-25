@@ -2,7 +2,6 @@ import "@testing-library/jest-dom";
 import { afterEach, beforeAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
-// Mock ResizeObserver immediately to prevent any timing issues
 try {
   if (typeof global.ResizeObserver === "undefined") {
     global.ResizeObserver = class ResizeObserver {
@@ -12,7 +11,6 @@ try {
     };
   }
 } catch {
-  // Fallback mock if the above fails
   global.ResizeObserver = class ResizeObserver {
     observe = vi.fn();
     unobserve = vi.fn();
@@ -20,21 +18,17 @@ try {
   };
 }
 
-// Automatically cleanup after each test
 afterEach(() => {
   cleanup();
 });
 
-// Mock HTMLMediaElement API which is not implemented in JSDOM
 beforeAll(() => {
-  // Mock play/pause methods
   window.HTMLMediaElement.prototype.play = vi
     .fn()
     .mockImplementation(() => Promise.resolve());
   window.HTMLMediaElement.prototype.pause = vi.fn();
   window.HTMLMediaElement.prototype.load = vi.fn();
 
-  // Mock media properties
   Object.defineProperties(window.HTMLMediaElement.prototype, {
     currentTime: {
       get() {

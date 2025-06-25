@@ -11,7 +11,6 @@ import * as isDisabledModule from "../../src/Shared/useIsDisabled";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
-// Mock useHandleSideEffect hook
 const mockHandleSideEffect = vi.fn();
 vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
   useHandleSideEffect: () => mockHandleSideEffect,

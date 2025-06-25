@@ -3,7 +3,6 @@ import React from "react";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import { AudioPlayer } from "../src/Player/AudioPlayer";
 
-// Default test audio file
 const defaultAudioFiles = [{ src: "test-audio.mp3" }];
 
 interface CustomRenderOptions extends RenderOptions {
@@ -23,5 +22,4 @@ function customRender(
   return render(ui, { wrapper: Wrapper, ...renderOptions });
 }
 
-// Override render method
 export { customRender as render };

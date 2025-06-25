@@ -10,7 +10,6 @@ export async function waitForAudio(page: Page) {
         return;
       }
       if (audio.readyState >= 2) {
-        // Audio is already loaded
         resolve();
         return;
       }
@@ -20,7 +19,6 @@ export async function waitForAudio(page: Page) {
   });
 }
 
-// Common pattern: Getting timeline dimensions and audio state
 export async function getTimelineState(page: Page) {
   return page.evaluate(() => {
     const timeline = document.querySelector("[aria-label='Timeline slider']");
@@ -35,7 +33,6 @@ export async function getTimelineState(page: Page) {
   });
 }
 
-// Common pattern: Getting button position
 export async function getButtonPosition(page: Page) {
   const button = page.getByLabel(
     "Drag or use left and right arrow keys to seek",
@@ -44,7 +41,6 @@ export async function getButtonPosition(page: Page) {
   return boundingBox?.x ?? 0;
 }
 
-// Common pattern: Getting audio state
 export async function getAudioState(page: Page) {
   return page.evaluate(() => {
     const audio = document.querySelector("audio");

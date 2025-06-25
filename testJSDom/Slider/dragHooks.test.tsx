@@ -119,7 +119,6 @@ describe("dragHooks", () => {
     });
 
     it("does not handle drag when not in dragging state", () => {
-      // Create a fresh context with a new spy for this test
       const context = createSliderContext({ dragState: "idle" });
       const { result } = renderHook(() => useHandleDrag(context));
 

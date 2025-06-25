@@ -56,7 +56,6 @@ describe("PlaybackRateSlider", () => {
   });
 
   it("should apply custom styles", () => {
-    // Since we can't check actual styling with mocks, test the props are passed correctly
     render(
       <PlaybackRateSlider
         data-testid="slider"
@@ -66,7 +65,6 @@ describe("PlaybackRateSlider", () => {
       </PlaybackRateSlider>,
     );
 
-    // Check that the parent div was rendered
     const div = screen.getByTestId("slider");
     expect(div).toHaveStyle("background-color: rgb(255, 0, 0)");
     expect(div).toHaveStyle("margin: 10px");
@@ -108,7 +106,6 @@ describe("PlaybackRateSlider", () => {
 
   describe("PlaybackRateSlider.Set", () => {
     it("should render and pass props to SetSliderValue", () => {
-      // Mock context value
       const testContextValue: SliderContextType = {
         ...mockContextValue,
         component: "playbackRate" as const,
@@ -162,19 +159,16 @@ describe("PlaybackRateSlider", () => {
       </PlaybackRateSlider>,
     );
 
-    // Test component structure
     const slider = screen.getByRole("slider");
     expect(slider).toBeInTheDocument();
     expect(slider).toHaveAttribute("aria-label", "Playback rate slider");
     expect(slider).toHaveAttribute("aria-orientation", "horizontal");
 
-    // Test that all subcomponents are rendered
     expect(screen.getByTestId("background")).toBeInTheDocument();
     expect(screen.getByTestId("set")).toBeInTheDocument();
     expect(screen.getByTestId("drag")).toBeInTheDocument();
     expect(screen.getByText("1.0x")).toBeInTheDocument();
 
-    // Test that aria attributes are present and valid
     expect(slider).toHaveAttribute("aria-valuemin");
     expect(slider).toHaveAttribute("aria-valuemax");
     expect(slider).toHaveAttribute("aria-valuenow");

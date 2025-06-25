@@ -67,7 +67,7 @@ describe("timelineReducer", () => {
 
     const newState = timelineReducer(defaultState, action);
     expect(newState.dragState).toBe("dragging");
-    expect(newState.clientXY).toBe(100); // The offset is calculated based on the current value
+    expect(newState.clientXY).toBe(100);
   });
 
   it("should handle DRAG action", () => {
@@ -81,7 +81,7 @@ describe("timelineReducer", () => {
     };
 
     const newState = timelineReducer(state, action);
-    expect(newState.clientXY).toBe(150); // 250 - sliderStart(100)
+    expect(newState.clientXY).toBe(150);
   });
 
   it("should handle DRAG_END action", () => {
@@ -101,7 +101,7 @@ describe("timelineReducer", () => {
     const newState = timelineReducer(state, action);
     expect(newState.dragState).toBe("idle");
     expect(newState.clientXY).toBe(0);
-    expect(newState.value).toBe(0.5); // (200 - 100) / 200
+    expect(newState.value).toBe(0.5);
   });
 
   it("should handle CANCEL_DRAG action", () => {

@@ -7,7 +7,6 @@ import {
 import { createSliderContext } from "../testUtils";
 
 describe("playbackRateReducer", () => {
-  // Default state used in tests
   const defaultState: SliderContextType = createSliderContext({
     clientXY: 0,
     component: "playbackRate",
@@ -72,7 +71,7 @@ describe("playbackRateReducer", () => {
       const newState = playbackRateReducer(defaultState, action);
 
       expect(newState.dragState).toBe("dragging");
-      expect(newState.clientXY).toBeGreaterThan(0); // Exact value depends on getOffset implementation
+      expect(newState.clientXY).toBeGreaterThan(0);
     });
 
     it("should not update state if already dragging", () => {
@@ -216,7 +215,6 @@ describe("playbackRateReducer", () => {
 
   describe("getOffset integration", () => {
     it("should correctly handle orientation in DRAG_START", () => {
-      // Test with vertical orientation
       const verticalState = {
         ...defaultState,
         orientation: "vertical",
@@ -232,12 +230,10 @@ describe("playbackRateReducer", () => {
       const newState = playbackRateReducer(verticalState, action);
 
       expect(newState.dragState).toBe("dragging");
-      // The exact value depends on getOffset implementation
       expect(typeof newState.clientXY).toBe("number");
     });
 
     it("should correctly handle step values in DRAG_START", () => {
-      // Test with different step value
       const steppedState = {
         ...defaultState,
         step: 0.5,
@@ -253,7 +249,6 @@ describe("playbackRateReducer", () => {
       const newState = playbackRateReducer(steppedState, action);
 
       expect(newState.dragState).toBe("dragging");
-      // The result should reflect the step constraint
       expect(typeof newState.clientXY).toBe("number");
     });
   });

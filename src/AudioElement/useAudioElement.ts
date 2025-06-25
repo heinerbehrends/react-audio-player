@@ -9,7 +9,6 @@ type AudioElementState = {
   paused: boolean;
   ended: boolean;
 
-  // The actual audio element for direct manipulation if needed
   audioElement: HTMLAudioElement | null;
 };
 
