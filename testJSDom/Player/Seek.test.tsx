@@ -3,6 +3,7 @@ import { screen, fireEvent } from "@testing-library/react";
 import { Seek } from "../../src/Player/Seek";
 import { createPlayerContext, createAudioContext } from "../testUtils";
 import { renderWithContexts } from "../testComponents";
+import { labels } from "../../testE2E/test-utils";
 
 const mockHandleSideEffect = vi.fn();
 vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
@@ -25,9 +26,7 @@ describe("Seek", () => {
   describe("Rendering", () => {
     it("renders with correct aria-label", () => {
       renderSeek(10);
-      expect(
-        screen.getByLabelText("Seek forward by 10 seconds"),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(labels.seekForward)).toBeInTheDocument();
     });
 
     it("renders children", () => {
@@ -39,7 +38,7 @@ describe("Seek", () => {
   describe("Click behavior", () => {
     it("seeks forward by specified amount", () => {
       renderSeek(10);
-      fireEvent.click(screen.getByLabelText("Seek forward by 10 seconds"));
+      fireEvent.click(screen.getByLabelText(labels.seekForward));
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "SET_TIME_FORWARD",
@@ -49,7 +48,7 @@ describe("Seek", () => {
 
     it("seeks backward by specified amount", () => {
       renderSeek(-10);
-      fireEvent.click(screen.getByLabelText("Seek backward by 10 seconds"));
+      fireEvent.click(screen.getByLabelText(labels.seekBackward));
 
       expect(mockHandleSideEffect).toHaveBeenCalledWith({
         type: "SET_TIME_FORWARD",
@@ -61,7 +60,7 @@ describe("Seek", () => {
   describe("Keyboard behavior", () => {
     it("handles keyboard events", () => {
       renderSeek(10);
-      fireEvent.keyDown(screen.getByLabelText("Seek forward by 10 seconds"), {
+      fireEvent.keyDown(screen.getByLabelText(labels.seekForward), {
         key: "ArrowRight",
       });
 
@@ -79,9 +78,7 @@ describe("Seek", () => {
         playerState: "loading" as const,
       };
       renderSeek(10, context);
-      expect(
-        screen.getByLabelText("Seek forward by 10 seconds"),
-      ).toBeDisabled();
+      expect(screen.getByLabelText(labels.seekForward)).toBeDisabled();
     });
 
     it("is disabled when player is in error state", () => {
@@ -90,16 +87,12 @@ describe("Seek", () => {
         playerState: "error" as const,
       };
       renderSeek(10, context);
-      expect(
-        screen.getByLabelText("Seek forward by 10 seconds"),
-      ).toBeDisabled();
+      expect(screen.getByLabelText(labels.seekForward)).toBeDisabled();
     });
 
     it("is enabled when player is in paused state", () => {
       renderSeek(10);
-      expect(
-        screen.getByLabelText("Seek forward by 10 seconds"),
-      ).not.toBeDisabled();
+      expect(screen.getByLabelText(labels.seekForward)).not.toBeDisabled();
     });
 
     it("is enabled when player is in playing state", () => {
@@ -108,9 +101,7 @@ describe("Seek", () => {
         playerState: "playing" as const,
       };
       renderSeek(10, context);
-      expect(
-        screen.getByLabelText("Seek forward by 10 seconds"),
-      ).not.toBeDisabled();
+      expect(screen.getByLabelText(labels.seekForward)).not.toBeDisabled();
     });
   });
 });

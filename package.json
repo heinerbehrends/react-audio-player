@@ -33,7 +33,7 @@
     "preview": "vite preview",
     "testE2E": "playwright test",
     "test": "vitest",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --project tsconfig.app.json",
     "format": "prettier --write .",
     "check-exports": "attw --pack . --profile esm-only"
   },

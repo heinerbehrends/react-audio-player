@@ -13,11 +13,7 @@ const defaultSliderContext = createSliderContext({
   maxValue: 1,
 });
 
-const playerContext = createPlayerContext({
-  getPlayerStateOverrides: {
-    volume: 0.5,
-  },
-});
+const playerContext = createPlayerContext();
 
 describe("Volume", () => {
   it("should export all subcomponents", () => {

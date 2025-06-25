@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import { AudioPlayer } from "../src/Player/AudioPlayer";

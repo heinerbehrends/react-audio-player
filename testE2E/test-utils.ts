@@ -51,3 +51,12 @@ export async function getAudioState(page: Page) {
     };
   });
 }
+
+export const labels = {
+  seekForward: "Seek forward by 10 seconds",
+  seekBackward: "Seek backward by 10 seconds",
+  playAudio: "Play audio",
+  pauseAudio: "Pause",
+  timeline: "Timeline slider",
+  dragButton: "Drag or use left and right arrow keys to seek",
+};

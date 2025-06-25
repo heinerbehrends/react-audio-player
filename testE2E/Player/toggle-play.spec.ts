@@ -1,5 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { waitForAudio } from "../test-utils";
+import { labels } from "../test-utils";
 
 let page: Page;
 
@@ -17,13 +18,13 @@ test("toggle play button has correct name and aria attributes and works", async 
   const playButton = page.getByRole("button", { name: /Play/ });
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();
-  await expect(playButton).toHaveAttribute("aria-label", "Play audio");
+  await expect(playButton).toHaveAttribute("aria-label", labels.playAudio);
 
   await playButton.click();
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeVisible();
   await expect(pauseButton).toBeEnabled();
-  await expect(pauseButton).toHaveAttribute("aria-label", "Pause audio");
+  await expect(pauseButton).toHaveAttribute("aria-label", labels.pauseAudio);
   const isPlaying = await page.evaluate(() => {
     const audio = document.querySelector("audio");
     return audio && !audio.paused;
@@ -33,7 +34,7 @@ test("toggle play button has correct name and aria attributes and works", async 
   await pauseButton.click();
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();
-  await expect(playButton).toHaveAttribute("aria-label", "Play audio");
+  await expect(playButton).toHaveAttribute("aria-label", labels.playAudio);
   const isPaused = await page.evaluate(() => {
     const audio = document.querySelector("audio");
     return audio && audio.paused;
@@ -44,7 +45,7 @@ test("toggle play button has correct name and aria attributes and works", async 
 test("The play button receives focus and can be used with keyboard", async () => {
   await page.evaluate(() => {
     const playButton = document.querySelector(
-      'button[aria-label="Play audio"]',
+      `button[aria-label="${labels.playAudio}"]`,
     );
     if (playButton instanceof HTMLElement) {
       playButton.focus();

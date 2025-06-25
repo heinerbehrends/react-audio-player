@@ -47,13 +47,16 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Type check
-        run: pnpm type-check # If you have this script in package.json
+        run: pnpm type-check
 
       - name: Lint
-        run: pnpm lint # If you have this script in package.json
+        run: pnpm lint
 
       - name: Check exports
         run: pnpm check-exports
 
       - name: Run tests
         run: pnpm test
+
+      - name: Run E2E tests
+        run: pnpm testE2E
