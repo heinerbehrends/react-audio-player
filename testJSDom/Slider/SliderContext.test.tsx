@@ -6,7 +6,7 @@ describe("initialState", () => {
     expect(initialSliderState).toEqual({
       sliderStart: 0,
       sliderLength: 0,
-      value: 1,
+      value: 0,
       minValue: 0,
       maxValue: 1,
       clientXY: 0,

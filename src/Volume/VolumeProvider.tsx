@@ -16,6 +16,7 @@ export const VolumeProvider = memo(function VolumeProvider({
   const component = "volume";
   const [state, dispatch] = useReducer(volumeReducer, {
     ...initialSliderState,
+    value: 1,
     component,
     orientation,
   });

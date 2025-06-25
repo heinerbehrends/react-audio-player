@@ -148,3 +148,12 @@ export const mockProviders = {
   SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),
   AudioProvider: createMockProvider(createAudioContext(), "AudioProvider"),
 } as const;
+
+export const labels = {
+  seekForward: "Seek forward by 10 seconds",
+  seekBackward: "Seek backward by 10 seconds",
+  playAudio: "Play audio",
+  pauseAudio: "Pause audio",
+  timeline: "Timeline slider",
+  dragButton: "Drag or use left and right arrow keys to seek",
+};

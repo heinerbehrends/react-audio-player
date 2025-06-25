@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { getAudioState, waitForAudio } from "./test-utils";
+import { getAudioState, resetAudioState, waitForAudio } from "./test-utils";
 import { labels } from "./test-utils";
 
 const PRECISION = 0.25;
@@ -76,7 +76,8 @@ test("seek 10 seconds backward when J key is pressed", async () => {
 
 test("progress indicator initial state", async () => {
   const progressIndicator = page.getByLabel(labels.timeline);
+  await resetAudioState(page);
   await expect(progressIndicator).toHaveAttribute("role", "slider");
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
-  await expect(progressIndicator).toHaveAttribute("aria-valuenow", "1");
+  await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");
 });

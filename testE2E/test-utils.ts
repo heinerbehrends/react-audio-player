@@ -52,11 +52,21 @@ export async function getAudioState(page: Page) {
   });
 }
 
+export async function resetAudioState(page: Page) {
+  await page.evaluate(() => {
+    const audio = document.querySelector("audio");
+    if (audio) {
+      audio.currentTime = 0;
+      audio.pause();
+    }
+  });
+}
+
 export const labels = {
   seekForward: "Seek forward by 10 seconds",
   seekBackward: "Seek backward by 10 seconds",
   playAudio: "Play audio",
-  pauseAudio: "Pause",
+  pauseAudio: "Pause audio",
   timeline: "Timeline slider",
   dragButton: "Drag or use left and right arrow keys to seek",
 };

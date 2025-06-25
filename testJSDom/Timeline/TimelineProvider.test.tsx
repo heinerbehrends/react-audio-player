@@ -35,7 +35,7 @@ describe("TimelineProvider", () => {
     );
 
     expect(screen.getByTestId("component")).toHaveTextContent("timeline");
-    expect(screen.getByTestId("value")).toHaveTextContent("1");
+    expect(screen.getByTestId("value")).toHaveTextContent("0");
   });
 
   it("should handle slider actions", async () => {

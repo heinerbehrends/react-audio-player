@@ -1,6 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio } from "../test-utils";
-import { labels } from "../test-utils";
+import { waitForAudio, resetAudioState, labels } from "../test-utils";
 
 let page: Page;
 
@@ -15,12 +14,18 @@ test.afterAll(async () => {
 });
 
 test("toggle play button has correct name and aria attributes and works", async () => {
+  await resetAudioState(page);
+
   const playButton = page.getByRole("button", { name: /Play/ });
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();
   await expect(playButton).toHaveAttribute("aria-label", labels.playAudio);
 
   await playButton.click();
+
+  // Wait for audio to start playing
+  await page.waitForTimeout(100);
+
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeVisible();
   await expect(pauseButton).toBeEnabled();
@@ -32,6 +37,10 @@ test("toggle play button has correct name and aria attributes and works", async 
   await expect(isPlaying).toBe(true);
 
   await pauseButton.click();
+
+  // Wait for audio to pause
+  await page.waitForTimeout(100);
+
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();
   await expect(playButton).toHaveAttribute("aria-label", labels.playAudio);
@@ -43,19 +52,29 @@ test("toggle play button has correct name and aria attributes and works", async 
 });
 
 test("The play button receives focus and can be used with keyboard", async () => {
-  await page.evaluate(() => {
+  await resetAudioState(page);
+
+  await page.evaluate((playAudioLabel) => {
     const playButton = document.querySelector(
-      `button[aria-label="${labels.playAudio}"]`,
+      `button[aria-label="${playAudioLabel}"]`,
     );
     if (playButton instanceof HTMLElement) {
       playButton.focus();
     }
-  });
+  }, labels.playAudio);
   const playButton = page.getByRole("button", { name: /Play/ });
   await expect(playButton).toBeFocused();
   await page.keyboard.press("Enter");
+
+  // Wait for audio to start playing
+  await page.waitForTimeout(100);
+
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeFocused();
   await page.keyboard.press("Space");
+
+  // Wait for audio to pause
+  await page.waitForTimeout(100);
+
   await expect(playButton).toBeFocused();
 });

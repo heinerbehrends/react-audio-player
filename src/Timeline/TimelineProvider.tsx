@@ -15,7 +15,11 @@ export const TimelineProvider = memo(function TimelineProvider({
   children,
 }: TimelineProviderProps) {
   const component = "timeline";
-  const [state, dispatch] = useReducer(timelineReducer, initialSliderState);
+  const [state, dispatch] = useReducer(timelineReducer, {
+    ...initialSliderState,
+    value: 0,
+    component,
+  });
 
   const handleTimelineAction = useAttachSliderCallback({
     component,
