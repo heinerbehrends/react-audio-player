@@ -25,6 +25,7 @@
     "dist",
     "README.md"
   ],
+  "sideEffects": false,
   "scripts": {
     "dev": "tsup --watch",
     "vite": "vite dev",
@@ -32,14 +33,15 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "testE2E": "playwright test",
+    "testE2E:local": "playwright test --config playwright.local.config.ts",
     "test": "vitest",
     "type-check": "tsc --noEmit --project tsconfig.app.json",
     "format": "prettier --write .",
     "check-exports": "attw --pack . --profile esm-only"
   },
   "peerDependencies": {
-    "react": ">=16.3.0",
-    "react-dom": ">=16.3.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
@@ -80,31 +82,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
-    },
-    "./volume": {
-      "types": "./dist/volume.d.ts",
-      "import": "./dist/volume.mjs",
-      "default": "./dist/volume.mjs"
-    },
-    "./timeline": {
-      "types": "./dist/timeline.d.ts",
-      "import": "./dist/timeline.mjs",
-      "default": "./dist/timeline.mjs"
-    },
-    "./playback-rate": {
-      "types": "./dist/playback-rate.d.ts",
-      "import": "./dist/playback-rate.mjs",
-      "default": "./dist/playback-rate.mjs"
-    },
-    "./player": {
-      "types": "./dist/player.d.ts",
-      "import": "./dist/player.mjs",
-      "default": "./dist/player.mjs"
-    },
-    "./time-display": {
-      "types": "./dist/time-display.d.ts",
-      "import": "./dist/time-display.mjs",
-      "default": "./dist/time-display.mjs"
     }
   }
 }
