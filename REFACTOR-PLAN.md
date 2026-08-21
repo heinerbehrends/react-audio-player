@@ -499,13 +499,23 @@ breaks. Fifteen tests across five specs, all timeline, seek and play/pause; zero
 volume, mute, playbackRate or time display. The unit tests Phase 3 deletes are currently the
 *only* automated check on volume and rate drag semantics.
 
-Two fixture changes first, both small:
+Two rules decide what belongs here, and the second is the one that catches omissions:
+
+1. Anything whose *only* automated check today is a test Phase 2 or 3 deletes — volume and
+   rate drag semantics, which live solely in the reducer tests.
+2. Anything the new architecture **derives** rather than stores. Derivation is where a
+   threshold or an ordering changes silently, because there is no stored value to diff
+   against. `volumeState`'s 0.5 boundary is the case in point: nothing pins it at any layer
+   today, and Phase 2 turns it into a `computed`.
+
+Three fixture changes first, all small:
 
 - [ ] Extend `getAudioState` in `testE2E/test-utils.ts` with `volume`, `muted` and
       `playbackRate`; add the volume, rate and mute labels to the `labels` map.
 - [ ] Add a `?src=` URL param to `App.tsx`. It already reads `?orientation=` via
       `useUrlParams`, so this is two lines, and it lets one spec swap bad → good in a single
       page session — which is what tests *recovery* rather than just the error state.
+- [ ] Add a `?players=2` URL param to `App.tsx`, rendering two independent `<AudioPlayer>`s.
 
 | Spec | Test | Notes |
 |---|---|---|
@@ -516,8 +526,14 @@ Two fixture changes first, both small:
 | | vertical (`?orientation=vertical`): drag up raises volume | pins the inversion end-to-end |
 | `Volume/mute` | mute → `aria-pressed="true"`, `el.muted` | |
 | | drag to zero, mute, unmute → volume is audible again | the `dataset` path, which works today |
+| `Volume/volume-state` | volume 0.4 → `MuteButton.LowVolume` renders | the 0.5 threshold, untested at every layer today and a `computed` after Phase 2 |
+| | volume 0.6 → `MuteButton.HighVolume` renders | |
+| | muted → `MuteButton.Muted` renders, whatever the volume | |
 | `PlaybackRate/rate-drag` | drag thumb → `el.playbackRate` lands on a 0.1 step | |
 | | `<PlaybackRate.Set rate={1.5}>` → 1.5 and `aria-current` | |
+| `KeyboardControls/media-keys` | Arrow Up / Down change `el.volume` | `seek-keys` covers only the time keys |
+| | `>` / `<` change `el.playbackRate`; Backspace resets it | |
+| `Player/multi-instance` | `?players=2`: play one → the other's element does not move | the only decision in section 2 with no verification attached; a per-instance factory bug is otherwise invisible until a consumer hits it |
 | `TimeDisplay/time-display` | elapsed advances during playback | |
 | | toggle → remaining shown, and it **counts down** | asserts the fixed value, so it lands after the precedence fix |
 | `Timeline/ended` | play to the end → thumb at start **and** elapsed reads `0:00` | *intended*, not current: today the clock shows the full duration while the thumb is at 0. Lands with the Phase 3 `onEnded` commit |
@@ -531,6 +547,12 @@ Two fixture changes first, both small:
 
 Play/pause, timeline drag, click-to-seek and the seek keys are already covered by the
 existing 15 tests, so the basic-operations requirement is met once the rows above land.
+
+**Deliberately not E2E: the loading state.** `useIsDisabled` gates six components on
+`playerState === "loading"`, but loading is transient and racy in a real browser. It belongs
+in the jsdom tier in Phase 2 — construct a store, leave `hasMetadata` false, assert the
+buttons are disabled. Deterministic there, flaky here, and it is exactly the tier the store
+makes cheap.
 
 Write the drag-semantics specs against current behaviour before anything is deleted. Three
 rows assert *intended* rather than current behaviour, so each follows its own fix: the
