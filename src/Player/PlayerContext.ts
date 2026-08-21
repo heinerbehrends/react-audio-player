@@ -1,28 +1,22 @@
 import { createContext, useContext } from "react";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
+// The five commands and `SET_PLAYBACK_RATE` now live with the public
+// `SideEffectAction` union, so this file can be deleted without breaking it.
+import type {
+  AudioFileEndedAction,
+  PauseAction,
+  SetPlaybackRateAction,
+  ToggleMuteAction,
+  TogglePlayAction,
+  UnmuteAction,
+} from "../AudioElement/sideEffectActions";
 
 type AudioFileLoadedAction = {
   type: "AUDIO_FILE_LOADED";
 };
 
-export type TogglePlayAction = {
-  type: "TOGGLE_PLAY";
-};
-
-export type ToggleMuteAction = {
-  type: "TOGGLE_MUTE";
-};
-
-export type UnmuteAction = {
-  type: "UNMUTE";
-};
-
 type ToggleTimeDisplayAction = {
   type: "TOGGLE_TIME_DISPLAY";
-};
-
-export type AudioFileEndedAction = {
-  type: "AUDIO_FILE_ENDED";
 };
 
 type AudioFileErrorAction = {
@@ -32,15 +26,6 @@ type AudioFileErrorAction = {
 type SetVolumeStateAction = {
   type: "SET_VOLUME_STATE";
   volumeState: "muted" | "low" | "high";
-};
-
-export type PauseAction = {
-  type: "PAUSE";
-};
-
-type SetPlaybackRateAction = {
-  type: "SET_PLAYBACK_RATE";
-  playbackRate: number;
 };
 
 type SetDurationAction = {

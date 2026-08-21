@@ -1,16 +1,38 @@
 import type {
-  ToggleMuteAction,
-  AudioFileEndedAction,
-  PauseAction,
-  TogglePlayAction,
-  UnmuteAction,
-} from "../Player/PlayerContext";
-import type {
   DragAction,
   DragStartAction,
   DragEndAction,
   SliderData,
 } from "../Slider/SliderContext";
+
+/**
+ * The five commands that used to be declared in `Player/PlayerContext.ts` and
+ * imported back into this file. `SideEffectAction` is public API, so the union
+ * has to outlive that file — which means its members live where it lives.
+ */
+export type PlayAction = {
+  type: "PLAY";
+};
+
+export type PauseAction = {
+  type: "PAUSE";
+};
+
+export type TogglePlayAction = {
+  type: "TOGGLE_PLAY";
+};
+
+export type ToggleMuteAction = {
+  type: "TOGGLE_MUTE";
+};
+
+export type UnmuteAction = {
+  type: "UNMUTE";
+};
+
+export type AudioFileEndedAction = {
+  type: "AUDIO_FILE_ENDED";
+};
 
 type StopAudioAction = {
   type: "STOP_AUDIO";
@@ -25,10 +47,6 @@ type ChangeValueAction = {
 type SetSliderValueAction = SliderData & {
   type: "SET_SLIDER_VALUE";
   component: "timeline" | "volume" | "playbackRate";
-};
-
-type PlayAction = {
-  type: "PLAY";
 };
 
 type IncreaseVolumeAction = {
@@ -51,7 +69,8 @@ type DecreasePlaybackRateAction = {
   value: number;
 };
 
-type SetPlaybackRateAction = {
+/** Declared once, here: `PlayerContext` had an identical copy. */
+export type SetPlaybackRateAction = {
   type: "SET_PLAYBACK_RATE";
   playbackRate: number;
 };
