@@ -14,5 +14,8 @@ export default defineConfig({
       json: "./test-results.json",
     },
     slowTestThreshold: 100,
+    // A 22-core machine spawns ~21 jsdom workers and thrashes, failing ~170 tests
+    // spuriously. Pool-agnostic cap, so it holds whichever pool Vitest defaults to.
+    maxWorkers: 4,
   },
 });
