@@ -10,6 +10,7 @@ import {
   createMockAudioElement,
 } from "../testUtils";
 import { renderWithContexts } from "../testComponents";
+import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 
 describe("AudioElement", () => {
   let audioElement: HTMLAudioElement;
@@ -71,12 +72,16 @@ describe("AudioElement", () => {
     const initialTimeUpdateHandler = audio.ontimeupdate;
     const initialVolumeChangeHandler = audio.onvolumechange;
 
+    // Same root component as `renderWithContexts` renders, so the store
+    // instance survives the rerender.
     rerender(
-      <PlayerContext.Provider value={createPlayerContext()}>
+      <PlayerStoreProvider>
         <AudioContext.Provider value={contextWithRef}>
-          <AudioElement />
+          <PlayerContext.Provider value={createPlayerContext()}>
+            <AudioElement />
+          </PlayerContext.Provider>
         </AudioContext.Provider>
-      </PlayerContext.Provider>,
+      </PlayerStoreProvider>,
     );
 
     expect(audio.ontimeupdate).toBe(initialTimeUpdateHandler);

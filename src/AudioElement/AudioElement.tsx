@@ -1,5 +1,6 @@
-import { memo } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { usePlayerContext } from "../Player/PlayerContext";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useAudioContext } from "./AudioContext";
 import {
   useHandleTimeUpdate,
@@ -36,6 +37,29 @@ export const AudioElement = memo(function AudioElement({
     handleDurationChange,
   } = usePlayerCallbacks();
 
+  // `AudioElement` renders the `<audio>` tag, so it is the only component that
+  // can hand the element to the store without a setter travelling down — and a
+  // setter reachable through context would be a second write-shaped door on a
+  // store whose whole design is that `attach` is the only one.
+  const store = usePlayerStore();
+  const [element, setElement] = useState<HTMLAudioElement | null>(null);
+
+  useEffect(() => (element ? store.attach(element) : undefined), [
+    element,
+    store,
+  ]);
+
+  // `setElement` is stable by React's `useState` guarantee, so the composed ref
+  // is stable and this component's `memo` cannot cause a detach/reattach on
+  // every parent render. Collapses to `setElement` when the legacy ref goes.
+  const ref = useCallback(
+    (node: HTMLAudioElement | null) => {
+      audioElementRef.current = node;
+      setElement(node);
+    },
+    [audioElementRef],
+  );
+
   const hasTimelineCallback =
     !!timelineCallbackRef?.current?.handleTimelineAction;
   const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
@@ -46,7 +70,7 @@ export const AudioElement = memo(function AudioElement({
       {...props}
       src={src}
       aria-label="audio player"
-      ref={audioElementRef}
+      ref={ref}
       onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
       onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
       onRateChange={

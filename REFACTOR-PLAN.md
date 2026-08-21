@@ -1,7 +1,8 @@
 # Refactor Plan: External Store Architecture
 
-Status: agreed after design review 2026-08-21, not started. Bundle figures measured
-2026-08-21 against commit `b4df69c`.
+Status: Phase 0 in progress — entry points, public surface, README and the slider-semantics
+fix are landed; known bugs, the unit-test investment and most of the E2E rows remain. Bundle
+figures measured 2026-08-21 against commit `b4df69c`.
 
 ## 1. Why
 
@@ -47,7 +48,9 @@ of render timing.
 | React peer | **`>=18.0.0`** (done) | `useSyncExternalStore` is React 18. The old `>=16.3.0` was already wrong — the code is hooks-only. |
 | Store primitive | **hand-rolled `atom` + `useStore`**, ~20 lines | No dependency, no swap deferred to later, and the README's zero-dependency claim stays true. |
 | Derived values | **computed in render**, not in the store | `playerState` and `volumeState` are pure functions of primitive atoms. Deriving them in render removes the need for a `computed` primitive — the one piece with a genuinely subtle cache-invalidation failure mode. |
-| Listener attachment | **eager, one effect keyed on the element** | Lazy per-atom mounting re-creates the render-timing coupling it was meant to remove, and a write to an unsubscribed atom costs nothing. |
+| Load lifecycle | **one `loadState: "loading" \| "ready" \| "error"` atom**, not `hasMetadata` + `errored` | Two bools describe four states for three real ones, and the unreachable fourth is a version of the bug the reset row fixes. One atom, two subscriptions for `playerState`, and transitions that assign constants so the sync layer still never reads an atom. |
+| Element handle | **closure variable reached through `attach`**, not an atom | Nothing subscribes to it, and `attach` is the one door that can write a projection — which is what keeps every `set` inside the factory closure instead of on the returned object. |
+| Listener attachment | **eager, one effect keyed on the element, priming before it subscribes** | Lazy per-atom mounting re-creates the render-timing coupling it was meant to remove, and a write to an unsubscribed atom costs nothing. |
 | Write path | **Unchanged, with one exception in Phase 2** | `handleSideEffect` and the `SideEffectAction` union are good, and the union is public API via `customKeyboardShortcuts`. It is currently pure over the element, which is what makes the Phase 0 test investment cheap. The exception: `TOGGLE_MUTE` / `UNMUTE` / `DRAG_START` need `lastAudibleVolume`, so the signature grows a store accessor in Phase 2. See below. |
 | Instance scoping | **Per-instance factory in a stable context** | Module-level atoms would break two players on one page and leak state across SSR requests. |
 | Slider variation | **`mode: "seek" / "volume" / "rate"`** | The three sliders differ on two correlated axes, in only three combinations. One discriminant, read in one place. |
@@ -71,7 +74,8 @@ Two classes of atom, and the distinction is load-bearing:
 > one: `timeDisplay`. It is writable.
 
 Enforce it by typing projections as `{ get, subscribe }` and keeping the `set` handles
-inside the factory closure. Break this rule and the mirror problem grows straight back.
+inside the factory closure — reachable only through `attach`, described under *Store shape*.
+Break this rule and the mirror problem grows straight back.
 
 Corollary, load-bearing because of `useSyncExternalStore`'s "getSnapshot should be cached"
 invariant: **never return a fresh object from a store read.** Atoms hold primitives; derive
@@ -110,18 +114,24 @@ export const useStore = <T>(a: ReadableAtom<T>) =>
 `get` and `subscribe` are per-atom stable references, so `useSyncExternalStore` never
 resubscribes. The identity bail-out in `set` is what makes `currentSecond` free.
 
-`Object.is`, not `===`, and it matters: `el.duration` is `NaN` before metadata, and
-`NaN !== NaN`, so `===` would notify on every `durationchange` while the duration is
-unknown. React compares snapshots with `Object.is` and would not re-render, so the cost is
-wasted notification plus two comparisons that disagree with each other. Matching React
-costs nothing.
+`Object.is`, not `===`, because React compares snapshots with `Object.is` and the two must
+never disagree: any value where they differ would mean the atom notifies and React then
+declines to re-render, or the reverse. `NaN` is the case that separates them, and the
+primitive cannot know whether a caller will ever write one — the sync layer normalises
+`duration` through `finite()`, so today none reaches an atom, but that is the *caller's*
+guarantee, not the atom's. Matching React costs nothing and keeps the primitive honest
+whatever gets written through it.
 
 ### Store shape
 
 ```ts
+export type ReadableAtom<T> = {
+  get: () => T;
+  subscribe: (listener: () => void) => () => void;
+};
+
 export function createPlayerStore() {
   // projections of the element -- written only by syncFromElement
-  const element           = atom<HTMLAudioElement | null>(null);
   const currentTime       = atom(0);   // ~4 Hz, pixels only
   const currentSecond     = atom(0);   //  1 Hz, text and aria
   const duration          = atom(0);
@@ -130,52 +140,92 @@ export function createPlayerStore() {
   const lastAudibleVolume = atom(1);   // replaces el.dataset.dragStartVolume
   const rate              = atom(1);
   const paused            = atom(true);
-  const errored           = atom(false);
-  const hasMetadata       = atom(false);
+  const loadState         = atom<"loading" | "ready" | "error">("loading");
 
   // UI state, genuinely shared, writable
   const timeDisplay = atom<"elapsed" | "remaining">("elapsed");
 
-  const send = (action: SideEffectAction) => handleSideEffect(action, element.get());
+  let element: HTMLAudioElement | null = null;
 
-  return { /* readonly projections */, timeDisplay, send };
+  // The only door out of the closure that can write a projection. Sets the
+  // element, primes every atom from it, subscribes, and returns the detach.
+  const attach = (el: HTMLAudioElement) => {
+    element = el;
+    const detach = syncFromElement(el, atoms);   // primes, then subscribes
+    return () => { detach(); element = null; };
+  };
+
+  const send = (action: SideEffectAction) => handleSideEffect(action, element);
+
+  return { /* projections as ReadableAtom */, timeDisplay, send, attach };
 }
 ```
+
+**`attach` is why the invariant holds literally rather than by convention.** Phase 1 has to
+write the element and run the sync layer, and neither is expressible through
+`{ get, subscribe }` projections — so without `attach` the factory would have to hand out
+`set` handles and the rule would survive only as a comment. One extra member closes it: every
+`set` stays inside the closure, and the sync suite becomes
+`createPlayerStore().attach(stub)` followed by dispatching events on the stub — no React, no
+jsdom, no provider.
+
+**The element is a closure variable, not an atom.** Nothing subscribes to it: `send` reads it
+directly, and the one render-time reader of the element ref today
+(`AudioElement.tsx:39-43`'s handler gate) is deleted in Phase 3. An atom would buy a
+subscription nobody wants and a `set` handle the invariant then has to forbid.
 
 Derived values are computed in render, never stored:
 
 ```ts
 function usePlayerState() {
-  const errored     = useStore(store.errored);
-  const hasMetadata = useStore(store.hasMetadata);
-  const paused      = useStore(store.paused);
-  return errored ? "error" : !hasMetadata ? "loading" : paused ? "paused" : "playing";
+  const loadState = useStore(store.loadState);
+  const paused    = useStore(store.paused);
+  return loadState !== "ready" ? loadState : paused ? "paused" : "playing";
 }
 ```
 
-Three subscriptions instead of one, returning a primitive — so the `getSnapshot` hazard
-cannot apply, and there is no cache to invalidate.
+Two subscriptions instead of one, returning a primitive — so the `getSnapshot` hazard cannot
+apply, and there is no cache to invalidate. `playerState` is now an extension of `loadState`
+rather than a reconstruction of it: the two non-`"ready"` states pass straight through, and
+TypeScript narrows them for you.
 
 ### The sync layer
 
-One effect in the provider, keyed on the element, attaching every listener. It re-runs when
-the element changes, so there is no ordering assumption anywhere.
+One effect keyed on the element, priming every atom and then attaching every listener. It
+re-runs when the element changes, so there is no ordering assumption anywhere. The effect
+lives in `AudioElement`, which owns the `<audio>` tag — see Phase 1.
 
 | Event | Writes |
 |---|---|
-| `timeupdate` | `currentTime`, `currentSecond` |
-| **`seeked`** | `currentTime`, `currentSecond` |
-| `loadedmetadata` | `duration`, `hasMetadata` |
-| `durationchange` | `duration` |
-| `volumechange` | `volume`, `muted`, and `lastAudibleVolume` when audible |
-| `ratechange` | `rate` |
-| `play` / `pause` / `ended` | `paused` |
-| `error` | `errored` |
-| `emptied` / `loadstart` | resets `errored` and `hasMetadata` |
+| `timeupdate` | `currentTime = el.currentTime`, `currentSecond = Math.floor(el.currentTime)` |
+| **`seeked`** | the same two |
+| `loadedmetadata` | `duration = finite(el.duration)`, `loadState = "ready"` |
+| `durationchange` | `duration = finite(el.duration)` |
+| `volumechange` | `volume = el.volume`, `muted = el.muted`, and `lastAudibleVolume = el.volume` when `!el.muted && el.volume > 0` |
+| `ratechange` | `rate = el.playbackRate` |
+| `play` / `pause` / `ended` | `paused = el.paused` — projected, never toggled |
+| `error` | `loadState = "error"` |
+| `emptied` / `loadstart` | `prime(el)` — the whole projection, re-read |
+
+where `finite(d) = Number.isFinite(d) ? d : 0`. Every row writes what it reads off the
+element and nothing else — no row computes, and no row reads an atom.
+
+**`loadState` is a state machine whose transitions never read the current state.** Each of
+the three events assigns a constant — `"ready"`, `"error"`, `"loading"` — so the "no row
+reads an atom" property above survives the collapse. That matters: a state machine is exactly
+the shape that tempts you to branch on where you already are, and the moment `syncFromElement`
+reads an atom to decide what to write, it stops being a projection. The media element makes
+the unconditional form safe: a `src` swap fires `emptied` then `loadstart` before anything
+else, and no `loadedmetadata` follows an `error` without a `loadstart` in between.
+
+It replaces a `hasMetadata` / `errored` bool pair. Two bools describe four states for three
+real ones, and the fourth — errored *and* has metadata — is a version of the bug the last
+table row fixes. One atom makes it unrepresentable, drops `playerState` to two
+subscriptions, and gives the whole load lifecycle one name to test against.
 
 **`seeked` is not optional.** It is the fast echo path after any write to
 `el.currentTime` — drag release, click-to-seek, and every keyboard seek — and
-`AudioElement.tsx:47` wires it today (`onSeeked={handleTimeUpdate}`). Without it the atom
+`AudioElement.tsx:50` wires it today (`onSeeked={handleTimeUpdate}`). Without it the atom
 carries a stale time until the next `timeupdate`, up to ~250 ms. See the retain-until-changed
 rule under *The sliders*, which depends on it.
 
@@ -184,12 +234,65 @@ rule under *The sliders*, which depends on it.
 `"NaN:NaN"` and `"Infinity:NaN"`. Today's `?? 1` fallback does not catch either, so this is
 a pre-existing bug that the sync layer is simply the right place to fix. Live streams then
 read as `duration: 0`, which is honest — a seek bar over an unbounded stream is meaningless
-— and gating UI on `hasMetadata && duration > 0` covers it. Full live-stream support is out
-of scope.
+— and gating UI on `loadState === "ready" && duration > 0` covers it. Full live-stream
+support is out of scope.
 
-`syncFromElement(el, atoms)` takes anything with `addEventListener`, so it is directly
-unit-testable against a stub — no jsdom audio, no rendering. That is the primary gate on
-Phase 1 and the replacement for most of the reducer tests Phases 2–3 delete.
+**One `prime(el)`, called by `attach` and by the `emptied` / `loadstart` handler.** It reads
+the whole projection off the element in one pass:
+
+```ts
+const prime = (el) => {
+  volume.set(el.volume);
+  muted.set(el.muted);
+  rate.set(el.playbackRate);
+  paused.set(el.paused);
+  currentTime.set(el.currentTime);
+  currentSecond.set(Math.floor(el.currentTime));
+  duration.set(finite(el.duration));
+  loadState.set(el.error ? "error" : el.readyState >= 1 ? "ready" : "loading");
+};
+```
+
+*Why `attach` primes at all.* Today's handlers are JSX props, attached when the element is
+created; an effect attaches *after* the element exists with its `src` set, so anything that
+fires in between is lost. Two events matter. Miss `loadedmetadata` and `loadState` never
+leaves `"loading"` — `playerState` pins to `"loading"` and `useIsDisabled` disables six
+components permanently. Miss `error` and it is worse, because no further `error` event ever
+fires for that load: the player sits disabled with no `ErrorMessage`, which is the first half
+of the `Player/error-recovery` spec. Reading `el.error` is what makes the failure path as
+covered as the success path.
+
+This is not only an initial-load race. `StrictMode` remounts effects, so every mount is
+attach → detach → attach, and any event landing in that gap is lost by construction. Priming
+on every attach is what makes "no ordering assumption anywhere" true rather than aspirational.
+
+*Why the reset row is the same function.* A `src` swap runs the media load algorithm, which
+sets `paused` to true and resets `playbackRate` to `defaultPlaybackRate` **without firing
+`pause` or, reliably, `ratechange`** — it fires `emptied` and `loadstart`. Enumerating the
+atoms to reset therefore means tracking which silent element mutations the algorithm performs,
+and getting that list wrong is a fresh mirror desync in the row whose whole job is cleaning up
+after a swap: `paused` stuck at `false` while the element is paused, so `playerState` reports
+`"playing"` and `PlayButton` shows Pause. Re-reading everything cannot be wrong. It also lands
+`loadState` correctly for free — at `emptied` time `readyState` is 0 and `el.error` is null, so
+`prime` yields `"loading"`, which is exactly what the row wants.
+
+**`paused` is projected, not toggled.** Today `onPlay` and `onPause` both dispatch
+`TOGGLE_PLAY` (`audioElementHooks.ts:114-116`), so one stray or duplicated event inverts the
+UI until the next one corrects it. Reading `el.paused` on all three events cannot desync.
+Name it in the commit; the test asserts the projection rather than inheriting the toggle.
+
+**`lastAudibleVolume`'s predicate is `!el.muted && el.volume > 0`,** which is deliberately
+*not* today's `areNumbersClose(volume, 0)` (`audioElementHooks.ts:32-34`). The old
+approximate check exists because the volume slider can land a hair off zero and the UI
+treats that as muted; the atom is a memory of what to restore, so an audible-but-tiny volume
+is still worth remembering. The mute *derivation* keeps the approximate rule; the memory
+does not.
+
+`syncFromElement(el, atoms)` needs only `addEventListener`, `removeEventListener` and the
+media properties `prime` reads — including `readyState` and `error`, or neither failure case
+above is writable as a test — so it is directly unit-testable against a stub, with no jsdom
+audio and no rendering. That is the primary gate on Phase 1 and the replacement for most of
+the reducer tests Phases 2–3 delete.
 
 The last row fixes a live bug: today `AUDIO_FILE_ERROR` sets `playerState: "error"`
 permanently and `AUDIO_FILE_LOADED` only recovers from `"loading"`, so a failed `src`
@@ -292,11 +395,36 @@ Today `AudioElement` reaches into `TimelineContext` to ask "is the user dragging
 deciding whether to push a time update down the bus (`audioElementHooks.ts:11`).
 Afterwards the slider simply decides what to display.
 
+**The aria surface never updates faster than 1 Hz, and that is a rule about attribute values,
+not about renders.** One `SliderContext` feeds both `SetSliderValue` (which renders every
+`aria-value*`) and `Timeline.Progress` (pixels), so the context object necessarily changes at
+4 Hz in `"seek"` mode and `SetSliderValue` re-renders with it. That is fine: React writes a
+DOM attribute only when its value changes, so what matters is which atom the attribute is
+*computed from*. So `useSlider` returns two things, not one:
+
+- `value` — from `currentTime`, consumed by `Progress` and `Drag` for pixels.
+- the aria surface — `aria-valuenow` and `aria-valuetext` from `currentSecond`, which is
+  where the 1 Hz guarantee actually lives.
+
+Only `"seek"` mode has two sources. `"volume"` and `"rate"` read the `volume` / `rate` atoms,
+which are event-driven rather than sampled, so both fields come from the same atom there.
+
+One consequence to respect when the mode table lands: a keyboard step smaller than a second
+would move `currentTime` without moving `currentSecond`, so `aria-valuenow` would not change
+and the press would be announced as a no-op. The default arrow step is 5 s and the smallest
+built-in seek is 5 s, so nothing today is affected — but it constrains
+`customKeyboardShortcuts`, and it is the reason `aria-valuenow` reads seconds rather than a
+rounded `currentTime`.
+
+Phase 4 does the quantizing and drops the 1 Hz `setInterval`; Phase 3's job is only to leave
+room for it, by having `useSlider` return two values rather than one. Get that contract wrong
+and Phase 4 has nowhere to put the second subscription.
+
 ### What lives where
 
 | State | Where it goes | Why |
 |---|---|---|
-| `currentTime`, `currentSecond`, `duration`, `volume`, `muted`, `lastAudibleVolume`, `rate`, `paused`, `errored`, `hasMetadata` | store atom | projections of the element |
+| `currentTime`, `currentSecond`, `duration`, `volume`, `muted`, `lastAudibleVolume`, `rate`, `paused`, `loadState` | store atom | projections of the element |
 | `playerState`, `volumeState`, `isMuted`, `remaining` | derived in render | derived; not storable without desync |
 | `timeDisplay` | store atom (the one UI atom) | shared UI state, not on the element |
 | `dragState`, `drag.value`, `sliderStart`, `sliderLength` | **per-slider `SliderContext`**, from `useSlider` at the slider root | local to one slider, but read by its sibling subcomponents |
@@ -334,13 +462,13 @@ surface you intend to keep. Nothing here depends on the store.
 
 **Entry points**
 
-- [ ] Single entry. Drop the five subpath exports and revert `splitting: true`. Six entries
+- [x] Single entry. Drop the five subpath exports and revert `splitting: true`. Six entries
       were the cause of the duplicate-context bug — each entry shipped its own
       `createContext` calls, so mixing `react-audio-player/timeline` with
       `react-audio-player/player` produced two distinct `AudioContext` objects and a
       silently dead timeline, with no error, because `useContext` returns the default. One
       entry makes it unrepresentable, which matters because Phase 1 adds a context.
-- [ ] Add `"sideEffects": false` to `package.json`. A consumer importing only `Volume` from
+- [x] Add `"sideEffects": false` to `package.json`. A consumer importing only `Volume` from
       the root then tree-shakes to what a subpath would have given them — they need
       `AudioPlayer` regardless, since it owns the store.
 
@@ -364,18 +492,18 @@ export type { SideEffectAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
 ```
 
-- [ ] `PlayButton`, `MuteButton`, `Seek`, `Error` and `PlaybackRateSlider` are documented in
+- [x] `PlayButton`, `MuteButton`, `Seek`, `Error` and `PlaybackRateSlider` are documented in
       the README but never exported — the README's own Basic Usage example does not run.
-- [ ] Rename `Error` to `ErrorMessage`. `import { Error }` shadows the global for the rest
+- [x] Rename `Error` to `ErrorMessage`. `import { Error }` shadows the global for the rest
       of that consumer module.
-- [ ] Add `PlaybackRateSlider.Progress`. It is the only slider without one, and that
+- [x] Add `PlaybackRateSlider.Progress`. It is the only slider without one, and that
       asymmetry is a real API gap. The slider itself works — stepping is functional via
       `handleSideEffect`'s `DRAG` case, so the README roadmap line "Finish stepped playback
       rate slider" is stale.
-- [ ] Export `KeyToActionMap` and `SideEffectAction`. `customKeyboardShortcuts` is typed
+- [x] Export `KeyToActionMap` and `SideEffectAction`. `customKeyboardShortcuts` is typed
       public API and consumers currently cannot name the type they are required to
       construct.
-- [ ] Delete `Volume/volumeHooks.ts` and its test — dead code.
+- [x] Delete `Volume/volumeHooks.ts` and its test — dead code.
 
 **Accessibility: slider semantics and keyboard handling live on different elements.**
 `SetSliderValue` carries `role="slider"`, every `aria-value*` — and `tabIndex={-1}`
@@ -546,7 +674,7 @@ Three fixture changes first, all small:
 | `Timeline/no-snap-back` | after drag release, sample progress every ~50 ms for ~500 ms; no sample falls below `target − ε` | the `seeked` + retain-until-changed guarantee. Sampled, not single-read: one post-release read can land either side of the echo and pass for the wrong reason |
 | | after click-to-seek, same | |
 | `Player/error-recovery` | `?src=` bad → `ErrorMessage` visible, controls disabled | |
-| | then swap to a good src → `ErrorMessage` gone, controls enabled | the `errored` reset |
+| | then swap to a good src → `ErrorMessage` gone, controls enabled | the `loadState` reset on `loadstart` |
 | `a11y/slider-semantics` | Tab reaches the element with `role="slider"` | fails today |
 | | it exposes `aria-valuenow` / `aria-valuetext` | |
 | | arrow keys on it change the value | |
@@ -556,7 +684,7 @@ existing 15 tests, so the basic-operations requirement is met once the rows abov
 
 **Deliberately not E2E: the loading state.** `useIsDisabled` gates six components on
 `playerState === "loading"`, but loading is transient and racy in a real browser. It belongs
-in the jsdom tier in Phase 2 — construct a store, leave `hasMetadata` false, assert the
+in the jsdom tier in Phase 2 — construct a store, leave `loadState` at `"loading"`, assert the
 buttons are disabled. Deterministic there, flaky here, and it is exactly the tier the store
 makes cheap.
 
@@ -576,46 +704,222 @@ pre-`splitting` size.
 
 ### Phase 1 — Store, sync layer, provider (no consumers)
 
-Add `src/store/*`. Wrap `AudioPlayer` in `PlayerStoreProvider`, created once via
-`useState(() => createPlayerStore())` so the context value never changes. Attach the element
-to the `element` atom via the `<audio>` ref callback. Nothing reads the store yet.
+Add `src/store/*`. `PlayerStoreProvider` goes **outermost** in `AudioPlayer`, so Phases 2–3
+delete the providers inside it without ever moving it. The store is created once via
+`useState(() => createPlayerStore())`, so the context value never changes, and the provider
+does nothing else — no state, no effect, render-inert. No component *subscribes* to an atom
+yet, which is what the "this gate cannot fail" argument below rests on.
+
+**`AudioElement` owns the element, not the provider.** It renders the `<audio>` tag, so it is
+the only component that can hold the element without a setter travelling down — and a setter
+reachable through context or props would be a second write-shaped door on a store whose whole
+design is that `attach` is the only one:
+
+```tsx
+const [el, setEl] = useState<HTMLAudioElement | null>(null);
+const store = usePlayerStore();
+
+useEffect(() => (el ? store.attach(el) : undefined), [el, store]);
+
+const ref = useCallback((node: HTMLAudioElement | null) => {
+  audioElementRef.current = node;   // the legacy object ref, gone in Phase 3
+  setEl(node);
+}, [audioElementRef]);
+```
+
+`setEl` is stable by React's `useState` guarantee, so the composed ref is stable and
+`AudioElement`'s `memo` cannot cause a detach/reattach on every parent render — the hazard
+disappears instead of needing to be managed. `attach` returning its own detach slots straight
+into the effect. In Phase 3, when the legacy `audioElementRef` goes, the callback collapses to
+`setEl`.
+
+Two things that are not optional:
+
+- `attach` must be idempotent and its detach complete. The demo runs under `StrictMode`, so
+  every mount is attach → detach → attach, and priming is what makes events lost in that gap
+  harmless.
+- Create the context as `createContext<PlayerStore | null>(null)` and have `usePlayerStore`
+  throw on null. `AudioContext.ts:27-45` is the counter-example: it has a default value, so
+  its `if (!context)` guard can never fire, which is why the duplicate-context bug was
+  silent. Phase 2 migrates ten components onto this context — make a missing provider loud.
+
+Commits, in order: `atom` + `useStore` → `prime` + `syncFromElement` → `createPlayerStore` →
+provider and `AudioElement` wiring → `Debug` rows.
 
 *Verify:* **not** "build passes, zero behaviour change" — that gate cannot fail. From here
 to Phase 3 every media event is handled twice, by the sync layer and by the old bus; the
-atoms are unread, so a wrong `syncFromElement` is invisible and would surface mid-Phase-2
+atoms are unsubscribed, so a wrong `syncFromElement` is invisible and would surface mid-Phase-2
 among fifty component migrations. The real gates:
 
 - the `syncFromElement` unit suite, written exhaustively here rather than incrementally —
   one test per row of the sync-layer table, asserting every atom that event feeds, plus the
-  `currentSecond` bail-out and the `errored` reset
+  `currentSecond` bail-out and every `loadState` transition, including the full `"ready"` →
+  `"error"` → `"loading"` → `"ready"` recovery walk. Keep the handlers in one table keyed by
+  event name, so "one test per row" can be `Object.keys(HANDLERS)` checked against the
+  documented event list — a missing row then fails a test instead of passing silently.
+- the `prime` suite, which is where the two failure paths live: prime with `readyState >= 1`
+  → `"ready"`; prime with `el.error` set → `"error"`, not `"loading"`; and a `src` swap while
+  playing leaves `paused` true, the desync an enumerated reset row would have let through.
 - the `atom` / `useStore` suite: subscribe, notify, unsubscribe, identity bail-out, multiple
-  subscribers
-- atom values rendered in the `Debug` view (already wired into `App.tsx`) and visibly
-  agreeing with existing reducer state during playback — the one moment where seeing both
-  side by side is worth anything
+  subscribers, and `Object.is` on `NaN`
+- one shared media-element fake, in `testJSDom/store/`, replacing the ad-hoc one in
+  `handleSideEffects.test.ts`. It needs `readyState` and `error` alongside the media fields,
+  or neither failure path above is writable. Phase 2 needs the same fake for
+  `lastAudibleVolume`, and two fakes drifting apart is how "two half-covered layers that never
+  meet" happened the first time
+- atom values rendered in the `Debug` view and visibly agreeing with existing reducer state
+  during playback — the one moment where seeing both side by side is worth anything.
+  `Debug.tsx` reads `PlayerContext` and slider geometry today and has no atom rows; adding a
+  store column is part of this phase, not something already wired.
 
 ### Phase 2 — Retire `PlayerContext`
 
 Highest value, lowest risk: every field of `playerReducer` is either a command or a
-derivation.
+derivation. Fifteen files reference `PlayerContext` today, so the ordering below is what
+keeps the tree compiling.
 
-- Delete `Player/PlayerContext.ts`, `Player/PlayerProvider.tsx`, `Player/playerReducer.ts`.
-- Migrate `PlayButton`, `MuteButton`, `ErrorMessage`, `Seek`, `Shared/useIsDisabled`,
-  `TimeDisplay`, `PlaybackRate/SetPlaybackRate` (`RateDisplay`, `useIsCurrent`),
-  `PlaybackRate/ChangePlaybackRate` and `KeyboardControls/handleMediaKeys`.
-- `ChangePlaybackRate` must subscribe to the `rate` atom. It currently reads the element ref
-  during render and is saved only by the `PlayerContext` subscription this phase deletes.
-- Replace `el.dataset.dragStartVolume` with `lastAudibleVolume`.
-- `AudioElement.tsx` and `audioElementHooks.ts` are **half-emptied here and deleted in
-  Phase 3** — their `PlayerContext` dispatches go, because the sync layer already covers
-  those events, while their timeline-bus pushes stay. Expected, not drift.
-- Tests removed: `playerReducer.test`, `PlayerProvider.test`.
+#### Two things `PlayerContext` carries that are neither a command nor a derivation
+
+These block the delete, and neither is in the migration list as written.
+
+**1. Five action types in the *public* union.** `sideEffectActions.ts` imports
+`TogglePlayAction`, `ToggleMuteAction`, `UnmuteAction`, `PauseAction` and
+`AudioFileEndedAction` from `Player/PlayerContext.ts`. `SideEffectAction` is exported public
+API as of Phase 0, so deleting that file breaks the published types. Move the five into
+`sideEffectActions.ts` first — pure type move, its own commit, no behaviour. While there:
+`SetPlaybackRateAction` is declared twice, once in each file, with the same shape. Collapse
+it.
+
+**2. Static config, with no carrier.** `audioFiles` and `customKeyboardShortcuts` are props
+on `AudioPlayer` — not state, not projections, so no atom wants them — and `PlayerContext`
+is their only transport today. `audioFiles` is read by `AudioElement`;
+`customKeyboardShortcuts` by `useHandleMediaKeys`, which **seven** components call:
+`PlayButton`, `MuteButton`, `Seek`, `SetPlaybackRate`, `ChangePlaybackRate`, `Time.Toggle`
+and `SetSliderValue`. Section 3's table says "props" without naming a carrier, and there is
+no path from `AudioPlayer`'s props to `SetSliderValue` except context.
+
+So: **`PlayerConfigContext`**, holding `{ audioFiles, customKeyboardShortcuts }`, memoized
+on those two props. Static config flowing strictly downward — the same reasoning that keeps
+one `SliderContext` per slider — and its value changes only when the consumer changes props.
+Context count lands at three: store, config, slider. Down from four plus three slider
+stacks.
+
+It is a drop-in swap: `AudioPlayer` already renders `PlayerStoreProvider` outermost with
+`PlayerContextProvider` inside it, taking exactly these two props. `PlayerConfigProvider`
+takes the same slot with the same props, and `PlayerStoreProvider` never moves — which is
+what Phase 1 put it outermost for.
+
+#### Derivations get one home
+
+`src/store/derived.ts`:
+
+| Hook | Subscribes to | Replaces |
+|---|---|---|
+| `usePlayerState()` | `loadState`, `paused` | `playerReducer`'s `playerState` |
+| `useVolumeState()` | `volume`, `muted` | `SET_VOLUME_STATE` + `isMuted` |
+| `useIsDisabled()` | `loadState` | `playerState === "loading" \|\| "error"` |
+
+`useIsDisabled` drops to one subscription and one comparison, because `loadState` already
+*is* the thing it was reconstructing. `isMuted` disappears entirely — it was a second mirror
+of `muted`; `MuteButton`'s `aria-pressed` reads `useVolumeState() === "muted"`, which now
+derives. Keep `areNumbersClose` for the near-zero rule inside `useVolumeState`: the mute
+*derivation* stays approximate even though `lastAudibleVolume`'s memory is exact.
+
+One file, so the derivation rule is auditable in one place rather than spread across the six
+components that consume it.
+
+#### `send` replaces `useHandleSideEffect`, and it is free
+
+`store.send` is a closure member with a permanent identity. `useHandleSideEffect` returns a
+fresh callback whenever the context's ref object changes, which is why its callers wrap it in
+`useCallback`. So **every component migrated here deletes a `useCallback`** — Phase 5 work
+arriving as a side effect of Phase 2. Don't count it twice when Phase 5 measures.
+
+#### The write path's third argument is a value, not an accessor
+
+`handleSideEffect(action, element, ctx)` where `ctx = { lastAudibleVolume: number }`, read by
+`send` at call time from the atom. Only `TOGGLE_MUTE` and `UNMUTE` consume it. Passing a
+snapshot rather than a store handle or a getter keeps the function pure over plain data —
+which is the whole reason the Phase 0 investment was cheap, so **the three affected tests
+gain an argument instead of a mock.**
+
+`DRAG_START`'s volume case and all three `delete audioElement.dataset[...]` lines are
+deleted, not migrated.
+
+#### Migration
+
+| Component | Reads today | Reads after |
+|---|---|---|
+| `PlayButton` | `playerState` ×3 | `paused`; and `useHandleClick` drops its read entirely — `send({ type: "TOGGLE_PLAY" })` already branches on `el.paused` |
+| `MuteButton` | `volumeState` ×4 | `useVolumeState()` |
+| `ErrorMessage` | `playerState` | `loadState === "error"` |
+| `Seek` | `useIsDisabled` | unchanged call, new implementation |
+| `Time.Toggle` | `timeDisplay`, `handlePlayerAction` | `useStore(timeDisplay)` + `timeDisplay.set` — `TOGGLE_TIME_DISPLAY` disappears, and it was never in the public union |
+| `Time.Elapsed` / `Remaining` | `playerState`, `timeDisplay` | same two from the store; **the clock stays on `useTimeDisplay` until Phase 4** |
+| `Time.Duration` | `duration` | `useStore(duration)` |
+| `SetPlaybackRate`, `RateDisplay`, `useIsCurrent` | `playbackRate` | `useStore(rate)` |
+| `ChangePlaybackRate` | the element ref, **during render** | `useStore(rate)` — the one live bug this phase fixes |
+| `handleMediaKeys` | `handlePlayerAction`, `customKeyboardShortcuts` | `store.send` + `PlayerConfigContext` |
+| `Debug.tsx` | `playerState`, `volumeState` | delete the reducer column; `DebugStore` already exists |
+
+`Debug`'s store rows landed in Phase 1, so the work here is removing the `usePlayerContext`
+reads above them — and one thing that is easy to miss: **`DebugStore` inlines its own
+`playerState` derivation.** Once `derived.ts` exists, that duplicate has to go, or the debug
+view can silently disagree with the app it is there to verify.
+
+#### What `audioElementHooks` loses, exactly
+
+"Half-emptied" is checkable, so here it is. Every `PlayerContext` dispatch goes, because the
+sync layer already covers that event; every timeline-bus push stays until Phase 3.
+
+| Export | Deleted here | Survives to Phase 3 |
+|---|---|---|
+| `useHandleTimeUpdate` | — | timeline `UPDATE_UI_VALUE` |
+| `useHandleVolumeChange` | `SET_VOLUME_STATE` ×2, and the `areNumbersClose` mute rule — it moves into `useVolumeState` | volume `UPDATE_UI_VALUE` |
+| `useHandlePlaybackRateChange` | `SET_PLAYBACK_RATE` | rate `UPDATE_UI_VALUE` |
+| `handleEnded` | `AUDIO_FILE_ENDED` | timeline `UPDATE_UI_VALUE 0` |
+| `handleLoadedMetadata` | `AUDIO_FILE_LOADED`, `SET_DURATION` | `SET_MAX_VALUE` |
+| `handleDurationChange` | `SET_DURATION` | `SET_MAX_VALUE` |
+| **`handleError`** | **the whole handler** | — |
+| **`handlePlayPause`** | **the whole handler** | — |
+
+So Phase 2 also deletes three JSX props from the `<audio>` element outright — `onError`,
+`onPause`, `onPlay` — and `usePlayerCallbacks` drops from five members to three. The handler
+count on the element goes 10 → 7 → 0 across Phases 2 and 3, which is a cheaper progress
+check than reading diffs.
+
+#### The jsdom harness is part of this phase
+
+`testUtils.ts` exports `DEFAULT_PLAYER_CONTEXT` typed as `PlayerContextType`, which stops
+compiling the moment the file is deleted, and `custom-render.tsx` wraps everything in
+`<AudioPlayer>`.
+
+Phase 1 already did the expensive half: `testJSDom/store/mediaElementFake.ts` exists and
+`handleSideEffects.test.ts` has been switched onto it, so there is one fake, not two. What is
+left here is `createTestStore()` — a store plus an attached fake — and a `custom-render`
+option that mounts a component against it instead of a full `<AudioPlayer>`.
+
+That is the "construct a store and set atoms instead of mocking jsdom audio" story section 5
+promises. It has to exist before it can absorb the ~15 files Phases 2–3 delete, and this is
+the phase that first needs it.
+
+Tests removed: `playerReducer.test`, `PlayerProvider.test`.
+
+#### Order
+
+Move the five action types → `PlayerConfigContext` → `derived.ts` → test harness →
+components, in small commits → `handleSideEffect` `ctx` + `lastAudibleVolume` → delete
+`PlayerContext` / `PlayerProvider` / `playerReducer` → `Debug`.
 
 Phase 2 comes before Phase 3 for a specific reason: `audioElementHooks` feeds both systems.
 Killing the bus first would mean writing sync-layer-to-`PlayerContext` glue and then
 deleting it.
 
-*Verify:* play/pause, mute round-trip, seek, rate and error-recovery E2E specs.
+*Verify:* play/pause, mute round-trip — including the click-to-zero spec that lands here
+with `lastAudibleVolume` — seek, rate, error-recovery, and the a11y specs, since six
+components' disabled state now comes from `loadState`. Plus one case the old code could not
+get right: **a `src` swap while playing leaves `PlayButton` correct**, because `paused` is
+re-primed rather than toggled.
 
 ### Phase 3 — Retire the callback bus, unify the sliders
 

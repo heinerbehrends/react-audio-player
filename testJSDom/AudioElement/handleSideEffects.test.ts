@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { handleSideEffect } from "../../src/AudioElement/handleSideEffect";
+import { createMediaElementFake } from "../store/mediaElementFake";
 
 const defaultSliderState = {
   component: "timeline" as const,
@@ -17,15 +18,7 @@ describe("handleSideEffect", () => {
   let audioElement: HTMLAudioElement;
 
   beforeEach(() => {
-    audioElement = {
-      play: vi.fn(),
-      pause: vi.fn(),
-      currentTime: 0,
-      volume: 1,
-      paused: true,
-      muted: false,
-      playbackRate: 1,
-    } as unknown as HTMLAudioElement;
+    audioElement = createMediaElementFake();
   });
 
   it("should do nothing if audio element is null", () => {

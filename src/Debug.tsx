@@ -4,6 +4,8 @@ import { TimelineContext } from "./Timeline/TimelineContext";
 import { VolumeContext } from "./Volume/VolumeContext";
 import { useAudioContext } from "./AudioElement/AudioContext";
 import { PlaybackRateContext } from "./PlaybackRate/PlaybackRateContext";
+import { usePlayerStore } from "./store/PlayerStoreContext";
+import { useStore } from "./store/atom";
 
 const mapContext = {
   timeline: TimelineContext,
@@ -49,6 +51,46 @@ export function Debug({
       <p>Volume state: {volumeState}</p>
       <p>Min Value: {context.minValue}</p>
       <p>Max Value: {context.maxValue}</p>
+      <DebugStore />
     </div>
+  );
+}
+
+/**
+ * The store column, so the atoms can be seen agreeing with the reducer state
+ * above them during playback. Goes away with the reducers it is here to compare
+ * against.
+ */
+function DebugStore() {
+  const store = usePlayerStore();
+  const currentTime = useStore(store.currentTime);
+  const currentSecond = useStore(store.currentSecond);
+  const duration = useStore(store.duration);
+  const volume = useStore(store.volume);
+  const muted = useStore(store.muted);
+  const lastAudibleVolume = useStore(store.lastAudibleVolume);
+  const rate = useStore(store.rate);
+  const paused = useStore(store.paused);
+  const loadState = useStore(store.loadState);
+  const timeDisplay = useStore(store.timeDisplay);
+
+  const playerState =
+    loadState !== "ready" ? loadState : paused ? "paused" : "playing";
+
+  return (
+    <>
+      <h3>Store</h3>
+      <p>Load State: {loadState}</p>
+      <p>Player State: {playerState}</p>
+      <p>Current Time: {currentTime.toFixed(2)}</p>
+      <p>Current Second: {currentSecond}</p>
+      <p>Duration: {duration.toFixed(2)}</p>
+      <p>Volume: {volume.toFixed(2)}</p>
+      <p>Muted: {String(muted)}</p>
+      <p>Last Audible Volume: {lastAudibleVolume.toFixed(2)}</p>
+      <p>Rate: {rate.toFixed(2)}</p>
+      <p>Paused: {String(paused)}</p>
+      <p>Time Display: {timeDisplay}</p>
+    </>
   );
 }

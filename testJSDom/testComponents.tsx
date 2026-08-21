@@ -5,6 +5,7 @@ import {
 } from "../src/AudioElement/AudioContext";
 import { PlayerContextType } from "../src/Player/PlayerContext";
 import { PlayerContext } from "../src/Player/PlayerContext";
+import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
 
 type CreateContextWrapperArgs = {
   playerContext: PlayerContextType;
@@ -16,11 +17,13 @@ export function createContextWrapper({
   audioContext,
 }: CreateContextWrapperArgs): React.FC<{ children: React.ReactNode }> {
   return ({ children }: { children: React.ReactNode }) => (
-    <AudioContext.Provider value={audioContext}>
-      <PlayerContext.Provider value={playerContext}>
-        {children}
-      </PlayerContext.Provider>
-    </AudioContext.Provider>
+    <PlayerStoreProvider>
+      <AudioContext.Provider value={audioContext}>
+        <PlayerContext.Provider value={playerContext}>
+          {children}
+        </PlayerContext.Provider>
+      </AudioContext.Provider>
+    </PlayerStoreProvider>
   );
 }
 
@@ -34,11 +37,13 @@ export function renderWithContexts({
   component: React.ReactNode;
 }) {
   return render(
-    <AudioContext.Provider value={audioContext}>
-      <PlayerContext.Provider value={playerContext}>
-        {component}
-      </PlayerContext.Provider>
-    </AudioContext.Provider>,
+    <PlayerStoreProvider>
+      <AudioContext.Provider value={audioContext}>
+        <PlayerContext.Provider value={playerContext}>
+          {component}
+        </PlayerContext.Provider>
+      </AudioContext.Provider>
+    </PlayerStoreProvider>,
   );
 }
 
@@ -50,9 +55,11 @@ export function renderWithPlayerContext({
   component: React.ReactNode;
 }) {
   return render(
-    <PlayerContext.Provider value={playerContext}>
-      {component}
-    </PlayerContext.Provider>,
+    <PlayerStoreProvider>
+      <PlayerContext.Provider value={playerContext}>
+        {component}
+      </PlayerContext.Provider>
+    </PlayerStoreProvider>,
   );
 }
 
@@ -64,8 +71,10 @@ export function renderWithAudioContext({
   component: React.ReactNode;
 }) {
   return render(
-    <AudioContext.Provider value={audioContext}>
-      {component}
-    </AudioContext.Provider>,
+    <PlayerStoreProvider>
+      <AudioContext.Provider value={audioContext}>
+        {component}
+      </AudioContext.Provider>
+    </PlayerStoreProvider>,
   );
 }
