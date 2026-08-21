@@ -155,5 +155,4 @@ export const labels = {
   playAudio: "Play audio",
   pauseAudio: "Pause audio",
   timeline: "Timeline slider",
-  dragButton: "Drag or use left and right arrow keys to seek",
 };

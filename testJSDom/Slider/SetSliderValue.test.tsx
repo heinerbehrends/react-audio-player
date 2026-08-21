@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, getByRole, fireEvent } from "@testing-library/react";
+import { AudioContext } from "../../src/AudioElement/AudioContext";
 import { SetSliderValue } from "../../src/Slider/SetSliderValue";
 import { createSliderContext } from "../testUtils";
 
@@ -55,7 +56,7 @@ describe("SetSliderValue", () => {
     expect(button.className).toBe("custom-class");
   });
 
-  it("attaches event handlers", () => {
+  it("is in the tab order and attaches event handlers", () => {
     const handleSliderAction = vi.fn();
     const context = createSliderContext({ handleSliderAction });
 
@@ -64,10 +65,38 @@ describe("SetSliderValue", () => {
     );
     const button = getByRole(container, "slider");
 
-    expect(button).toHaveAttribute("tabindex", "-1");
+    expect(button).toHaveAttribute("tabindex", "0");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 0 });
 
     expect(handleSliderAction).toHaveBeenCalled();
+  });
+
+  it("responds to arrow keys, so the semantic slider is operable by keyboard", () => {
+    const audioElement = {
+      currentTime: 20,
+      duration: 100,
+      dataset: {},
+    } as unknown as HTMLAudioElement;
+    const audioContext = {
+      audioElementRef: { current: audioElement },
+      timelineCallbackRef: { current: { handleTimelineAction: null } },
+      volumeCallbackRef: { current: { handleVolumeAction: null } },
+      playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
+    };
+    const context = createSliderContext({ component: "timeline" });
+
+    const { container } = render(
+      <AudioContext.Provider value={audioContext}>
+        <SetSliderValue sliderContext={context}>Test</SetSliderValue>
+      </AudioContext.Provider>,
+    );
+    const button = getByRole(container, "slider");
+
+    fireEvent.keyDown(button, { key: "ArrowRight" });
+    expect(audioElement.currentTime).toBe(25);
+
+    fireEvent.keyDown(button, { key: "ArrowLeft" });
+    expect(audioElement.currentTime).toBe(20);
   });
 });

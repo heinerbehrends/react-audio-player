@@ -33,6 +33,7 @@ function App() {
           <Timeline.Background style={{ backgroundColor: "lightgray" }} />
         </Timeline.Seek>
         <Timeline.Drag
+          data-testid="timeline-drag-thumb"
           style={{
             height: "40px",
             width: "40px",

@@ -385,16 +385,22 @@ semantics, and the element that *has* the semantics is not reachable by Tab at a
 library whose first feature bullet is accessibility, this outranks the
 `PlaybackRateSlider.Progress` gap above.
 
-- [ ] Move the semantics onto the element that is always present: `SetSliderValue` gets
+- [x] Move the semantics onto the element that is always present: `SetSliderValue` gets
       `tabIndex={0}` and the arrow-key handler; `DragButton` becomes `tabIndex={-1}` and
       `aria-hidden`, a pure visual affordance. Smallest diff — the `aria-value*` attributes
       are already there — and it works even when a consumer renders no `Drag` thumb, which
       the headless API allows.
-- [ ] E2E: the semantic slider is reachable by Tab, announces a value, and responds to
+- [x] E2E: the semantic slider is reachable by Tab, announces a value, and responds to
       arrow keys.
 
 Per-mode arrow keys — so the rate slider responds to arrows at all — land in Phase 3 with
 the mode table, since that is where the key handling becomes mode-aware.
+
+Removing the thumb's semantics also removed its accessible name, which was the E2E and
+jsdom handle for it. The demo app grew a `data-testid="timeline-drag-thumb"` hook instead,
+surfaced as `testIds` in `testE2E/test-utils.ts`; the label belongs to the slider now, and a
+thumb label saying "use left and right arrow keys" would have been a second lie on a hidden
+node.
 
 **Known bugs** — all falsy-zero or precedence slips, all cheap.
 

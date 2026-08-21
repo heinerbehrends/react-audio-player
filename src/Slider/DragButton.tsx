@@ -1,6 +1,5 @@
 import { useOnPointerCancel } from "./dragHooks";
 import { useDrag } from "./useDrag";
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import {
   useHandleDrag,
   useHandleDragEnd,
@@ -10,19 +9,13 @@ import { calculateDragStyle } from "./calculateStyle";
 import { SliderContextType } from "./SliderContext";
 
 interface DragButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
-  ariaLabel: string;
   sliderContext: SliderContextType;
 }
 
-export function DragButton({
-  ariaLabel,
-  sliderContext,
-  ...props
-}: DragButtonProps) {
+export function DragButton({ sliderContext, ...props }: DragButtonProps) {
   const handleDragStart = useHandleDragStart(sliderContext);
   const handleDragEnd = useHandleDragEnd(sliderContext);
   const handleDrag = useHandleDrag(sliderContext);
-  const handleKeyDown = useHandleMediaKeys();
   const handleDragCancel = useOnPointerCancel(sliderContext);
   const style = calculateDragStyle(sliderContext);
   useDrag({
@@ -36,14 +29,18 @@ export function DragButton({
     onPointerCancel: handleDragCancel,
   });
 
+  // The slider semantics and the keyboard handler live on SetSliderValue, which
+  // is always present. This thumb is a pointer-only affordance: hidden from
+  // assistive technology and out of the tab order, so there is exactly one
+  // element per slider that announces a value and responds to arrow keys.
   return (
     <button
-      onKeyDown={handleKeyDown}
       onPointerDown={handleDragStart}
       onPointerUp={handleDragEnd}
       onPointerMove={handleDrag}
       onPointerCancel={handleDragCancel}
-      aria-label={ariaLabel}
+      tabIndex={-1}
+      aria-hidden="true"
       {...props}
       style={{ ...style, ...props.style }}
     />

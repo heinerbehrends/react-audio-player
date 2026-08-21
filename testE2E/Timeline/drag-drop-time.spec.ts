@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { waitForAudio, getTimelineState, getAudioState } from "../test-utils";
+import {
+  waitForAudio,
+  getTimelineState,
+  getAudioState,
+  testIds,
+} from "../test-utils";
 
 const PRECISION = 0.25;
 
@@ -7,9 +12,7 @@ test("drag timeline button to seek when paused", async ({ page }) => {
   await page.goto("/");
   await waitForAudio(page);
 
-  const dragButton = await page.getByLabel(
-    "Drag or use left and right arrow keys to seek",
-  );
+  const dragButton = await page.getByTestId(testIds.timelineDragThumb);
 
   const { sliderLength, duration } = await getTimelineState(page);
 
@@ -37,7 +40,7 @@ test("drag timeline button to seek while playing", async ({ page }) => {
   const buttonX = sliderStart + currentOffset;
   const buttonY = await page.evaluate(() => {
     const button = document.querySelector(
-      "[aria-label='Drag or use left and right arrow keys to seek']",
+      '[data-testid="timeline-drag-thumb"]',
     );
     return button?.getBoundingClientRect().top ?? 0;
   });
@@ -63,9 +66,7 @@ test("drag button cannot move beyond timeline bounds", async ({
 
   const { sliderStart, sliderLength } = await getTimelineState(page);
 
-  const dragButton = page.getByLabel(
-    "Drag or use left and right arrow keys to seek",
-  );
+  const dragButton = page.getByTestId(testIds.timelineDragThumb);
   const initialBox = await dragButton.boundingBox();
 
   await dragButton.hover();

@@ -78,10 +78,8 @@ describe("Timeline", () => {
 
       const drag = screen.getByTestId("drag");
       expect(drag).toBeInTheDocument();
-      expect(drag).toHaveAttribute(
-        "aria-label",
-        "Drag or use left and right arrow keys to seek",
-      );
+      expect(drag).toHaveAttribute("aria-hidden", "true");
+      expect(drag).toHaveAttribute("tabindex", "-1");
     });
   });
 

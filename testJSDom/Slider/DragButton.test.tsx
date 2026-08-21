@@ -1,23 +1,24 @@
 import { describe, it, expect, vi } from "vitest";
-import { fireEvent, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DragButton } from "../../src/Slider/DragButton";
 import { createSliderContext } from "../testUtils";
 
 describe("DragButton", () => {
-  it("renders with correct aria label", () => {
+  it("is hidden from assistive technology and out of the tab order", () => {
     const context = createSliderContext();
-    const { getByLabelText } = render(
-      <DragButton ariaLabel="Test Label" sliderContext={context} />,
-    );
-    expect(getByLabelText("Test Label")).toBeDefined();
+    const { container } = render(<DragButton sliderContext={context} />);
+    const button = container.firstChild as HTMLElement;
+
+    expect(button).toHaveAttribute("aria-hidden", "true");
+    expect(button).toHaveAttribute("tabindex", "-1");
+    expect(button).not.toHaveAttribute("role");
+    expect(button).not.toHaveAttribute("aria-label");
   });
 
   it("applies correct styles", () => {
     const context = createSliderContext();
-    const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />,
-    );
+    const { container } = render(<DragButton sliderContext={context} />);
     const button = container.firstChild as HTMLElement;
 
     expect(button.style.position).toBe("absolute");
@@ -29,9 +30,7 @@ describe("DragButton", () => {
 
   it("handles pointer down event", async () => {
     const context = createSliderContext();
-    const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />,
-    );
+    const { container } = render(<DragButton sliderContext={context} />);
     const button = container.firstChild as HTMLElement;
 
     await userEvent.pointer({
@@ -47,26 +46,11 @@ describe("DragButton", () => {
     expect(calls[0]?.[0]?.clientXY).toBe(50);
   });
 
-  it("handles key down event", () => {
-    const context = createSliderContext();
-    const { container } = render(
-      <DragButton ariaLabel="Test" sliderContext={context} />,
-    );
-    const button = container.firstChild as HTMLElement;
-
-    fireEvent.keyDown(button, { key: "ArrowRight" });
-    expect(button).toBeDefined();
-  });
-
   it("merges custom styles with calculated styles", () => {
     const context = createSliderContext();
     const customStyle = { backgroundColor: "red" };
     const { container } = render(
-      <DragButton
-        ariaLabel="Test"
-        sliderContext={context}
-        style={customStyle}
-      />,
+      <DragButton sliderContext={context} style={customStyle} />,
     );
     const button = container.firstChild as HTMLElement;
 
@@ -78,7 +62,6 @@ describe("DragButton", () => {
     const context = createSliderContext();
     const { container } = render(
       <DragButton
-        ariaLabel="Test"
         sliderContext={context}
         data-testid="drag-button"
         className="custom-class"

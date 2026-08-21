@@ -78,10 +78,8 @@ describe("Volume", () => {
 
       const drag = screen.getByTestId("drag");
       expect(drag).toBeInTheDocument();
-      expect(drag).toHaveAttribute(
-        "aria-label",
-        "Drag or use up and down arrow keys to adjust volume",
-      );
+      expect(drag).toHaveAttribute("aria-hidden", "true");
+      expect(drag).toHaveAttribute("tabindex", "-1");
     });
   });
 

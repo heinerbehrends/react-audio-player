@@ -133,8 +133,12 @@ describe("PlaybackRateSlider", () => {
 
       expect(screen.getByTestId("drag-button")).toBeInTheDocument();
       expect(screen.getByTestId("drag-button")).toHaveAttribute(
-        "aria-label",
-        "Drag or use > and < and ] and [ keys to adjust playback rate",
+        "aria-hidden",
+        "true",
+      );
+      expect(screen.getByTestId("drag-button")).toHaveAttribute(
+        "tabindex",
+        "-1",
       );
     });
   });

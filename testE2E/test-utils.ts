@@ -34,9 +34,7 @@ export async function getTimelineState(page: Page) {
 }
 
 export async function getButtonPosition(page: Page) {
-  const button = page.getByLabel(
-    "Drag or use left and right arrow keys to seek",
-  );
+  const button = page.getByTestId(testIds.timelineDragThumb);
   const boundingBox = await button.boundingBox();
   return boundingBox?.x ?? 0;
 }
@@ -68,5 +66,10 @@ export const labels = {
   playAudio: "Play audio",
   pauseAudio: "Pause audio",
   timeline: "Timeline slider",
-  dragButton: "Drag or use left and right arrow keys to seek",
+};
+
+// The drag thumbs are aria-hidden pointer affordances -- the slider semantics
+// live on the slider element -- so E2E targets them via the demo app test hook.
+export const testIds = {
+  timelineDragThumb: "timeline-drag-thumb",
 };

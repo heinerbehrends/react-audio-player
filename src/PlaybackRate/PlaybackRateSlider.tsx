@@ -24,13 +24,7 @@ import { DragButton } from "../Slider/DragButton";
 
 function Drag(props: React.HTMLAttributes<HTMLButtonElement>) {
   const playbackRateContext = usePlaybackRateContext();
-  return (
-    <DragButton
-      sliderContext={playbackRateContext}
-      ariaLabel="Drag or use > and < and ] and [ keys to adjust playback rate"
-      {...props}
-    />
-  );
+  return <DragButton sliderContext={playbackRateContext} {...props} />;
 }
 
 function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {

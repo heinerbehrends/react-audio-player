@@ -11,13 +11,7 @@ import { SetSliderValue } from "../Slider/SetSliderValue";
 
 function DragTimeline(props: React.HTMLAttributes<HTMLButtonElement>) {
   const timelineContext = useTimelineContext();
-  return (
-    <DragButton
-      sliderContext={timelineContext}
-      ariaLabel="Drag or use left and right arrow keys to seek"
-      {...props}
-    />
-  );
+  return <DragButton sliderContext={timelineContext} {...props} />;
 }
 
 function SeekTime({

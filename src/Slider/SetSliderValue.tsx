@@ -2,6 +2,7 @@ import { useMemo, useRef, useCallback } from "react";
 import { useHandleRef, useResizeObserver } from "./useHandleRef";
 import { useTimelineAriaAttributes } from "../Timeline/useTimelineAria";
 import { useSetValue } from "./dragHooks";
+import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { SliderContextType } from "./SliderContext";
 import {
   progressStyles,
@@ -33,6 +34,7 @@ export function SetSliderValue({
 
   useResizeObserver(sliderContext, buttonRef);
   const handlePointerDown = useSetValue(sliderContext);
+  const handleKeyDown = useHandleMediaKeys();
 
   const style = useMemo(
     () => ({
@@ -48,7 +50,8 @@ export function SetSliderValue({
     <button
       ref={combinedRef}
       onPointerDown={handlePointerDown}
-      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
       {...ariaAttributes}
       {...props}
       style={style}
