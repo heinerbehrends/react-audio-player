@@ -1,7 +1,10 @@
 import { usePlaybackRateContext } from "./PlaybackRateContext";
 import { PlaybackRateProvider } from "./PlaybackRateProvider";
 import { SetSliderValue } from "../Slider/SetSliderValue";
-import { progressStyles } from "../Slider/calculateStyle";
+import {
+  progressStyles,
+  calculateProgressStyle,
+} from "../Slider/calculateStyle";
 
 type PlaybackRateSliderComponent = React.FC<
   React.HTMLAttributes<HTMLDivElement> & {
@@ -12,6 +15,7 @@ type PlaybackRateSliderComponent = React.FC<
   }
 > & {
   Background: typeof PlaybackRateBackground;
+  Progress: typeof PlaybackRateProgress;
   Set: typeof Set;
   Drag: typeof Drag;
 };
@@ -43,6 +47,23 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   minValue?: number;
   step?: number;
 };
+
+function PlaybackRateProgress({
+  style,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const context = usePlaybackRateContext();
+  return (
+    <div
+      {...props}
+      style={{
+        ...progressStyles,
+        ...calculateProgressStyle(context),
+        ...style,
+      }}
+    />
+  );
+}
 
 function PlaybackRateBackground({
   style,
@@ -87,6 +108,7 @@ export const PlaybackRateSlider = Object.assign(
   },
   {
     Background: PlaybackRateBackground,
+    Progress: PlaybackRateProgress,
     Set,
     Drag,
   },

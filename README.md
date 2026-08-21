@@ -9,7 +9,7 @@ An accessible headless audio player component for React applications inspired by
 - 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume, playbackRate)
 - ⌨️ Keyboard navigation and screen reader support
 - 📝 Caption/subtitle support
-- ✔️ No dependencies except React 16.8+
+- ✔️ No dependencies except React 18+
 
 ## Basic Usage
 
@@ -96,14 +96,22 @@ The root component that provides context to all child components.
 - `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
 - `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
 
+### Playback Rate Slider
+
+- `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` - Container for a
+  continuous or stepped playback rate slider
+- `<PlaybackRateSlider.Set>` - Clickable area for setting the rate
+- `<PlaybackRateSlider.Progress>` - Visual rate indicator
+- `<PlaybackRateSlider.Background>` - Track behind the indicator
+- `<PlaybackRateSlider.Drag>` - Draggable control for the rate
+
 ### Error Component
 
-- `<Error>` - Displays a customizable message on error
+- `<ErrorMessage>` - Displays a customizable message on error
 
 ## Roadmap
 
 - Improve testing
-- Finish stepped playback rate slider
 - Initial beta release
 - Add playlist components and skip and loop
 - Add multi-language support
@@ -112,18 +120,16 @@ The root component that provides context to all child components.
 
 ```bash
 # Run unit tests (JSDOM)
-npm test
-# or
-npm run test:unit
+pnpm test
 
 # Run end-to-end tests (Playwright)
-npm run test:e2e
+pnpm testE2E
 ```
 
-## Requrements and
+## Requirements
 
 - Chrome, Firefox, Safari, Edge
-- React 16.8+ (requires Hooks)
+- React 18+ (requires `useSyncExternalStore`)
 
 ## License
 

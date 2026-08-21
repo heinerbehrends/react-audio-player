@@ -1,10 +1,10 @@
 import { usePlayerContext } from "./PlayerContext";
 
-type ErrorProps = {
+type ErrorMessageProps = {
   children: React.ReactNode;
 };
 
-export function Error({ children }: ErrorProps) {
+export function ErrorMessage({ children }: ErrorMessageProps) {
   const { playerState: player } = usePlayerContext();
   if (player === "error") {
     return (

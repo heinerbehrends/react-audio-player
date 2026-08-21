@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
-import { Error } from "../../src/Player/Error";
+import { ErrorMessage } from "../../src/Player/ErrorMessage";
 import { renderWithPlayerContext } from "../testComponents";
 import { createPlayerContext } from "../testUtils";
 
@@ -14,7 +14,7 @@ describe("Error", () => {
   it("renders error message when player state is 'error'", () => {
     renderWithPlayerContext({
       playerContext: mockPlayerContext,
-      component: <Error>Custom error message</Error>,
+      component: <ErrorMessage>Custom error message</ErrorMessage>,
     });
 
     const errorContainer = screen.getByRole("alert");
@@ -26,7 +26,7 @@ describe("Error", () => {
   it("returns null when player state is not 'error'", () => {
     const { container } = renderWithPlayerContext({
       playerContext: { ...mockPlayerContext, playerState: "playing" },
-      component: <Error>Custom error message</Error>,
+      component: <ErrorMessage>Custom error message</ErrorMessage>,
     });
     expect(container).toBeEmptyDOMElement();
   });
@@ -34,7 +34,7 @@ describe("Error", () => {
   it("maintains proper ARIA attributes", () => {
     renderWithPlayerContext({
       playerContext: mockPlayerContext,
-      component: <Error>Custom error message</Error>,
+      component: <ErrorMessage>Custom error message</ErrorMessage>,
     });
 
     const errorContainer = screen.getByRole("alert");
@@ -48,7 +48,7 @@ describe("Error", () => {
     const errorMessage = "Network error occurred";
     renderWithPlayerContext({
       playerContext: mockPlayerContext,
-      component: <Error>{errorMessage}</Error>,
+      component: <ErrorMessage>{errorMessage}</ErrorMessage>,
     });
 
     expect(screen.getByText(errorMessage)).toBeInTheDocument();

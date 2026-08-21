@@ -6,7 +6,7 @@ import { MuteButton } from "./Player/MuteButton";
 import { Volume } from "./Volume/Volume";
 import { Time } from "./TimeDisplay/TimeDisplay";
 import { Seek } from "./Player/Seek";
-import { Error } from "./Player/Error";
+import { ErrorMessage } from "./Player/ErrorMessage";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
@@ -133,7 +133,7 @@ function App() {
       </PlaybackRate>
       <PlaybackRate.Change amount={-0.1}>-0.1x</PlaybackRate.Change>
       <PlaybackRate.Change amount={0.1}>+0.1x</PlaybackRate.Change>
-      <Error>There was an error loading the audio file.</Error>
+      <ErrorMessage>There was an error loading the audio file.</ErrorMessage>
     </AudioPlayer>
   );
 }
