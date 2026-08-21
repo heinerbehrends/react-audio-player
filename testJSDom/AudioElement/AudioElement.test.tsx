@@ -9,8 +9,7 @@ import {
   createAudioContext,
   createMockAudioElement,
 } from "../testUtils";
-import { renderWithContexts } from "../testComponents";
-import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
+import { renderWithContexts, TestProviders } from "../testComponents";
 
 describe("AudioElement", () => {
   let audioElement: HTMLAudioElement;
@@ -75,13 +74,13 @@ describe("AudioElement", () => {
     // Same root component as `renderWithContexts` renders, so the store
     // instance survives the rerender.
     rerender(
-      <PlayerStoreProvider>
+      <TestProviders>
         <AudioContext.Provider value={contextWithRef}>
           <PlayerContext.Provider value={createPlayerContext()}>
             <AudioElement />
           </PlayerContext.Provider>
         </AudioContext.Provider>
-      </PlayerStoreProvider>,
+      </TestProviders>,
     );
 
     expect(audio.ontimeupdate).toBe(initialTimeUpdateHandler);

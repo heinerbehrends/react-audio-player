@@ -5,6 +5,17 @@ import { Volume } from "../../src/Volume/Volume";
 import { VolumeContext } from "../../src/Volume/VolumeContext";
 import { createPlayerContext, createSliderContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store and the static config, which any component reaching
+ * `useHandleMediaKeys` needs: `customKeyboardShortcuts` comes from
+ * `PlayerConfigContext` now, and a missing provider throws by design.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 const defaultSliderContext = createSliderContext({
   component: "volume" as const,
@@ -25,7 +36,7 @@ describe("Volume", () => {
 
   describe("Subcomponents render correctly", () => {
     it("should render Volume.Progress with expected styles", () => {
-      render(
+      renderInPlayer(
         <VolumeContext.Provider value={defaultSliderContext}>
           <Volume.Progress data-testid="progress" />
         </VolumeContext.Provider>,
@@ -84,7 +95,7 @@ describe("Volume", () => {
   });
 
   it("should support composition of components", () => {
-    render(
+    renderInPlayer(
       <VolumeContext.Provider value={defaultSliderContext}>
         <Volume>
           <Volume.Background data-testid="background" />
@@ -102,7 +113,7 @@ describe("Volume", () => {
   });
 
   it("should render a container with proper styles and accessibility attributes", () => {
-    render(
+    renderInPlayer(
       <VolumeContext.Provider value={defaultSliderContext}>
         <Volume>
           <div data-testid="volume-child">Content</div>

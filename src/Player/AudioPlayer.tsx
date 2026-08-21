@@ -1,7 +1,8 @@
 import { AudioContextProvider } from "../AudioElement/AudioContextProvider";
-import { type AudioFile, PlayerContextProvider } from "./PlayerProvider";
+import { PlayerContextProvider } from "./PlayerProvider";
 import { AudioElement } from "../AudioElement/AudioElement";
 import { PlayerStoreProvider } from "../store/PlayerStoreContext";
+import { PlayerConfigProvider, type AudioFile } from "./PlayerConfigContext";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 
 type AudioPlayerProps = {
@@ -17,15 +18,20 @@ export function AudioPlayer({
 }: AudioPlayerProps) {
   return (
     <PlayerStoreProvider>
-      <AudioContextProvider>
-        <PlayerContextProvider
-          audioFiles={audioFiles}
-          customKeyboardShortcuts={customKeyboardShortcuts}
-        >
-          <AudioElement />
-          {children}
-        </PlayerContextProvider>
-      </AudioContextProvider>
+      <PlayerConfigProvider
+        audioFiles={audioFiles}
+        customKeyboardShortcuts={customKeyboardShortcuts}
+      >
+        <AudioContextProvider>
+          <PlayerContextProvider
+            audioFiles={audioFiles}
+            customKeyboardShortcuts={customKeyboardShortcuts}
+          >
+            <AudioElement />
+            {children}
+          </PlayerContextProvider>
+        </AudioContextProvider>
+      </PlayerConfigProvider>
     </PlayerStoreProvider>
   );
 }

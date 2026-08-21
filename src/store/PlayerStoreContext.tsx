@@ -13,6 +13,13 @@ PlayerStoreContext.displayName = "PlayerStoreContext";
 
 type PlayerStoreProviderProps = {
   children: React.ReactNode;
+  /**
+   * A store to mount against instead of creating one. The jsdom harness passes
+   * a store with a fake element already attached, so a test can set atoms by
+   * driving the fake rather than mocking jsdom audio. Read once, so the value
+   * identity is as stable as a created store's.
+   */
+  store?: PlayerStore;
 };
 
 /**
@@ -20,8 +27,11 @@ type PlayerStoreProviderProps = {
  * It goes outermost in `AudioPlayer` so the providers inside it can be deleted
  * without moving it.
  */
-export function PlayerStoreProvider({ children }: PlayerStoreProviderProps) {
-  const [store] = useState(() => createPlayerStore());
+export function PlayerStoreProvider({
+  children,
+  store: injected,
+}: PlayerStoreProviderProps) {
+  const [store] = useState(() => injected ?? createPlayerStore());
 
   return (
     <PlayerStoreContext.Provider value={store}>

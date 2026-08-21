@@ -6,15 +6,12 @@ import {
 } from "./PlayerContext";
 import { playerReducer } from "./playerReducer";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
+import type { AudioFile } from "./PlayerConfigContext";
 
 type PlayerContextProviderProps = {
   children: React.ReactNode;
   audioFiles: AudioFile[];
   customKeyboardShortcuts: KeyToActionMap | undefined;
-};
-
-export type AudioFile = {
-  src: string;
 };
 
 export const PlayerContextProvider = memo(function PlayerContextProvider({

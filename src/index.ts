@@ -8,6 +8,6 @@ export { Volume } from "./Volume/Volume";
 export { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 export { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 export { Time } from "./TimeDisplay/TimeDisplay";
-export type { AudioFile } from "./Player/PlayerProvider";
+export type { AudioFile } from "./Player/PlayerConfigContext";
 export type { SideEffectAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";

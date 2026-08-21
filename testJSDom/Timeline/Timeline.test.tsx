@@ -4,6 +4,17 @@ import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
 import { TimelineContext } from "../../src/Timeline/TimelineContext";
 import { createSliderContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store and the static config, which any component reaching
+ * `useHandleMediaKeys` needs: `customKeyboardShortcuts` comes from
+ * `PlayerConfigContext` now, and a missing provider throws by design.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 const mockTimelineContext = createSliderContext({
   value: 0.5,
@@ -22,7 +33,7 @@ describe("Timeline", () => {
 
   describe("Subcomponents render correctly", () => {
     it("should render Timeline.Progress with expected styles", () => {
-      render(
+      renderInPlayer(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Progress data-testid="progress" />
         </TimelineContext.Provider>,
@@ -41,7 +52,7 @@ describe("Timeline", () => {
     });
 
     it("should render Timeline.Background with expected styles", () => {
-      render(
+      renderInPlayer(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Background data-testid="background" />
         </TimelineContext.Provider>,
@@ -58,7 +69,7 @@ describe("Timeline", () => {
     });
 
     it("should render Timeline.Seek with expected attributes", () => {
-      render(
+      renderInPlayer(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Seek data-testid="seek">Seek</Timeline.Seek>
         </TimelineContext.Provider>,
@@ -70,7 +81,7 @@ describe("Timeline", () => {
     });
 
     it("should render Timeline.Drag with expected attributes", () => {
-      render(
+      renderInPlayer(
         <TimelineContext.Provider value={mockTimelineContext}>
           <Timeline.Drag data-testid="drag" />
         </TimelineContext.Provider>,
@@ -84,7 +95,7 @@ describe("Timeline", () => {
   });
 
   it("should support composition of components", () => {
-    render(
+    renderInPlayer(
       <TimelineContext.Provider value={mockTimelineContext}>
         <Timeline>
           <Timeline.Background data-testid="background" />
@@ -102,7 +113,7 @@ describe("Timeline", () => {
   });
 
   it("should render a container with proper styles", () => {
-    render(
+    renderInPlayer(
       <TimelineContext.Provider value={mockTimelineContext}>
         <Timeline>
           <div data-testid="timeline-child">Content</div>

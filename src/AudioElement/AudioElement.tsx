@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useState } from "react";
-import { usePlayerContext } from "../Player/PlayerContext";
+import { usePlayerConfig } from "../Player/PlayerConfigContext";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useAudioContext } from "./AudioContext";
 import {
@@ -17,7 +17,7 @@ export const AudioElement = memo(function AudioElement({
   children,
   ...props
 }: AudioElementProps) {
-  const { audioFiles } = usePlayerContext();
+  const { audioFiles } = usePlayerConfig();
   const {
     audioElementRef,
     timelineCallbackRef,

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
-import type { AudioFile } from "../../src/Player/PlayerProvider";
+import type { AudioFile } from "../../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
 
 vi.mock("../../src/AudioElement/AudioContextProvider", () => ({
@@ -11,7 +11,16 @@ vi.mock("../../src/AudioElement/AudioContextProvider", () => ({
 }));
 
 vi.mock("../../src/Player/PlayerProvider", () => ({
-  PlayerContextProvider: ({
+  PlayerContextProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="player-context-provider">{children}</div>
+  ),
+}));
+
+// `audioFiles` and `customKeyboardShortcuts` are static config, so the assertion
+// is that they reach `PlayerConfigProvider` — the carrier that survives this
+// phase, rather than the reducer provider being retired.
+vi.mock("../../src/Player/PlayerConfigContext", () => ({
+  PlayerConfigProvider: ({
     children,
     audioFiles,
     customKeyboardShortcuts,
@@ -21,7 +30,7 @@ vi.mock("../../src/Player/PlayerProvider", () => ({
     customKeyboardShortcuts?: KeyToActionMap;
   }) => (
     <div
-      data-testid="player-context-provider"
+      data-testid="player-config-provider"
       data-audio-files={audioFiles.length}
       data-keyboard-shortcuts={JSON.stringify(customKeyboardShortcuts)}
     >
@@ -47,20 +56,21 @@ describe("AudioPlayer", () => {
       </AudioPlayer>,
     );
 
+    expect(screen.getByTestId("player-config-provider")).toBeInTheDocument();
     expect(screen.getByTestId("audio-context-provider")).toBeInTheDocument();
     expect(screen.getByTestId("player-context-provider")).toBeInTheDocument();
     expect(screen.getByTestId("audio-element")).toBeInTheDocument();
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
   });
 
-  it("passes audioFiles to PlayerContextProvider", () => {
+  it("passes audioFiles to PlayerConfigProvider", () => {
     render(
       <AudioPlayer audioFiles={mockAudioFiles}>
         <div>Test Content</div>
       </AudioPlayer>,
     );
 
-    const provider = screen.getByTestId("player-context-provider");
+    const provider = screen.getByTestId("player-config-provider");
     expect(provider).toHaveAttribute(
       "data-audio-files",
       mockAudioFiles.length.toString(),
@@ -74,7 +84,7 @@ describe("AudioPlayer", () => {
       </AudioPlayer>,
     );
 
-    const provider = screen.getByTestId("player-context-provider");
+    const provider = screen.getByTestId("player-config-provider");
     expect(provider).toHaveAttribute("data-audio-files", "0");
   });
 });
@@ -91,7 +101,7 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
     vi.clearAllMocks();
   });
 
-  it("passes custom keyboard shortcuts to PlayerContextProvider", () => {
+  it("passes custom keyboard shortcuts to PlayerConfigProvider", () => {
     const customShortcuts: KeyToActionMap = {
       x: { type: "TOGGLE_PLAY" },
       y: { type: "STOP_AUDIO" },
@@ -106,7 +116,7 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
       </AudioPlayer>,
     );
 
-    const provider = screen.getByTestId("player-context-provider");
+    const provider = screen.getByTestId("player-config-provider");
     expect(provider).toHaveAttribute(
       "data-keyboard-shortcuts",
       JSON.stringify(customShortcuts),

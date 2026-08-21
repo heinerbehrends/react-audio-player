@@ -8,6 +8,7 @@ import {
 } from "../../src/Player/PlayerContext";
 import "@testing-library/jest-dom";
 import { createPlayerContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
 import { formatTime } from "../../src/Shared/sharedFunctions";
 
 const mockAudioElement = {
@@ -22,7 +23,11 @@ vi.mock("../../src/AudioElement/useAudioElement", () => ({
 const createWrapper =
   (context: PlayerContextType) =>
   ({ children }: { children: React.ReactNode }) => (
-    <PlayerContext.Provider value={context}>{children}</PlayerContext.Provider>
+    <TestProviders>
+      <PlayerContext.Provider value={context}>
+        {children}
+      </PlayerContext.Provider>
+    </TestProviders>
   );
 
 describe("Time", () => {

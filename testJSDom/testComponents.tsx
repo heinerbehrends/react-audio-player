@@ -6,6 +6,37 @@ import {
 import { PlayerContextType } from "../src/Player/PlayerContext";
 import { PlayerContext } from "../src/Player/PlayerContext";
 import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
+import { PlayerConfigProvider } from "../src/Player/PlayerConfigContext";
+import type { KeyToActionMap } from "../src/KeyboardControls/handleMediaKeys";
+import type { AudioFile } from "../src/Player/PlayerConfigContext";
+
+type TestProvidersProps = {
+  children: React.ReactNode;
+  audioFiles?: AudioFile[];
+  customKeyboardShortcuts?: KeyToActionMap | undefined;
+};
+
+/**
+ * The store and the static config, which every component needs now that
+ * `useHandleMediaKeys` reads `customKeyboardShortcuts` from `PlayerConfigContext`
+ * rather than from the reducer.
+ */
+export function TestProviders({
+  children,
+  audioFiles = [],
+  customKeyboardShortcuts,
+}: TestProvidersProps) {
+  return (
+    <PlayerStoreProvider>
+      <PlayerConfigProvider
+        audioFiles={audioFiles}
+        customKeyboardShortcuts={customKeyboardShortcuts}
+      >
+        {children}
+      </PlayerConfigProvider>
+    </PlayerStoreProvider>
+  );
+}
 
 type CreateContextWrapperArgs = {
   playerContext: PlayerContextType;
@@ -17,13 +48,16 @@ export function createContextWrapper({
   audioContext,
 }: CreateContextWrapperArgs): React.FC<{ children: React.ReactNode }> {
   return ({ children }: { children: React.ReactNode }) => (
-    <PlayerStoreProvider>
+    <TestProviders
+      audioFiles={playerContext.audioFiles}
+      customKeyboardShortcuts={playerContext.customKeyboardShortcuts}
+    >
       <AudioContext.Provider value={audioContext}>
         <PlayerContext.Provider value={playerContext}>
           {children}
         </PlayerContext.Provider>
       </AudioContext.Provider>
-    </PlayerStoreProvider>
+    </TestProviders>
   );
 }
 
@@ -37,13 +71,16 @@ export function renderWithContexts({
   component: React.ReactNode;
 }) {
   return render(
-    <PlayerStoreProvider>
+    <TestProviders
+      audioFiles={playerContext.audioFiles}
+      customKeyboardShortcuts={playerContext.customKeyboardShortcuts}
+    >
       <AudioContext.Provider value={audioContext}>
         <PlayerContext.Provider value={playerContext}>
           {component}
         </PlayerContext.Provider>
       </AudioContext.Provider>
-    </PlayerStoreProvider>,
+    </TestProviders>,
   );
 }
 
@@ -55,11 +92,14 @@ export function renderWithPlayerContext({
   component: React.ReactNode;
 }) {
   return render(
-    <PlayerStoreProvider>
+    <TestProviders
+      audioFiles={playerContext.audioFiles}
+      customKeyboardShortcuts={playerContext.customKeyboardShortcuts}
+    >
       <PlayerContext.Provider value={playerContext}>
         {component}
       </PlayerContext.Provider>
-    </PlayerStoreProvider>,
+    </TestProviders>,
   );
 }
 
@@ -71,10 +111,10 @@ export function renderWithAudioContext({
   component: React.ReactNode;
 }) {
   return render(
-    <PlayerStoreProvider>
+    <TestProviders>
       <AudioContext.Provider value={audioContext}>
         {component}
       </AudioContext.Provider>
-    </PlayerStoreProvider>,
+    </TestProviders>,
   );
 }

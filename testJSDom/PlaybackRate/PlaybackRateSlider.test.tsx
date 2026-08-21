@@ -22,6 +22,17 @@ import { render, screen } from "@testing-library/react";
 import { PlaybackRateSlider } from "../../src/PlaybackRate/PlaybackRateSlider";
 import { SliderContextType } from "../../src/Slider/SliderContext";
 import { createSliderContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store and the static config, which any component reaching
+ * `useHandleMediaKeys` needs: `customKeyboardShortcuts` comes from
+ * `PlayerConfigContext` now, and a missing provider throws by design.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 const mockContextValue: SliderContextType = createSliderContext({
   sliderStart: 10,
@@ -39,7 +50,7 @@ describe("PlaybackRateSlider", () => {
   });
 
   it("should pass custom props to provider", () => {
-    render(
+    renderInPlayer(
       <PlaybackRateSlider maxValue={8} minValue={1} step={0.5}>
         <div>Test</div>
       </PlaybackRateSlider>,
@@ -56,7 +67,7 @@ describe("PlaybackRateSlider", () => {
   });
 
   it("should apply custom styles", () => {
-    render(
+    renderInPlayer(
       <PlaybackRateSlider
         data-testid="slider"
         style={{ backgroundColor: "red", margin: "10px" }}
@@ -76,7 +87,9 @@ describe("PlaybackRateSlider", () => {
 
   describe("PlaybackRateSlider.Background", () => {
     it("should render with progress styles", () => {
-      render(<PlaybackRateSlider.Background data-testid="background" />);
+      renderInPlayer(
+        <PlaybackRateSlider.Background data-testid="background" />,
+      );
       const background = screen.getByTestId("background");
       expect(background).toBeInTheDocument();
       expect(background).toHaveStyle("grid-column: 1 / 1");
@@ -86,7 +99,7 @@ describe("PlaybackRateSlider", () => {
     });
 
     it("should merge custom styles with default styles", () => {
-      render(
+      renderInPlayer(
         <PlaybackRateSlider.Background
           data-testid="background"
           style={{ backgroundColor: "blue" }}
@@ -114,7 +127,7 @@ describe("PlaybackRateSlider", () => {
 
       vi.spyOn(React, "useContext").mockReturnValue(testContextValue);
 
-      render(
+      renderInPlayer(
         <PlaybackRateSlider.Set data-testid="set-button">
           1.5x
         </PlaybackRateSlider.Set>,
@@ -129,7 +142,7 @@ describe("PlaybackRateSlider", () => {
     it("should render and pass context to DragButton", () => {
       vi.spyOn(React, "useContext").mockReturnValue(mockContextValue);
 
-      render(<PlaybackRateSlider.Drag data-testid="drag-button" />);
+      renderInPlayer(<PlaybackRateSlider.Drag data-testid="drag-button" />);
 
       expect(screen.getByTestId("drag-button")).toBeInTheDocument();
       expect(screen.getByTestId("drag-button")).toHaveAttribute(
@@ -155,7 +168,7 @@ describe("PlaybackRateSlider", () => {
 
     vi.spyOn(React, "useContext").mockReturnValue(mockContext);
 
-    render(
+    renderInPlayer(
       <PlaybackRateSlider data-testid="slider">
         <PlaybackRateSlider.Background data-testid="background" />
         <PlaybackRateSlider.Set data-testid="set">1.0x</PlaybackRateSlider.Set>

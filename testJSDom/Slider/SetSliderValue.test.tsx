@@ -3,6 +3,17 @@ import { render, getByRole, fireEvent } from "@testing-library/react";
 import { AudioContext } from "../../src/AudioElement/AudioContext";
 import { SetSliderValue } from "../../src/Slider/SetSliderValue";
 import { createSliderContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store and the static config, which any component reaching
+ * `useHandleMediaKeys` needs: `customKeyboardShortcuts` comes from
+ * `PlayerConfigContext` now, and a missing provider throws by design.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 describe("SetSliderValue", () => {
   it("renders with correct ARIA attributes", () => {
@@ -13,7 +24,7 @@ describe("SetSliderValue", () => {
       maxValue: 1,
     });
 
-    const { container } = render(
+    const { container } = renderInPlayer(
       <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
     );
     const button = getByRole(container, "slider");
@@ -28,7 +39,7 @@ describe("SetSliderValue", () => {
   it("merges custom styles with calculated styles", () => {
     const context = createSliderContext();
     const customStyle = { backgroundColor: "red" };
-    const { container } = render(
+    const { container } = renderInPlayer(
       <SetSliderValue sliderContext={context} style={customStyle}>
         Test
       </SetSliderValue>,
@@ -41,7 +52,7 @@ describe("SetSliderValue", () => {
 
   it("passes through additional props", () => {
     const context = createSliderContext();
-    const { container } = render(
+    const { container } = renderInPlayer(
       <SetSliderValue
         sliderContext={context}
         data-testid="slider"
@@ -60,7 +71,7 @@ describe("SetSliderValue", () => {
     const handleSliderAction = vi.fn();
     const context = createSliderContext({ handleSliderAction });
 
-    const { container } = render(
+    const { container } = renderInPlayer(
       <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
     );
     const button = getByRole(container, "slider");
@@ -86,7 +97,7 @@ describe("SetSliderValue", () => {
     };
     const context = createSliderContext({ component: "timeline" });
 
-    const { container } = render(
+    const { container } = renderInPlayer(
       <AudioContext.Provider value={audioContext}>
         <SetSliderValue sliderContext={context}>Test</SetSliderValue>
       </AudioContext.Provider>,
