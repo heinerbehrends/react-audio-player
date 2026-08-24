@@ -29,13 +29,8 @@ export const AudioElement = memo(function AudioElement({
   const handleVolumeChange = useHandleVolumeChange();
   const handlePlaybackRateChange = useHandlePlaybackRateChange();
 
-  const {
-    handleEnded,
-    handleError,
-    handleLoadedMetadata,
-    handlePlayPause,
-    handleDurationChange,
-  } = usePlayerCallbacks();
+  const { handleEnded, handleLoadedMetadata, handleDurationChange } =
+    usePlayerCallbacks();
 
   // `AudioElement` renders the `<audio>` tag, so it is the only component that
   // can hand the element to the store without a setter travelling down — and a
@@ -80,9 +75,6 @@ export const AudioElement = memo(function AudioElement({
       onEnded={() =>
         handleEnded(timelineCallbackRef?.current?.handleTimelineAction)
       }
-      onError={handleError}
-      onPause={handlePlayPause}
-      onPlay={handlePlayPause}
       onLoadedMetadata={() => {
         handleLoadedMetadata(
           timelineCallbackRef?.current?.handleTimelineAction,

@@ -80,7 +80,9 @@ describe("audioElementHooks", () => {
   });
 
   describe("useHandleVolumeChange", () => {
-    it("should update volume state to high when volume >= 0.5", () => {
+    // What survives: the slider's UI value. The volume *state* — including the
+    // near-zero mute rule — is `useVolumeState`'s, and is covered there.
+    it("pushes the element's volume to the volume slider", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: { ...mockAudioElement, volume: 0.8 } },
       });
@@ -90,11 +92,6 @@ describe("audioElementHooks", () => {
 
       result.current();
 
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_VOLUME_STATE",
-        volumeState: "high",
-      });
-
       expect(
         audioContext.volumeCallbackRef.current.handleVolumeAction,
       ).toHaveBeenCalledWith({
@@ -102,69 +99,34 @@ describe("audioElementHooks", () => {
         value: 0.8,
         component: "volume",
       });
+      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
 
-    it("should update volume state to low when 0 < volume < 0.5", () => {
+    it("pushes a near-zero volume unchanged, rather than snapping it to 0", () => {
       const audioContext = createAudioContext({
-        audioElementRef: { current: { ...mockAudioElement, volume: 0.3 } },
+        audioElementRef: { current: { ...mockAudioElement, volume: 0.001 } },
       });
       const playerContext = createPlayerContext();
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => useHandleVolumeChange(), { wrapper });
 
       result.current();
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_VOLUME_STATE",
-        volumeState: "low",
-      });
 
       expect(
         audioContext.volumeCallbackRef.current.handleVolumeAction,
       ).toHaveBeenCalledWith({
         type: "UPDATE_UI_VALUE",
-        value: 0.3,
+        value: 0.001,
         component: "volume",
-      });
-    });
-
-    it("should update volume state to muted when volume is close to 0", () => {
-      const audioContext = createAudioContext({
-        audioElementRef: { current: { ...mockAudioElement, volume: 0.001 } },
-      });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-      const { result } = renderHook(() => useHandleVolumeChange(), { wrapper });
-
-      result.current();
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_VOLUME_STATE",
-        volumeState: "muted",
-      });
-    });
-
-    it("should set UI volume to 0 when player is muted", () => {
-      const audioContext = createAudioContext({
-        audioElementRef: { current: { ...mockAudioElement, volume: 0.001 } },
-      });
-      const playerContext = createPlayerContext({
-        overrides: { isMuted: true },
-      });
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-      const { result } = renderHook(() => useHandleVolumeChange(), { wrapper });
-
-      result.current();
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_VOLUME_STATE",
-        volumeState: "muted",
       });
     });
   });
 
   describe("usePlayerCallbacks", () => {
-    it("should have handleEnded callback that dispatches AUDIO_FILE_ENDED", () => {
+    // Three members, down from five: `handleError` and `handlePlayPause` were
+    // pure `PlayerContext` dispatches, and the sync layer already projects
+    // `error` and `paused` off the element.
+    it("exposes exactly the three surviving members", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
@@ -172,16 +134,15 @@ describe("audioElementHooks", () => {
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      result.current.handleEnded(
-        audioContext.timelineCallbackRef.current.handleTimelineAction,
-      );
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "AUDIO_FILE_ENDED",
-      });
+      expect(Object.keys(result.current).sort()).toEqual([
+        "handleDurationChange",
+        "handleEnded",
+        "handleLoadedMetadata",
+      ]);
     });
 
-    it("should have handleError callback that dispatches AUDIO_FILE_ERROR", () => {
+    it("returns the timeline thumb to the start on handleEnded", () => {
+      const mockTimelineAction = vi.fn();
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
@@ -189,14 +150,17 @@ describe("audioElementHooks", () => {
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      result.current.handleError();
+      result.current.handleEnded(mockTimelineAction);
 
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "AUDIO_FILE_ERROR",
+      expect(mockTimelineAction).toHaveBeenCalledWith({
+        type: "UPDATE_UI_VALUE",
+        value: 0,
+        component: "timeline",
       });
+      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
 
-    it("should have handleLoadedMetadata callback that dispatches AUDIO_FILE_LOADED and sets max value", () => {
+    it("sets the timeline max value on handleLoadedMetadata", () => {
       const mockTimelineAction = vi.fn();
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
@@ -207,14 +171,11 @@ describe("audioElementHooks", () => {
 
       result.current.handleLoadedMetadata(mockTimelineAction);
 
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "AUDIO_FILE_LOADED",
-      });
-
       expect(mockTimelineAction).toHaveBeenCalledWith({
         type: "SET_MAX_VALUE",
         maxValue: 100,
       });
+      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
 
     it("should handle null handleTimelineAction in handleLoadedMetadata", () => {
@@ -225,11 +186,7 @@ describe("audioElementHooks", () => {
       const wrapper = createContextWrapper({ audioContext, playerContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
-      result.current.handleLoadedMetadata(null);
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "AUDIO_FILE_LOADED",
-      });
+      expect(() => result.current.handleLoadedMetadata(null)).not.toThrow();
     });
 
     it("should handle null audio element in handleLoadedMetadata", () => {
@@ -249,24 +206,7 @@ describe("audioElementHooks", () => {
       });
     });
 
-    it("should dispatch SET_DURATION action with audio duration when metadata is loaded", () => {
-      const mockTimelineAction = vi.fn();
-      const audioContext = createAudioContext({
-        audioElementRef: { current: { ...mockAudioElement, duration: 150.5 } },
-      });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-      const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
-
-      result.current.handleLoadedMetadata(mockTimelineAction);
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_DURATION",
-        duration: 150.5,
-      });
-    });
-
-    it("should dispatch SET_DURATION action when duration changes", () => {
+    it("sets the timeline max value on handleDurationChange", () => {
       const mockTimelineAction = vi.fn();
       const audioContext = createAudioContext({
         audioElementRef: { current: { ...mockAudioElement, duration: 180.75 } },
@@ -277,26 +217,11 @@ describe("audioElementHooks", () => {
 
       result.current.handleDurationChange(mockTimelineAction);
 
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "SET_DURATION",
-        duration: 180.75,
+      expect(mockTimelineAction).toHaveBeenCalledWith({
+        type: "SET_MAX_VALUE",
+        maxValue: 180.75,
       });
-    });
-
-    it("should have handlePause callback that dispatches PAUSE when currentTime is 0", () => {
-      const audioContext = createAudioContext({
-        audioElementRef: { current: { ...mockAudioElement, currentTime: 0 } },
-      });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
-
-      const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
-
-      result.current.handlePlayPause();
-
-      expect(playerContext.handlePlayerAction).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
-      });
+      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
   });
 
