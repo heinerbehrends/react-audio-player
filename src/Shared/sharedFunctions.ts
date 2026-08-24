@@ -134,9 +134,28 @@ function isTouchEvent(
   return "touches" in event;
 }
 
+/**
+ * `M:SS` below an hour, `H:MM:SS` at or above one — `"61:01"` is wrong for
+ * hour-plus content, which is ordinary for an audio player.
+ *
+ * The clamp is a rendering fix, not a live-stream feature: `duration` is `NaN`
+ * before metadata and `Infinity` for a stream, and `duration - currentSecond`
+ * can go negative, so this used to emit `"NaN:NaN"`, `"Infinity:NaN"` and
+ * `"-1:-5"`. A distinct `"--:--"` token for unknown duration is deliberately not
+ * here: it only means something beside a timeline that knows it is unbounded, so
+ * it ships with live-stream support or not at all.
+ */
 export function formatTime(time: number) {
-  const roundedTime = Math.round(time);
-  const minutes = Math.floor(roundedTime / 60);
+  const clamped = Number.isFinite(time) && time > 0 ? time : 0;
+  const roundedTime = Math.round(clamped);
   const seconds = roundedTime % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  const totalMinutes = Math.floor(roundedTime / 60);
+  const paddedSeconds = seconds.toString().padStart(2, "0");
+
+  if (totalMinutes < 60) {
+    return `${totalMinutes}:${paddedSeconds}`;
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}:${minutes.toString().padStart(2, "0")}:${paddedSeconds}`;
 }

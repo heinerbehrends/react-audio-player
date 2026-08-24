@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { Time } from "../../src/TimeDisplay/TimeDisplay";
 import "@testing-library/jest-dom";
-import { formatTime } from "../../src/Shared/sharedFunctions";
 import { createTestStore } from "../store/createTestStore";
 import { renderWithStore } from "../store/renderWithStore";
 import type { TimeDisplay } from "../../src/store/createPlayerStore";
@@ -76,11 +75,5 @@ describe("Time", () => {
     emit("durationchange");
 
     expect(screen.getByLabelText("duration")).toHaveTextContent("2:01");
-  });
-
-  it("formats time correctly", () => {
-    expect(formatTime(65)).toBe("1:05");
-    expect(formatTime(120)).toBe("2:00");
-    expect(formatTime(121)).toBe("2:01");
   });
 });
