@@ -312,6 +312,34 @@ last audible volume covers every path — drag, click, keyboard, or a consumer's
 `CHANGE_VALUE` binding. **Behaviour change:** unmute after a drag restores the last audible
 volume, not specifically the pre-drag volume. Land it as a named commit.
 
+**A volume drag pins the memory, so unmute restores the pre-drag volume.** As landed in
+Phase 2, `lastAudibleVolume` updates on every `volumechange`, and a drag emits those
+continuously — so a drag to zero erodes the memory down to the last non-zero sample the drag
+passed through. Measured: unmuting after a drag that started at 0.8 restored 0.04. Audible,
+but not what the user had. The values a drag *passes through* are not settings anyone chose;
+only the value it starts from and the value it ends on are. So the drag pins the memory:
+
+- `DRAG_START` on the volume slider writes `lastAudibleVolume` from `el.volume` and takes a
+  pin.
+- While the pin is held, the `volumechange` row skips its `lastAudibleVolume` write. Every
+  other atom that row writes is unaffected — `volume` and `muted` keep projecting at drag
+  rate, because the thumb needs them.
+- `DRAG_END` releases it, and so does a pointer cancel. `useSlider` owns that, because it
+  owns drag state; releasing on `DRAG_END` alone would leave the memory frozen after a
+  cancelled drag.
+
+The pin is a closure variable in `createPlayerStore`, not an atom: nothing subscribes to it,
+and an atom would hand out a `set` handle the projection invariant then has to forbid — the
+same argument that keeps `element` out of the atoms. It **is** an exception to "no row reads
+anything but the element", and it is the only one, so it goes in the signature rather than in
+a closure: `syncFromElement(el, atoms, { isVolumePinned })`. A reader of the sync table can
+then see that exactly one row has a condition, and where the condition comes from.
+
+Ordering note, load-bearing: the volume slider sends `UNMUTE` *before* `DRAG_START` — today's
+`useHandleDragStart` already does, and `useSlider` has to keep it. Grabbing the thumb of a
+muted, silent player unmutes it to the remembered volume first, so the value the pin captures
+is an audible one rather than 0.
+
 *Sequencing.* This is the one place the write path changes: those three cases need store
 state, so `handleSideEffect` grows a store accessor. It cannot land in Phase 0, because the
 store does not exist until Phase 1, and fixing the dead-end twice — `dataset` in Phase 0,
@@ -671,7 +699,7 @@ Three fixture changes first, all small:
 | `Volume/volume-click` | click track at 25% → `el.volume ≈ 0.25` | **landed in Phase 2**, in `Volume/mute`, as the "sets the volume without muting" case |
 | | vertical (`?orientation=vertical`): drag up raises volume | pins the inversion end-to-end |
 | `Volume/mute` | mute → `aria-pressed="true"`, `el.muted` | **landed in Phase 2** |
-| | drag to zero, mute, unmute → volume is audible again | **landed in Phase 2**, on `lastAudibleVolume` rather than the `dataset` path. Asserts "audible", not the pre-drag value |
+| | drag to zero, mute, unmute → volume is audible again | **landed in Phase 2**, on `lastAudibleVolume` rather than the `dataset` path. Asserts "audible" only; Phase 3's pin commit flips it to the pre-drag value |
 | `Volume/volume-state` | volume 0.4 → `MuteButton.LowVolume` renders | the 0.5 threshold, untested at every layer today and a `computed` after Phase 2 |
 | | volume 0.6 → `MuteButton.HighVolume` renders | |
 | | muted → `MuteButton.Muted` renders, whatever the volume | |
@@ -959,13 +987,13 @@ Eight commits, in the order above. 373 jsdom tests and 22 E2E tests green;
   stays where it is, which is what Phase 3's volume mode does anyway once the slider reads
   the `volume` atom directly.
 
-One more thing worth knowing before Phase 3 touches the volume slider: **a drag to zero
-erodes `lastAudibleVolume`.** Every `volumechange` the drag passes through is a new "last
-audible volume", so unmuting after a drag restores the last non-zero sample — measured at
-0.04 from a drag that started at 0.8 — not the pre-drag volume. That is the named behaviour
-change working as specified, and the E2E row asserts only "audible again". If the pre-drag
-volume turns out to matter, the fix belongs in Phase 3's volume mode, which is the only place
-that knows a drag is in progress; the sync layer must not.
+One regression this phase leaves for Phase 3 to close: **a drag to zero erodes
+`lastAudibleVolume`.** Every `volumechange` the drag passes through is a new "last audible
+volume", so unmuting after a drag restores the last non-zero sample — measured at 0.04 from a
+drag that started at 0.8 — where the `dataset` stash it replaced restored the pre-drag
+volume. The E2E row asserts only "audible again" until then. Phase 3 fixes it with the
+volume-drag pin, in `useSlider`, which is the first thing that knows a drag is in progress;
+the sync layer still must not.
 
 ### Phase 3 — Retire the callback bus, unify the sliders
 
@@ -983,14 +1011,23 @@ The big one. These die together — do not try to split them.
   attributes. `Timeline`, `Volume` and `PlaybackRateSlider` become thin configuration over
   it.
 - Separate commits, in this order: `useSlider` and its tests → migrate the three wrappers →
-  `offsetFromMiddle` fix → vertical inversion from `orientation` → per-mode arrow keys →
-  `onEnded` policy handler.
+  `offsetFromMiddle` fix → vertical inversion from `orientation` → per-mode arrow keys → the
+  volume-drag pin → `onEnded` policy handler.
 - **Per-mode arrow keys.** All three thumbs currently share the global key map, so
   Left/Right seeks and Up/Down changes volume on *every* slider, while the rate slider
   responds only to `<` `>` `[` `]` — its `role="slider"` ignores arrow keys entirely. Each
   mode gets arrow keys that adjust its own value; the global shortcuts stay available
   elsewhere. This is the other half of the Phase 0 accessibility fix, and it needs the mode
   table to exist.
+- **The volume-drag pin.** `lastAudibleVolume` stops tracking the values a drag passes
+  through, so unmuting after a drag to zero restores the pre-drag volume rather than the last
+  non-zero sample — see *A volume drag pins the memory* in section 3 for the mechanism. This
+  is a Phase 2 regression against the `dataset` stash it replaced, not a new feature: the
+  stash captured the pre-drag volume and the atom did not. It lands here rather than in
+  Phase 2 because the pin has to be released on drag end *and* on pointer cancel, and
+  `useSlider` is the first thing that owns both. Like the `offsetFromMiddle` fix, it flips an
+  E2E assertion — `Volume/mute`'s last row goes from "audible again" to the pre-drag value —
+  so the change cannot pass silently.
 - **`onEnded`** becomes `send({ type: "SET_TIME_TO_START" })` on the `<audio>` element,
   replacing `handleEnded`'s `UPDATE_UI_VALUE value: 0` push. Visually identical, and element
   and UI stop disagreeing.
