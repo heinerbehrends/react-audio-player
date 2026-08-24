@@ -1,13 +1,18 @@
 # Refactor Plan: External Store Architecture
 
-Status: Phases 0, 1 and 2 landed. `PlayerContext`, `PlayerProvider` and `playerReducer` are
-gone; the store, the sync layer, `PlayerConfigContext` and `store/derived.ts` are in place,
-and every player component reads atoms and dispatches through `store.send`. 405 jsdom tests
-and 50 E2E tests, up from 386 and 19.
+Status: Phases 0 through 3 landed, and most of Phase 4 with them. The callback bus, all three
+slider reducer stacks, `AudioContext`, `PlayerContext` and their providers are gone. Two
+contexts remain — the player store and one `SliderContext` per slider — and the `<audio>`
+element carries one handler, which is policy rather than projection.
 
-Phase 3 is next, and its safety net now exists. One Phase 0 row is deliberately still open:
-`Timeline/ended` asserts intended rather than current behaviour, so it lands with the Phase 3
-`onEnded` commit. Bundle figures measured 2026-08-21 against commit `b4df69c`.
+346 jsdom tests and 51 E2E tests, up from 386 and 19 at the start; the jsdom count fell
+because ~16 files were deleted with their subjects, and what replaced them tests behaviour
+against a constructed store rather than reducers. `src/` is 2,976 lines across 34 files,
+down from 3,294 across 57 — and 271 of those lines are the demo app, which grew.
+
+Phase 5 (strip the memo layer) and Phase 6 (measure and reconcile) remain, plus one Phase 4
+item: the CSS transition on the progress element. Bundle figures below were measured
+2026-08-21 against commit `b4df69c` and are stale.
 
 ## 1. Why
 
@@ -1007,7 +1012,7 @@ volume. The E2E row asserts only "audible again" until then. Phase 3 fixes it wi
 volume-drag pin, in `useSlider`, which is the first thing that knows a drag is in progress;
 the sync layer still must not.
 
-### Phase 3 — Retire the callback bus, unify the sliders
+### Phase 3 — Retire the callback bus, unify the sliders — **landed**
 
 The big one. These die together — do not try to split them.
 
@@ -1050,7 +1055,60 @@ The big one. These die together — do not try to split them.
 
 *Verify:* the whole E2E suite, including everything Phase 0 added.
 
-### Phase 4 — `TimeDisplay` and the aria surface
+#### What landed, in four commits rather than seven
+
+`useSlider` and the mode table → migrate the wrappers and delete the bus → vertical
+inversion → the volume-drag pin. Three of the planned commits collapsed into the second,
+for one reason each:
+
+- **`offsetFromMiddle` and the per-mode arrow keys are intrinsic to the hook.** There is no
+  version of `useSlider` that reproduces the old per-mode inconsistency without deliberately
+  reintroducing it, so they could not be staged after the migration. Both still flipped their
+  E2E assertions in that commit, which is what the assertions were for.
+- **`onEnded` had to land with the bus.** The push it replaces lives in `audioElementHooks`,
+  which the migration deletes; staging it later would have left three commits where a finished
+  track leaves the thumb at the end.
+
+The vertical inversion and the pin stayed separate, and each flipped an assertion written
+before it.
+
+#### Four deviations
+
+- **Commits carry a value, not geometry.** `useSlider` sends `CHANGE_VALUE`, so the value is
+  computed once where the geometry lives, and the volume mute coupling is one rule in
+  `handleSideEffect` rather than one per gesture — click, drag and release used to reach it
+  three different ways, and after Phase 2 the click path fought itself: `SET_SLIDER_VALUE`
+  wrote `volume: 0` and the `UNMUTE` that followed restored the old volume, undoing the
+  click. **Consequence:** `SET_SLIDER_VALUE`, `DRAG` and `DRAG_END` are no longer dispatched
+  anywhere in `src/`. They still work and are still tested, and they are still in the
+  published `SideEffectAction` union — a decision for Phase 6, since a `SliderData`-carrying
+  action is not something a `customKeyboardShortcuts` map can sensibly construct.
+- **The pin suppresses; it never writes.** The plan had `DRAG_START` write
+  `lastAudibleVolume` from `el.volume` and then hold. Writing turned out to be unnecessary —
+  the pre-grab volume is already in the memory, because the last `volumechange` put it there
+  and a grab unmutes before it holds — and skipping the write keeps the projection invariant
+  literally true rather than nearly true.
+- **Most of Phase 4 came with Phase 3.** `useTimeDisplay` read the element through
+  `AudioContext`, which this phase deletes, so it had to move to the store now: `elapsed` is
+  `currentSecond`, `remaining` is `duration - currentSecond` derived in render, and the 1 Hz
+  `setInterval` racing a 4 Hz event source is gone. The timeline's `aria-valuenow` is
+  quantized to whole seconds in the same stroke, since `useSlider`'s two-value contract makes
+  it free. What is left of Phase 4 is the CSS transition on the progress element.
+- **`getClientXY` survived** rather than being duplicated inside `useSlider`: its event type
+  widened to anything carrying a pointer position, React-synthetic or native, so one helper
+  serves the handlers and the window listeners.
+
+#### Two things that cost a debugging round
+
+- **jsdom has no `PointerEvent`.** `fireEvent.pointerDown(element, { clientX })` silently
+  drops the coordinates, and a slider driven that way computes `NaN`. `MouseEvent` carries
+  them and both React's root listener and a window listener key off the type string, so
+  `pointerEventAt` in `testUtils` builds one.
+- **jsdom gives every element a zero-sized rect**, so `stubElementRects` patches
+  `Element.prototype.getBoundingClientRect` for the duration of a test. The measurement is
+  the one thing about a slider a jsdom test cannot observe for real.
+
+### Phase 4 — `TimeDisplay` and the aria surface — **landed with Phase 3, except the CSS transition**
 
 Drop the 1-second `setInterval`. It was a 1 Hz clock racing a 4 Hz event source, and
 `currentSecond` *is* the 1 Hz clock, so it cannot drift. `Time.Elapsed`, `Time.Remaining`
