@@ -1,13 +1,13 @@
 # Refactor Plan: External Store Architecture
 
-Status: Phases 1 and 2 landed. `PlayerContext`, `PlayerProvider` and `playerReducer` are
+Status: Phases 0, 1 and 2 landed. `PlayerContext`, `PlayerProvider` and `playerReducer` are
 gone; the store, the sync layer, `PlayerConfigContext` and `store/derived.ts` are in place,
-and every player component reads atoms and dispatches through `store.send`. Phase 3 is next.
+and every player component reads atoms and dispatches through `store.send`. 405 jsdom tests
+and 50 E2E tests, up from 386 and 19.
 
-Phase 0 is *not* finished, and what remains of it is listed under its own heading: the two
-known bugs, the `formatTime` work, the `calculateStyle` inversion tests, and most of the E2E
-rows. Two of those rows landed early, with the Phase 2 code they pin. Bundle figures measured
-2026-08-21 against commit `b4df69c`.
+Phase 3 is next, and its safety net now exists. One Phase 0 row is deliberately still open:
+`Timeline/ended` asserts intended rather than current behaviour, so it lands with the Phase 3
+`onEnded` commit. Bundle figures measured 2026-08-21 against commit `b4df69c`.
 
 ## 1. Why
 
@@ -488,16 +488,15 @@ instantiated once per slider.
 
 Each phase leaves the library working and is reviewable on its own.
 
-### Phase 0 — Public surface, known bugs, and coverage — **partly landed**
+### Phase 0 — Public surface, known bugs, and coverage — **landed**
 
 Lands first: it changes the public surface, and it is easier to refactor against the
 surface you intend to keep. Nothing here depends on the store.
 
-The entry-point, public-surface and accessibility work is done. Still outstanding: the two
-known bugs, the `formatTime` H:MM:SS change and its clamp, the four `calculateStyle`
-inversion assertions, the `?src=` and `?players=2` URL params, and every E2E row below except
-the three noted as landed. Phase 3's safety net is the part still missing, so it is the thing
-to finish before Phase 3 starts.
+It did not all land first in the end: the entry points, public surface and accessibility fix
+went in before Phase 1, and the bugs, the test investment and the E2E net went in after
+Phase 2, once it was clear Phase 3 could not safely start without them. The one row still
+open is `Timeline/ended`, which asserts intended behaviour and belongs to a Phase 3 commit.
 
 **Entry points**
 
@@ -571,12 +570,12 @@ node.
 
 **Known bugs** — all falsy-zero or precedence slips, all cheap.
 
-- [ ] `TimeDisplay/useTimeDisplay.ts:19` — `duration ?? 0 - currentTime` parses as
+- [x] `TimeDisplay/useTimeDisplay.ts:19` — `duration ?? 0 - currentTime` parses as
       `duration ?? (0 - currentTime)`, so `remaining` is just the duration, constant.
       `<Time.Remaining>` renders the negated track length and never counts down. Present at
       both call sites; no test asserts the value; `<Time.Remaining />` is commented out in
       `App.tsx`.
-- [ ] `AudioElement/handleSideEffect.ts:139` — `action.step || 0.25`, so
+- [x] `AudioElement/handleSideEffect.ts:139` — `action.step || 0.25`, so
       `<PlaybackRateSlider step={0}>` snaps to 0.25 on drag while click-to-set stays
       continuous. Use `??`.
 
@@ -661,8 +660,8 @@ the fixed point of `x → 1 - x`, so inverted and non-inverted agree exactly. "h
 vertical volume component" asserts nothing about the inversion, and Phase 3's switch to
 deriving from `orientation` alone would flip vertical volume with the suite still green.
 
-- [ ] vertical **volume** progress at `value: 0.25` and `0.8`
-- [ ] vertical **non-volume** progress at `value: 0.25` and `0.8`
+- [x] vertical **volume** progress at `value: 0.25` and `0.8`
+- [x] vertical **non-volume** progress at `value: 0.25` and `0.8`
 
 Four assertions, and they are the only thing standing between Phase 3 and a silent
 regression.
@@ -686,10 +685,12 @@ Three fixture changes first, all small:
 - [x] Extend `getAudioState` in `testE2E/test-utils.ts` with `volume`, `muted` and
       `playbackRate`; add the volume, rate and mute labels to the `labels` map. *(landed with
       Phase 2, which needed it for `Volume/mute`.)*
-- [ ] Add a `?src=` URL param to `App.tsx`. It already reads `?orientation=` via
+- [x] Add a `?src=` URL param to `App.tsx`. It already reads `?orientation=` via
       `useUrlParams`, so this is two lines, and it lets one spec swap bad → good in a single
       page session — which is what tests *recovery* rather than just the error state.
-- [ ] Add a `?players=2` URL param to `App.tsx`, rendering two independent `<AudioPlayer>`s.
+- [x] Add a `?players=2` URL param to `App.tsx`, rendering two independent `<AudioPlayer>`s.
+      The player body moved into a `Player` component to make that possible, and the volume
+      and rate thumbs gained test ids alongside the timeline's.
 
 | Spec | Test | Notes |
 |---|---|---|
@@ -721,6 +722,17 @@ Three fixture changes first, all small:
 
 Play/pause, timeline drag, click-to-seek and the seek keys are already covered by the
 existing 15 tests, so the basic-operations requirement is met once the rows above land.
+
+**Landed: 19 E2E tests to 50.** Every row above is in except `Timeline/ended`. Three notes
+from writing them, each of which cost a debugging round:
+
+- The demo's debug panel prints `Muted: false` and a volume state of its own, so an unscoped
+  `getByText("Muted")` matches it. `volume-state` scopes its queries to the mute button.
+- `Time.Toggle` is labelled "Toggle elapsed and remaining time", so `getByLabel("elapsed")`
+  matches the button as well as the `<time>` element. `time-display` passes `exact: true`.
+- Chromium drops clicks within ~1 px of an element's start, so the exact left edge of a
+  slider track is not reachable. That is why the click-to-zero volume case is pinned by
+  `handleSideEffect`'s unit tests rather than by an E2E row.
 
 **Deliberately not E2E: the loading state.** `useIsDisabled` gates six components on
 `playerState === "loading"`, but loading is transient and racy in a real browser. It belongs

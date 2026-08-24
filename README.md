@@ -66,21 +66,30 @@ The root component that provides context to all child components.
 ### Timeline Components
 
 - `<Timeline>` - Container for timeline components
-- `<Timeline.Seek>` - Clickable area for seeking
+- `<Timeline.Seek>` - Clickable area for seeking, and the element that carries the
+  slider semantics
 - `<Timeline.Progress>` - Visual progress indicator
+- `<Timeline.Background>` - Track behind the indicator
 - `<Timeline.Drag>` - Draggable control for seeking
 
 ### Playback Control Components
 
 - `<PlayButton>` - Toggle play/pause
+- `<PlayButton.Playing>` - Renders its children while playing
+- `<PlayButton.Paused>` - Renders its children while not playing
 - `<MuteButton>` - Toggle mute
+- `<MuteButton.Muted>` - Renders its children while muted
+- `<MuteButton.LowVolume>` - Renders its children below half volume
+- `<MuteButton.HighVolume>` - Renders its children at or above half volume
 - `<Seek amount={10}>` - Skip forward/backward by amount in seconds
 
 ### Volume Components
 
 - `<Volume orientation="horizontal|vertical">` - Volume control container
-- `<Volume.Set>` - Clickable area for volume adjustment
+- `<Volume.Set>` - Clickable area for volume adjustment, and the element that
+  carries the slider semantics
 - `<Volume.Progress>` - Visual volume level indicator
+- `<Volume.Background>` - Track behind the indicator
 - `<Volume.Drag>` - Draggable control for volume
 
 ### Time Display Components
@@ -92,15 +101,19 @@ The root component that provides context to all child components.
 
 ### Playback Rate Components
 
+- `<PlaybackRate>` - Container for the rate buttons
 - `<PlaybackRate.Display>` - Shows current playback rate
 - `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
+- `<PlaybackRate.Current rate={1.5}>` - Renders its children when that rate is
+  current
 - `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
 
 ### Playback Rate Slider
 
 - `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` - Container for a
   continuous or stepped playback rate slider
-- `<PlaybackRateSlider.Set>` - Clickable area for setting the rate
+- `<PlaybackRateSlider.Set>` - Clickable area for setting the rate, and the element
+  that carries the slider semantics
 - `<PlaybackRateSlider.Progress>` - Visual rate indicator
 - `<PlaybackRateSlider.Background>` - Track behind the indicator
 - `<PlaybackRateSlider.Drag>` - Draggable control for the rate
@@ -130,6 +143,10 @@ pnpm testE2E
 
 - Chrome, Firefox, Safari, Edge
 - React 18+ (requires `useSyncExternalStore`)
+
+Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer. Live
+streams are not supported: an unbounded duration reads as `0`, so gate any UI that
+needs a length on a duration greater than zero.
 
 ## License
 
