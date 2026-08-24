@@ -3,6 +3,16 @@ import { render, screen, act } from "@testing-library/react";
 import { TimelineProvider } from "../../src/Timeline/TimelineProvider";
 import { TimelineContext } from "../../src/Timeline/TimelineContext";
 import React from "react";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store, which `useHandleSideEffect` reads now that it is an alias for
+ * `store.send`.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 describe("TimelineProvider", () => {
   const TestComponent = () => {
@@ -28,7 +38,7 @@ describe("TimelineProvider", () => {
   };
 
   it("should provide initial state", () => {
-    render(
+    renderInPlayer(
       <TimelineProvider>
         <TestComponent />
       </TimelineProvider>,
@@ -39,7 +49,7 @@ describe("TimelineProvider", () => {
   });
 
   it("should handle slider actions", async () => {
-    render(
+    renderInPlayer(
       <TimelineProvider>
         <TestComponent />
       </TimelineProvider>,
@@ -54,7 +64,7 @@ describe("TimelineProvider", () => {
   });
 
   it("should memoize context value", () => {
-    const { rerender } = render(
+    const { rerender } = renderInPlayer(
       <TimelineProvider>
         <TestComponent />
       </TimelineProvider>,
@@ -62,9 +72,11 @@ describe("TimelineProvider", () => {
 
     const firstValue = screen.getByTestId("value").textContent;
     rerender(
-      <TimelineProvider>
-        <TestComponent />
-      </TimelineProvider>,
+      <TestProviders>
+        <TimelineProvider>
+          <TestComponent />
+        </TimelineProvider>
+      </TestProviders>,
     );
 
     const secondValue = screen.getByTestId("value").textContent;

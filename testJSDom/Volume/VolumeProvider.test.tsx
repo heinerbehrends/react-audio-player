@@ -3,6 +3,16 @@ import { render, screen, act } from "@testing-library/react";
 import { VolumeProvider } from "../../src/Volume/VolumeProvider";
 import { VolumeContext } from "../../src/Volume/VolumeContext";
 import React from "react";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store, which `useHandleSideEffect` reads now that it is an alias for
+ * `store.send`.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 describe("VolumeProvider", () => {
   const TestComponent = () => {
@@ -29,7 +39,7 @@ describe("VolumeProvider", () => {
   };
 
   it("should provide initial state", () => {
-    render(
+    renderInPlayer(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
       </VolumeProvider>,
@@ -41,7 +51,7 @@ describe("VolumeProvider", () => {
   });
 
   it("should handle slider actions", async () => {
-    render(
+    renderInPlayer(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
       </VolumeProvider>,
@@ -56,7 +66,7 @@ describe("VolumeProvider", () => {
   });
 
   it("should memoize context value", () => {
-    const { rerender } = render(
+    const { rerender } = renderInPlayer(
       <VolumeProvider orientation="horizontal">
         <TestComponent />
       </VolumeProvider>,
@@ -64,9 +74,11 @@ describe("VolumeProvider", () => {
 
     const firstValue = screen.getByTestId("value").textContent;
     rerender(
-      <VolumeProvider orientation="horizontal">
-        <TestComponent />
-      </VolumeProvider>,
+      <TestProviders>
+        <VolumeProvider orientation="horizontal">
+          <TestComponent />
+        </VolumeProvider>
+      </TestProviders>,
     );
 
     const secondValue = screen.getByTestId("value").textContent;
@@ -74,7 +86,7 @@ describe("VolumeProvider", () => {
   });
 
   it("should handle vertical orientation", () => {
-    render(
+    renderInPlayer(
       <VolumeProvider orientation="vertical">
         <TestComponent />
       </VolumeProvider>,

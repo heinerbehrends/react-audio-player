@@ -3,11 +3,23 @@ import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DragButton } from "../../src/Slider/DragButton";
 import { createSliderContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
+
+/**
+ * The store, which `useHandleSideEffect` reads now that it is an alias for
+ * `store.send`.
+ */
+const renderInPlayer = (
+  ui: React.ReactElement,
+  options?: Parameters<typeof render>[1],
+) => render(<TestProviders>{ui}</TestProviders>, options);
 
 describe("DragButton", () => {
   it("is hidden from assistive technology and out of the tab order", () => {
     const context = createSliderContext();
-    const { container } = render(<DragButton sliderContext={context} />);
+    const { container } = renderInPlayer(
+      <DragButton sliderContext={context} />,
+    );
     const button = container.firstChild as HTMLElement;
 
     expect(button).toHaveAttribute("aria-hidden", "true");
@@ -18,7 +30,9 @@ describe("DragButton", () => {
 
   it("applies correct styles", () => {
     const context = createSliderContext();
-    const { container } = render(<DragButton sliderContext={context} />);
+    const { container } = renderInPlayer(
+      <DragButton sliderContext={context} />,
+    );
     const button = container.firstChild as HTMLElement;
 
     expect(button.style.position).toBe("absolute");
@@ -30,7 +44,9 @@ describe("DragButton", () => {
 
   it("handles pointer down event", async () => {
     const context = createSliderContext();
-    const { container } = render(<DragButton sliderContext={context} />);
+    const { container } = renderInPlayer(
+      <DragButton sliderContext={context} />,
+    );
     const button = container.firstChild as HTMLElement;
 
     await userEvent.pointer({
@@ -49,7 +65,7 @@ describe("DragButton", () => {
   it("merges custom styles with calculated styles", () => {
     const context = createSliderContext();
     const customStyle = { backgroundColor: "red" };
-    const { container } = render(
+    const { container } = renderInPlayer(
       <DragButton sliderContext={context} style={customStyle} />,
     );
     const button = container.firstChild as HTMLElement;
@@ -60,7 +76,7 @@ describe("DragButton", () => {
 
   it("passes through additional props", () => {
     const context = createSliderContext();
-    const { container } = render(
+    const { container } = renderInPlayer(
       <DragButton
         sliderContext={context}
         data-testid="drag-button"

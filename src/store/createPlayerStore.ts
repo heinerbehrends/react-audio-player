@@ -60,7 +60,10 @@ export function createPlayerStore(): PlayerStore {
     };
   };
 
-  const send = (action: SideEffectAction) => handleSideEffect(action, element);
+  const send = (action: SideEffectAction) =>
+    handleSideEffect(action, element, {
+      lastAudibleVolume: atoms.lastAudibleVolume.get(),
+    });
 
   return {
     currentTime: readable(atoms.currentTime),

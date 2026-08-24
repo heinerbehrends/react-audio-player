@@ -1,6 +1,23 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { handleSideEffect } from "../../src/AudioElement/handleSideEffect";
+import {
+  handleSideEffect as handleSideEffectWithContext,
+  type SideEffectContext,
+} from "../../src/AudioElement/handleSideEffect";
+import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions";
 import { createMediaElementFake } from "../store/mediaElementFake";
+
+/**
+ * The write path takes a store snapshot now — a value, not an accessor, so this
+ * suite gains an argument instead of a mock. Only `TOGGLE_MUTE` and `UNMUTE`
+ * read it, so every other case leaves it at the default.
+ */
+const defaultContext: SideEffectContext = { lastAudibleVolume: 1 };
+
+const handleSideEffect = (
+  action: SideEffectAction,
+  audioElement: HTMLAudioElement | null,
+  context: SideEffectContext = defaultContext,
+) => handleSideEffectWithContext(action, audioElement, context);
 
 const defaultSliderState = {
   component: "timeline" as const,
@@ -52,28 +69,57 @@ describe("handleSideEffect", () => {
   });
 
   it("should handle TOGGLE_MUTE action", () => {
-    handleSideEffect(
-      {
-        type: "TOGGLE_MUTE",
-      },
-      audioElement,
-    );
+    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
     expect(audioElement.muted).toBe(true);
 
-    handleSideEffect(
-      {
-        type: "TOGGLE_MUTE",
-      },
-      audioElement,
-    );
+    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
     expect(audioElement.muted).toBe(false);
     expect(audioElement.volume).toBe(1);
+  });
+
+  it("leaves an audible volume alone when unmuting", () => {
+    audioElement.muted = true;
+    audioElement.volume = 0.3;
+
+    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement, {
+      lastAudibleVolume: 0.8,
+    });
+
+    expect(audioElement.muted).toBe(false);
+    expect(audioElement.volume).toBe(0.3);
+  });
+
+  // The dead-end `lastAudibleVolume` exists to fix: getting to zero by any path
+  // — drag, click, keyboard — used to leave a silent player with no way back,
+  // because only the drag path stashed anything.
+  it("restores the last audible volume when unmuting a silent player", () => {
+    audioElement.muted = true;
+    audioElement.volume = 0;
+
+    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement, {
+      lastAudibleVolume: 0.8,
+    });
+
+    expect(audioElement.muted).toBe(false);
+    expect(audioElement.volume).toBe(0.8);
   });
 
   it("should handle UNMUTE action", () => {
     audioElement.muted = true;
     handleSideEffect({ type: "UNMUTE" }, audioElement);
     expect(audioElement.muted).toBe(false);
+  });
+
+  it("restores the last audible volume on UNMUTE too", () => {
+    audioElement.muted = true;
+    audioElement.volume = 0;
+
+    handleSideEffect({ type: "UNMUTE" }, audioElement, {
+      lastAudibleVolume: 0.6,
+    });
+
+    expect(audioElement.muted).toBe(false);
+    expect(audioElement.volume).toBe(0.6);
   });
 
   it("should unmute if muted and volume is set above 0 on CHANGE_VALUE", () => {

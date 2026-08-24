@@ -1,14 +1,11 @@
-import { useCallback } from "react";
-import { useAudioContext } from "./AudioContext";
-import type { SideEffectAction } from "./sideEffectActions";
-import { handleSideEffect } from "./handleSideEffect";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
+/**
+ * A thin alias for `store.send` while the slider bus still calls it. The
+ * `useCallback` and the `AudioContext` read are gone: `send` has a permanent
+ * identity, and it is the only caller of `handleSideEffect` that can supply the
+ * store state `TOGGLE_MUTE` / `UNMUTE` need.
+ */
 export function useHandleSideEffect() {
-  const { audioElementRef } = useAudioContext();
-  return useCallback(
-    (action: SideEffectAction) => {
-      handleSideEffect(action, audioElementRef.current);
-    },
-    [audioElementRef],
-  );
+  return usePlayerStore().send;
 }

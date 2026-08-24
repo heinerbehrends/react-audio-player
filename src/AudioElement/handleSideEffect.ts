@@ -4,9 +4,19 @@ import {
 } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./sideEffectActions";
 
+/**
+ * The store state the write path needs. A value, not an accessor: only
+ * `TOGGLE_MUTE` and `UNMUTE` read it, and passing a snapshot keeps this
+ * function pure over plain data — which is what makes its tests cheap.
+ */
+export type SideEffectContext = {
+  lastAudibleVolume: number;
+};
+
 export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null,
+  context: SideEffectContext,
 ) {
   if (!audioElement) return;
   switch (action.type) {
@@ -33,21 +43,15 @@ export function handleSideEffect(
       break;
     }
     case "TOGGLE_MUTE": {
-      const dragStartVolume = audioElement.dataset?.["dragStartVolume"];
-      if (dragStartVolume && audioElement.muted) {
-        audioElement.volume = Number(dragStartVolume);
+      if (audioElement.muted) {
+        unmute(audioElement, context);
+        break;
       }
-      audioElement.muted = !audioElement.muted;
-      delete audioElement.dataset?.["dragStartVolume"];
+      audioElement.muted = true;
       break;
     }
     case "UNMUTE": {
-      const dragStartVolume = audioElement.dataset?.["dragStartVolume"];
-      if (dragStartVolume && audioElement.muted) {
-        audioElement.volume = Number(dragStartVolume);
-      }
-      audioElement.muted = false;
-      delete audioElement.dataset?.["dragStartVolume"];
+      unmute(audioElement, context);
       break;
     }
     case "SET_SLIDER_VALUE": {
@@ -65,16 +69,6 @@ export function handleSideEffect(
         case "playbackRate": {
           const playbackRate = calculateSliderValue(action);
           audioElement.playbackRate = playbackRate;
-          break;
-        }
-      }
-      break;
-    }
-    case "DRAG_START": {
-      switch (action.component) {
-        case "volume": {
-          audioElement.dataset["dragStartVolume"] =
-            audioElement.volume.toString();
           break;
         }
       }
@@ -209,4 +203,20 @@ export function handleSideEffect(
       break;
     }
   }
+}
+
+/**
+ * Unmuting a silent player has to give it something to be audible at, or it
+ * dead-ends. `lastAudibleVolume` covers every path that got it to zero — drag,
+ * click, keyboard or a consumer's `CHANGE_VALUE` — where the old
+ * `dataset.dragStartVolume` stash only covered the drag.
+ */
+function unmute(
+  audioElement: HTMLAudioElement,
+  { lastAudibleVolume }: SideEffectContext,
+) {
+  if (areNumbersClose(audioElement.volume, 0)) {
+    audioElement.volume = lastAudibleVolume;
+  }
+  audioElement.muted = false;
 }
