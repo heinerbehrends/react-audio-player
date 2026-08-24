@@ -1,9 +1,37 @@
-import type {
-  DragAction,
-  DragStartAction,
-  DragEndAction,
-  SliderData,
-} from "../Slider/SliderContext";
+export type SliderComponent = "timeline" | "volume" | "playbackRate";
+
+/**
+ * The geometry a slider gesture used to travel with, back when the reducers
+ * owned the geometry and the element write happened elsewhere. `useSlider` owns
+ * both now and commits through `CHANGE_VALUE`, so nothing in `src/` dispatches
+ * these — they stay because they are part of the published `SideEffectAction`
+ * union.
+ */
+export type SliderData = {
+  clientXY: number;
+  sliderStart: number;
+  sliderLength: number;
+  minValue: number;
+  maxValue: number;
+  orientation: "horizontal" | "vertical";
+  step: number;
+  component: SliderComponent;
+};
+
+export type DragStartAction = SliderData & {
+  type: "DRAG_START";
+  offsetFromMiddle: number;
+};
+
+export type DragAction = SliderData & {
+  type: "DRAG";
+  offsetFromMiddle: number;
+};
+
+export type DragEndAction = SliderData & {
+  type: "DRAG_END";
+  offsetFromMiddle: number;
+};
 
 /**
  * The five commands that used to be declared alongside the retired player
@@ -38,15 +66,15 @@ type StopAudioAction = {
   type: "STOP_AUDIO";
 };
 
+/** What every slider gesture commits through: one value, one component. */
 type ChangeValueAction = {
   type: "CHANGE_VALUE";
-  component: "timeline" | "volume" | "playbackRate";
+  component: SliderComponent;
   value: number;
 };
 
 type SetSliderValueAction = SliderData & {
   type: "SET_SLIDER_VALUE";
-  component: "timeline" | "volume" | "playbackRate";
 };
 
 type IncreaseVolumeAction = {

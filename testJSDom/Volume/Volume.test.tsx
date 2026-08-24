@@ -1,29 +1,25 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Volume } from "../../src/Volume/Volume";
-import { VolumeContext } from "../../src/Volume/VolumeContext";
-import { createSliderContext } from "../testUtils";
-import { TestProviders } from "../testComponents";
-
-/**
- * The store and the static config, which any component reaching
- * `useHandleMediaKeys` needs: `customKeyboardShortcuts` comes from
- * `PlayerConfigContext` now, and a missing provider throws by design.
- */
-const renderInPlayer = (
-  ui: React.ReactElement,
-  options?: Parameters<typeof render>[1],
-) => render(<TestProviders>{ui}</TestProviders>, options);
-
-const defaultSliderContext = createSliderContext({
-  component: "volume" as const,
-  value: 0.5,
-  minValue: 0,
-  maxValue: 1,
-});
+import { renderInPlayer } from "../testComponents";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 describe("Volume", () => {
+  let restoreRects: () => void;
+
+  beforeEach(() => {
+    stubResizeObserver();
+    restoreRects = stubElementRects();
+  });
+
+  afterEach(() => restoreRects());
+
   it("should export all subcomponents", () => {
     expect(Volume.Progress).toBeDefined();
     expect(Volume.Background).toBeDefined();
@@ -34,14 +30,14 @@ describe("Volume", () => {
   describe("Subcomponents render correctly", () => {
     it("should render Volume.Progress with expected styles", () => {
       renderInPlayer(
-        <VolumeContext.Provider value={defaultSliderContext}>
+        <Volume>
+          <Volume.Set>track</Volume.Set>
           <Volume.Progress data-testid="progress" />
-        </VolumeContext.Provider>,
+        </Volume>,
+        { element: { volume: 0.5 } },
       );
 
-      const progress = screen.getByTestId("progress");
-      expect(progress).toBeInTheDocument();
-      expect(progress).toHaveStyle({
+      expect(screen.getByTestId("progress")).toHaveStyle({
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
         width: "100%",
@@ -52,71 +48,107 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Background with expected styles", () => {
-      renderInPlayer(<Volume.Background data-testid="background" />);
+      renderInPlayer(
+        <Volume>
+          <Volume.Background data-testid="background" />
+        </Volume>,
+      );
 
-      const background = screen.getByTestId("background");
-      expect(background).toBeInTheDocument();
-      expect(background).toHaveStyle({
-        gridColumn: "1 / 1",
-        gridRow: "1 / 1",
+      expect(screen.getByTestId("background")).toHaveStyle({
         width: "100%",
         height: "100%",
       });
     });
 
     it("should render Volume.Set with expected attributes", () => {
-      renderInPlayer(<Volume.Set data-testid="set">Set</Volume.Set>);
+      renderInPlayer(
+        <Volume>
+          <Volume.Set data-testid="set">Set</Volume.Set>
+        </Volume>,
+      );
 
       const set = screen.getByTestId("set");
-      expect(set).toBeInTheDocument();
       expect(set).toHaveAttribute("role", "slider");
+      expect(set).toHaveAttribute("aria-label", "Volume slider");
     });
 
     it("should render Volume.Drag with expected attributes", () => {
-      renderInPlayer(<Volume.Drag data-testid="drag" />);
+      renderInPlayer(
+        <Volume>
+          <Volume.Drag data-testid="drag" />
+        </Volume>,
+      );
 
       const drag = screen.getByTestId("drag");
-      expect(drag).toBeInTheDocument();
       expect(drag).toHaveAttribute("aria-hidden", "true");
       expect(drag).toHaveAttribute("tabindex", "-1");
     });
   });
 
-  it("should support composition of components", () => {
+  it("should render a labelled container with proper styles", () => {
     renderInPlayer(
-      <VolumeContext.Provider value={defaultSliderContext}>
-        <Volume>
-          <Volume.Background data-testid="background" />
-          <Volume.Progress data-testid="progress" />
-          <Volume.Set data-testid="set">Set</Volume.Set>
-          <Volume.Drag data-testid="drag" />
-        </Volume>
-      </VolumeContext.Provider>,
+      <Volume>
+        <Volume.Set>track</Volume.Set>
+      </Volume>,
     );
 
-    expect(screen.getByTestId("background")).toBeInTheDocument();
-    expect(screen.getByTestId("progress")).toBeInTheDocument();
-    expect(screen.getByTestId("set")).toBeInTheDocument();
-    expect(screen.getByTestId("drag")).toBeInTheDocument();
-  });
-
-  it("should render a container with proper styles and accessibility attributes", () => {
-    renderInPlayer(
-      <VolumeContext.Provider value={defaultSliderContext}>
-        <Volume>
-          <div data-testid="volume-child">Content</div>
-        </Volume>
-      </VolumeContext.Provider>,
-    );
-
-    const container = screen.getByRole("group");
+    const container = screen.getByRole("group", { name: "Volume controls" });
     expect(container).toBeInTheDocument();
-    expect(container).toHaveAttribute("aria-label", "Volume controls");
     expect(container).toHaveStyle({
       display: "grid",
       gridTemplateColumns: "1fr",
       gridTemplateRows: "1fr",
       width: "100%",
     });
+  });
+
+  it("should support composition of components", () => {
+    renderInPlayer(
+      <Volume>
+        <Volume.Set data-testid="set">
+          <Volume.Progress data-testid="progress" />
+          <Volume.Background data-testid="background" />
+        </Volume.Set>
+        <Volume.Drag data-testid="drag" />
+      </Volume>,
+    );
+
+    expect(screen.getByTestId("set")).toBeInTheDocument();
+    expect(screen.getByTestId("progress")).toBeInTheDocument();
+    expect(screen.getByTestId("background")).toBeInTheDocument();
+    expect(screen.getByTestId("drag")).toBeInTheDocument();
+  });
+
+  it("writes the volume when the track is pressed", () => {
+    const { element } = renderInPlayer(
+      <Volume>
+        <Volume.Set data-testid="set">track</Volume.Set>
+      </Volume>,
+      { element: { volume: 1 } },
+    );
+
+    fireEvent(
+      screen.getByTestId("set"),
+      pointerEventAt("pointerdown", alongTrack(0.25)),
+    );
+
+    expect(element.volume).toBeCloseTo(0.25, 5);
+  });
+
+  // Vertical volume runs bottom to top, so a low pointer is a low volume.
+  it("inverts the pointer position when vertical", () => {
+    const { element } = renderInPlayer(
+      <Volume orientation="vertical">
+        <Volume.Set data-testid="set">track</Volume.Set>
+      </Volume>,
+      { element: { volume: 1 } },
+    );
+
+    fireEvent(
+      screen.getByTestId("set"),
+      pointerEventAt("pointerdown", alongTrack(0.75)),
+    );
+
+    expect(element.volume).toBeCloseTo(0.25, 5);
   });
 });

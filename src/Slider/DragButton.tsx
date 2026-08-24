@@ -1,44 +1,21 @@
-import { useOnPointerCancel } from "./dragHooks";
-import { useDrag } from "./useDrag";
-import {
-  useHandleDrag,
-  useHandleDragEnd,
-  useHandleDragStart,
-} from "./dragHooks";
 import { calculateDragStyle } from "./calculateStyle";
-import { SliderContextType } from "./SliderContext";
+import { useSliderContext } from "./SliderContext";
 
-interface DragButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
-  sliderContext: SliderContextType;
-}
+type DragButtonProps = React.HTMLAttributes<HTMLButtonElement>;
 
-export function DragButton({ sliderContext, ...props }: DragButtonProps) {
-  const handleDragStart = useHandleDragStart(sliderContext);
-  const handleDragEnd = useHandleDragEnd(sliderContext);
-  const handleDrag = useHandleDrag(sliderContext);
-  const handleDragCancel = useOnPointerCancel(sliderContext);
-  const style = calculateDragStyle(sliderContext);
-  useDrag({
-    dragState: sliderContext.dragState,
-    onPointerUp: handleDragEnd as unknown as (
-      event: PointerEvent | TouchEvent,
-    ) => void,
-    onPointerMove: handleDrag as unknown as (
-      event: PointerEvent | TouchEvent,
-    ) => void,
-    onPointerCancel: handleDragCancel,
-  });
+/**
+ * A pointer-only affordance: hidden from assistive technology and out of the tab
+ * order, so there is exactly one element per slider that announces a value and
+ * responds to arrow keys. The drag itself is `useSlider`'s — this only reports
+ * where it was grabbed.
+ */
+export function DragButton(props: DragButtonProps) {
+  const slider = useSliderContext();
+  const style = calculateDragStyle(slider);
 
-  // The slider semantics and the keyboard handler live on SetSliderValue, which
-  // is always present. This thumb is a pointer-only affordance: hidden from
-  // assistive technology and out of the tab order, so there is exactly one
-  // element per slider that announces a value and responds to arrow keys.
   return (
     <button
-      onPointerDown={handleDragStart}
-      onPointerUp={handleDragEnd}
-      onPointerMove={handleDrag}
-      onPointerCancel={handleDragCancel}
+      onPointerDown={slider.onThumbPointerDown}
       tabIndex={-1}
       aria-hidden="true"
       {...props}

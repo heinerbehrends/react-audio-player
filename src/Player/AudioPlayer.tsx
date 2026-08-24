@@ -1,4 +1,3 @@
-import { AudioContextProvider } from "../AudioElement/AudioContextProvider";
 import { AudioElement } from "../AudioElement/AudioElement";
 import { PlayerStoreProvider } from "../store/PlayerStoreContext";
 import { PlayerConfigProvider, type AudioFile } from "./PlayerConfigContext";
@@ -21,10 +20,8 @@ export function AudioPlayer({
         audioFiles={audioFiles}
         customKeyboardShortcuts={customKeyboardShortcuts}
       >
-        <AudioContextProvider>
-          <AudioElement />
-          {children}
-        </AudioContextProvider>
+        <AudioElement />
+        {children}
       </PlayerConfigProvider>
     </PlayerStoreProvider>
   );

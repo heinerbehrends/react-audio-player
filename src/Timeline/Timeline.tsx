@@ -1,6 +1,4 @@
 import type { HTMLAttributes } from "react";
-import { TimelineProvider } from "./TimelineProvider";
-import { useTimelineContext } from "./TimelineContext";
 import {
   calculateProgressStyle,
   progressStyles,
@@ -8,46 +6,22 @@ import {
 } from "../Slider/calculateStyle";
 import { DragButton } from "../Slider/DragButton";
 import { SetSliderValue } from "../Slider/SetSliderValue";
-
-function DragTimeline(props: React.HTMLAttributes<HTMLButtonElement>) {
-  const timelineContext = useTimelineContext();
-  return <DragButton sliderContext={timelineContext} {...props} />;
-}
-
-function SeekTime({
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLButtonElement>) {
-  const timelineContext = useTimelineContext();
-  return (
-    <SetSliderValue sliderContext={timelineContext} {...props}>
-      {children}
-    </SetSliderValue>
-  );
-}
+import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
+import { useSlider } from "../Slider/useSlider";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
 function TimelineProgress(props: ProgressProps) {
-  const context = useTimelineContext();
+  const slider = useSliderContext();
   const style = {
     ...progressStyles,
-    ...calculateProgressStyle(context),
+    ...calculateProgressStyle(slider),
     ...props.style,
   };
   return <div {...props} style={style} />;
 }
 
-type TimelineComponent = React.FC<
-  HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }
-> & {
-  Progress: typeof TimelineProgress;
-  Background: typeof TimelineBackground;
-  Seek: typeof SeekTime;
-  Drag: typeof DragTimeline;
-};
-
-function TimelineBackground(props: React.HTMLAttributes<HTMLDivElement>) {
+function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       {...props}
@@ -59,25 +33,50 @@ function TimelineBackground(props: React.HTMLAttributes<HTMLDivElement>) {
   );
 }
 
-const TimelineRoot: React.FC<HTMLAttributes<HTMLDivElement>> = ({
+type TimelineProps = HTMLAttributes<HTMLDivElement> & {
+  children?: React.ReactNode;
+  step?: number;
+};
+
+/**
+ * Configuration over `useSlider`: the mode, and whatever the consumer sets. The
+ * max is not a prop — it is the duration, which the seek mode reads from the
+ * store.
+ */
+const TimelineRoot: React.FC<TimelineProps> = ({
   children,
+  step,
   ...props
-}) => (
-  <TimelineProvider>
-    <div
-      role="group"
-      style={{
-        ...containerStyles,
-        ...props.style,
-      }}
-    >
-      {children}
-    </div>
-  </TimelineProvider>
-);
+}) => {
+  const slider = useSlider({
+    mode: "seek",
+    ...(step === undefined ? {} : { step }),
+  });
+
+  return (
+    <SliderProvider value={slider}>
+      <div
+        role="group"
+        style={{
+          ...containerStyles,
+          ...props.style,
+        }}
+      >
+        {children}
+      </div>
+    </SliderProvider>
+  );
+};
+
+type TimelineComponent = React.FC<TimelineProps> & {
+  Progress: typeof TimelineProgress;
+  Background: typeof TimelineBackground;
+  Seek: typeof SetSliderValue;
+  Drag: typeof DragButton;
+};
 
 export const Timeline: TimelineComponent = TimelineRoot as TimelineComponent;
 Timeline.Progress = TimelineProgress;
-Timeline.Seek = SeekTime;
-Timeline.Drag = DragTimeline;
+Timeline.Seek = SetSliderValue;
+Timeline.Drag = DragButton;
 Timeline.Background = TimelineBackground;

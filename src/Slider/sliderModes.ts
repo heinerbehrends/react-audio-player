@@ -1,6 +1,6 @@
 import { formatTime } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
-import type { SliderComponent } from "./SliderContext";
+import type { SliderComponent } from "../AudioElement/sideEffectActions";
 
 export type SliderMode = "seek" | "volume" | "rate";
 export type Orientation = "horizontal" | "vertical";

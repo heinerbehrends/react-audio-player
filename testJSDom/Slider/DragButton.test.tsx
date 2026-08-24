@@ -1,91 +1,79 @@
-import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { DragButton } from "../../src/Slider/DragButton";
-import { createSliderContext } from "../testUtils";
-import { TestProviders } from "../testComponents";
-
-/**
- * The store, which `useHandleSideEffect` reads now that it is an alias for
- * `store.send`.
- */
-const renderInPlayer = (
-  ui: React.ReactElement,
-  options?: Parameters<typeof render>[1],
-) => render(<TestProviders>{ui}</TestProviders>, options);
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import { Timeline } from "../../src/Timeline/Timeline";
+import { renderInPlayer } from "../testComponents";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 describe("DragButton", () => {
+  let restoreRects: () => void;
+
+  beforeEach(() => {
+    stubResizeObserver();
+    restoreRects = stubElementRects();
+  });
+
+  afterEach(() => restoreRects());
+
+  const renderThumb = (props: React.HTMLAttributes<HTMLButtonElement> = {}) =>
+    renderInPlayer(
+      <Timeline>
+        <Timeline.Seek>track</Timeline.Seek>
+        <Timeline.Drag data-testid="thumb" {...props} />
+      </Timeline>,
+      { element: { currentTime: 50, duration: 100 } },
+    );
+
   it("is hidden from assistive technology and out of the tab order", () => {
-    const context = createSliderContext();
-    const { container } = renderInPlayer(
-      <DragButton sliderContext={context} />,
-    );
-    const button = container.firstChild as HTMLElement;
+    renderThumb();
+    const thumb = screen.getByTestId("thumb");
 
-    expect(button).toHaveAttribute("aria-hidden", "true");
-    expect(button).toHaveAttribute("tabindex", "-1");
-    expect(button).not.toHaveAttribute("role");
-    expect(button).not.toHaveAttribute("aria-label");
+    expect(thumb).toHaveAttribute("aria-hidden", "true");
+    expect(thumb).toHaveAttribute("tabindex", "-1");
+    expect(thumb).not.toHaveAttribute("role");
   });
 
-  it("applies correct styles", () => {
-    const context = createSliderContext();
-    const { container } = renderInPlayer(
-      <DragButton sliderContext={context} />,
-    );
-    const button = container.firstChild as HTMLElement;
+  it("applies the calculated position", () => {
+    renderThumb();
+    const thumb = screen.getByTestId("thumb");
 
-    expect(button.style.position).toBe("absolute");
-    expect(button.style.gridColumn).toBe("1 / 1");
-    expect(button.style.gridRow).toBe("1 / 1");
-    expect(button.style.cursor).toBe("grab");
-    expect(button.style.touchAction).toBe("none");
-  });
-
-  it("handles pointer down event", async () => {
-    const context = createSliderContext();
-    const { container } = renderInPlayer(
-      <DragButton sliderContext={context} />,
-    );
-    const button = container.firstChild as HTMLElement;
-
-    await userEvent.pointer({
-      keys: "[MouseLeft]",
-      target: button,
-      coords: { clientX: 50, clientY: 0 },
-    });
-
-    const calls = (
-      context.handleSliderAction as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls;
-    expect(calls[0]?.[0]?.type).toBe("DRAG_START");
-    expect(calls[0]?.[0]?.clientXY).toBe(50);
+    // Halfway along a 200px track.
+    expect(thumb.style.transform).toBe("translate(calc(100px - 20px), 0)");
+    expect(thumb.style.cursor).toBe("grab");
+    expect(thumb.style.touchAction).toBe("none");
   });
 
   it("merges custom styles with calculated styles", () => {
-    const context = createSliderContext();
-    const customStyle = { backgroundColor: "red" };
-    const { container } = renderInPlayer(
-      <DragButton sliderContext={context} style={customStyle} />,
-    );
-    const button = container.firstChild as HTMLElement;
+    renderThumb({ style: { backgroundColor: "red" } });
+    const thumb = screen.getByTestId("thumb");
 
-    expect(button.style.backgroundColor).toBe("red");
-    expect(button.style.position).toBe("absolute");
+    expect(thumb.style.backgroundColor).toBe("red");
+    expect(thumb.style.position).toBe("absolute");
   });
 
   it("passes through additional props", () => {
-    const context = createSliderContext();
-    const { container } = renderInPlayer(
-      <DragButton
-        sliderContext={context}
-        data-testid="drag-button"
-        className="custom-class"
-      />,
-    );
-    const button = container.firstChild as HTMLElement;
+    renderThumb({ className: "custom-class" });
 
-    expect(button.getAttribute("data-testid")).toBe("drag-button");
-    expect(button.className).toBe("custom-class");
+    expect(screen.getByTestId("thumb")).toHaveClass("custom-class");
+  });
+
+  it("starts a drag on pointer down, without writing the element", () => {
+    const { element } = renderThumb();
+    const thumb = screen.getByTestId("thumb");
+
+    fireEvent(thumb, pointerEventAt("pointerdown", alongTrack(0.5)));
+    fireEvent(window, pointerEventAt("pointermove", alongTrack(0.75)));
+
+    // Seek mode commits on release only.
+    expect(element.currentTime).toBe(50);
+
+    fireEvent(window, pointerEventAt("pointerup", alongTrack(0.75)));
+
+    expect(element.currentTime).toBe(75);
   });
 });

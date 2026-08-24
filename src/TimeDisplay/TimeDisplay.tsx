@@ -1,9 +1,12 @@
 import { memo } from "react";
-import { useTimeDisplay } from "./useTimeDisplay";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { formatTime } from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
-import { useIsDisabled, usePlayerState } from "../store/derived";
+import {
+  useIsDisabled,
+  usePlayerState,
+  useTimeDisplay,
+} from "../store/derived";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ChildrenProps = {

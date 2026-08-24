@@ -61,12 +61,13 @@ test("dragging the thumb to zero mutes", async () => {
 });
 
 /**
- * Pins today's bug on purpose. Volume and rate mode call `calculateSliderValue`
- * on the raw `clientXY`, so grabbing the thumb off-centre jumps the value by the
- * grab offset on first move; `"seek"` mode subtracts `offsetFromMiddle` and does
- * not. Phase 3's fix has to flip this assertion rather than change feel silently.
+ * This row was written to pin the bug: volume and rate mode used to call
+ * `calculateSliderValue` on the raw `clientXY`, so grabbing the thumb off-centre
+ * jumped the value by the grab offset on the first move, while `"seek"` mode
+ * subtracted it and did not. `useSlider` subtracts in every mode, so the
+ * assertion is flipped — which is the point of having written it first.
  */
-test("grabbing the thumb off-centre jumps the value", async () => {
+test("grabbing the thumb off-centre does not jump the value", async () => {
   await setVolume(0.5);
   const box = await trackBox();
   const y = box.y + box.height / 2;
@@ -77,8 +78,8 @@ test("grabbing the thumb off-centre jumps the value", async () => {
   const thumbCentre = thumbBox.x + thumbBox.width / 2;
   const grabOffset = 15;
 
-  // Grab 15px right of centre and move by one pixel: a slider that honoured the
-  // grab offset would barely move.
+  // Grab 15px right of centre and move by one pixel: one pixel of pointer
+  // movement is one pixel of value change, whatever the grab offset was.
   await page.mouse.move(thumbCentre + grabOffset, y);
   await page.mouse.down();
   await page.mouse.move(thumbCentre + grabOffset + 1, y, { steps: 2 });
@@ -86,6 +87,7 @@ test("grabbing the thumb off-centre jumps the value", async () => {
   await page.waitForTimeout(80);
 
   const { volume } = await getAudioState(page);
-  const jump = volume - 0.5;
-  expect(jump).toBeGreaterThan(grabOffset / box.width / 2);
+  const onePixel = 1 / box.width;
+  expect(volume - 0.5).toBeLessThan(onePixel * 3);
+  expect(volume).toBeGreaterThan(0.5);
 });

@@ -71,7 +71,7 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
             border: "solid 1px darkgray",
           }}
         />
-        {showDebug ? <Debug type="timeline" /> : null}
+        {showDebug ? <Debug /> : null}
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>

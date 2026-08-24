@@ -1,9 +1,5 @@
-import { useMemo, useRef, useCallback } from "react";
-import { useHandleRef, useResizeObserver } from "./useHandleRef";
-import { useTimelineAriaAttributes } from "../Timeline/useTimelineAria";
-import { useSetValue } from "./dragHooks";
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { SliderContextType } from "./SliderContext";
+import { useMemo } from "react";
+import { useSliderContext } from "./SliderContext";
 import {
   progressStyles,
   containerStyles,
@@ -12,29 +8,18 @@ import {
 
 type SetSliderValueProps = React.HTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;
-  sliderContext: SliderContextType;
 };
 
-export function SetSliderValue({
-  children,
-  sliderContext,
-  ...props
-}: SetSliderValueProps) {
-  const ariaAttributes = useTimelineAriaAttributes(sliderContext);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const handleRef = useHandleRef(sliderContext);
-
-  const combinedRef = useCallback(
-    (element: HTMLButtonElement | null) => {
-      buttonRef.current = element;
-      handleRef(element);
-    },
-    [handleRef],
-  );
-
-  useResizeObserver(sliderContext, buttonRef);
-  const handlePointerDown = useSetValue(sliderContext);
-  const handleKeyDown = useHandleMediaKeys();
+/**
+ * The element that carries the slider semantics: the role, every `aria-value*`,
+ * the arrow keys and the tab stop. It is the one part of a slider that is always
+ * present, which is why the semantics live here rather than on the thumb — a
+ * consumer may render no thumb at all.
+ *
+ * It also measures the track, since it *is* the track.
+ */
+export function SetSliderValue({ children, ...props }: SetSliderValueProps) {
+  const slider = useSliderContext();
 
   const style = useMemo(
     () => ({
@@ -48,11 +33,11 @@ export function SetSliderValue({
 
   return (
     <button
-      ref={combinedRef}
-      onPointerDown={handlePointerDown}
-      onKeyDown={handleKeyDown}
+      ref={slider.setSliderRef}
+      onPointerDown={slider.onTrackPointerDown}
+      onKeyDown={slider.onKeyDown}
       tabIndex={0}
-      {...ariaAttributes}
+      {...slider.aria}
       {...props}
       style={style}
       role="slider"

@@ -1,13 +1,6 @@
 import { memo, useCallback, useEffect, useState } from "react";
 import { usePlayerConfig } from "../Player/PlayerConfigContext";
 import { usePlayerStore } from "../store/PlayerStoreContext";
-import { useAudioContext } from "./AudioContext";
-import {
-  useHandleTimeUpdate,
-  useHandleVolumeChange,
-  useHandlePlaybackRateChange,
-  usePlayerCallbacks,
-} from "./audioElementHooks";
 
 type AudioElementProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
   children?: React.ReactNode;
@@ -18,19 +11,7 @@ export const AudioElement = memo(function AudioElement({
   ...props
 }: AudioElementProps) {
   const { audioFiles } = usePlayerConfig();
-  const {
-    audioElementRef,
-    timelineCallbackRef,
-    volumeCallbackRef,
-    playbackRateCallbackRef,
-  } = useAudioContext();
   const { src } = audioFiles?.[0] || {};
-  const handleTimeUpdate = useHandleTimeUpdate();
-  const handleVolumeChange = useHandleVolumeChange();
-  const handlePlaybackRateChange = useHandlePlaybackRateChange();
-
-  const { handleEnded, handleLoadedMetadata, handleDurationChange } =
-    usePlayerCallbacks();
 
   // `AudioElement` renders the `<audio>` tag, so it is the only component that
   // can hand the element to the store without a setter travelling down — and a
@@ -44,47 +25,31 @@ export const AudioElement = memo(function AudioElement({
     [element, store],
   );
 
-  // `setElement` is stable by React's `useState` guarantee, so the composed ref
-  // is stable and this component's `memo` cannot cause a detach/reattach on
-  // every parent render. Collapses to `setElement` when the legacy ref goes.
-  const ref = useCallback(
-    (node: HTMLAudioElement | null) => {
-      audioElementRef.current = node;
-      setElement(node);
-    },
-    [audioElementRef],
-  );
+  // `setElement` is stable by React's `useState` guarantee, so the ref is stable
+  // and this component's `memo` cannot cause a detach/reattach on every parent
+  // render.
+  const ref = useCallback((node: HTMLAudioElement | null) => {
+    setElement(node);
+  }, []);
 
-  const hasTimelineCallback =
-    !!timelineCallbackRef?.current?.handleTimelineAction;
-  const hasVolumeCallback = !!volumeCallbackRef?.current?.handleVolumeAction;
-  const hasPlaybackRateCallback =
-    !!playbackRateCallbackRef?.current?.handlePlaybackRateAction;
+  /**
+   * The one handler left, and it is policy rather than projection: on `ended` the
+   * element sits at `duration` while the UI wants the thumb at the start. Moving
+   * the *element* to 0 removes the divergence — `seeked` fires, the atoms follow,
+   * and the thumb and the clock agree. Everything else this element used to
+   * handle is a projection, and `syncFromElement` does it.
+   */
+  const handleEnded = useCallback(() => {
+    store.send({ type: "SET_TIME_TO_START" });
+  }, [store]);
+
   return (
     <audio
       {...props}
       src={src}
       aria-label="audio player"
       ref={ref}
-      onSeeked={hasTimelineCallback ? handleTimeUpdate : undefined}
-      onVolumeChange={hasVolumeCallback ? handleVolumeChange : undefined}
-      onRateChange={
-        hasPlaybackRateCallback ? handlePlaybackRateChange : undefined
-      }
-      onTimeUpdate={hasTimelineCallback ? handleTimeUpdate : undefined}
-      onEnded={() =>
-        handleEnded(timelineCallbackRef?.current?.handleTimelineAction)
-      }
-      onLoadedMetadata={() => {
-        handleLoadedMetadata(
-          timelineCallbackRef?.current?.handleTimelineAction,
-        );
-      }}
-      onDurationChange={() => {
-        handleDurationChange(
-          timelineCallbackRef?.current?.handleTimelineAction,
-        );
-      }}
+      onEnded={handleEnded}
     >
       {children ? children : undefined}
     </audio>

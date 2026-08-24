@@ -5,18 +5,18 @@ import {
   progressStyles,
   containerStyles,
   buttonStyles,
+  type StyleContext,
 } from "../../src/Slider/calculateStyle";
-import { createSliderContext } from "../testUtils";
 
 describe("calculateStyle", () => {
-  const defaultContext = createSliderContext({
+  const defaultContext: StyleContext = {
+    mode: "seek",
     value: 0.5,
-    sliderStart: 0,
     minValue: 0,
     maxValue: 1,
-    step: 0.1,
     sliderLength: 100,
-  });
+    orientation: "horizontal",
+  };
   describe("calculateDragStyle", () => {
     it("calculates horizontal drag style correctly", () => {
       const style = calculateDragStyle(defaultContext);
@@ -48,16 +48,13 @@ describe("calculateStyle", () => {
       });
     });
 
-    it("handles dragging state", () => {
-      const context = {
-        ...defaultContext,
-        dragState: "dragging" as const,
-        clientXY: 75,
-        step: 0,
-      };
-      const style = calculateDragStyle(context);
+    // The old context carried a `clientXY` the styles never read —
+    // `calculateDragStyle` positions the thumb from `value` through `getOffset`.
+    // `StyleContext` is now exactly what the styles use.
+    it("positions from the value alone", () => {
+      const style = calculateDragStyle({ ...defaultContext, value: 0.75 });
 
-      expect(style.transform).toBe("translate(calc(50px - 20px), 0)");
+      expect(style.transform).toBe("translate(calc(75px - 20px), 0)");
     });
   });
 
@@ -88,7 +85,7 @@ describe("calculateStyle", () => {
       const context = {
         ...defaultContext,
         orientation: "vertical" as const,
-        component: "volume" as const,
+        mode: "volume" as const,
         value: 0.5,
       };
       const style = calculateProgressStyle(context);
@@ -116,7 +113,7 @@ describe("calculateStyle", () => {
       const style = calculateProgressStyle({
         ...defaultContext,
         orientation: "vertical" as const,
-        component: "volume" as const,
+        mode: "volume" as const,
         value,
       });
 
@@ -132,7 +129,7 @@ describe("calculateStyle", () => {
         const style = calculateProgressStyle({
           ...defaultContext,
           orientation: "vertical" as const,
-          component: "timeline" as const,
+          mode: "seek" as const,
           value,
         });
 

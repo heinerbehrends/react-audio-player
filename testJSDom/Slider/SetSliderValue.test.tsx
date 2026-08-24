@@ -1,48 +1,68 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, getByRole, fireEvent } from "@testing-library/react";
-import { SetSliderValue } from "../../src/Slider/SetSliderValue";
-import { createSliderContext } from "../testUtils";
-import { TestProviders } from "../testComponents";
-import { renderWithStore } from "../store/renderWithStore";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { getByRole, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import { Timeline } from "../../src/Timeline/Timeline";
+import { Volume } from "../../src/Volume/Volume";
+import { renderInPlayer } from "../testComponents";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 /**
- * The store and the static config, which any component reaching
- * `useHandleMediaKeys` needs: `customKeyboardShortcuts` comes from
- * `PlayerConfigContext` now, and a missing provider throws by design.
+ * `SetSliderValue` is `Timeline.Seek`, `Volume.Set` and `PlaybackRateSlider.Set`,
+ * so it is tested through a real slider root: it reads the context its root
+ * publishes and has no props of its own beyond the DOM's.
  */
-const renderInPlayer = (
-  ui: React.ReactElement,
-  options?: Parameters<typeof render>[1],
-) => render(<TestProviders>{ui}</TestProviders>, options);
-
 describe("SetSliderValue", () => {
-  it("renders with correct ARIA attributes", () => {
-    const context = createSliderContext({
-      component: "timeline",
-      value: 0.5,
-      minValue: 0,
-      maxValue: 1,
-    });
+  let restoreRects: () => void;
 
+  beforeEach(() => {
+    stubResizeObserver();
+    restoreRects = stubElementRects();
+  });
+
+  afterEach(() => restoreRects());
+
+  it("renders with correct ARIA attributes", () => {
     const { container } = renderInPlayer(
-      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
+      <Timeline>
+        <Timeline.Seek>Test</Timeline.Seek>
+      </Timeline>,
+      { element: { currentTime: 30, duration: 120 } },
     );
     const button = getByRole(container, "slider");
 
-    expect(button).toHaveAttribute("aria-valuemin", "0");
-    expect(button).toHaveAttribute("aria-valuemax", "1");
-    expect(button).toHaveAttribute("aria-valuenow", "0.5");
-    expect(button).toHaveAttribute("aria-orientation", "horizontal");
     expect(button).toHaveAttribute("role", "slider");
+    expect(button).toHaveAttribute("aria-label", "Timeline slider");
+    expect(button).toHaveAttribute("aria-valuemin", "0");
+    expect(button).toHaveAttribute("aria-valuemax", "120");
+    expect(button).toHaveAttribute("aria-valuenow", "30");
+    expect(button).toHaveAttribute("aria-valuetext", "Position 0:30 of 2:00");
+    expect(button).toHaveAttribute("aria-orientation", "horizontal");
+  });
+
+  it("takes its label and value text from the mode", () => {
+    const { container } = renderInPlayer(
+      <Volume>
+        <Volume.Set>Test</Volume.Set>
+      </Volume>,
+      { element: { volume: 0.42 } },
+    );
+    const button = getByRole(container, "slider");
+
+    expect(button).toHaveAttribute("aria-label", "Volume slider");
+    expect(button).toHaveAttribute("aria-valuetext", "42%");
+    expect(button).toHaveAttribute("aria-valuemax", "1");
   });
 
   it("merges custom styles with calculated styles", () => {
-    const context = createSliderContext();
-    const customStyle = { backgroundColor: "red" };
     const { container } = renderInPlayer(
-      <SetSliderValue sliderContext={context} style={customStyle}>
-        Test
-      </SetSliderValue>,
+      <Timeline>
+        <Timeline.Seek style={{ backgroundColor: "red" }}>Test</Timeline.Seek>
+      </Timeline>,
     );
     const button = getByRole(container, "slider");
 
@@ -51,45 +71,50 @@ describe("SetSliderValue", () => {
   });
 
   it("passes through additional props", () => {
-    const context = createSliderContext();
     const { container } = renderInPlayer(
-      <SetSliderValue
-        sliderContext={context}
-        data-testid="slider"
-        className="custom-class"
-      >
-        Test
-      </SetSliderValue>,
+      <Timeline>
+        <Timeline.Seek data-testid="slider" className="custom-class">
+          Test
+        </Timeline.Seek>
+      </Timeline>,
     );
     const button = getByRole(container, "slider");
 
-    expect(button.getAttribute("data-testid")).toBe("slider");
-    expect(button.className).toBe("custom-class");
+    expect(button).toHaveAttribute("data-testid", "slider");
+    expect(button).toHaveClass("custom-class");
   });
 
-  it("is in the tab order and attaches event handlers", () => {
-    const handleSliderAction = vi.fn();
-    const context = createSliderContext({ handleSliderAction });
-
+  it("is in the tab order, unlike the thumb", () => {
     const { container } = renderInPlayer(
-      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
+      <Timeline>
+        <Timeline.Seek>Test</Timeline.Seek>
+      </Timeline>,
     );
     const button = getByRole(container, "slider");
 
     expect(button).toHaveAttribute("tabindex", "0");
+    expect(button).not.toHaveAttribute("aria-hidden");
+  });
 
-    fireEvent.pointerDown(button, { clientX: 50, clientY: 0 });
+  it("seeks to the pressed fraction of the track", () => {
+    const { container, element } = renderInPlayer(
+      <Timeline>
+        <Timeline.Seek>Test</Timeline.Seek>
+      </Timeline>,
+      { element: { duration: 100 } },
+    );
+    const button = getByRole(container, "slider");
 
-    expect(handleSliderAction).toHaveBeenCalled();
+    fireEvent(button, pointerEventAt("pointerdown", alongTrack(0.25)));
+
+    expect(element.currentTime).toBe(25);
   });
 
   it("responds to arrow keys, so the semantic slider is operable by keyboard", () => {
-    const context = createSliderContext({ component: "timeline" });
-
-    // The keys reach the element through `store.send` now, so the element comes
-    // from the harness rather than from a hand-built `AudioContext`.
-    const { container, element } = renderWithStore(
-      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
+    const { container, element } = renderInPlayer(
+      <Timeline>
+        <Timeline.Seek>Test</Timeline.Seek>
+      </Timeline>,
       { element: { currentTime: 20, duration: 100 } },
     );
     const button = getByRole(container, "slider");

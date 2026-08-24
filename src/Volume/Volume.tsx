@@ -1,32 +1,43 @@
 import type { HTMLAttributes } from "react";
-import { VolumeProvider } from "./VolumeProvider";
-import { useVolumeContext } from "./VolumeContext";
 import {
   calculateProgressStyle,
   progressStyles,
 } from "../Slider/calculateStyle";
 import { SetSliderValue } from "../Slider/SetSliderValue";
 import { DragButton } from "../Slider/DragButton";
+import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
+import { useSlider } from "../Slider/useSlider";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
-type VolumeContainerProps = HTMLAttributes<HTMLDivElement> & {
+function VolumeProgress(props: ProgressProps) {
+  const slider = useSliderContext();
+  const style = {
+    ...progressStyles,
+    ...calculateProgressStyle(slider),
+    ...props.style,
+  };
+  return <div {...props} style={style} />;
+}
+
+function VolumeBackground(props: HTMLAttributes<HTMLDivElement>) {
+  return <div {...props} style={{ ...progressStyles, ...props.style }} />;
+}
+
+type VolumeProps = HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
   orientation?: "horizontal" | "vertical";
 };
-
-function DragVolume(props: React.HTMLAttributes<HTMLButtonElement>) {
-  const volumeContext = useVolumeContext();
-  return <DragButton sliderContext={volumeContext} {...props} />;
-}
 
 function VolumeContainer({
   children,
   orientation = "horizontal",
   ...props
-}: VolumeContainerProps) {
+}: VolumeProps) {
+  const slider = useSlider({ mode: "volume", orientation });
+
   return (
-    <VolumeProvider orientation={orientation}>
+    <SliderProvider value={slider}>
       <div
         role="group"
         aria-label="Volume controls"
@@ -40,51 +51,20 @@ function VolumeContainer({
       >
         {children}
       </div>
-    </VolumeProvider>
+    </SliderProvider>
   );
 }
 
-function VolumeProgress(props: ProgressProps) {
-  const context = useVolumeContext();
-  const style = {
-    ...progressStyles,
-    ...calculateProgressStyle(context),
-    ...props.style,
-  };
-  return <div {...props} style={style} />;
-}
-
-type SetVolumeProps = React.HTMLAttributes<HTMLButtonElement> & {
-  children: React.ReactNode;
-};
-
-function SetVolume({ children, ...props }: SetVolumeProps) {
-  const context = useVolumeContext();
-  return (
-    <SetSliderValue sliderContext={context} {...props}>
-      {children}
-    </SetSliderValue>
-  );
-}
-
-type VolumeComponent = React.FC<
-  HTMLAttributes<HTMLDivElement> & {
-    children: React.ReactNode;
-    orientation?: "horizontal" | "vertical";
-  }
-> & {
+type VolumeComponent = React.FC<VolumeProps> & {
   Progress: typeof VolumeProgress;
-  Set: typeof SetVolume;
-  Drag: typeof DragVolume;
+  Background: typeof VolumeBackground;
+  Set: typeof SetSliderValue;
+  Drag: typeof DragButton;
 };
-
-function VolumeBackground(props: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} style={{ ...progressStyles, ...props.style }} />;
-}
 
 export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
   Progress: VolumeProgress,
   Background: VolumeBackground,
-  Set: SetVolume,
-  Drag: DragVolume,
+  Set: SetSliderValue,
+  Drag: DragButton,
 });

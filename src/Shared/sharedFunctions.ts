@@ -1,20 +1,32 @@
-import type { SliderContextType, SliderEvent } from "../Slider/SliderContext";
+export type Orientation = "horizontal" | "vertical";
+
+/** Where a slider is on screen, measured from the element that carries it. */
+export type SliderGeometry = {
+  sliderStart: number;
+  sliderLength: number;
+};
+
+/** The value space a slider maps that geometry onto. */
+export type SliderRange = {
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
+  orientation?: Orientation;
+};
+
+/** Anything carrying a pointer position, React-synthetic or native. */
+export type PositionEvent =
+  | { clientX: number; clientY: number }
+  | { touches: ArrayLike<{ clientX: number; clientY: number }> };
+
 export function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) <= 0.001;
 }
 
-type CalculateValueArgs = Optional<
-  Omit<
-    SliderContextType,
-    | "handleSliderAction"
-    | "step"
-    | "component"
-    | "value"
-    | "dragState"
-    | "offsetFromMiddle"
-  >,
-  "orientation" | "minValue" | "maxValue"
->;
+type CalculateValueArgs = SliderGeometry &
+  Omit<SliderRange, "step"> & {
+    clientXY: number;
+  };
 
 export function calculateValue({
   clientXY,
@@ -34,17 +46,12 @@ export function calculateValue({
   return Math.max(minValue, Math.min(maxValue, mappedValue));
 }
 
-type CalculateSteppedValueArgs = Omit<
-  SliderContextType,
-  | "handleSliderAction"
-  | "component"
-  | "dragState"
-  | "sliderStart"
-  | "sliderLength"
-  | "orientation"
-  | "clientXY"
-  | "offsetFromMiddle"
->;
+type CalculateSteppedValueArgs = {
+  value: number;
+  minValue: number;
+  maxValue: number;
+  step: number;
+};
 
 export function calculateSteppedValue({
   value,
@@ -60,9 +67,10 @@ export function calculateSteppedValue({
   return Math.min(Math.max(steppedValue, minValue), maxValue);
 }
 
-type CalculateUiValueArgs = CalculateValueArgs & {
-  step?: number | undefined;
-};
+type CalculateSliderValueArgs = SliderGeometry &
+  SliderRange & {
+    clientXY: number;
+  };
 
 export function calculateSliderValue({
   minValue = 0,
@@ -72,7 +80,7 @@ export function calculateSliderValue({
   sliderLength,
   sliderStart,
   clientXY,
-}: CalculateUiValueArgs): number {
+}: CalculateSliderValueArgs): number {
   const value = calculateValue({
     minValue,
     maxValue,
@@ -92,18 +100,23 @@ export function calculateSliderValue({
   return value;
 }
 
-type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+type GetOffsetArgs = Pick<SliderGeometry, "sliderLength"> &
+  Omit<SliderRange, "step"> & {
+    value: number;
+  };
 
+/**
+ * The thumb's pixel offset from the start of the track. Vertical counts from the
+ * top, so it runs opposite to the value — which is why `getProgress` cannot
+ * reuse it.
+ */
 export function getOffset({
   value,
   sliderLength,
   minValue = 0,
   maxValue = 1,
   orientation = "horizontal",
-}: Optional<
-  Omit<SliderContextType, "handleSliderAction" | "sliderStart">,
-  "step" | "minValue" | "maxValue" | "orientation" | "offsetFromMiddle"
->): number {
+}: GetOffsetArgs): number {
   const range = maxValue - minValue;
   const progress = (value - minValue) / range;
 
@@ -117,21 +130,15 @@ export function getOffset({
 }
 
 export function getClientXY(
-  event: SliderEvent,
-  orientation: "horizontal" | "vertical",
+  event: PositionEvent,
+  orientation: Orientation,
 ): number {
-  if (isTouchEvent(event)) {
-    return orientation === "horizontal"
-      ? (event.touches[0]?.clientX ?? 0)
-      : (event.touches[0]?.clientY ?? 0);
+  if ("touches" in event) {
+    const touch = event.touches[0];
+    if (!touch) return 0;
+    return orientation === "horizontal" ? touch.clientX : touch.clientY;
   }
   return orientation === "horizontal" ? event.clientX : event.clientY;
-}
-
-function isTouchEvent(
-  event: SliderEvent,
-): event is React.TouchEvent<HTMLButtonElement> {
-  return "touches" in event;
 }
 
 /**

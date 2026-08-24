@@ -1,41 +1,36 @@
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { useState } from "react";
-import {
-  AudioContext,
-  AudioContextType,
-} from "../src/AudioElement/AudioContext";
 import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../src/KeyboardControls/handleMediaKeys";
 import type { AudioFile } from "../src/Player/PlayerConfigContext";
-import { createTestStore } from "./store/createTestStore";
+import { createTestStore, type TestStore } from "./store/createTestStore";
 import type { MediaFields } from "./store/mediaElementFake";
 
 type TestProvidersProps = {
   children: React.ReactNode;
   audioFiles?: AudioFile[] | undefined;
   customKeyboardShortcuts?: KeyToActionMap | undefined;
-  /** Fields the attached fake is primed from. */
-  element?: Partial<MediaFields>;
+  /** An existing harness, when the test needs the store it renders against. */
+  testStore?: TestStore | undefined;
+  /** Otherwise: the fields the attached fake is primed from. */
+  element?: Partial<MediaFields> | undefined;
 };
 
 /**
- * The store and the static config — the two providers `AudioPlayer` renders
- * above the tree, minus the `<audio>` tag.
- *
- * The store comes with a fake attached at `readyState: 1`, so the default is a
- * loaded, paused player. `renderWithStore` is the richer entry point: use this
- * one when the test drives a legacy slider context and only needs the providers
- * to exist.
+ * The two providers `AudioPlayer` renders above the tree, minus the `<audio>`
+ * tag. The store comes with a fake attached at `readyState: 1`, so the default is
+ * a loaded, paused player.
  */
 export function TestProviders({
   children,
   audioFiles = [],
   customKeyboardShortcuts,
+  testStore,
   element,
 }: TestProvidersProps) {
-  const [harness] = useState(() =>
-    createTestStore({ readyState: 1, ...element }),
+  const [harness] = useState(
+    () => testStore ?? createTestStore({ readyState: 1, ...element }),
   );
 
   return (
@@ -50,48 +45,40 @@ export function TestProviders({
   );
 }
 
-type CreateContextWrapperArgs = {
-  audioContext: AudioContextType;
-  audioFiles?: AudioFile[] | undefined;
-};
+type RenderInPlayerOptions = Omit<TestProvidersProps, "children">;
 
-export function createContextWrapper({
-  audioContext,
-  audioFiles,
-}: CreateContextWrapperArgs): React.FC<{ children: React.ReactNode }> {
-  return ({ children }: { children: React.ReactNode }) => (
-    <TestProviders audioFiles={audioFiles}>
-      <AudioContext.Provider value={audioContext}>
-        {children}
-      </AudioContext.Provider>
-    </TestProviders>
-  );
-}
+/**
+ * Renders a component under the store and the config, and hands back the harness
+ * so a test can drive the fake element and read it afterwards.
+ */
+export function renderInPlayer(
+  ui: React.ReactNode,
+  options: RenderInPlayerOptions = {},
+) {
+  const harness =
+    options.testStore ??
+    createTestStore({ readyState: 1, ...(options.element ?? {}) });
 
-export function renderWithContexts({
-  audioContext,
-  component,
-  audioFiles,
-}: {
-  audioContext: AudioContextType;
-  component: React.ReactNode;
-  audioFiles?: AudioFile[] | undefined;
-}) {
-  return render(
-    <TestProviders audioFiles={audioFiles}>
-      <AudioContext.Provider value={audioContext}>
-        {component}
-      </AudioContext.Provider>
+  const result = render(
+    <TestProviders {...options} testStore={harness}>
+      {ui}
     </TestProviders>,
   );
-}
 
-export function renderWithAudioContext({
-  audioContext,
-  component,
-}: {
-  audioContext: AudioContextType;
-  component: React.ReactNode;
-}) {
-  return renderWithContexts({ audioContext, component });
+  return {
+    ...result,
+    ...harness,
+    /** Emits a media event on the fake inside `act`, so React flushes. */
+    emit: (event: string) => act(() => harness.element.emit(event)),
+    /**
+     * Re-renders inside the same providers, against the same store — testing
+     * library's own `rerender` would drop the wrapper and remount everything.
+     */
+    rerender: (next: React.ReactNode) =>
+      result.rerender(
+        <TestProviders {...options} testStore={harness}>
+          {next}
+        </TestProviders>,
+      ),
+  };
 }

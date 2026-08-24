@@ -1,117 +1,63 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { AudioElement } from "../../src/AudioElement/AudioElement";
-import { AudioContext } from "../../src/AudioElement/AudioContext";
-import { createAudioContext, createMockAudioElement } from "../testUtils";
-import { renderWithContexts, TestProviders } from "../testComponents";
+import { renderInPlayer } from "../testComponents";
 
+/**
+ * The element carries one handler now, and it is policy rather than projection:
+ * `onEnded`. Everything else it used to wire — ten JSX handlers pushing state
+ * sideways — is `syncFromElement`'s, attached by `attach` rather than by React.
+ */
 describe("AudioElement", () => {
-  let audioElement: HTMLAudioElement;
+  it("renders with proper accessibility attributes", () => {
+    renderInPlayer(<AudioElement />);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    audioElement = createMockAudioElement() as HTMLAudioElement;
+    expect(screen.getByLabelText("audio player")).toHaveAttribute(
+      "aria-label",
+      "audio player",
+    );
   });
 
-  it("only renders callbacks when they are defined in context", () => {
-    const nullCallbacksContext = createAudioContext({
-      timelineCallbackRef: { current: { handleTimelineAction: null } },
-      volumeCallbackRef: { current: { handleVolumeAction: null } },
-      playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
+  it("sets the src from the config's first audio file", () => {
+    renderInPlayer(<AudioElement />, {
+      audioFiles: [{ src: "test-audio.mp3" }],
     });
 
-    renderWithContexts({
-      audioContext: nullCallbacksContext,
-      component: <AudioElement />,
-    });
-    const audio = screen.getByLabelText("audio player");
-
-    expect(audio).not.toHaveAttribute("ontimeupdate");
-    expect(audio).not.toHaveAttribute("onvolumechange");
-    expect(audio).not.toHaveAttribute("onratechange");
+    expect(screen.getByLabelText("audio player")).toHaveAttribute(
+      "src",
+      "test-audio.mp3",
+    );
   });
 
   it("handles the case when no audio files are provided", () => {
-    renderWithContexts({
-      audioContext: createAudioContext(),
-      audioFiles: [],
-      component: <AudioElement />,
-    });
-    const audio = screen.getByLabelText("audio player");
+    renderInPlayer(<AudioElement />, { audioFiles: [] });
 
-    expect(audio).not.toHaveAttribute("src");
-    expect(screen.queryByTestId("caption-track")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("audio player")).not.toHaveAttribute("src");
   });
 
-  it("correctly memoizes event handlers to prevent unnecessary rerenders", () => {
-    const contextWithRef = createAudioContext({
-      audioElementRef: { current: audioElement },
-    });
+  /**
+   * The `ended` policy. The element used to sit at `duration` while the thumb was
+   * pushed to 0, so the clock and the thumb disagreed on screen. Moving the
+   * element instead makes them agree.
+   */
+  it("returns the element to the start when playback ends", () => {
+    renderInPlayer(<AudioElement />);
+    const audio = screen.getByLabelText("audio player") as HTMLAudioElement;
+    // jsdom's `<audio>` is inert, so assign a time the handler can reset.
+    Object.defineProperty(audio, "currentTime", { value: 100, writable: true });
 
-    const { rerender } = renderWithContexts({
-      audioContext: contextWithRef,
-      component: <AudioElement />,
-    });
+    audio.dispatchEvent(new Event("ended"));
 
-    const audio = screen.getByLabelText("audio player");
-    const initialTimeUpdateHandler = audio.ontimeupdate;
-    const initialVolumeChangeHandler = audio.onvolumechange;
-
-    // Same root component as `renderWithContexts` renders, so the store
-    // instance survives the rerender.
-    rerender(
-      <TestProviders>
-        <AudioContext.Provider value={contextWithRef}>
-          <AudioElement />
-        </AudioContext.Provider>
-      </TestProviders>,
-    );
-
-    expect(audio.ontimeupdate).toBe(initialTimeUpdateHandler);
-    expect(audio.onvolumechange).toBe(initialVolumeChangeHandler);
+    expect(audio.currentTime).toBe(0);
   });
 
-  it("sets the correct src from audioFiles when provided", () => {
-    renderWithContexts({
-      audioContext: createAudioContext(),
-      audioFiles: [{ src: "test-audio.mp3" }],
-      component: <AudioElement />,
-    });
-    const audio = screen.getByLabelText("audio player");
-    expect(audio).toHaveAttribute("src", "test-audio.mp3");
-  });
+  it("attaches the element to the store once, across parent rerenders", () => {
+    const { store, rerender } = renderInPlayer(<AudioElement />);
+    const attach = vi.spyOn(store, "attach");
 
-  it("renders with proper accessibility attributes", () => {
-    renderWithContexts({
-      audioContext: createAudioContext(),
-      component: <AudioElement />,
-    });
-    const audio = screen.getByLabelText("audio player");
-    expect(audio).toHaveAttribute("aria-label", "audio player");
-  });
+    rerender(<AudioElement />);
 
-  it("updates timeline max value when duration changes", () => {
-    const mockTimelineAction = vi.fn();
-    const mockAudioElement = { duration: 150 } as HTMLAudioElement;
-    const audioContext = createAudioContext({
-      audioElementRef: { current: mockAudioElement },
-      timelineCallbackRef: {
-        current: { handleTimelineAction: mockTimelineAction },
-      },
-    });
-
-    renderWithContexts({
-      audioContext: audioContext,
-      component: <AudioElement />,
-    });
-
-    const audio = screen.getByLabelText("audio player");
-    audio.dispatchEvent(new Event("durationchange"));
-
-    expect(mockTimelineAction).toHaveBeenCalledWith({
-      type: "SET_MAX_VALUE",
-      maxValue: 100,
-    });
+    expect(attach).not.toHaveBeenCalled();
   });
 });

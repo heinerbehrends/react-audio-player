@@ -8,7 +8,7 @@ import {
   getOffset,
   getClientXY,
 } from "../../src/Shared/sharedFunctions";
-import type { SliderEvent } from "../../src/Slider/SliderContext";
+import type { PositionEvent } from "../../src/Shared/sharedFunctions";
 
 describe("sharedFunctions", () => {
   describe("areNumbersClose", () => {
@@ -143,54 +143,34 @@ describe("sharedFunctions", () => {
   });
 
   describe("getOffset", () => {
-    it("returns clientXY when dragging without step", () => {
-      const result = getOffset({
-        value: 0.5,
-        sliderLength: 100,
-        clientXY: 50,
-        dragState: "dragging",
-        minValue: 0,
-        maxValue: 1,
-        component: "timeline",
-      });
-      expect(result).toBeCloseTo(50);
-    });
-
     it("calculates horizontal offset correctly", () => {
       const result = getOffset({
-        value: 0.5,
+        value: 0.25,
         sliderLength: 100,
-        clientXY: 50,
-        dragState: "idle",
         minValue: 0,
         maxValue: 1,
         orientation: "horizontal",
-        component: "timeline",
       });
-      expect(result).toBe(50);
+      expect(result).toBe(25);
     });
 
-    it("calculates vertical offset correctly", () => {
+    // Vertical counts from the top, so the offset runs opposite to the value.
+    // That is why `getProgress` cannot reuse it.
+    it("counts a vertical offset from the top", () => {
       const result = getOffset({
-        value: 0.5,
+        value: 0.25,
         sliderLength: 100,
-        clientXY: 50,
-        dragState: "idle",
         minValue: 0,
         maxValue: 1,
         orientation: "vertical",
-        component: "timeline",
       });
-      expect(result).toBe(50);
+      expect(result).toBe(75);
     });
 
     it("uses default values when not provided", () => {
       const result = getOffset({
         value: 0.5,
         sliderLength: 100,
-        clientXY: 50,
-        dragState: "idle",
-        component: "timeline",
       });
       expect(result).toBe(50);
     });
@@ -201,7 +181,7 @@ describe("sharedFunctions", () => {
       const mouseEvent = {
         clientX: 100,
         clientY: 200,
-      } as unknown as SliderEvent;
+      } as unknown as PositionEvent;
 
       expect(getClientXY(mouseEvent, "horizontal")).toBe(100);
       expect(getClientXY(mouseEvent, "vertical")).toBe(200);
@@ -210,7 +190,7 @@ describe("sharedFunctions", () => {
     it("handles touch events", () => {
       const touchEvent = {
         touches: [{ clientX: 100, clientY: 200 }],
-      } as unknown as SliderEvent;
+      } as unknown as PositionEvent;
 
       expect(getClientXY(touchEvent, "horizontal")).toBe(100);
       expect(getClientXY(touchEvent, "vertical")).toBe(200);
@@ -219,7 +199,7 @@ describe("sharedFunctions", () => {
     it("handles touch events with no touches", () => {
       const touchEvent = {
         touches: [],
-      } as unknown as SliderEvent;
+      } as unknown as PositionEvent;
 
       expect(getClientXY(touchEvent, "horizontal")).toBe(0);
       expect(getClientXY(touchEvent, "vertical")).toBe(0);

@@ -52,3 +52,22 @@ export function useIsDisabled(): boolean {
 
   return loadState !== "ready";
 }
+
+/**
+ * The elapsed and remaining clock. Both come off `currentSecond`, the 1 Hz atom,
+ * so the 1-second `setInterval` that used to race a 4 Hz event source is gone —
+ * `currentSecond` *is* the 1 Hz clock and cannot drift from it.
+ *
+ * `remaining` is derived in render rather than stored, which is why the
+ * precedence bug that made it a constant cannot come back.
+ */
+export function useTimeDisplay(): { elapsed: number; remaining: number } {
+  const store = usePlayerStore();
+  const currentSecond = useStore(store.currentSecond);
+  const duration = useStore(store.duration);
+
+  return {
+    elapsed: currentSecond,
+    remaining: Math.max(duration - currentSecond, 0),
+  };
+}

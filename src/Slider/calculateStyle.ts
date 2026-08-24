@@ -1,9 +1,20 @@
-import { SliderContextType } from "./SliderContext";
-import { getOffset } from "../Shared/sharedFunctions";
+import { getOffset, type Orientation } from "../Shared/sharedFunctions";
+import type { SliderMode } from "./sliderModes";
 
-export function calculateDragStyle(
-  context: SliderContextType,
-): React.CSSProperties {
+/**
+ * Everything the styles need, and nothing else — the whole slider context used
+ * to be threaded through here.
+ */
+export type StyleContext = {
+  mode: SliderMode;
+  value: number;
+  minValue: number;
+  maxValue: number;
+  sliderLength: number;
+  orientation: Orientation;
+};
+
+export function calculateDragStyle(context: StyleContext): React.CSSProperties {
   const { orientation } = context;
   const offset = getOffset(context);
   return {
@@ -20,7 +31,7 @@ export function calculateDragStyle(
 }
 
 export function calculateProgressStyle(
-  context: SliderContextType,
+  context: StyleContext,
 ): React.CSSProperties {
   const { orientation } = context;
   const progress = getProgress(context);
@@ -33,13 +44,13 @@ export function calculateProgressStyle(
   };
 }
 
-function getProgress(context: SliderContextType): number {
+function getProgress(context: StyleContext): number {
   if (context.sliderLength === 0) {
     return 0;
   }
   const { orientation } = context;
   const isVerticalVolume =
-    context.component === "volume" && orientation === "vertical";
+    context.mode === "volume" && orientation === "vertical";
   const offset = getOffset(context);
   const progress = offset / context.sliderLength;
   return isVerticalVolume ? 1 - progress : progress;

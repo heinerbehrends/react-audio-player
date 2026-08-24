@@ -1,58 +1,23 @@
-import { usePlaybackRateContext } from "./PlaybackRateContext";
-import { PlaybackRateProvider } from "./PlaybackRateProvider";
-import { SetSliderValue } from "../Slider/SetSliderValue";
 import {
   progressStyles,
   calculateProgressStyle,
 } from "../Slider/calculateStyle";
-
-type PlaybackRateSliderComponent = React.FC<
-  React.HTMLAttributes<HTMLDivElement> & {
-    children: React.ReactNode;
-    maxValue?: number;
-    minValue?: number;
-    step?: number;
-  }
-> & {
-  Background: typeof PlaybackRateBackground;
-  Progress: typeof PlaybackRateProgress;
-  Set: typeof Set;
-  Drag: typeof Drag;
-};
-
+import { SetSliderValue } from "../Slider/SetSliderValue";
 import { DragButton } from "../Slider/DragButton";
-
-function Drag(props: React.HTMLAttributes<HTMLButtonElement>) {
-  const playbackRateContext = usePlaybackRateContext();
-  return <DragButton sliderContext={playbackRateContext} {...props} />;
-}
-
-function Set({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
-  const context = usePlaybackRateContext();
-  return (
-    <SetSliderValue sliderContext={context} {...props}>
-      {children}
-    </SetSliderValue>
-  );
-}
-
-type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
-  maxValue?: number;
-  minValue?: number;
-  step?: number;
-};
+import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
+import { useSlider } from "../Slider/useSlider";
 
 function PlaybackRateProgress({
   style,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const context = usePlaybackRateContext();
+  const slider = useSliderContext();
   return (
     <div
       {...props}
       style={{
         ...progressStyles,
-        ...calculateProgressStyle(context),
+        ...calculateProgressStyle(slider),
         ...style,
       }}
     />
@@ -74,36 +39,51 @@ function PlaybackRateBackground({
   );
 }
 
-export const PlaybackRateSlider = Object.assign(
-  ({
-    children,
-    maxValue = 4,
-    minValue = 0.5,
-    step = 0.1,
-    style,
-    ...props
-  }: PlaybackRateSliderProps) => {
-    return (
-      <PlaybackRateProvider maxValue={maxValue} minValue={minValue} step={step}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            gridTemplateRows: "1fr",
-            width: "100%",
-            ...style,
-          }}
-          {...props}
-        >
-          {children}
-        </div>
-      </PlaybackRateProvider>
-    );
-  },
-  {
-    Background: PlaybackRateBackground,
-    Progress: PlaybackRateProgress,
-    Set,
-    Drag,
-  },
-) as PlaybackRateSliderComponent;
+type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
+  children: React.ReactNode;
+  maxValue?: number;
+  minValue?: number;
+  step?: number;
+};
+
+function PlaybackRateSliderRoot({
+  children,
+  maxValue = 4,
+  minValue = 0.5,
+  step = 0.1,
+  style,
+  ...props
+}: PlaybackRateSliderProps) {
+  const slider = useSlider({ mode: "rate", minValue, maxValue, step });
+
+  return (
+    <SliderProvider value={slider}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gridTemplateRows: "1fr",
+          width: "100%",
+          ...style,
+        }}
+        {...props}
+      >
+        {children}
+      </div>
+    </SliderProvider>
+  );
+}
+
+type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
+  Background: typeof PlaybackRateBackground;
+  Progress: typeof PlaybackRateProgress;
+  Set: typeof SetSliderValue;
+  Drag: typeof DragButton;
+};
+
+export const PlaybackRateSlider = Object.assign(PlaybackRateSliderRoot, {
+  Background: PlaybackRateBackground,
+  Progress: PlaybackRateProgress,
+  Set: SetSliderValue,
+  Drag: DragButton,
+}) as PlaybackRateSliderComponent;
