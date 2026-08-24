@@ -1,8 +1,7 @@
-import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useStore } from "../store/atom";
 import { useIsDisabled } from "../store/derived";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-import { useAudioElement } from "../AudioElement/useAudioElement";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type IncreaseDecreaseProps = {
   amount: number;
@@ -35,14 +34,15 @@ export function ChangePlaybackRate({
   );
 }
 
+// The one live bug this phase fixes: `useAudioElement` read
+// `audioElementRef.current.playbackRate` **during render**, correct today only
+// because this component also subscribed to `PlayerContext`, which updated on
+// the very event that changed the element. Subscribing to `rate` removes the
+// tearing hazard rather than managing it.
 function useChangePlaybackRate(amount: number) {
-  const { playbackRate } = useAudioElement();
-  const handleSideEffect = useHandleSideEffect();
-  return useCallback(() => {
-    const newRate = playbackRate + amount;
-    handleSideEffect({
-      type: "SET_PLAYBACK_RATE",
-      playbackRate: newRate,
-    });
-  }, [handleSideEffect, amount, playbackRate]);
+  const store = usePlayerStore();
+  const rate = useStore(store.rate);
+  const { send } = store;
+
+  return () => send({ type: "SET_PLAYBACK_RATE", playbackRate: rate + amount });
 }

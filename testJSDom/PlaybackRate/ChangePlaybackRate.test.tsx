@@ -3,27 +3,11 @@ import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
 import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
-import * as isDisabledModule from "../../src/store/derived";
-import { createPlayerContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
-
-const mockHandleSideEffect = vi.fn();
-vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
-  useHandleSideEffect: () => mockHandleSideEffect,
-}));
-
-let mockAudioElement = {
-  playbackRate: 1,
-} as unknown as HTMLAudioElement;
-
-vi.mock("../../src/AudioElement/useAudioElement", () => ({
-  useAudioElement: () => mockAudioElement,
-}));
+import { renderWithStore } from "../store/renderWithStore";
+import type { MediaFields } from "../store/mediaElementFake";
 
 describe("ChangePlaybackRate", () => {
-  const mockHandlePlayerAction = vi.fn();
   const mockHandleMediaKeys = vi.fn();
-  let mockIsDisabled = false;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -31,131 +15,115 @@ describe("ChangePlaybackRate", () => {
     vi.spyOn(mediaKeysModule, "useHandleMediaKeys").mockReturnValue(
       mockHandleMediaKeys,
     );
-
-    vi.spyOn(isDisabledModule, "useIsDisabled").mockImplementation(
-      () => mockIsDisabled,
-    );
   });
 
-  const playerContext = createPlayerContext();
+  const renderChange = (
+    ui: React.ReactElement,
+    element: Partial<MediaFields> = {},
+  ) => renderWithStore(ui, { element });
 
   it("renders a button with correct text", () => {
-    renderWithPlayerContext({
-      playerContext,
-      component: (
-        <ChangePlaybackRate amount={0.25}>Change Rate</ChangePlaybackRate>
-      ),
-    });
+    renderChange(
+      <ChangePlaybackRate amount={0.25}>Change Rate</ChangePlaybackRate>,
+    );
     const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
     expect(button).toHaveTextContent("Change Rate");
   });
 
   it("sets correct aria-label for increase", () => {
-    renderWithPlayerContext({
-      playerContext,
-      component: (
-        <ChangePlaybackRate amount={0.25}>Change Rate</ChangePlaybackRate>
-      ),
-    });
-    const button = screen.getByRole("button");
-    expect(button).toHaveAttribute(
+    renderChange(
+      <ChangePlaybackRate amount={0.25}>Change Rate</ChangePlaybackRate>,
+    );
+    expect(screen.getByRole("button")).toHaveAttribute(
       "aria-label",
       "Increase playback rate by 0.25x",
     );
   });
 
   it("sets correct aria-label for decrease", () => {
-    renderWithPlayerContext({
-      playerContext,
-      component: (
-        <ChangePlaybackRate amount={-0.25}>Change Rate</ChangePlaybackRate>
-      ),
-    });
-    const button = screen.getByRole("button");
-    expect(button).toHaveAttribute(
+    renderChange(
+      <ChangePlaybackRate amount={-0.25}>Change Rate</ChangePlaybackRate>,
+    );
+    expect(screen.getByRole("button")).toHaveAttribute(
       "aria-label",
       "Decrease playback rate by 0.25x",
     );
   });
 
-  it("calls handlePlayerAction when clicked", () => {
-    const playerContext = createPlayerContext();
-    renderWithPlayerContext({
-      playerContext,
-      component: <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
-    });
-    const button = screen.getByRole("button");
+  it("writes the element on click", () => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
+    );
 
-    fireEvent.click(button);
-    expect(mockHandleSideEffect).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(element.playbackRate).toBe(1.25);
   });
 
   it("uses the useHandleMediaKeys hook for keyboard events", () => {
-    renderWithPlayerContext({
-      playerContext,
-      component: <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
-    });
-    const button = screen.getByRole("button");
+    renderChange(<ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>);
 
-    const keyEvent = { key: "p" };
-    fireEvent.keyDown(button, keyEvent);
+    fireEvent.keyDown(screen.getByRole("button"), { key: "p" });
 
     expect(mockHandleMediaKeys).toHaveBeenCalled();
   });
 
-  it("is disabled when useIsDisabled returns true", () => {
-    mockIsDisabled = true;
-    renderWithPlayerContext({
-      playerContext,
-      component: <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
-    });
+  it("is disabled while the player is loading", () => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
+      { readyState: 0 },
+    );
     const button = screen.getByRole("button");
 
     expect(button).toBeDisabled();
 
     fireEvent.click(button);
-    expect(mockHandlePlayerAction).not.toHaveBeenCalled();
+    expect(element.playbackRate).toBe(1);
   });
 
   it("accepts and applies additional props", () => {
-    renderWithPlayerContext({
-      playerContext,
-      component: (
-        <ChangePlaybackRate
-          amount={0.25}
-          data-testid="custom-button"
-          className="custom-class"
-        >
-          Test
-        </ChangePlaybackRate>
-      ),
-    });
+    renderChange(
+      <ChangePlaybackRate
+        amount={0.25}
+        data-testid="custom-button"
+        className="custom-class"
+      >
+        Test
+      </ChangePlaybackRate>,
+    );
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute("data-testid", "custom-button");
     expect(button).toHaveClass("custom-class");
   });
 
-  it("calculates new playback rate based on current rate and amount", () => {
-    mockAudioElement = {
-      playbackRate: 2,
-    } as unknown as HTMLAudioElement;
-    vi.spyOn(isDisabledModule, "useIsDisabled").mockReturnValue(false);
-    const playerContext = createPlayerContext();
-    renderWithPlayerContext({
-      playerContext,
-      component: (
-        <ChangePlaybackRate amount={0.5}>Change Rate</ChangePlaybackRate>
-      ),
-    });
+  it("adds the amount to the current rate", () => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={0.5}>Change Rate</ChangePlaybackRate>,
+      { playbackRate: 2 },
+    );
 
-    const button = screen.getByRole("button");
+    fireEvent.click(screen.getByRole("button"));
 
-    fireEvent.click(button);
+    expect(element.playbackRate).toBe(2.5);
+  });
 
-    expect(mockHandleSideEffect).toHaveBeenCalledWith({
-      type: "SET_PLAYBACK_RATE",
-      playbackRate: 2.5,
-    });
+  /**
+   * The tearing hazard this migration removes. `useAudioElement` read
+   * `playbackRate` during render; a `ratechange` the component is subscribed to
+   * is what makes the next click compute from a fresh value.
+   */
+  it("adds to the rate the element reports after a ratechange", () => {
+    const { element, emit } = renderChange(
+      <ChangePlaybackRate amount={0.5}>Change Rate</ChangePlaybackRate>,
+      { playbackRate: 1 },
+    );
+
+    element.playbackRate = 2;
+    emit("ratechange");
+
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(element.playbackRate).toBe(2.5);
   });
 });

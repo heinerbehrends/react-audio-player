@@ -1,47 +1,37 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
 import { Time } from "../../src/TimeDisplay/TimeDisplay";
-import { render, screen } from "@testing-library/react";
-import React from "react";
-import {
-  PlayerContext,
-  PlayerContextType,
-} from "../../src/Player/PlayerContext";
 import "@testing-library/jest-dom";
-import { createPlayerContext } from "../testUtils";
-import { TestProviders } from "../testComponents";
 import { formatTime } from "../../src/Shared/sharedFunctions";
+import { createTestStore } from "../store/createTestStore";
+import { renderWithStore } from "../store/renderWithStore";
+import type { TimeDisplay } from "../../src/store/createPlayerStore";
 
-const mockAudioElement = {
-  currentTime: 65,
-  duration: 120,
-} as unknown as HTMLAudioElement;
-
-vi.mock("../../src/AudioElement/useAudioElement", () => ({
-  useAudioElement: () => mockAudioElement,
-}));
-
-const createWrapper =
-  (context: PlayerContextType) =>
-  ({ children }: { children: React.ReactNode }) => (
-    <TestProviders>
-      <PlayerContext.Provider value={context}>
-        {children}
-      </PlayerContext.Provider>
-    </TestProviders>
-  );
+/** `timeDisplay` is the one writable atom, so a test sets it directly. */
+function withTimeDisplay(timeDisplay: TimeDisplay) {
+  const harness = createTestStore({ readyState: 1, duration: 120 });
+  harness.store.timeDisplay.set(timeDisplay);
+  return harness;
+}
 
 describe("Time", () => {
-  const defaultContext = createPlayerContext();
-  it("hides when showing remaining time", () => {
-    const context = { ...defaultContext, timeDisplay: "remaining" as const };
-    render(<Time.Elapsed />, { wrapper: createWrapper(context) });
+  it("hides Elapsed when showing remaining time", () => {
+    renderWithStore(<Time.Elapsed />, {
+      testStore: withTimeDisplay("remaining"),
+    });
     expect(screen.queryByLabelText("elapsed")).not.toBeInTheDocument();
   });
 
+  it("hides Remaining when showing elapsed time", () => {
+    renderWithStore(<Time.Remaining />, {
+      testStore: withTimeDisplay("elapsed"),
+    });
+    expect(screen.queryByLabelText("remaining")).not.toBeInTheDocument();
+  });
+
   it("has correct aria attributes", () => {
-    const context = { ...defaultContext, timeDisplay: "remaining" as const };
-    render(<Time.Toggle>Toggle</Time.Toggle>, {
-      wrapper: createWrapper(context),
+    renderWithStore(<Time.Toggle>Toggle</Time.Toggle>, {
+      testStore: withTimeDisplay("remaining"),
     });
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute(
@@ -49,6 +39,43 @@ describe("Time", () => {
       "Toggle elapsed and remaining time",
     );
     expect(button).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("flips the atom on click, so the two halves swap", () => {
+    const testStore = withTimeDisplay("elapsed");
+    renderWithStore(
+      <Time.Toggle>
+        Toggle
+        <Time.Elapsed />
+        <Time.Remaining />
+      </Time.Toggle>,
+      { testStore },
+    );
+    expect(screen.getByLabelText("elapsed")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(testStore.store.timeDisplay.get()).toBe("remaining");
+    expect(screen.queryByLabelText("elapsed")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("remaining")).toBeInTheDocument();
+  });
+
+  it("renders Duration from the duration atom", () => {
+    renderWithStore(<Time.Duration />, {
+      element: { readyState: 1, duration: 120 },
+    });
+    expect(screen.getByLabelText("duration")).toHaveTextContent("2:00");
+  });
+
+  it("follows a durationchange", () => {
+    const { element, emit } = renderWithStore(<Time.Duration />, {
+      element: { readyState: 1, duration: 120 },
+    });
+
+    element.duration = 121;
+    emit("durationchange");
+
+    expect(screen.getByLabelText("duration")).toHaveTextContent("2:01");
   });
 
   it("formats time correctly", () => {

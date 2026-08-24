@@ -1,9 +1,8 @@
-import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { areNumbersClose } from "../Shared/sharedFunctions";
+import { useStore } from "../store/atom";
 import { useIsDisabled } from "../store/derived";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-import { usePlayerContext } from "../Player/PlayerContext";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SetPlaybackRateProps = {
   rate: number;
@@ -53,8 +52,9 @@ export function CurrentIndicator({
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 export function RateDisplay({ ...props }: RateDisplayProps) {
-  const { playbackRate } = usePlayerContext();
-  const roundedRate = Math.round(playbackRate * 100) / 100;
+  const store = usePlayerStore();
+  const rate = useStore(store.rate);
+  const roundedRate = Math.round(rate * 100) / 100;
   return (
     <span aria-label="Current playback rate" {...props}>
       {roundedRate}x
@@ -63,14 +63,12 @@ export function RateDisplay({ ...props }: RateDisplayProps) {
 }
 
 function useSetPlaybackRate(rate: number) {
-  const handleSideEffect = useHandleSideEffect();
-  const setPlaybackRate = useCallback(() => {
-    handleSideEffect({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
-  }, [handleSideEffect, rate]);
-  return setPlaybackRate;
+  const { send } = usePlayerStore();
+  return () => send({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
 }
 
 function useIsCurrent(rate: number) {
-  const { playbackRate } = usePlayerContext();
-  return areNumbersClose(rate, playbackRate);
+  const store = usePlayerStore();
+  const currentRate = useStore(store.rate);
+  return areNumbersClose(rate, currentRate);
 }
