@@ -1,8 +1,13 @@
 # Refactor Plan: External Store Architecture
 
-Status: Phase 0 in progress — entry points, public surface, README and the slider-semantics
-fix are landed; known bugs, the unit-test investment and most of the E2E rows remain. Bundle
-figures measured 2026-08-21 against commit `b4df69c`.
+Status: Phases 1 and 2 landed. `PlayerContext`, `PlayerProvider` and `playerReducer` are
+gone; the store, the sync layer, `PlayerConfigContext` and `store/derived.ts` are in place,
+and every player component reads atoms and dispatches through `store.send`. Phase 3 is next.
+
+Phase 0 is *not* finished, and what remains of it is listed under its own heading: the two
+known bugs, the `formatTime` work, the `calculateStyle` inversion tests, and most of the E2E
+rows. Two of those rows landed early, with the Phase 2 code they pin. Bundle figures measured
+2026-08-21 against commit `b4df69c`.
 
 ## 1. Why
 
@@ -455,10 +460,16 @@ instantiated once per slider.
 
 Each phase leaves the library working and is reviewable on its own.
 
-### Phase 0 — Public surface, known bugs, and coverage
+### Phase 0 — Public surface, known bugs, and coverage — **partly landed**
 
 Lands first: it changes the public surface, and it is easier to refactor against the
 surface you intend to keep. Nothing here depends on the store.
+
+The entry-point, public-surface and accessibility work is done. Still outstanding: the two
+known bugs, the `formatTime` H:MM:SS change and its clamp, the four `calculateStyle`
+inversion assertions, the `?src=` and `?players=2` URL params, and every E2E row below except
+the three noted as landed. Phase 3's safety net is the part still missing, so it is the thing
+to finish before Phase 3 starts.
 
 **Entry points**
 
@@ -644,8 +655,9 @@ Two rules decide what belongs here, and the second is the one that catches omiss
 
 Three fixture changes first, all small:
 
-- [ ] Extend `getAudioState` in `testE2E/test-utils.ts` with `volume`, `muted` and
-      `playbackRate`; add the volume, rate and mute labels to the `labels` map.
+- [x] Extend `getAudioState` in `testE2E/test-utils.ts` with `volume`, `muted` and
+      `playbackRate`; add the volume, rate and mute labels to the `labels` map. *(landed with
+      Phase 2, which needed it for `Volume/mute`.)*
 - [ ] Add a `?src=` URL param to `App.tsx`. It already reads `?orientation=` via
       `useUrlParams`, so this is two lines, and it lets one spec swap bad → good in a single
       page session — which is what tests *recovery* rather than just the error state.
@@ -656,10 +668,10 @@ Three fixture changes first, all small:
 | `Volume/volume-drag` | drag thumb to 25% → `el.volume ≈ 0.25` | |
 | | drag thumb to zero → `muted` | pins the `DRAG_END` mute-at-zero rule |
 | | grab the thumb off-centre → value **jumps** by the grab offset | pins today's bug, so Phase 3's fix has to change it deliberately |
-| `Volume/volume-click` | click track at 25% → `el.volume ≈ 0.25` | |
+| `Volume/volume-click` | click track at 25% → `el.volume ≈ 0.25` | **landed in Phase 2**, in `Volume/mute`, as the "sets the volume without muting" case |
 | | vertical (`?orientation=vertical`): drag up raises volume | pins the inversion end-to-end |
-| `Volume/mute` | mute → `aria-pressed="true"`, `el.muted` | |
-| | drag to zero, mute, unmute → volume is audible again | the `dataset` path, which works today |
+| `Volume/mute` | mute → `aria-pressed="true"`, `el.muted` | **landed in Phase 2** |
+| | drag to zero, mute, unmute → volume is audible again | **landed in Phase 2**, on `lastAudibleVolume` rather than the `dataset` path. Asserts "audible", not the pre-drag value |
 | `Volume/volume-state` | volume 0.4 → `MuteButton.LowVolume` renders | the 0.5 threshold, untested at every layer today and a `computed` after Phase 2 |
 | | volume 0.6 → `MuteButton.HighVolume` renders | |
 | | muted → `MuteButton.Muted` renders, whatever the volume | |
@@ -686,7 +698,13 @@ existing 15 tests, so the basic-operations requirement is met once the rows abov
 `playerState === "loading"`, but loading is transient and racy in a real browser. It belongs
 in the jsdom tier in Phase 2 — construct a store, leave `loadState` at `"loading"`, assert the
 buttons are disabled. Deterministic there, flaky here, and it is exactly the tier the store
-makes cheap.
+makes cheap. *Landed: `testJSDom/store/loadingState.test.tsx`.*
+
+**One row is not reachable in this harness.** Clicking the exact left edge of the volume
+track is the only path to `volume: 0` that does not also mute, and Chromium drops clicks
+within ~1 px of an element's start, so the click-to-zero dead-end is pinned by the
+`handleSideEffect` unit tests instead. Worth knowing before writing an E2E row that depends
+on hitting a slider's first pixel.
 
 Write the drag-semantics specs against current behaviour before anything is deleted. Three
 rows assert *intended* rather than current behaviour, so each follows its own fix: the
@@ -702,7 +720,7 @@ which is deferred to Phase 2 with `lastAudibleVolume`.
 *Verify:* full suite green, `check-exports` green, root-import bundle back to its
 pre-`splitting` size.
 
-### Phase 1 — Store, sync layer, provider (no consumers)
+### Phase 1 — Store, sync layer, provider (no consumers) — **landed**
 
 Add `src/store/*`. `PlayerStoreProvider` goes **outermost** in `AudioPlayer`, so Phases 2–3
 delete the providers inside it without ever moving it. The store is created once via
@@ -772,7 +790,7 @@ among fifty component migrations. The real gates:
   `Debug.tsx` reads `PlayerContext` and slider geometry today and has no atom rows; adding a
   store column is part of this phase, not something already wired.
 
-### Phase 2 — Retire `PlayerContext`
+### Phase 2 — Retire `PlayerContext` — **landed**
 
 Highest value, lowest risk: every field of `playerReducer` is either a command or a
 derivation. Fifteen files reference `PlayerContext` today, so the ordering below is what
@@ -920,6 +938,34 @@ with `lastAudibleVolume` — seek, rate, error-recovery, and the a11y specs, sin
 components' disabled state now comes from `loadState`. Plus one case the old code could not
 get right: **a `src` swap while playing leaves `PlayButton` correct**, because `paused` is
 re-primed rather than toggled.
+
+#### What landed, and three deviations
+
+Eight commits, in the order above. 373 jsdom tests and 22 E2E tests green;
+`type-check`, `lint`, `build` and `check-exports` clean.
+
+- **`useHandleSideEffect` survives Phase 2 as an alias for `store.send`.** It was going to
+  keep reading `AudioContext`, but only `send` can supply the `lastAudibleVolume` snapshot
+  the two mute cases need, and two write paths with different capabilities is the mirror
+  problem in miniature. `dragHooks` and `useAttachSliderCallback` still call it; both go in
+  Phase 3, and the file goes with them.
+- **`PlayerStoreProvider` grew an optional `store` prop.** The harness has to mount a
+  component against a store with a fake attached, and the context object stays private, so
+  the provider is the seam. Read once through `useState`, so the value identity is exactly as
+  stable as a created store's.
+- **The volume thumb no longer snaps to zero while muted.** Deleting the `areNumbersClose`
+  mute rule from `useHandleVolumeChange` was listed as a deletion, not a behaviour change,
+  but it had a visible effect: the thumb used to jump to 0 on mute and back on unmute. It now
+  stays where it is, which is what Phase 3's volume mode does anyway once the slider reads
+  the `volume` atom directly.
+
+One more thing worth knowing before Phase 3 touches the volume slider: **a drag to zero
+erodes `lastAudibleVolume`.** Every `volumechange` the drag passes through is a new "last
+audible volume", so unmuting after a drag restores the last non-zero sample — measured at
+0.04 from a drag that started at 0.8 — not the pre-drag volume. That is the named behaviour
+change working as specified, and the E2E row asserts only "audible again". If the pre-drag
+volume turns out to matter, the fix belongs in Phase 3's volume mode, which is the only place
+that knows a drag is in progress; the sync layer must not.
 
 ### Phase 3 — Retire the callback bus, unify the sliders
 
