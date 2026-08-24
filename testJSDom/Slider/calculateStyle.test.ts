@@ -10,7 +10,6 @@ import {
 
 describe("calculateStyle", () => {
   const defaultContext: StyleContext = {
-    mode: "seek",
     value: 0.5,
     minValue: 0,
     maxValue: 1,
@@ -81,11 +80,10 @@ describe("calculateStyle", () => {
       });
     });
 
-    it("handles vertical volume component", () => {
+    it("fills a vertical slider from its value, whatever the slider is", () => {
       const context = {
         ...defaultContext,
         orientation: "vertical" as const,
-        mode: "volume" as const,
         value: 0.5,
       };
       const style = calculateProgressStyle(context);
@@ -106,14 +104,21 @@ describe("calculateStyle", () => {
      * derives the inversion from `orientation` alone; without these assertions
      * that change would flip vertical volume with the suite still green.
      */
+    /**
+     * These four are why the fix could not pass silently. They were written
+     * against the old rule — vertical volume tracking the value, every other
+     * vertical slider inverting it — at values away from 0.5, which is the fixed
+     * point of `x -> 1 - x` where the two rules agree. Deriving from
+     * `orientation` alone makes both cases track the value, so the second pair
+     * flips.
+     */
     it.each([
       [0.25, "scaleY(0.25)"],
       [0.8, "scaleY(0.8)"],
-    ])("tracks the value for vertical volume at %f", (value, expected) => {
+    ])("tracks the value for a vertical slider at %f", (value, expected) => {
       const style = calculateProgressStyle({
         ...defaultContext,
         orientation: "vertical" as const,
-        mode: "volume" as const,
         value,
       });
 
@@ -121,21 +126,24 @@ describe("calculateStyle", () => {
     });
 
     it.each([
-      [0.25, "scaleY(0.75)"],
-      [0.8, "scaleY(0.2)"],
-    ])(
-      "inverts the value for a vertical non-volume slider at %f",
-      (value, expected) => {
-        const style = calculateProgressStyle({
-          ...defaultContext,
-          orientation: "vertical" as const,
-          mode: "seek" as const,
-          value,
-        });
+      [0.25, "scaleX(0.25)"],
+      [0.8, "scaleX(0.8)"],
+    ])("tracks the value for a horizontal slider at %f", (value, expected) => {
+      const style = calculateProgressStyle({ ...defaultContext, value });
 
-        expect(style.transform).toBe(expected);
-      },
-    );
+      expect(style.transform).toBe(expected);
+    });
+
+    it("maps the value through its own range, not through 0 to 1", () => {
+      const style = calculateProgressStyle({
+        ...defaultContext,
+        minValue: 0.5,
+        maxValue: 2.5,
+        value: 1.5,
+      });
+
+      expect(style.transform).toBe("scaleX(0.5)");
+    });
 
     it("handles edge cases", () => {
       const context = {

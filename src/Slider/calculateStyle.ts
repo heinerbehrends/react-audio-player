@@ -1,12 +1,11 @@
 import { getOffset, type Orientation } from "../Shared/sharedFunctions";
-import type { SliderMode } from "./sliderModes";
 
 /**
  * Everything the styles need, and nothing else — the whole slider context used
- * to be threaded through here.
+ * to be threaded through here. Note what is absent: the mode. How a slider fills
+ * is a question about its orientation, not about which slider it is.
  */
 export type StyleContext = {
-  mode: SliderMode;
   value: number;
   minValue: number;
   maxValue: number;
@@ -44,16 +43,30 @@ export function calculateProgressStyle(
   };
 }
 
-function getProgress(context: StyleContext): number {
-  if (context.sliderLength === 0) {
+/**
+ * The fraction of the track that is filled — the value's position in its own
+ * range, and nothing else.
+ *
+ * This used to derive from `getOffset`, which counts vertical pixels from the
+ * top and therefore runs opposite to the value; vertical *volume* then flipped it
+ * back, a double negative that happened to cancel. Keyed on
+ * `component === "volume" && vertical`, so a vertical timeline rendered
+ * backwards. The direction is `transformOrigin`'s job, and it always was.
+ */
+function getProgress({
+  value,
+  minValue,
+  maxValue,
+  sliderLength,
+}: StyleContext): number {
+  if (sliderLength === 0) {
     return 0;
   }
-  const { orientation } = context;
-  const isVerticalVolume =
-    context.mode === "volume" && orientation === "vertical";
-  const offset = getOffset(context);
-  const progress = offset / context.sliderLength;
-  return isVerticalVolume ? 1 - progress : progress;
+  const range = maxValue - minValue;
+  if (range === 0) {
+    return 0;
+  }
+  return (value - minValue) / range;
 }
 
 export const progressStyles = {
