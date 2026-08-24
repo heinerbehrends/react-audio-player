@@ -99,6 +99,47 @@ describe("calculateStyle", () => {
       });
     });
 
+    /**
+     * The three vertical cases above all sit at `value: 0.5`, which is the fixed
+     * point of `x → 1 - x`, so inverted and non-inverted agree exactly there and
+     * none of them pins the inversion. These four do.
+     *
+     * `getOffset` already inverts for vertical, and `getProgress` undoes it again
+     * for vertical volume — a double negative that happens to cancel. Phase 3
+     * derives the inversion from `orientation` alone; without these assertions
+     * that change would flip vertical volume with the suite still green.
+     */
+    it.each([
+      [0.25, "scaleY(0.25)"],
+      [0.8, "scaleY(0.8)"],
+    ])("tracks the value for vertical volume at %f", (value, expected) => {
+      const style = calculateProgressStyle({
+        ...defaultContext,
+        orientation: "vertical" as const,
+        component: "volume" as const,
+        value,
+      });
+
+      expect(style.transform).toBe(expected);
+    });
+
+    it.each([
+      [0.25, "scaleY(0.75)"],
+      [0.8, "scaleY(0.2)"],
+    ])(
+      "inverts the value for a vertical non-volume slider at %f",
+      (value, expected) => {
+        const style = calculateProgressStyle({
+          ...defaultContext,
+          orientation: "vertical" as const,
+          component: "timeline" as const,
+          value,
+        });
+
+        expect(style.transform).toBe(expected);
+      },
+    );
+
     it("handles edge cases", () => {
       const context = {
         ...defaultContext,

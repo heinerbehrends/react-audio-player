@@ -252,4 +252,70 @@ describe("sharedFunctions", () => {
       expect(formatTime(input)).toBe(expected);
     });
   });
+
+  /**
+   * The `clientXY - offsetFromMiddle` call pattern, asserted as the property it
+   * is: for a fixed thumb centre, where inside the thumb the pointer grabbed it
+   * must not change the value. `"seek"` mode composes them this way today; Phase 3
+   * generalises it to volume and rate, which call `calculateSliderValue` on the
+   * raw `clientXY` and so jump the value on first move.
+   */
+  describe("grab-offset composition", () => {
+    const geometry = {
+      sliderStart: 0,
+      sliderLength: 100,
+      minValue: 0,
+      maxValue: 1,
+    };
+    const thumbCentre = 60;
+
+    /**
+     * The two things a pointer event actually carries, kept independent: where
+     * the pointer is, and where inside the thumb it grabbed. The subtraction is
+     * what is under test.
+     */
+    function grab(grabOffset: number) {
+      const clientXY = thumbCentre + grabOffset;
+      const offsetFromMiddle = grabOffset;
+      return { clientXY, offsetFromMiddle };
+    }
+
+    const offsets = [-15, 0, 15];
+
+    it.each(offsets)(
+      "gives the same value for a grab %i px from the thumb centre",
+      (grabOffset) => {
+        const { clientXY, offsetFromMiddle } = grab(grabOffset);
+
+        const value = calculateSliderValue({
+          ...geometry,
+          clientXY: clientXY - offsetFromMiddle,
+        });
+
+        expect(value).toBe(0.6);
+      },
+    );
+
+    it("is the subtraction that carries the property", () => {
+      const composed = offsets.map((grabOffset) => {
+        const { clientXY, offsetFromMiddle } = grab(grabOffset);
+        return calculateSliderValue({
+          ...geometry,
+          clientXY: clientXY - offsetFromMiddle,
+        });
+      });
+
+      // Drop the subtraction and the same three grabs land on three different
+      // values — which is the bug in volume and rate mode today.
+      const raw = offsets.map((grabOffset) =>
+        calculateSliderValue({
+          ...geometry,
+          clientXY: grab(grabOffset).clientXY,
+        }),
+      );
+
+      expect(new Set(composed).size).toBe(1);
+      expect(new Set(raw)).toEqual(new Set([0.45, 0.6, 0.75]));
+    });
+  });
 });
