@@ -12,14 +12,44 @@ import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 import { Debug } from "./Debug";
 
+const defaultSrc = "The-Race.mp3";
+
 function App() {
   const searchParams = useUrlParams();
   const volumeOrientation =
     (searchParams.get("orientation") as "horizontal" | "vertical") ??
     "horizontal";
+  // Lets one spec swap a bad src for a good one inside a single page session,
+  // which is what tests recovery rather than just the error state.
+  const src = searchParams.get("src") ?? defaultSrc;
+  // Two independent players on one page: the per-instance store factory is
+  // otherwise invisible until a consumer hits it.
+  const players = Number(searchParams.get("players") ?? 1);
 
+  if (players > 1) {
+    return (
+      <>
+        {Array.from({ length: players }, (_, index) => (
+          <section key={index} data-testid={`player-${index}`}>
+            <Player src={src} volumeOrientation={volumeOrientation} />
+          </section>
+        ))}
+      </>
+    );
+  }
+
+  return <Player src={src} volumeOrientation={volumeOrientation} showDebug />;
+}
+
+type PlayerProps = {
+  src: string;
+  volumeOrientation: "horizontal" | "vertical";
+  showDebug?: boolean;
+};
+
+function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
   return (
-    <AudioPlayer audioFiles={[{ src: "The-Race.mp3" }]}>
+    <AudioPlayer audioFiles={[{ src }]}>
       <Timeline style={{ height: "40px" }}>
         <Timeline.Seek
           style={{
@@ -41,7 +71,7 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        <Debug type="timeline" />
+        {showDebug ? <Debug type="timeline" /> : null}
       </Timeline>
       <MuteButton>
         <MuteButton.LowVolume>Low Volume</MuteButton.LowVolume>
@@ -54,10 +84,10 @@ function App() {
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
       <Seek amount={10}>Forward</Seek>
-      {/* <Time.Toggle> */}
-      <Time.Elapsed />
-      {/* <Time.Remaining /> */}
-      {/* </Time.Toggle> */}
+      <Time.Toggle>
+        <Time.Elapsed />
+        <Time.Remaining />
+      </Time.Toggle>
       /
       <Time.Duration />
       <Volume
@@ -79,6 +109,7 @@ function App() {
           <Volume.Background style={{ backgroundColor: "lightgray" }} />
         </Volume.Set>
         <Volume.Drag
+          data-testid="volume-drag-thumb"
           style={{
             height: "40px",
             width: "40px",
@@ -86,7 +117,6 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        {/* <Debug type="volume" /> */}
       </Volume>
       <PlaybackRateSlider
         style={{ height: "40px" }}
@@ -104,6 +134,7 @@ function App() {
           />
         </PlaybackRateSlider.Set>
         <PlaybackRateSlider.Drag
+          data-testid="rate-drag-thumb"
           style={{
             height: "40px",
             width: "40px",
@@ -111,7 +142,6 @@ function App() {
             border: "solid 1px darkgray",
           }}
         />
-        {/* <Debug type="playbackRate" /> */}
       </PlaybackRateSlider>
       <PlaybackRate.Display />
       <PlaybackRate>

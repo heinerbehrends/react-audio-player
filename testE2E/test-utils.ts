@@ -79,4 +79,7 @@ export const labels = {
 // live on the slider element -- so E2E targets them via the demo app test hook.
 export const testIds = {
   timelineDragThumb: "timeline-drag-thumb",
+  volumeDragThumb: "volume-drag-thumb",
+  rateDragThumb: "rate-drag-thumb",
+  player: (index: number) => `player-${index}`,
 };
