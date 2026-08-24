@@ -135,6 +135,7 @@ export function useSlider({
   // Read by handlers that outlive a render — the drag's window listeners — so
   // they do not have to be re-attached every time one of these changes.
   const grabOffsetRef = useRef(0);
+  const releaseHoldRef = useRef<(() => void) | null>(null);
   const valueFromStoreRef = useRef(valueFromStore);
   useEffect(() => {
     valueFromStoreRef.current = valueFromStore;
@@ -242,6 +243,27 @@ export function useSlider({
     setDrag({ state: "dragging", value });
   }, []);
 
+  /**
+   * Freeze the audible-volume memory for the gesture, so unmuting afterwards
+   * restores the volume from before it rather than the last non-zero value the
+   * gesture passed through. Taken before the first write, so which value is
+   * remembered does not depend on when the element echoes back.
+   */
+  const holdAudibleVolume = useCallback(() => {
+    if (!config.mutesAtZero) return;
+    releaseHoldRef.current?.();
+    releaseHoldRef.current = store.holdAudibleVolume();
+  }, [config, store]);
+
+  const releaseAudibleVolume = useCallback(() => {
+    releaseHoldRef.current?.();
+    releaseHoldRef.current = null;
+  }, []);
+
+  // A gesture interrupted by an unmount would otherwise leave the memory frozen
+  // for the life of the store.
+  useEffect(() => releaseAudibleVolume, [releaseAudibleVolume]);
+
   const onThumbPointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const rect = event.currentTarget.getBoundingClientRect();
@@ -255,17 +277,20 @@ export function useSlider({
           : clientXY - rect.top - rect.height / 2;
 
       if (config.mutesAtZero) {
-        // Grabbing the thumb of a silenced player makes it audible again.
+        // Grabbing the thumb of a silenced player makes it audible again — at the
+        // remembered volume, which is why the hold can come after.
         store.send({ type: "UNMUTE" });
       }
+      holdAudibleVolume();
       beginDrag(valueAt(clientXY - grabOffset), grabOffset);
     },
-    [orientation, config, store, beginDrag, valueAt],
+    [orientation, config, store, holdAudibleVolume, beginDrag, valueAt],
   );
 
   const onTrackPointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const pressedAt = positionOf(event, orientation);
+      holdAudibleVolume();
       commit(valueAt(pressedAt));
 
       // Pressing the track and *moving* before lifting continues as a drag, with
@@ -276,22 +301,35 @@ export function useSlider({
         const position = positionOf(moveEvent, orientation);
         if (position === pressedAt) return;
         stopWaiting();
+        // The drag takes over the hold from here; releasing is its business.
         beginDrag(valueAt(position), 0);
+      }
+
+      function onPressEnd() {
+        stopWaiting();
+        releaseAudibleVolume();
       }
 
       function stopWaiting() {
         window.removeEventListener("pointermove", onFirstMove);
         window.removeEventListener("touchmove", onFirstMove);
-        window.removeEventListener("pointerup", stopWaiting);
-        window.removeEventListener("touchend", stopWaiting);
+        window.removeEventListener("pointerup", onPressEnd);
+        window.removeEventListener("touchend", onPressEnd);
       }
 
       window.addEventListener("pointermove", onFirstMove);
       window.addEventListener("touchmove", onFirstMove);
-      window.addEventListener("pointerup", stopWaiting);
-      window.addEventListener("touchend", stopWaiting);
+      window.addEventListener("pointerup", onPressEnd);
+      window.addEventListener("touchend", onPressEnd);
     },
-    [orientation, commit, valueAt, beginDrag],
+    [
+      orientation,
+      commit,
+      valueAt,
+      beginDrag,
+      holdAudibleVolume,
+      releaseAudibleVolume,
+    ],
   );
 
   const onKeyDown = useCallback(
@@ -339,10 +377,12 @@ export function useSlider({
 
     function end(event: PointerEvent | TouchEvent) {
       commit(valueFor(event));
+      releaseAudibleVolume();
       setDrag(IDLE);
     }
 
     function cancel() {
+      releaseAudibleVolume();
       setDrag(IDLE);
     }
 
@@ -359,7 +399,15 @@ export function useSlider({
       window.removeEventListener("pointercancel", cancel);
       window.removeEventListener("touchcancel", cancel);
     };
-  }, [dragging, orientation, valueAt, commit, send, config]);
+  }, [
+    dragging,
+    orientation,
+    valueAt,
+    commit,
+    send,
+    config,
+    releaseAudibleVolume,
+  ]);
 
   // The aria value follows the local value while one is in play, so a drag or a
   // keypress is announced as the value being chosen rather than as the element's

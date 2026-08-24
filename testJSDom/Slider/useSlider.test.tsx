@@ -475,3 +475,73 @@ describe("vertical orientation", () => {
     expect(harness.store.element.volume).toBeCloseTo(0.75, 5);
   });
 });
+
+describe("the volume-drag pin", () => {
+  /**
+   * A drag emits a `volumechange` per sample, so without the pin the memory
+   * erodes to the last non-zero value the drag passed through and unmuting
+   * afterwards restores a whisper. The `dataset` stash this replaced kept the
+   * pre-drag volume; the pin is how the atom keeps it too.
+   */
+  it("keeps the pre-drag volume through a drag to zero", () => {
+    const harness = renderSlider({ mode: "volume" }, { volume: 0.8 });
+    expect(harness.store.store.lastAudibleVolume.get()).toBe(0.8);
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(260, 0)));
+
+    // Every intermediate sample echoes back, as a real element would.
+    for (const fraction of [0.5, 0.2, 0.05, 0]) {
+      pointerMove(TRACK_START + TRACK_LENGTH * fraction);
+      echo(harness.store, "volumechange", {
+        volume: harness.store.element.volume,
+      });
+    }
+
+    expect(harness.store.element.volume).toBeCloseTo(0, 5);
+    expect(harness.store.store.lastAudibleVolume.get()).toBe(0.8);
+  });
+
+  it("releases the pin on drag end, so later changes are remembered again", () => {
+    const harness = renderSlider({ mode: "volume" }, { volume: 0.8 });
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(260, 0)));
+    pointerMove(TRACK_START + TRACK_LENGTH * 0.2);
+    pointerUp(TRACK_START + TRACK_LENGTH * 0.2);
+
+    echo(harness.store, "volumechange", { volume: 0.35 });
+
+    expect(harness.store.store.lastAudibleVolume.get()).toBe(0.35);
+  });
+
+  it("releases the pin on a cancelled drag too", () => {
+    const harness = renderSlider({ mode: "volume" }, { volume: 0.8 });
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(260, 0)));
+    pointerMove(TRACK_START + TRACK_LENGTH * 0.2);
+    act(() => void window.dispatchEvent(pointerEvent("pointercancel")));
+
+    echo(harness.store, "volumechange", { volume: 0.35 });
+
+    expect(harness.store.store.lastAudibleVolume.get()).toBe(0.35);
+  });
+
+  it("releases the pin when a track press never becomes a drag", () => {
+    const harness = renderSlider({ mode: "volume" }, { volume: 0.8 });
+
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(0.5)));
+    pointerUp(TRACK_START + TRACK_LENGTH * 0.5);
+
+    echo(harness.store, "volumechange", { volume: 0.5 });
+
+    expect(harness.store.store.lastAudibleVolume.get()).toBe(0.5);
+  });
+
+  it("does not pin for the other two modes", () => {
+    const harness = renderSlider({ mode: "seek" }, { volume: 0.8 });
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(120, 0)));
+    echo(harness.store, "volumechange", { volume: 0.3 });
+
+    expect(harness.store.store.lastAudibleVolume.get()).toBe(0.3);
+  });
+});

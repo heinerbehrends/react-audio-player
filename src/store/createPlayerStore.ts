@@ -26,6 +26,17 @@ export type PlayerStore = {
   timeDisplay: Atom<TimeDisplay>;
 
   send: (action: SideEffectAction) => void;
+  /**
+   * Suspends the `lastAudibleVolume` memory for the duration of a volume drag
+   * and returns its release. Counted, so overlapping holds are safe, and
+   * idempotent per release, so calling it twice cannot unbalance the count.
+   *
+   * It suppresses; it never writes. The volume just before a grab is already in
+   * the memory — the last `volumechange` put it there, and a grab unmutes before
+   * it holds — so freezing is all this needs to do, and the projection invariant
+   * holds: `syncFromElement` is still the only writer.
+   */
+  holdAudibleVolume: () => () => void;
   /** Sets the element, primes every atom off it, subscribes, returns the detach. */
   attach: (element: HTMLAudioElement) => () => void;
 };
@@ -45,13 +56,26 @@ export function createPlayerStore(): PlayerStore {
 
   const timeDisplay = atom<TimeDisplay>("elapsed");
 
-  // A closure variable, not an atom: nothing subscribes to it, and an atom would
+  // Closure variables, not atoms: nothing subscribes to either, and an atom would
   // buy a `set` handle the projection invariant then has to forbid.
   let element: HTMLAudioElement | null = null;
+  let audibleVolumeHolds = 0;
+
+  const holdAudibleVolume = () => {
+    audibleVolumeHolds += 1;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      audibleVolumeHolds -= 1;
+    };
+  };
 
   const attach = (nextElement: HTMLAudioElement) => {
     element = nextElement;
-    const detach = syncFromElement(nextElement, atoms);
+    const detach = syncFromElement(nextElement, atoms, {
+      isAudibleVolumePinned: () => audibleVolumeHolds > 0,
+    });
     return () => {
       detach();
       if (element === nextElement) {
@@ -77,6 +101,7 @@ export function createPlayerStore(): PlayerStore {
     loadState: readable(atoms.loadState),
     timeDisplay,
     send,
+    holdAudibleVolume,
     attach,
   };
 }

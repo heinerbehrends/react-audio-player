@@ -65,11 +65,14 @@ test("clicking the track sets the volume without muting", async () => {
 
 /**
  * The mute round-trip `lastAudibleVolume` has to preserve. Dragging to zero
- * mutes; unmuting then has to leave the player audible. The
- * `dataset.dragStartVolume` stash this replaced is gone, so a broken memory
- * shows up here as a player that unmutes to silence.
+ * mutes; unmuting then has to put the player back where it was.
+ *
+ * This row asserted only "audible again" between Phases 2 and 3, because the
+ * memory tracked every sample a drag passed through and ended up at the last
+ * non-zero one. The volume-drag pin restores the pre-drag value, so the
+ * assertion is tightened to it.
  */
-test("unmuting after a drag to zero leaves the player audible", async () => {
+test("unmuting after a drag to zero restores the pre-drag volume", async () => {
   await setVolume(0.8);
 
   const slider = page.getByLabel(labels.volume);
@@ -90,11 +93,7 @@ test("unmuting after a drag to zero leaves the player audible", async () => {
   await muteButton().click();
   await page.waitForTimeout(80);
 
-  // Audible, but not necessarily the pre-drag 0.8: every `volumechange` during
-  // the drag is a new "last audible volume", so the memory ends up at the last
-  // non-zero sample the drag passed through. That is the named behaviour change
-  // — the old `dataset` stash restored the pre-drag value instead.
   const restored = await getAudioState(page);
   expect(restored.muted).toBe(false);
-  expect(restored.volume).toBeGreaterThan(0);
+  expect(restored.volume).toBeCloseTo(0.8, 2);
 });

@@ -36,10 +36,22 @@ export type SyncableMediaElement = {
   removeEventListener: (type: string, listener: () => void) => void;
 };
 
+/**
+ * `pinned` is the one condition any row has: whether a volume drag is holding
+ * `lastAudibleVolume` still. It is a parameter rather than an atom read, so
+ * "no row reads an atom" survives and the exception is visible at every call
+ * site instead of hidden in a closure.
+ */
 type SyncHandler = (
   element: SyncableMediaElement,
   atoms: ProjectionAtoms,
+  pinned: boolean,
 ) => void;
+
+export type SyncOptions = {
+  /** True while a volume drag holds the audible-volume memory. */
+  isAudibleVolumePinned?: () => boolean;
+};
 
 /**
  * `duration` is `NaN` before metadata and `Infinity` for a live stream, and
@@ -81,10 +93,11 @@ const projectPaused: SyncHandler = (element, atoms) => {
 export function prime(
   element: SyncableMediaElement,
   atoms: ProjectionAtoms,
+  pinned = false,
 ): void {
   atoms.volume.set(element.volume);
   atoms.muted.set(element.muted);
-  if (!element.muted && element.volume > 0) {
+  if (!pinned && !element.muted && element.volume > 0) {
     atoms.lastAudibleVolume.set(element.volume);
   }
   atoms.rate.set(element.playbackRate);
@@ -113,12 +126,18 @@ export const HANDLERS = {
     atoms.loadState.set("ready");
   },
   durationchange: projectDuration,
-  volumechange: (element, atoms) => {
+  volumechange: (element, atoms, pinned) => {
     atoms.volume.set(element.volume);
     atoms.muted.set(element.muted);
     // Not the approximate `areNumbersClose` rule the mute *derivation* uses: an
     // audible-but-tiny volume is still worth remembering.
-    if (!element.muted && element.volume > 0) {
+    //
+    // Unless a drag holds the pin. A drag emits a `volumechange` per sample, so
+    // without this the memory erodes to the last non-zero value the drag passed
+    // through and unmuting afterwards restores a whisper instead of the volume
+    // the user was at. The values a drag passes *through* are not settings
+    // anyone chose.
+    if (!pinned && !element.muted && element.volume > 0) {
       atoms.lastAudibleVolume.set(element.volume);
     }
   },
@@ -155,13 +174,15 @@ export type SyncEvent = keyof typeof HANDLERS;
 export function syncFromElement(
   element: SyncableMediaElement,
   atoms: ProjectionAtoms,
+  { isAudibleVolumePinned }: SyncOptions = {},
 ): () => void {
-  prime(element, atoms);
+  const pinned = () => isAudibleVolumePinned?.() ?? false;
+  prime(element, atoms, pinned());
 
   const events = Object.keys(HANDLERS) as SyncEvent[];
   const detachers = events.map((event) => {
     const handler = HANDLERS[event];
-    const listener = () => handler(element, atoms);
+    const listener = () => handler(element, atoms, pinned());
     element.addEventListener(event, listener);
     return () => element.removeEventListener(event, listener);
   });
