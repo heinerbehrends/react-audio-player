@@ -44,10 +44,10 @@ export const AudioElement = memo(function AudioElement({
   const store = usePlayerStore();
   const [element, setElement] = useState<HTMLAudioElement | null>(null);
 
-  useEffect(() => (element ? store.attach(element) : undefined), [
-    element,
-    store,
-  ]);
+  useEffect(
+    () => (element ? store.attach(element) : undefined),
+    [element, store],
+  );
 
   // `setElement` is stable by React's `useState` guarantee, so the composed ref
   // is stable and this component's `memo` cannot cause a detach/reattach on

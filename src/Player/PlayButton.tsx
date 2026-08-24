@@ -1,6 +1,6 @@
-import { usePlayerContext } from "./PlayerContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
+import { useIsDisabled, usePlayerState } from "../store/derived";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlayButtonProps = {
   children: React.ReactNode;
@@ -32,22 +32,20 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
   );
 }
 
+/**
+ * No state read at all: `TOGGLE_PLAY` already branches on `el.paused`, so the
+ * old `playerState === "playing"` check was a second, staler copy of that
+ * decision.
+ */
 function useHandleClick() {
-  const { playerState } = usePlayerContext();
-  const handleSideEffect = useHandleSideEffect();
-  return () => {
-    if (playerState === "playing") {
-      handleSideEffect({ type: "PAUSE" });
-      return;
-    }
-    handleSideEffect({ type: "PLAY" });
-  };
+  const { send } = usePlayerStore();
+  return () => send({ type: "TOGGLE_PLAY" });
 }
 
 function usePlayButtonProps() {
-  const { playerState } = usePlayerContext();
+  const playerState = usePlayerState();
   const isPlaying = playerState === "playing";
-  const isDisabled = playerState === "loading" || playerState === "error";
+  const isDisabled = useIsDisabled();
   const ariaLabel = ariaLabelMap[playerState];
   return { isPlaying, isDisabled, ariaLabel };
 }
@@ -57,8 +55,7 @@ function Playing({
 }: {
   children: React.ReactNode;
 }): React.ReactElement | null {
-  const { playerState } = usePlayerContext();
-  const isPlaying = playerState === "playing";
+  const isPlaying = usePlayerState() === "playing";
   if (!isPlaying) {
     return null;
   }
@@ -71,8 +68,7 @@ function Paused({
 }: {
   children: React.ReactNode;
 }): React.ReactElement | null {
-  const { playerState } = usePlayerContext();
-  const isPlaying = playerState === "playing";
+  const isPlaying = usePlayerState() === "playing";
   if (isPlaying) {
     return null;
   }

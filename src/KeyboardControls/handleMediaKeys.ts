@@ -1,16 +1,10 @@
-import { useCallback } from "react";
-import { usePlayerContext } from "../Player/PlayerContext";
-import type { PlayerContextAction } from "../Player/PlayerContext";
 import { usePlayerConfig } from "../Player/PlayerConfigContext";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-
-type ActionHandler<Action> = (action: Action) => void;
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
-  handleSideEffect: ActionHandler<SideEffectAction>;
-  handlePlayerAction: ActionHandler<PlayerContextAction>;
+  handleSideEffect: (action: SideEffectAction) => void;
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
@@ -73,25 +67,24 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
   return true;
 }
 
+// Every key in the map is a `SideEffectAction`, so nothing here ever needed the
+// reducer: `handlePlayerAction` was an unread argument. `store.send` has a
+// permanent identity, so the `useCallback` is gone too.
 export function useHandleMediaKeys() {
-  const { handlePlayerAction } = usePlayerContext();
   const { customKeyboardShortcuts } = usePlayerConfig();
-  const handleSideEffect = useHandleSideEffect();
-  return useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      const result = handleMediaKeys({
-        event,
-        handleSideEffect,
-        handlePlayerAction,
-        customKeyboardShortcuts,
-      });
+  const { send } = usePlayerStore();
 
-      if (result) {
-        event.stopPropagation();
-      }
+  return (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const result = handleMediaKeys({
+      event,
+      handleSideEffect: send,
+      customKeyboardShortcuts,
+    });
 
-      return result;
-    },
-    [handleSideEffect, handlePlayerAction, customKeyboardShortcuts],
-  );
+    if (result) {
+      event.stopPropagation();
+    }
+
+    return result;
+  };
 }

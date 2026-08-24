@@ -13,11 +13,11 @@ import type { MediaFields } from "./mediaElementFake";
 
 type RenderWithStoreOptions = Omit<RenderOptions, "wrapper"> & {
   /** An existing harness, when a test needs the store before it renders. */
-  testStore?: TestStore;
+  testStore?: TestStore | undefined;
   /** Otherwise: the element fields to prime from. */
-  element?: Partial<MediaFields>;
-  audioFiles?: AudioFile[];
-  customKeyboardShortcuts?: KeyToActionMap;
+  element?: Partial<MediaFields> | undefined;
+  audioFiles?: AudioFile[] | undefined;
+  customKeyboardShortcuts?: KeyToActionMap | undefined;
 };
 
 export type RenderWithStoreResult = RenderResult &
@@ -43,7 +43,9 @@ export function renderWithStore(
     ...renderOptions
   }: RenderWithStoreOptions = {},
 ): RenderWithStoreResult {
-  const harness = testStore ?? createTestStore(element);
+  // `readyState: 1` by default: a loaded, paused player is what most component
+  // tests mean by "no particular state".
+  const harness = testStore ?? createTestStore({ readyState: 1, ...element });
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <PlayerStoreProvider store={harness.store}>

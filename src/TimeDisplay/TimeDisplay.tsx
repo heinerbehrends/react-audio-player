@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { usePlayerContext } from "../Player/PlayerContext";
 import { useTimeDisplay } from "./useTimeDisplay";
-import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useIsDisabled } from "../store/derived";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { formatTime } from "../Shared/sharedFunctions";
 

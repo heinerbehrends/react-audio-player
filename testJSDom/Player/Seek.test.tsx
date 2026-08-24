@@ -1,27 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { Seek } from "../../src/Player/Seek";
-import { createPlayerContext, createAudioContext } from "../testUtils";
-import { renderWithContexts } from "../testComponents";
+import { renderWithStore } from "../store/renderWithStore";
 import { labels } from "../../testE2E/test-utils";
-
-const mockHandleSideEffect = vi.fn();
-vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
-  useHandleSideEffect: () => mockHandleSideEffect,
-}));
+import type { MediaFields } from "../store/mediaElementFake";
 
 describe("Seek", () => {
-  const defaultContext = createPlayerContext();
-
-  const defaultAudioContext = createAudioContext();
-
-  const renderSeek = (amount: number, context = defaultContext) => {
-    return renderWithContexts({
-      playerContext: context,
-      audioContext: defaultAudioContext,
-      component: <Seek amount={amount}>Seek {amount}</Seek>,
-    });
-  };
+  const renderSeek = (amount: number, element: Partial<MediaFields> = {}) =>
+    renderWithStore(<Seek amount={amount}>Seek {amount}</Seek>, { element });
 
   describe("Rendering", () => {
     it("renders with correct aria-label", () => {
@@ -35,72 +21,53 @@ describe("Seek", () => {
     });
   });
 
+  // The assertions land on the element now, not on a mocked hook: `send` writes
+  // through `handleSideEffect` to the attached fake.
   describe("Click behavior", () => {
     it("seeks forward by specified amount", () => {
-      renderSeek(10);
+      const { element } = renderSeek(10, { currentTime: 30 });
       fireEvent.click(screen.getByLabelText(labels.seekForward));
 
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "SET_TIME_FORWARD",
-        value: 10,
-      });
+      expect(element.currentTime).toBe(40);
     });
 
     it("seeks backward by specified amount", () => {
-      renderSeek(-10);
+      const { element } = renderSeek(-10, { currentTime: 30 });
       fireEvent.click(screen.getByLabelText(labels.seekBackward));
 
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "SET_TIME_FORWARD",
-        value: -10,
-      });
+      expect(element.currentTime).toBe(20);
     });
   });
 
   describe("Keyboard behavior", () => {
     it("handles keyboard events", () => {
-      renderSeek(10);
+      const { element } = renderSeek(10, { currentTime: 30 });
       fireEvent.keyDown(screen.getByLabelText(labels.seekForward), {
         key: "ArrowRight",
       });
 
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "SET_TIME_FORWARD",
-        value: 5,
-      });
+      expect(element.currentTime).toBe(35);
     });
   });
 
   describe("Disabled state", () => {
-    it("is disabled when player is in loading state", () => {
-      const context = {
-        ...defaultContext,
-        playerState: "loading" as const,
-      };
-      renderSeek(10, context);
+    it("is disabled while loading", () => {
+      renderSeek(10, { readyState: 0 });
       expect(screen.getByLabelText(labels.seekForward)).toBeDisabled();
     });
 
-    it("is disabled when player is in error state", () => {
-      const context = {
-        ...defaultContext,
-        playerState: "error" as const,
-      };
-      renderSeek(10, context);
+    it("is disabled on error", () => {
+      renderSeek(10, { error: {} as MediaError });
       expect(screen.getByLabelText(labels.seekForward)).toBeDisabled();
     });
 
-    it("is enabled when player is in paused state", () => {
-      renderSeek(10);
+    it("is enabled when paused", () => {
+      renderSeek(10, { paused: true });
       expect(screen.getByLabelText(labels.seekForward)).not.toBeDisabled();
     });
 
-    it("is enabled when player is in playing state", () => {
-      const context = {
-        ...defaultContext,
-        playerState: "playing" as const,
-      };
-      renderSeek(10, context);
+    it("is enabled when playing", () => {
+      renderSeek(10, { paused: false });
       expect(screen.getByLabelText(labels.seekForward)).not.toBeDisabled();
     });
   });

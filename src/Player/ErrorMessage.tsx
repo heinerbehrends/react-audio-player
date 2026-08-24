@@ -1,12 +1,15 @@
-import { usePlayerContext } from "./PlayerContext";
+import { useStore } from "../store/atom";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ErrorMessageProps = {
   children: React.ReactNode;
 };
 
 export function ErrorMessage({ children }: ErrorMessageProps) {
-  const { playerState: player } = usePlayerContext();
-  if (player === "error") {
+  const store = usePlayerStore();
+  const loadState = useStore(store.loadState);
+
+  if (loadState === "error") {
     return (
       <div
         role="alert"

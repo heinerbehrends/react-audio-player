@@ -1,20 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { ErrorMessage } from "../../src/Player/ErrorMessage";
-import { renderWithPlayerContext } from "../testComponents";
-import { createPlayerContext } from "../testUtils";
+import { renderWithStore } from "../store/renderWithStore";
 
-describe("Error", () => {
-  const mockPlayerContext = createPlayerContext({
-    overrides: {
-      playerState: "error" as const,
-    },
-  });
+const errored = { error: {} as MediaError };
 
-  it("renders error message when player state is 'error'", () => {
-    renderWithPlayerContext({
-      playerContext: mockPlayerContext,
-      component: <ErrorMessage>Custom error message</ErrorMessage>,
+describe("ErrorMessage", () => {
+  it("renders when the element carries an error", () => {
+    renderWithStore(<ErrorMessage>Custom error message</ErrorMessage>, {
+      element: errored,
     });
 
     const errorContainer = screen.getByRole("alert");
@@ -23,18 +17,17 @@ describe("Error", () => {
     expect(screen.getByText("Custom error message")).toBeInTheDocument();
   });
 
-  it("returns null when player state is not 'error'", () => {
-    const { container } = renderWithPlayerContext({
-      playerContext: { ...mockPlayerContext, playerState: "playing" },
-      component: <ErrorMessage>Custom error message</ErrorMessage>,
-    });
+  it("returns null when the load succeeded", () => {
+    const { container } = renderWithStore(
+      <ErrorMessage>Custom error message</ErrorMessage>,
+      { element: { readyState: 1, paused: false } },
+    );
     expect(container).toBeEmptyDOMElement();
   });
 
   it("maintains proper ARIA attributes", () => {
-    renderWithPlayerContext({
-      playerContext: mockPlayerContext,
-      component: <ErrorMessage>Custom error message</ErrorMessage>,
+    renderWithStore(<ErrorMessage>Custom error message</ErrorMessage>, {
+      element: errored,
     });
 
     const errorContainer = screen.getByRole("alert");
@@ -46,11 +39,31 @@ describe("Error", () => {
 
   it("handles different error messages", () => {
     const errorMessage = "Network error occurred";
-    renderWithPlayerContext({
-      playerContext: mockPlayerContext,
-      component: <ErrorMessage>{errorMessage}</ErrorMessage>,
+    renderWithStore(<ErrorMessage>{errorMessage}</ErrorMessage>, {
+      element: errored,
     });
 
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
+  });
+
+  // The live bug the `loadState` machine fixes: `AUDIO_FILE_ERROR` set
+  // `playerState: "error"` permanently, and `AUDIO_FILE_LOADED` only recovered
+  // from `"loading"`, so a bad src followed by a good one stayed broken.
+  it("goes away when a failed src is swapped for a good one", () => {
+    const { emit, element } = renderWithStore(
+      <ErrorMessage>Custom error message</ErrorMessage>,
+      { element: { readyState: 0 } },
+    );
+
+    element.error = {} as MediaError;
+    emit("error");
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    element.error = null;
+    emit("loadstart");
+    element.readyState = 1;
+    emit("loadedmetadata");
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

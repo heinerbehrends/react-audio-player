@@ -5,23 +5,47 @@ import {
   useHandleMediaKeys,
 } from "../../src/KeyboardControls/handleMediaKeys";
 import { renderHook } from "@testing-library/react";
-import type { PlayerContextAction } from "../../src/Player/PlayerContext";
 import React from "react";
-import { createPlayerContext } from "../testUtils";
 import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions";
-import { createAudioContext, createMockAudioElement } from "../testUtils";
-import { createContextWrapper } from "../testComponents";
+import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
+import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
+import { createTestStore } from "../store/createTestStore";
+import type { MediaFields } from "../store/mediaElementFake";
 
 const mockHandleSideEffect = vi.fn();
-vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
-  useHandleSideEffect: () => mockHandleSideEffect,
-}));
+
+/**
+ * `useHandleMediaKeys` dispatches through `store.send` now, so the hook's own
+ * tests assert on the attached element rather than on a mocked hook.
+ */
+function renderMediaKeys(element: Partial<MediaFields> = {}) {
+  const harness = createTestStore({ readyState: 1, ...element });
+  const { result } = renderHook(() => useHandleMediaKeys(), {
+    wrapper: ({ children }: { children: React.ReactNode }) => (
+      <PlayerStoreProvider store={harness.store}>
+        <PlayerConfigProvider
+          audioFiles={[]}
+          customKeyboardShortcuts={undefined}
+        >
+          {children}
+        </PlayerConfigProvider>
+      </PlayerStoreProvider>
+    ),
+  });
+  return { handle: result.current, ...harness };
+}
+
+function keyEvent(key: string) {
+  return {
+    key,
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+  } as unknown as React.KeyboardEvent<HTMLButtonElement>;
+}
 
 describe("handleMediaKeys", () => {
-  const mockHandlePlayerAction = vi.fn();
   let defaultArgs: {
     event: React.KeyboardEvent<HTMLButtonElement>;
-    handlePlayerAction: (action: PlayerContextAction) => void;
     handleSideEffect: (action: SideEffectAction) => void;
     customKeyboardShortcuts: KeyToActionMap;
   };
@@ -33,7 +57,6 @@ describe("handleMediaKeys", () => {
         key: "",
         preventDefault: vi.fn(),
       } as unknown as React.KeyboardEvent<HTMLButtonElement>,
-      handlePlayerAction: mockHandlePlayerAction,
       handleSideEffect: mockHandleSideEffect,
       customKeyboardShortcuts: {
         "`": { type: "TOGGLE_PLAY" },
@@ -348,59 +371,26 @@ describe("useHandleMediaKeys", () => {
   });
 
   it("should handle key events correctly", () => {
-    const audioContext = createAudioContext({
-      audioElementRef: {
-        current: createMockAudioElement() as HTMLAudioElement,
-      },
-    });
+    const { handle, element } = renderMediaKeys({ paused: true });
+    const event = keyEvent("p");
 
-    const playerContext = createPlayerContext();
-    const wrapper = createContextWrapper({ audioContext, playerContext });
-
-    const { result } = renderHook(() => useHandleMediaKeys(), {
-      wrapper,
-    });
-
-    const mockEvent = {
-      key: "p",
-      preventDefault: vi.fn(),
-      stopPropagation: vi.fn(),
-    } as unknown as React.KeyboardEvent<HTMLButtonElement>;
-
-    const handled = result.current(mockEvent);
+    const handled = handle(event);
 
     expect(handled).toBe(true);
-    expect(mockHandleSideEffect).toHaveBeenCalledWith({
-      type: "TOGGLE_PLAY",
-    });
-    expect(mockEvent.preventDefault).toHaveBeenCalled();
-    expect(mockEvent.stopPropagation).toHaveBeenCalled();
+    expect(element.play).toHaveBeenCalled();
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
   });
 
   it("should not stop propagation for unhandled keys", () => {
-    const audioContext = createAudioContext({
-      audioElementRef: {
-        current: createMockAudioElement() as HTMLAudioElement,
-      },
-    });
-    const playerContext = createPlayerContext();
-    const wrapper = createContextWrapper({ audioContext, playerContext });
+    const { handle, element } = renderMediaKeys({ paused: true });
+    const event = keyEvent("x");
 
-    const { result } = renderHook(() => useHandleMediaKeys(), {
-      wrapper,
-    });
-
-    const mockEvent = {
-      key: "x",
-      preventDefault: vi.fn(),
-      stopPropagation: vi.fn(),
-    } as unknown as React.KeyboardEvent<HTMLButtonElement>;
-
-    const handled = result.current(mockEvent);
+    const handled = handle(event);
 
     expect(handled).toBe(false);
-    expect(mockHandleSideEffect).not.toHaveBeenCalled();
-    expect(mockEvent.preventDefault).not.toHaveBeenCalled();
-    expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
+    expect(element.play).not.toHaveBeenCalled();
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(event.stopPropagation).not.toHaveBeenCalled();
   });
 });

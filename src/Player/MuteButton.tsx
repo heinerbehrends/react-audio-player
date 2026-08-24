@@ -1,8 +1,6 @@
-import { useCallback, useContext } from "react";
-import { PlayerContext } from "../Player/PlayerContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled } from "../Shared/useIsDisabled";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
+import { useIsDisabled, useVolumeState } from "../store/derived";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;
@@ -12,7 +10,7 @@ export function MuteButtonComponent({
   children,
   ...props
 }: MuteButtonComponentProps) {
-  const { volumeState } = useContext(PlayerContext);
+  const volumeState = useVolumeState();
   const toggleMute = useToggleMute();
   const handleMediaKeys = useHandleMediaKeys();
   const isDisabled = useIsDisabled();
@@ -20,6 +18,7 @@ export function MuteButtonComponent({
   return (
     <button
       aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
+      // `isMuted` was a second mirror of `muted`; this derives.
       aria-pressed={volumeState === "muted"}
       onKeyDown={handleMediaKeys}
       onClick={toggleMute}
@@ -36,14 +35,12 @@ type MutedProps = {
 };
 
 function useToggleMute() {
-  const handleSideEffect = useHandleSideEffect();
-  return useCallback(() => {
-    handleSideEffect({ type: "TOGGLE_MUTE" });
-  }, [handleSideEffect]);
+  const { send } = usePlayerStore();
+  return () => send({ type: "TOGGLE_MUTE" });
 }
 
 function Muted({ children }: MutedProps): React.ReactElement | null {
-  const { volumeState } = useContext(PlayerContext);
+  const volumeState = useVolumeState();
   if (volumeState !== "muted") return null;
   return <>{children}</>;
 }
@@ -53,7 +50,7 @@ type LowVolumeProps = {
 };
 
 function LowVolume({ children }: LowVolumeProps): React.ReactElement | null {
-  const { volumeState } = useContext(PlayerContext);
+  const volumeState = useVolumeState();
   if (volumeState !== "low") return null;
   return <>{children}</>;
 }
@@ -63,7 +60,7 @@ type HighVolumeProps = {
 };
 
 function HighVolume({ children }: HighVolumeProps): React.ReactElement | null {
-  const { volumeState } = useContext(PlayerContext);
+  const volumeState = useVolumeState();
   if (volumeState !== "high") return null;
   return <>{children}</>;
 }

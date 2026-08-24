@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { areNumbersClose } from "../Shared/sharedFunctions";
-import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useIsDisabled } from "../store/derived";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 import { usePlayerContext } from "../Player/PlayerContext";
 

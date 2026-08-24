@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled } from "../Shared/useIsDisabled";
+import { useIsDisabled } from "../store/derived";
 import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
 import { useAudioElement } from "../AudioElement/useAudioElement";
 

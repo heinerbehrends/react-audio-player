@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, getByRole, fireEvent } from "@testing-library/react";
-import { AudioContext } from "../../src/AudioElement/AudioContext";
 import { SetSliderValue } from "../../src/Slider/SetSliderValue";
 import { createSliderContext } from "../testUtils";
 import { TestProviders } from "../testComponents";
+import { renderWithStore } from "../store/renderWithStore";
 
 /**
  * The store and the static config, which any component reaching
@@ -84,30 +84,20 @@ describe("SetSliderValue", () => {
   });
 
   it("responds to arrow keys, so the semantic slider is operable by keyboard", () => {
-    const audioElement = {
-      currentTime: 20,
-      duration: 100,
-      dataset: {},
-    } as unknown as HTMLAudioElement;
-    const audioContext = {
-      audioElementRef: { current: audioElement },
-      timelineCallbackRef: { current: { handleTimelineAction: null } },
-      volumeCallbackRef: { current: { handleVolumeAction: null } },
-      playbackRateCallbackRef: { current: { handlePlaybackRateAction: null } },
-    };
     const context = createSliderContext({ component: "timeline" });
 
-    const { container } = renderInPlayer(
-      <AudioContext.Provider value={audioContext}>
-        <SetSliderValue sliderContext={context}>Test</SetSliderValue>
-      </AudioContext.Provider>,
+    // The keys reach the element through `store.send` now, so the element comes
+    // from the harness rather than from a hand-built `AudioContext`.
+    const { container, element } = renderWithStore(
+      <SetSliderValue sliderContext={context}>Test</SetSliderValue>,
+      { element: { currentTime: 20, duration: 100 } },
     );
     const button = getByRole(container, "slider");
 
     fireEvent.keyDown(button, { key: "ArrowRight" });
-    expect(audioElement.currentTime).toBe(25);
+    expect(element.currentTime).toBe(25);
 
     fireEvent.keyDown(button, { key: "ArrowLeft" });
-    expect(audioElement.currentTime).toBe(20);
+    expect(element.currentTime).toBe(20);
   });
 });

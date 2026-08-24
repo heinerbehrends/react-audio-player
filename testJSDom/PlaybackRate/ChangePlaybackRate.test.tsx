@@ -3,7 +3,7 @@ import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
 import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
-import * as isDisabledModule from "../../src/Shared/useIsDisabled";
+import * as isDisabledModule from "../../src/store/derived";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 

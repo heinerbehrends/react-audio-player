@@ -1,7 +1,6 @@
-import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled } from "../Shared/useIsDisabled";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
+import { useIsDisabled } from "../store/derived";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SeekButtonComponentProps = {
   children: React.ReactNode;
@@ -28,12 +27,9 @@ export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
   );
 }
 
+// `store.send` is a closure member with a permanent identity, so the
+// `useCallback` this hook used to need is gone.
 function useSeek(amount: number) {
-  const handleSideEffect = useHandleSideEffect();
-  return useCallback(() => {
-    handleSideEffect({
-      type: "SET_TIME_FORWARD",
-      value: amount,
-    });
-  }, [handleSideEffect, amount]);
+  const { send } = usePlayerStore();
+  return () => send({ type: "SET_TIME_FORWARD", value: amount });
 }

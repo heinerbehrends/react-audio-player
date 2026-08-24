@@ -1,201 +1,191 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { MuteButton } from "../../src/Player/MuteButton";
-import type { VolumeState } from "../../src/Player/PlayerContext";
 import "@testing-library/jest-dom";
-import { createPlayerContext, createAudioContext } from "../testUtils";
-import { renderWithContexts, renderWithPlayerContext } from "../testComponents";
+import { renderWithStore } from "../store/renderWithStore";
+import type { MediaFields } from "../store/mediaElementFake";
 
-const mockHandleSideEffect = vi.fn();
-vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
-  useHandleSideEffect: () => mockHandleSideEffect,
-}));
+/**
+ * `volumeState` is a derivation now, so each row is the element state it derives
+ * from: the 0.5 boundary and the "muted wins whatever the volume" rule.
+ */
+const volumeStates: Record<string, Partial<MediaFields>> = {
+  high: { readyState: 1, volume: 0.8, muted: false },
+  low: { readyState: 1, volume: 0.4, muted: false },
+  muted: { readyState: 1, volume: 0.8, muted: true },
+};
+
+const renderMuteButton = (
+  ui: React.ReactElement,
+  element: Partial<MediaFields>,
+) => renderWithStore(ui, { element });
 
 describe("MuteButton", () => {
-  const mockPlayerContext = createPlayerContext();
-
-  const mockAudioContext = createAudioContext();
-
   describe("MuteButtonComponent", () => {
     it.each([
-      ["high", "Mute", "false", false],
-      ["low", "Mute", "false", false],
-      ["muted", "Unmute", "true", true],
-    ])("renders correctly in %s state", (state, name, pressed, isMuted) => {
-      const context = {
-        ...mockPlayerContext,
-        volumeState: state as VolumeState,
-        isMuted,
-        getPlayerState: vi.fn(() => ({
-          volumeState: state as VolumeState,
-          isMuted,
-        })),
-      };
-
-      renderWithContexts({
-        playerContext: context,
-        audioContext: mockAudioContext,
-        component: (
-          <MuteButton>
-            <span>Mute Icon</span>
-          </MuteButton>
-        ),
-      });
+      ["high", "Mute", "false"],
+      ["low", "Mute", "false"],
+      ["muted", "Unmute", "true"],
+    ])("renders correctly in %s state", (state, name, pressed) => {
+      renderMuteButton(
+        <MuteButton>
+          <span>Mute Icon</span>
+        </MuteButton>,
+        volumeStates[state]!,
+      );
       const button = screen.getByRole("button");
       expect(button).toHaveAccessibleName(name);
       expect(button).toHaveAttribute("aria-pressed", pressed);
     });
 
-    it("updates aria-pressed when muted", () => {
-      renderWithContexts({
-        playerContext: mockPlayerContext,
-        audioContext: mockAudioContext,
-        component: (
-          <MuteButton>
-            <span>Mute Icon</span>
-          </MuteButton>
-        ),
-      });
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_MUTE",
-      });
+    it("mutes the element on click", () => {
+      const { element } = renderMuteButton(
+        <MuteButton>
+          <span>Mute Icon</span>
+        </MuteButton>,
+        volumeStates["high"]!,
+      );
+      fireEvent.click(screen.getByRole("button"));
+
+      expect(element.muted).toBe(true);
     });
 
     it("handles keyboard events", () => {
-      renderWithContexts({
-        playerContext: mockPlayerContext,
-        audioContext: mockAudioContext,
-        component: (
-          <MuteButton>
-            <span>Mute Icon</span>
-          </MuteButton>
-        ),
-      });
-      const button = screen.getByRole("button");
-      fireEvent.keyDown(button, { key: "m" });
-      expect(mockHandleSideEffect).toHaveBeenCalled();
+      const { element } = renderMuteButton(
+        <MuteButton>
+          <span>Mute Icon</span>
+        </MuteButton>,
+        volumeStates["high"]!,
+      );
+      fireEvent.keyDown(screen.getByRole("button"), { key: "m" });
+
+      expect(element.muted).toBe(true);
+    });
+
+    it("reflects the element after a volumechange", () => {
+      const { element, emit } = renderMuteButton(
+        <MuteButton>
+          <span>Mute Icon</span>
+        </MuteButton>,
+        volumeStates["high"]!,
+      );
+      expect(screen.getByRole("button")).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+
+      element.muted = true;
+      emit("volumechange");
+
+      expect(screen.getByRole("button")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      expect(screen.getByRole("button")).toHaveAccessibleName("Unmute");
     });
   });
 
   describe("Muted subcomponent", () => {
-    it("renders children when volumeState is muted", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, volumeState: "muted" },
-        component: (
-          <MuteButton.Muted>
-            <span>Muted Icon</span>
-          </MuteButton.Muted>
-        ),
-      });
+    it("renders children when the element is muted", () => {
+      renderMuteButton(
+        <MuteButton.Muted>
+          <span>Muted Icon</span>
+        </MuteButton.Muted>,
+        volumeStates["muted"]!,
+      );
       expect(screen.getByText("Muted Icon")).toBeInTheDocument();
     });
 
-    it("returns null when volumeState is not muted", () => {
-      const { container } = renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, volumeState: "high" },
-        component: (
-          <MuteButton.Muted>
-            <span>Muted Icon</span>
-          </MuteButton.Muted>
-        ),
-      });
+    it("returns null when it is not", () => {
+      const { container } = renderMuteButton(
+        <MuteButton.Muted>
+          <span>Muted Icon</span>
+        </MuteButton.Muted>,
+        volumeStates["high"]!,
+      );
       expect(container).toBeEmptyDOMElement();
+    });
+
+    it("renders for a volume a hair off zero, which the UI treats as muted", () => {
+      renderMuteButton(
+        <MuteButton.Muted>
+          <span>Muted Icon</span>
+        </MuteButton.Muted>,
+        { readyState: 1, volume: 0.0005, muted: false },
+      );
+      expect(screen.getByText("Muted Icon")).toBeInTheDocument();
     });
   });
 
   describe("LowVolume subcomponent", () => {
-    it("renders children when volumeState is low", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, volumeState: "low" },
-        component: (
-          <MuteButton.LowVolume>
-            <span>Low Volume Icon</span>
-          </MuteButton.LowVolume>
-        ),
-      });
+    it("renders children below 0.5", () => {
+      renderMuteButton(
+        <MuteButton.LowVolume>
+          <span>Low Volume Icon</span>
+        </MuteButton.LowVolume>,
+        volumeStates["low"]!,
+      );
       expect(screen.getByText("Low Volume Icon")).toBeInTheDocument();
     });
 
-    it("returns null when volumeState is not low", () => {
-      const { container } = renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, volumeState: "high" },
-        component: (
-          <MuteButton.LowVolume>
-            <span>Low Volume Icon</span>
-          </MuteButton.LowVolume>
-        ),
-      });
+    it("returns null at or above 0.5", () => {
+      const { container } = renderMuteButton(
+        <MuteButton.LowVolume>
+          <span>Low Volume Icon</span>
+        </MuteButton.LowVolume>,
+        volumeStates["high"]!,
+      );
       expect(container).toBeEmptyDOMElement();
     });
   });
 
   describe("HighVolume subcomponent", () => {
-    it("renders children when volumeState is high", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, volumeState: "high" },
-        component: (
-          <MuteButton.HighVolume>
-            <span>High Volume Icon</span>
-          </MuteButton.HighVolume>
-        ),
-      });
+    it("renders children at or above 0.5", () => {
+      renderMuteButton(
+        <MuteButton.HighVolume>
+          <span>High Volume Icon</span>
+        </MuteButton.HighVolume>,
+        volumeStates["high"]!,
+      );
       expect(screen.getByText("High Volume Icon")).toBeInTheDocument();
     });
 
-    it("returns null when volumeState is not high", () => {
-      const { container } = renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, volumeState: "low" },
-        component: (
-          <MuteButton.HighVolume>
-            <span>High Volume Icon</span>
-          </MuteButton.HighVolume>
-        ),
-      });
+    it("returns null below 0.5", () => {
+      const { container } = renderMuteButton(
+        <MuteButton.HighVolume>
+          <span>High Volume Icon</span>
+        </MuteButton.HighVolume>,
+        volumeStates["low"]!,
+      );
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it("returns null when muted, whatever the volume", () => {
+      const { container } = renderMuteButton(
+        <MuteButton.HighVolume>
+          <span>High Volume Icon</span>
+        </MuteButton.HighVolume>,
+        volumeStates["muted"]!,
+      );
       expect(container).toBeEmptyDOMElement();
     });
   });
 
   describe("useToggleMute hook", () => {
-    it("handles mute toggle correctly", () => {
-      renderWithContexts({
-        playerContext: mockPlayerContext,
-        audioContext: mockAudioContext,
-        component: (
-          <MuteButton>
-            <span>Mute Icon</span>
-          </MuteButton>
-        ),
-      });
-      const button = screen.getByRole("button", { name: "Mute" });
+    it("round-trips mute and unmute", () => {
+      const { element } = renderMuteButton(
+        <MuteButton>
+          <span>Mute Icon</span>
+        </MuteButton>,
+        volumeStates["high"]!,
+      );
+      const button = screen.getByRole("button");
 
       fireEvent.click(button);
-
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_MUTE",
-      });
-    });
-
-    it("handles unmute toggle correctly", () => {
-      renderWithContexts({
-        playerContext: mockPlayerContext,
-        audioContext: mockAudioContext,
-        component: (
-          <MuteButton>
-            <span>Mute Icon</span>
-          </MuteButton>
-        ),
-      });
-      const button = screen.getByRole("button", { name: "Mute" });
+      expect(element.muted).toBe(true);
 
       fireEvent.click(button);
-
-      fireEvent.click(button);
-
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_MUTE",
-      });
+      expect(element.muted).toBe(false);
     });
   });
 });

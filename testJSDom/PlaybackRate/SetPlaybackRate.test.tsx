@@ -7,7 +7,7 @@ import {
   RateDisplay,
 } from "../../src/PlaybackRate/SetPlaybackRate";
 import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
-import * as isDisabledModule from "../../src/Shared/useIsDisabled";
+import * as isDisabledModule from "../../src/store/derived";
 import { createPlayerContext } from "../testUtils";
 import { renderWithPlayerContext } from "../testComponents";
 
