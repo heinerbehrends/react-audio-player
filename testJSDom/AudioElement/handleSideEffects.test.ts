@@ -309,11 +309,114 @@ describe("handleSideEffect", () => {
     );
     expect(audioElement.playbackRate).toBe(1.5);
   });
+  /**
+   * `action.step || 0.25` snapped a `step={0}` rate slider to 0.25 on drag while
+   * click-to-set stayed continuous — the same slider behaving two ways.
+   */
+  it("stays continuous on DRAG when step is 0", () => {
+    handleSideEffect(
+      {
+        type: "DRAG",
+        ...defaultSliderState,
+        clientXY: 30,
+        component: "playbackRate",
+        maxValue: 2,
+        minValue: 0.5,
+        step: 0,
+      },
+      audioElement,
+    );
+    expect(audioElement.playbackRate).toBe(0.95);
+  });
+
   it("should handle SET_PLAYBACK_RATE action", () => {
     handleSideEffect(
       { type: "SET_PLAYBACK_RATE", playbackRate: 1.5 },
       audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
+  });
+
+  /**
+   * The ten keyboard actions. `handleMediaKeys.test` verifies key → action and
+   * nothing verified action → element: two half-covered layers that never met.
+   * Every clamp here is the only thing standing between a held-down arrow key and
+   * an out-of-range media property.
+   */
+  describe("the keyboard actions", () => {
+    it("clamps INCREASE_VOLUME at 1", () => {
+      audioElement.volume = 0.99;
+      handleSideEffect({ type: "INCREASE_VOLUME", value: 0.025 }, audioElement);
+      expect(audioElement.volume).toBe(1);
+    });
+
+    // Deliberate: the case returns before assigning, so the volume is left where
+    // it was and only `muted` changes. Unmuting then restores through
+    // `lastAudibleVolume` rather than through this leftover value.
+    it("mutes on DECREASE_VOLUME to near-zero and leaves volume untouched", () => {
+      audioElement.volume = 0.02;
+      handleSideEffect({ type: "DECREASE_VOLUME", value: 0.025 }, audioElement);
+      expect(audioElement.muted).toBe(true);
+      expect(audioElement.volume).toBe(0.02);
+    });
+
+    it("clamps INCREASE_PLAYBACK_RATE at 4", () => {
+      audioElement.playbackRate = 3.99;
+      handleSideEffect(
+        { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(4);
+    });
+
+    it("clamps DECREASE_PLAYBACK_RATE at 0.5", () => {
+      audioElement.playbackRate = 0.51;
+      handleSideEffect(
+        { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(0.5);
+    });
+
+    it("resets the rate to 1 on RESET_PLAYBACK_RATE", () => {
+      audioElement.playbackRate = 2.5;
+      handleSideEffect({ type: "RESET_PLAYBACK_RATE" }, audioElement);
+      expect(audioElement.playbackRate).toBe(1);
+    });
+
+    it("clamps SET_TIME_FORWARD at the duration", () => {
+      audioElement.currentTime = 95;
+      handleSideEffect({ type: "SET_TIME_FORWARD", value: 10 }, audioElement);
+      expect(audioElement.currentTime).toBe(100);
+    });
+
+    // The `<Seek amount={-10}>` path: it routes a negative value through
+    // SET_TIME_FORWARD, which has no lower clamp of its own. This pins today's
+    // reliance on the browser clamping a negative `currentTime`.
+    it("has no lower clamp for a negative SET_TIME_FORWARD", () => {
+      audioElement.currentTime = 5;
+      handleSideEffect({ type: "SET_TIME_FORWARD", value: -10 }, audioElement);
+      expect(audioElement.currentTime).toBe(-5);
+    });
+
+    it("clamps SET_TIME_BACKWARD at 0", () => {
+      audioElement.currentTime = 3;
+      handleSideEffect({ type: "SET_TIME_BACKWARD", value: 10 }, audioElement);
+      expect(audioElement.currentTime).toBe(0);
+    });
+
+    it("goes to 0 on SET_TIME_TO_START", () => {
+      audioElement.currentTime = 42;
+      handleSideEffect({ type: "SET_TIME_TO_START" }, audioElement);
+      expect(audioElement.currentTime).toBe(0);
+    });
+
+    it("goes to a fraction of the duration on SET_TIME_TO_PERCENT", () => {
+      handleSideEffect(
+        { type: "SET_TIME_TO_PERCENT", percent: 0.3 },
+        audioElement,
+      );
+      expect(audioElement.currentTime).toBe(30);
+    });
   });
 });

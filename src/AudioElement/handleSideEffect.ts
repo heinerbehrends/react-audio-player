@@ -132,7 +132,9 @@ export function handleSideEffect(
           break;
         }
         case "playbackRate": {
-          const step = action.step || 0.25;
+          // `??`, not `||`: `<PlaybackRateSlider step={0}>` is continuous, and `||`
+          // snapped it to 0.25 on drag while click-to-set stayed continuous.
+          const step = action.step ?? 0.25;
           const minValue = action.minValue || 0.5;
           const maxValue = action.maxValue || 4;
           const playbackRate = calculateSliderValue({
