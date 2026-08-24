@@ -46,6 +46,9 @@ export async function getAudioState(page: Page) {
       currentTime: audio?.currentTime ?? 0,
       duration: audio?.duration ?? 0,
       isPlaying: audio && !audio.paused,
+      volume: audio?.volume ?? 0,
+      muted: audio?.muted ?? false,
+      playbackRate: audio?.playbackRate ?? 1,
     };
   });
 }
@@ -66,6 +69,10 @@ export const labels = {
   playAudio: "Play audio",
   pauseAudio: "Pause audio",
   timeline: "Timeline slider",
+  volume: "Volume slider",
+  playbackRate: "Playback rate slider",
+  mute: "Mute",
+  unmute: "Unmute",
 };
 
 // The drag thumbs are aria-hidden pointer affordances -- the slider semantics
