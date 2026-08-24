@@ -6,11 +6,7 @@ import {
   usePlayerCallbacks,
   useHandlePlaybackRateChange,
 } from "../../src/AudioElement/audioElementHooks";
-import {
-  createPlayerContext,
-  createAudioContext,
-  createMockAudioElement,
-} from "../testUtils";
+import { createAudioContext, createMockAudioElement } from "../testUtils";
 import { createContextWrapper } from "../testComponents";
 
 describe("audioElementHooks", () => {
@@ -26,8 +22,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => useHandleTimeUpdate(), { wrapper });
 
       result.current();
@@ -45,8 +40,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: null },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => useHandleTimeUpdate(), { wrapper });
 
       result.current();
@@ -67,8 +61,7 @@ describe("audioElementHooks", () => {
           current: { handleTimelineAction: null },
         },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
 
       const { result } = renderHook(() => useHandleTimeUpdate(), { wrapper });
       result.current();
@@ -86,8 +79,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: { ...mockAudioElement, volume: 0.8 } },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => useHandleVolumeChange(), { wrapper });
 
       result.current();
@@ -99,15 +91,13 @@ describe("audioElementHooks", () => {
         value: 0.8,
         component: "volume",
       });
-      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
 
     it("pushes a near-zero volume unchanged, rather than snapping it to 0", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: { ...mockAudioElement, volume: 0.001 } },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => useHandleVolumeChange(), { wrapper });
 
       result.current();
@@ -130,8 +120,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
       expect(Object.keys(result.current).sort()).toEqual([
@@ -146,8 +135,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
       result.current.handleEnded(mockTimelineAction);
@@ -157,7 +145,6 @@ describe("audioElementHooks", () => {
         value: 0,
         component: "timeline",
       });
-      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
 
     it("sets the timeline max value on handleLoadedMetadata", () => {
@@ -165,8 +152,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
       result.current.handleLoadedMetadata(mockTimelineAction);
@@ -175,15 +161,13 @@ describe("audioElementHooks", () => {
         type: "SET_MAX_VALUE",
         maxValue: 100,
       });
-      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
 
     it("should handle null handleTimelineAction in handleLoadedMetadata", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: mockAudioElement },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
       expect(() => result.current.handleLoadedMetadata(null)).not.toThrow();
@@ -194,8 +178,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: null },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
       result.current.handleLoadedMetadata(mockTimelineAction);
@@ -211,8 +194,7 @@ describe("audioElementHooks", () => {
       const audioContext = createAudioContext({
         audioElementRef: { current: { ...mockAudioElement, duration: 180.75 } },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
       const { result } = renderHook(() => usePlayerCallbacks(), { wrapper });
 
       result.current.handleDurationChange(mockTimelineAction);
@@ -221,7 +203,6 @@ describe("audioElementHooks", () => {
         type: "SET_MAX_VALUE",
         maxValue: 180.75,
       });
-      expect(playerContext.handlePlayerAction).not.toHaveBeenCalled();
     });
   });
 
@@ -235,8 +216,7 @@ describe("audioElementHooks", () => {
           current: mockAudioElement,
         },
       });
-      const playerContext = createPlayerContext();
-      const wrapper = createContextWrapper({ audioContext, playerContext });
+      const wrapper = createContextWrapper({ audioContext });
 
       const { result } = renderHook(() => useHandlePlaybackRateChange(), {
         wrapper,

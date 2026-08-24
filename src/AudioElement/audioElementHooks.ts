@@ -6,7 +6,7 @@ import { useTimelineContext } from "../Timeline/TimelineContext";
 /**
  * What is left of the bus after the sync layer took over the player state: every
  * remaining push is a slider-reducer update, and those go in Phase 3. No handler
- * here dispatches to `PlayerContext` any more — the event that used to be
+ * here dispatches to the retired player reducer any more — the event that used to be
  * mirrored into a reducer is the same event `syncFromElement` projects.
  */
 

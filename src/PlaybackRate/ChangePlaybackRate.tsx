@@ -36,7 +36,7 @@ export function ChangePlaybackRate({
 
 // The one live bug this phase fixes: `useAudioElement` read
 // `audioElementRef.current.playbackRate` **during render**, correct today only
-// because this component also subscribed to `PlayerContext`, which updated on
+// because this component also subscribed to the player reducer, which updated on
 // the very event that changed the element. Subscribing to `rate` removes the
 // tearing hazard rather than managing it.
 function useChangePlaybackRate(amount: number) {

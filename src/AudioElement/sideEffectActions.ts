@@ -6,8 +6,8 @@ import type {
 } from "../Slider/SliderContext";
 
 /**
- * The five commands that used to be declared in `Player/PlayerContext.ts` and
- * imported back into this file. `SideEffectAction` is public API, so the union
+ * The five commands that used to be declared alongside the retired player
+ * reducer and imported back into this file. `SideEffectAction` is public API, so the union
  * has to outlive that file — which means its members live where it lives.
  */
 export type PlayAction = {
@@ -69,7 +69,7 @@ type DecreasePlaybackRateAction = {
   value: number;
 };
 
-/** Declared once, here: `PlayerContext` had an identical copy. */
+/** Declared once, here: the retired player reducer had an identical copy. */
 export type SetPlaybackRateAction = {
   type: "SET_PLAYBACK_RATE";
   playbackRate: number;

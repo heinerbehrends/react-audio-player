@@ -2,13 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { AudioElement } from "../../src/AudioElement/AudioElement";
-import { PlayerContext } from "../../src/Player/PlayerContext";
 import { AudioContext } from "../../src/AudioElement/AudioContext";
-import {
-  createPlayerContext,
-  createAudioContext,
-  createMockAudioElement,
-} from "../testUtils";
+import { createAudioContext, createMockAudioElement } from "../testUtils";
 import { renderWithContexts, TestProviders } from "../testComponents";
 
 describe("AudioElement", () => {
@@ -27,7 +22,6 @@ describe("AudioElement", () => {
     });
 
     renderWithContexts({
-      playerContext: createPlayerContext(),
       audioContext: nullCallbacksContext,
       component: <AudioElement />,
     });
@@ -39,15 +33,9 @@ describe("AudioElement", () => {
   });
 
   it("handles the case when no audio files are provided", () => {
-    const noAudioContext = createPlayerContext({
-      overrides: {
-        audioFiles: [],
-      },
-    });
-
     renderWithContexts({
-      playerContext: noAudioContext,
       audioContext: createAudioContext(),
+      audioFiles: [],
       component: <AudioElement />,
     });
     const audio = screen.getByLabelText("audio player");
@@ -62,7 +50,6 @@ describe("AudioElement", () => {
     });
 
     const { rerender } = renderWithContexts({
-      playerContext: createPlayerContext(),
       audioContext: contextWithRef,
       component: <AudioElement />,
     });
@@ -76,9 +63,7 @@ describe("AudioElement", () => {
     rerender(
       <TestProviders>
         <AudioContext.Provider value={contextWithRef}>
-          <PlayerContext.Provider value={createPlayerContext()}>
-            <AudioElement />
-          </PlayerContext.Provider>
+          <AudioElement />
         </AudioContext.Provider>
       </TestProviders>,
     );
@@ -88,15 +73,9 @@ describe("AudioElement", () => {
   });
 
   it("sets the correct src from audioFiles when provided", () => {
-    const contextWithAudioSrc = createPlayerContext({
-      overrides: {
-        audioFiles: [{ src: "test-audio.mp3" }],
-      },
-    });
-
     renderWithContexts({
-      playerContext: contextWithAudioSrc,
       audioContext: createAudioContext(),
+      audioFiles: [{ src: "test-audio.mp3" }],
       component: <AudioElement />,
     });
     const audio = screen.getByLabelText("audio player");
@@ -105,7 +84,6 @@ describe("AudioElement", () => {
 
   it("renders with proper accessibility attributes", () => {
     renderWithContexts({
-      playerContext: createPlayerContext(),
       audioContext: createAudioContext(),
       component: <AudioElement />,
     });
@@ -124,7 +102,6 @@ describe("AudioElement", () => {
     });
 
     renderWithContexts({
-      playerContext: createPlayerContext(),
       audioContext: audioContext,
       component: <AudioElement />,
     });

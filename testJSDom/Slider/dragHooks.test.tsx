@@ -7,9 +7,9 @@ import {
   useOnPointerCancel,
   useSetValue,
 } from "../../src/Slider/dragHooks";
-import { PlayerContext } from "../../src/Player/PlayerContext";
 import type { PointerEvent } from "react";
-import { createSliderContext, createPlayerContext } from "../testUtils";
+import { createSliderContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
 
 const mockHandleSideEffect = vi.fn();
 vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
@@ -25,11 +25,7 @@ describe("dragHooks", () => {
     it("handles drag start for timeline", () => {
       const context = createSliderContext();
       const { result } = renderHook(() => useHandleDragStart(context), {
-        wrapper: ({ children }) => (
-          <PlayerContext.Provider value={createPlayerContext()}>
-            {children}
-          </PlayerContext.Provider>
-        ),
+        wrapper: ({ children }) => <TestProviders>{children}</TestProviders>,
       });
 
       const event = {
@@ -58,11 +54,7 @@ describe("dragHooks", () => {
     it("handles drag start for volume slider", () => {
       const context = createSliderContext({ component: "volume" });
       const { result } = renderHook(() => useHandleDragStart(context), {
-        wrapper: ({ children }) => (
-          <PlayerContext.Provider value={createPlayerContext()}>
-            {children}
-          </PlayerContext.Provider>
-        ),
+        wrapper: ({ children }) => <TestProviders>{children}</TestProviders>,
       });
 
       const event = {

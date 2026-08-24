@@ -2,7 +2,6 @@ import { type SliderContextType } from "../src/Slider/SliderContext";
 import { type AudioContextType } from "../src/AudioElement/AudioContext";
 import { vi } from "vitest";
 import React from "react";
-import { PlayerContextType } from "../src/Player/PlayerContext";
 
 const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
   value: 1,
@@ -17,18 +16,6 @@ const DEFAULT_SLIDER_CONTEXT: SliderContextType = {
   component: "timeline" as const,
   offsetFromMiddle: 10,
   handleSliderAction: vi.fn(),
-};
-
-const DEFAULT_PLAYER_CONTEXT: PlayerContextType = {
-  playerState: "paused" as const,
-  isMuted: false,
-  volumeState: "high" as const,
-  timeDisplay: "elapsed" as const,
-  audioFiles: [] as AudioFile[],
-  handlePlayerAction: vi.fn(),
-  playbackRate: 1,
-  customKeyboardShortcuts: undefined,
-  duration: 100,
 };
 
 const DEFAULT_AUDIO_ELEMENT: Partial<HTMLAudioElement> = {
@@ -46,19 +33,6 @@ export function createSliderContext(
   return {
     ...DEFAULT_SLIDER_CONTEXT,
     handleSliderAction: vi.fn(),
-    ...overrides,
-  };
-}
-
-export function createPlayerContext({
-  overrides = {},
-}: {
-  overrides?: Partial<typeof DEFAULT_PLAYER_CONTEXT>;
-} = {}) {
-  const handlePlayerAction = vi.fn();
-  return {
-    ...DEFAULT_PLAYER_CONTEXT,
-    handlePlayerAction,
     ...overrides,
   };
 }
@@ -117,10 +91,6 @@ export function createMockAudioElement(overrides = {}) {
   };
 }
 
-type AudioFile = {
-  src: string;
-};
-
 type MockProviderProps<T> = {
   children: React.ReactNode;
 } & Partial<T>;
@@ -144,7 +114,6 @@ export function createMockProvider<T extends object>(
 }
 
 export const mockProviders = {
-  PlayerProvider: createMockProvider(createPlayerContext(), "PlayerProvider"),
   SliderProvider: createMockProvider(createSliderContext(), "SliderProvider"),
   AudioProvider: createMockProvider(createAudioContext(), "AudioProvider"),
 } as const;

@@ -1,11 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useTimelineAriaAttributes } from "../../src/Timeline/useTimelineAria";
-import {
-  PlayerContext,
-  PlayerContextType,
-} from "../../src/Player/PlayerContext";
-import { createPlayerContext, createSliderContext } from "../testUtils";
+import { createSliderContext } from "../testUtils";
+import { TestProviders } from "../testComponents";
 
 const defaultSliderContext = createSliderContext({
   component: "timeline" as const,
@@ -24,21 +21,15 @@ vi.mock("../../src/AudioElement/useAudioElement", () => ({
   useAudioElement: () => mockAudioElement,
 }));
 
-const defaultPlayerContext = createPlayerContext();
-
 describe("useTimelineAriaAttributes", () => {
-  const createWrapper =
-    (playerContext: PlayerContextType) =>
-    ({ children }: { children: React.ReactNode }) => (
-      <PlayerContext.Provider value={playerContext}>
-        {children}
-      </PlayerContext.Provider>
-    );
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <TestProviders>{children}</TestProviders>
+  );
 
   it("should return correct aria attributes for timeline", () => {
     const { result } = renderHook(
       () => useTimelineAriaAttributes(defaultSliderContext),
-      { wrapper: createWrapper(defaultPlayerContext) },
+      { wrapper },
     );
 
     expect(result.current).toEqual({
@@ -61,7 +52,7 @@ describe("useTimelineAriaAttributes", () => {
           maxValue: 1,
           component: "volume" as const,
         }),
-      { wrapper: createWrapper(defaultPlayerContext) },
+      { wrapper },
     );
 
     expect(result.current).toEqual({
@@ -82,7 +73,7 @@ describe("useTimelineAriaAttributes", () => {
           value: 1.5,
           component: "playbackRate" as const,
         }),
-      { wrapper: createWrapper(defaultPlayerContext) },
+      { wrapper },
     );
 
     expect(result.current).toEqual({

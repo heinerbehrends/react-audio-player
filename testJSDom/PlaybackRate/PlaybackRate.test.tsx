@@ -1,10 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { PlaybackRate } from "../../src/PlaybackRate/PlaybackRate";
-import { createPlayerContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
-
-const mockPlayerContext = createPlayerContext();
+import { TestProviders } from "../testComponents";
 
 const mockAudioElement = {
   playbackRate: 1.5,
@@ -24,14 +21,15 @@ describe("PlaybackRate", () => {
 
   describe("Subcomponents render correctly", () => {
     it("should render PlaybackRate.Set with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext: mockPlayerContext,
-        component: (
+      render(
+        <TestProviders>
+          (
           <PlaybackRate.Set rate={1.5} data-testid="set-button">
             1.5x
           </PlaybackRate.Set>
-        ),
-      });
+          )
+        </TestProviders>,
+      );
 
       const button = screen.getByTestId("set-button");
       expect(button).toBeInTheDocument();
@@ -40,14 +38,15 @@ describe("PlaybackRate", () => {
     });
 
     it("should render PlaybackRate.Change with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext: mockPlayerContext,
-        component: (
+      render(
+        <TestProviders>
+          (
           <PlaybackRate.Change amount={0.25} data-testid="change-button">
             Faster
           </PlaybackRate.Change>
-        ),
-      });
+          )
+        </TestProviders>,
+      );
 
       const button = screen.getByTestId("change-button");
       expect(button).toBeInTheDocument();
@@ -55,19 +54,20 @@ describe("PlaybackRate", () => {
     });
 
     it("should render PlaybackRate.Current with current rate", () => {
-      renderWithPlayerContext({
-        playerContext: mockPlayerContext,
-        component: <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>,
-      });
+      render(
+        <TestProviders>
+          <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
+        </TestProviders>,
+      );
 
       expect(screen.getByText("*")).toBeInTheDocument();
     });
   });
 
   it("should support composition of components", () => {
-    renderWithPlayerContext({
-      playerContext: mockPlayerContext,
-      component: (
+    render(
+      <TestProviders>
+        (
         <PlaybackRate>
           <PlaybackRate.Set rate={2.0} data-testid="set-button">
             2.0x
@@ -77,8 +77,9 @@ describe("PlaybackRate", () => {
           </PlaybackRate.Set>
           <PlaybackRate.Display />
         </PlaybackRate>
-      ),
-    });
+        )
+      </TestProviders>,
+    );
 
     const button = screen.getByLabelText("Set playback rate to 2x");
     expect(button).toBeInTheDocument();

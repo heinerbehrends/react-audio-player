@@ -3,8 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Volume } from "../../src/Volume/Volume";
 import { VolumeContext } from "../../src/Volume/VolumeContext";
-import { createPlayerContext, createSliderContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
+import { createSliderContext } from "../testUtils";
 import { TestProviders } from "../testComponents";
 
 /**
@@ -23,8 +22,6 @@ const defaultSliderContext = createSliderContext({
   minValue: 0,
   maxValue: 1,
 });
-
-const playerContext = createPlayerContext();
 
 describe("Volume", () => {
   it("should export all subcomponents", () => {
@@ -55,10 +52,7 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Background with expected styles", () => {
-      renderWithPlayerContext({
-        component: <Volume.Background data-testid="background" />,
-        playerContext,
-      });
+      renderInPlayer(<Volume.Background data-testid="background" />);
 
       const background = screen.getByTestId("background");
       expect(background).toBeInTheDocument();
@@ -71,10 +65,7 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Set with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext,
-        component: <Volume.Set data-testid="set">Set</Volume.Set>,
-      });
+      renderInPlayer(<Volume.Set data-testid="set">Set</Volume.Set>);
 
       const set = screen.getByTestId("set");
       expect(set).toBeInTheDocument();
@@ -82,10 +73,7 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Drag with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext,
-        component: <Volume.Drag data-testid="drag" />,
-      });
+      renderInPlayer(<Volume.Drag data-testid="drag" />);
 
       const drag = screen.getByTestId("drag");
       expect(drag).toBeInTheDocument();

@@ -4,8 +4,6 @@ import {
   AudioContext,
   AudioContextType,
 } from "../src/AudioElement/AudioContext";
-import { PlayerContextType } from "../src/Player/PlayerContext";
-import { PlayerContext } from "../src/Player/PlayerContext";
 import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../src/KeyboardControls/handleMediaKeys";
@@ -15,19 +13,20 @@ import type { MediaFields } from "./store/mediaElementFake";
 
 type TestProvidersProps = {
   children: React.ReactNode;
-  audioFiles?: AudioFile[];
+  audioFiles?: AudioFile[] | undefined;
   customKeyboardShortcuts?: KeyToActionMap | undefined;
   /** Fields the attached fake is primed from. */
   element?: Partial<MediaFields>;
 };
 
 /**
- * The store and the static config, which every component needs now that the
- * derivations read atoms and `useHandleMediaKeys` reads
- * `customKeyboardShortcuts` from `PlayerConfigContext`.
+ * The store and the static config — the two providers `AudioPlayer` renders
+ * above the tree, minus the `<audio>` tag.
  *
  * The store comes with a fake attached at `readyState: 1`, so the default is a
- * loaded, paused player — what `createPlayerContext`'s default described.
+ * loaded, paused player. `renderWithStore` is the richer entry point: use this
+ * one when the test drives a legacy slider context and only needs the providers
+ * to exist.
  */
 export function TestProviders({
   children,
@@ -52,66 +51,37 @@ export function TestProviders({
 }
 
 type CreateContextWrapperArgs = {
-  playerContext: PlayerContextType;
   audioContext: AudioContextType;
+  audioFiles?: AudioFile[] | undefined;
 };
 
 export function createContextWrapper({
-  playerContext,
   audioContext,
+  audioFiles,
 }: CreateContextWrapperArgs): React.FC<{ children: React.ReactNode }> {
   return ({ children }: { children: React.ReactNode }) => (
-    <TestProviders
-      audioFiles={playerContext.audioFiles}
-      customKeyboardShortcuts={playerContext.customKeyboardShortcuts}
-    >
+    <TestProviders audioFiles={audioFiles}>
       <AudioContext.Provider value={audioContext}>
-        <PlayerContext.Provider value={playerContext}>
-          {children}
-        </PlayerContext.Provider>
+        {children}
       </AudioContext.Provider>
     </TestProviders>
   );
 }
 
 export function renderWithContexts({
-  playerContext,
   audioContext,
   component,
+  audioFiles,
 }: {
-  playerContext: PlayerContextType;
   audioContext: AudioContextType;
   component: React.ReactNode;
+  audioFiles?: AudioFile[] | undefined;
 }) {
   return render(
-    <TestProviders
-      audioFiles={playerContext.audioFiles}
-      customKeyboardShortcuts={playerContext.customKeyboardShortcuts}
-    >
+    <TestProviders audioFiles={audioFiles}>
       <AudioContext.Provider value={audioContext}>
-        <PlayerContext.Provider value={playerContext}>
-          {component}
-        </PlayerContext.Provider>
-      </AudioContext.Provider>
-    </TestProviders>,
-  );
-}
-
-export function renderWithPlayerContext({
-  playerContext,
-  component,
-}: {
-  playerContext: PlayerContextType;
-  component: React.ReactNode;
-}) {
-  return render(
-    <TestProviders
-      audioFiles={playerContext.audioFiles}
-      customKeyboardShortcuts={playerContext.customKeyboardShortcuts}
-    >
-      <PlayerContext.Provider value={playerContext}>
         {component}
-      </PlayerContext.Provider>
+      </AudioContext.Provider>
     </TestProviders>,
   );
 }
@@ -123,11 +93,5 @@ export function renderWithAudioContext({
   audioContext: AudioContextType;
   component: React.ReactNode;
 }) {
-  return render(
-    <TestProviders>
-      <AudioContext.Provider value={audioContext}>
-        {component}
-      </AudioContext.Provider>
-    </TestProviders>,
-  );
+  return renderWithContexts({ audioContext, component });
 }

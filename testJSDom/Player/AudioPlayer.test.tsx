@@ -10,12 +10,6 @@ vi.mock("../../src/AudioElement/AudioContextProvider", () => ({
   ),
 }));
 
-vi.mock("../../src/Player/PlayerProvider", () => ({
-  PlayerContextProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="player-context-provider">{children}</div>
-  ),
-}));
-
 // `audioFiles` and `customKeyboardShortcuts` are static config, so the assertion
 // is that they reach `PlayerConfigProvider` — the carrier that survives this
 // phase, rather than the reducer provider being retired.
@@ -58,7 +52,6 @@ describe("AudioPlayer", () => {
 
     expect(screen.getByTestId("player-config-provider")).toBeInTheDocument();
     expect(screen.getByTestId("audio-context-provider")).toBeInTheDocument();
-    expect(screen.getByTestId("player-context-provider")).toBeInTheDocument();
     expect(screen.getByTestId("audio-element")).toBeInTheDocument();
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
   });
