@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { composeEventHandlers } from "../../src/Shared/composeEventHandlers";
+import { composeEventHandlers } from "../../src/Slider/composeEventHandlers";
 
 /** The shape the helper actually depends on — a synthetic event, narrowed. */
 const event = (defaultPrevented = false) => ({ defaultPrevented });
