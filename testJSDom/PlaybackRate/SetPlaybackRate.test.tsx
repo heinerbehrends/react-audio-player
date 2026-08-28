@@ -40,16 +40,45 @@ describe("SetPlaybackRate", () => {
     expect(element.playbackRate).toBe(1.5);
   });
 
-  it("marks itself current once the element reports that rate", () => {
+  /**
+   * A9. `aria-current` means "the current item in a set of navigational items",
+   * so it was the wrong attribute for a setting. `aria-pressed` is right here
+   * for the reason it was wrong on the three toggles (A4): those change their
+   * name with their state, and this button's name never moves.
+   */
+  it("reports the rate in effect through aria-pressed", () => {
     const { element, emit } = renderRate(
       <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
     );
-    expect(screen.getByRole("button")).not.toHaveAttribute("aria-current");
+    const button = screen.getByRole("button");
+
+    expect(button).toHaveAttribute("aria-pressed", "false");
+    expect(button).not.toHaveAttribute("aria-current");
 
     element.playbackRate = 1.5;
     emit("ratechange");
 
-    expect(screen.getByRole("button")).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("button")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  /**
+   * `"false"` rather than absent, unlike `aria-disabled`: without it the
+   * inactive rates announce as plain buttons, so a listener cannot tell the row
+   * is a set of choices.
+   */
+  it("writes aria-pressed on the inactive rates too", () => {
+    renderRate(
+      <>
+        <SetPlaybackRate rate={1}>1x</SetPlaybackRate>
+        <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>
+        <SetPlaybackRate rate={2}>2x</SetPlaybackRate>
+      </>,
+      { playbackRate: 1.5 },
+    );
+
+    expect(screen.getAllByRole("button")).toHaveLength(3);
+    expect(screen.getAllByRole("button", { pressed: false })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { pressed: true })).toHaveLength(1);
   });
 
   /**

@@ -59,10 +59,12 @@ test("PlaybackRate.Set writes the rate and marks itself current", async () => {
   await waitForAudioField(page, "playbackRate", { differsFrom: 1 });
 
   expect((await getAudioState(page)).playbackRate).toBeCloseTo(1.5, 5);
-  await expect(setToOneAndAHalf).toHaveAttribute("aria-current", "true");
+  // A9: a toggle button, so the row announces as a set of choices. The others
+  // read `"false"` rather than dropping the attribute.
+  await expect(setToOneAndAHalf).toHaveAttribute("aria-pressed", "true");
   await expect(
     page.getByRole("button", { name: "Set playback rate to 1x" }),
-  ).not.toHaveAttribute("aria-current", "true");
+  ).toHaveAttribute("aria-pressed", "false");
 });
 
 test("PlaybackRate.Display follows the element", async () => {

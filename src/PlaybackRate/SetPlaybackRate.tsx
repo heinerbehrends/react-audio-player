@@ -20,8 +20,11 @@ type SetPlaybackRateProps = {
  * Sets one specific rate — the "1x / 1.5x / 2x" row of buttons. Named "Set
  * playback rate to {rate}x".
  *
- * Carries `aria-current="true"` while the element is at its rate, within 0.001;
- * the attribute is absent otherwise rather than `"false"`.
+ * A toggle button: `aria-pressed` is `"true"` on the rate in effect, within
+ * 0.001, and `"false"` on the others, so the row announces as a set of choices.
+ * The library's other buttons carry no `aria-pressed` — their names change with
+ * their state, and a pressed state on top announces the same fact twice (A4).
+ * This one's name is fixed, so `aria-pressed` is the only channel it has.
  *
  * Live while loading; only an error disables it.
  */
@@ -40,7 +43,11 @@ export function SetPlaybackRate({
       type="button"
       onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
-      aria-current={isCurrent ? "true" : undefined}
+      // Written on every button, `"false"` included — unlike `aria-disabled`,
+      // which is absent when false. Omitting it would leave the inactive rates
+      // announcing as plain buttons, so a listener could not tell the row is a
+      // set of choices or how many there are (A9).
+      aria-pressed={isCurrent}
       {...props}
       // Last, so the gate cannot be spread away.
       {...disabled}

@@ -59,13 +59,23 @@ The volume slider announces the mute as well as the volume — "Muted, 80%" — 
 the two are separate on the element and the arrow keys change the volume without
 unmuting.
 
-Each button is named for what pressing it will do, and the name is the only
-place its state appears: `<MuteButton>` is "Mute" or "Unmute", `<PlayButton>`
-is "Play audio", "Pause audio", "Loading audio" or "Error loading audio", and
-`<Time.Toggle>` is "Show time elapsed" or "Show time remaining". None of them
-sets `aria-pressed`: a name that already says which way the toggle will go,
-plus a pressed state saying it has already gone, announces as a contradiction
-("Unmute, toggle button, pressed"). Pass your own `aria-label` to override.
+Each control says its state in exactly one place.
+
+For the three toggles that is the **name**, which changes with the state:
+`<MuteButton>` is "Mute" or "Unmute", `<PlayButton>` is "Play audio", "Pause
+audio", "Loading audio" or "Error loading audio", and `<Time.Toggle>` is "Show
+time elapsed" or "Show time remaining". None of them sets `aria-pressed` — a
+name that already says which way the toggle will go, plus a pressed state saying
+it has already gone, announces as a contradiction ("Unmute, toggle button,
+pressed").
+
+For `<PlaybackRate.Set>` it is **`aria-pressed`**, because its name does not
+move: "Set playback rate to 1.5x" reads the same whether or not that rate is in
+effect, so the name has no state to carry. The rate in effect is
+`aria-pressed="true"` and the others are `"false"` rather than absent, so the
+row announces as a set of choices rather than as unrelated buttons.
+
+Pass your own `aria-label` to override any of them.
 
 An unavailable control is marked `aria-disabled` and does nothing when
 activated, your own `onClick` included — so style that state from

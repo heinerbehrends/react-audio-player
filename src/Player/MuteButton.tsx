@@ -21,7 +21,8 @@ export function MuteButtonComponent({
       type="button"
       // No `aria-pressed` beside this, deliberately: with both, a screen
       // reader announced "Unmute, toggle button, pressed" — the name says the
-      // button will unmute, the state says it already has (A4).
+      // button will unmute, the state says it already has (A4). `PlaybackRate.Set`
+      // does carry it, because its name does not move.
       aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
       onKeyDown={handleMediaKeys}
       {...props}
