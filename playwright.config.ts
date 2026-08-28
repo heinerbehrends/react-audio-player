@@ -7,7 +7,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
-  retries: 2,
+  // Locally a retry hides the flake from the only person positioned to fix it:
+  // a row that fails then passes is reported green, and the run before a push is
+  // where that matters. CI keeps two, where the noise is the machine's.
+  retries: process.env.CI ? 2 : 0,
   reporter: [["html"], ["list"]],
   use: {
     baseURL: "http://localhost:5173",

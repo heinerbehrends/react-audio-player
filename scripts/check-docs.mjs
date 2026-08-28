@@ -63,10 +63,33 @@ const resolved = new Set(
   ].flatMap(refsInRow),
 );
 
+const backlogRows = backlog.split("\n").filter((line) => line.startsWith("|"));
+const refsInBacklog = new Set(backlogRows.flatMap(refsInRow));
+
+/** Every finding in the file, from its `**A9. …**` heading. */
+const allFindings = [
+  ...new Set(
+    [...findings.matchAll(/^\*\*([A-Z]\d+[a-z]?|P\d-[a-z])\.\s/gm)].map(
+      (match) => match[1],
+    ),
+  ),
+];
+
 const problems = [];
 
-for (const row of backlog.split("\n")) {
-  if (!row.startsWith("|")) continue;
+/**
+ * The gap that opened when the duplicate index was deleted from `Still open`:
+ * S11 and S12 were resolved with nobody noticing they had never had a row here.
+ * A finding is either resolved with evidence or open with a reason — never
+ * neither.
+ */
+for (const ref of allFindings) {
+  if (!resolved.has(ref) && !refsInBacklog.has(ref)) {
+    problems.push(`${ref}: open, but has no row in ${BACKLOG}`);
+  }
+}
+
+for (const row of backlogRows) {
   const refs = refsInRow(row);
   if (refs.length === 0) continue;
   if (row.includes("_(part)_")) continue;
