@@ -81,6 +81,5 @@ type PlayButtonComponent = React.FC<PlayButtonProps> & {
 
 PlayButtonComponent.Playing = Playing;
 PlayButtonComponent.Paused = Paused;
-PlayButtonComponent.PlayButton = PlayButtonComponent;
 
 export const PlayButton = PlayButtonComponent;

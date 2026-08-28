@@ -8,13 +8,17 @@ An accessible headless audio player component for React applications inspired by
 - 🧩 Composable component architecture
 - 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume, playbackRate)
 - ⌨️ Keyboard navigation and screen reader support
-- 📝 Caption/subtitle support
 - ✔️ No dependencies except React 18+
 
 ## Basic Usage
 
 ```jsx
-import { AudioPlayer, PlayButton, Timeline, Volume } from "react-audio-player";
+import {
+  AudioPlayer,
+  PlayButton,
+  Timeline,
+  Volume,
+} from "react-headless-audio-player";
 
 function App() {
   return (
@@ -127,6 +131,7 @@ The root component that provides context to all child components.
 - Improve testing
 - Initial beta release
 - Add playlist components and skip and loop
+- Add caption/subtitle support
 - Add multi-language support
 
 ## Testing

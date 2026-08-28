@@ -1,7 +1,4 @@
-import {
-  areNumbersClose,
-  calculateSliderValue,
-} from "../Shared/sharedFunctions";
+import { areNumbersClose } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./sideEffectActions";
 
 /**
@@ -54,48 +51,6 @@ export function handleSideEffect(
       unmute(audioElement, context);
       break;
     }
-    case "SET_SLIDER_VALUE": {
-      switch (action.component) {
-        case "timeline": {
-          const time = calculateSliderValue(action);
-          audioElement.currentTime = time;
-          break;
-        }
-        case "volume": {
-          const volume = calculateSliderValue(action);
-          audioElement.volume = volume;
-          break;
-        }
-        case "playbackRate": {
-          const playbackRate = calculateSliderValue(action);
-          audioElement.playbackRate = playbackRate;
-          break;
-        }
-      }
-      break;
-    }
-    case "DRAG_END": {
-      switch (action.component) {
-        case "timeline": {
-          const time = calculateSliderValue({
-            ...action,
-            clientXY: action.clientXY - action.offsetFromMiddle,
-          });
-          audioElement.currentTime = time;
-          break;
-        }
-        case "volume": {
-          if (areNumbersClose(audioElement.volume, 0)) {
-            audioElement.muted = true;
-          }
-          break;
-        }
-        case "playbackRate": {
-          return;
-        }
-      }
-      break;
-    }
     case "CHANGE_VALUE": {
       switch (action.component) {
         case "timeline": {
@@ -115,35 +70,6 @@ export function handleSideEffect(
         }
         case "playbackRate": {
           audioElement.playbackRate = action.value;
-          break;
-        }
-      }
-      break;
-    }
-    case "DRAG": {
-      switch (action.component) {
-        case "timeline": {
-          return;
-        }
-        case "volume": {
-          const volume = calculateSliderValue(action);
-          audioElement.muted = false;
-          audioElement.volume = volume;
-          break;
-        }
-        case "playbackRate": {
-          // `??`, not `||`: `<PlaybackRateSlider step={0}>` is continuous, and `||`
-          // snapped it to 0.25 on drag while click-to-set stayed continuous.
-          const step = action.step ?? 0.25;
-          const minValue = action.minValue || 0.5;
-          const maxValue = action.maxValue || 4;
-          const playbackRate = calculateSliderValue({
-            ...action,
-            minValue,
-            maxValue,
-            step,
-          });
-          audioElement.playbackRate = playbackRate;
           break;
         }
       }

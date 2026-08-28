@@ -1,36 +1,5 @@
 export type SliderComponent = "timeline" | "volume" | "playbackRate";
 
-/**
- * The geometry a slider gesture used to travel with. `useSlider` owns the
- * geometry now and commits through `CHANGE_VALUE`, so nothing in `src/`
- * dispatches these — they stay because they are published API.
- */
-export type SliderData = {
-  clientXY: number;
-  sliderStart: number;
-  sliderLength: number;
-  minValue: number;
-  maxValue: number;
-  orientation: "horizontal" | "vertical";
-  step: number;
-  component: SliderComponent;
-};
-
-export type DragStartAction = SliderData & {
-  type: "DRAG_START";
-  offsetFromMiddle: number;
-};
-
-export type DragAction = SliderData & {
-  type: "DRAG";
-  offsetFromMiddle: number;
-};
-
-export type DragEndAction = SliderData & {
-  type: "DRAG_END";
-  offsetFromMiddle: number;
-};
-
 /** `SideEffectAction` is public API, so its members live where the union lives. */
 export type PlayAction = {
   type: "PLAY";
@@ -65,10 +34,6 @@ type ChangeValueAction = {
   type: "CHANGE_VALUE";
   component: SliderComponent;
   value: number;
-};
-
-type SetSliderValueAction = SliderData & {
-  type: "SET_SLIDER_VALUE";
 };
 
 type IncreaseVolumeAction = {
@@ -127,12 +92,8 @@ export type SideEffectAction =
   | StopAudioAction
   | SetPlaybackRateAction
   | ChangeValueAction
-  | DragStartAction
-  | DragAction
-  | DragEndAction
   | AudioFileEndedAction
   | UnmuteAction
-  | SetSliderValueAction
   | IncreaseVolumeAction
   | DecreaseVolumeAction
   | IncreasePlaybackRateAction

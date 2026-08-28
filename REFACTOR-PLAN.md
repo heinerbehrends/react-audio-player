@@ -1,18 +1,18 @@
 # Refactor Plan: External Store Architecture
 
-Status: Phases 0 through 5 landed, and most of Phase 4 with them. The callback bus, all three
+Status: Phases 0 through 6 landed, and most of Phase 4 with them. The callback bus, all three
 slider reducer stacks, `AudioContext`, `PlayerContext` and their providers are gone. Two
 contexts remain — the player store and one `SliderContext` per slider — and the `<audio>`
 element carries one handler, which is policy rather than projection.
 
 346 jsdom tests and 51 E2E tests, up from 386 and 19 at the start; the jsdom count fell
 because ~16 files were deleted with their subjects, and what replaced them tests behaviour
-against a constructed store rather than reducers. `src/` is 2,976 lines across 34 files,
-down from 3,294 across 57 — and 271 of those lines are the demo app, which grew.
+against a constructed store rather than reducers. `src/` is 2,873 lines across 34 files,
+down from 3,294 across 56 — and 267 of those lines are the demo app, which grew.
 
-Phase 6 (measure and reconcile) remains, plus one Phase 4 item: the CSS transition on the
-progress element. Bundle figures below were measured 2026-08-21 against commit `b4df69c`
-and are stale.
+Every phase has landed, the Phase 4 CSS transition included. Bundle figures in section 6
+were re-measured 2026-08-28 and are current. Test counts above predate the Phase 6 cleanup,
+which removed nine tests with the dead actions they covered: **337 jsdom, 51 E2E**.
 
 ## 1. Why
 
@@ -1108,7 +1108,7 @@ before it.
   `Element.prototype.getBoundingClientRect` for the duration of a test. The measurement is
   the one thing about a slider a jsdom test cannot observe for real.
 
-### Phase 4 — `TimeDisplay` and the aria surface — **landed with Phase 3, except the CSS transition**
+### Phase 4 — `TimeDisplay` and the aria surface — **landed**
 
 Drop the 1-second `setInterval`. It was a 1 Hz clock racing a 4 Hz event source, and
 `currentSecond` *is* the 1 Hz clock, so it cannot drift. `Time.Elapsed`, `Time.Remaining`
@@ -1256,10 +1256,10 @@ and bundler). `dist/index.mjs` is **19.75 KB** unzipped.
 
 Two notes for the record:
 
-- The `Time` type change is a real public-surface change. `dist/index.d.ts` now declares
-  `type Time = React.FC<…>` with `React.FC` members where it declared
-  `React.NamedExoticComponent`. Nothing structural depends on it — `Object.assign` still
-  produces the same object — but a consumer who annotated against the old type will see it.
+- The `Time` type changed shape: `dist/index.d.ts` now declares `type Time = React.FC<…>`
+  with `React.FC` members where it declared `React.NamedExoticComponent`. Nothing structural
+  depends on it — `Object.assign` still produces the same object — and the package is
+  unpublished, so there is no consumer to break.
 - `PlayerConfigProvider` carries a comment saying it is deliberately unmemoised and why, so
   the next reader does not re-add the layer; `useSlider`'s docblock carries the converse,
   recording that its 12 `useCallback`s are effect-dependency stability and must survive.
@@ -1275,7 +1275,7 @@ here. One aftereffect: vite's file watcher dies with `EBUSY` on
 `playwright-report/trace/assets/` once a run has written there, so the dev server exits
 after the suite.
 
-### Phase 6 — Measure and reconcile
+### Phase 6 — Measure and reconcile — **landed**
 
 Rebuild, compare against section 6, re-run `check-exports`, update the README.
 
@@ -1283,16 +1283,114 @@ Rebuild, compare against section 6, re-run `check-exports`, update the README.
 must migrate in lockstep with every phase or `pnpm type-check` fails CI. They are
 tree-shaken out of `dist`, not out of the build.
 
-#### Carried in, needing a decision
+#### What landed
 
-- **The CSS transition on the progress element** — the one piece of Phase 4 that did not
-  land. The progress element still tracks `currentTime` at `timeupdate` rate (~4 Hz) with no
-  smoothing.
-- **Prune `SET_SLIDER_VALUE` / `DRAG` / `DRAG_END` from the published `SideEffectAction`
-  union?** Nothing in `src/` dispatches them since Phase 3 retired the bus. Removing them is
-  a breaking change to a public type, so it is the maintainer's call, not a cleanup.
-- **The README claims "Caption/subtitle support"**, which appears to be untrue of the
-  current code. Verify and either implement or drop the claim before the README rewrite.
+Measured 2026-08-28. The baseline was rebuilt from commit `b4df69c` in a throwaway git
+worktree — never a `git stash` in the live tree — with the same minify / treeshake /
+React-external settings. Both numbers are the root import, the only entry either build has
+now that Phase 0 retired the subpaths.
+
+| | Baseline `b4df69c` | Now | Δ |
+|---|---|---|---|
+| `index.mjs`, minified | 22,918 B | 20,226 B | **−2,692 B (−11.7 %)** |
+| `index.mjs`, minified + gzip | 5,995 B | 6,211 B | **+216 B (+3.6 %)** |
+| `src/` | 3,294 lines / 56 files | 2,873 lines / 34 files | −421 lines / −22 files |
+
+**The projection in section 6 was wrong, and in an interesting direction.** It expected
+1.2–1.5 KB gz removed; the bundle is 216 B gz *larger*. Minified bytes did fall, by a lot —
+but the code that went away was three near-identical reducer stacks, which is exactly the
+highly repetitive shape gzip compresses best. What replaced it is denser and shorter and
+compresses worse, so an 11.7 % cut in raw bytes came out as a 3.6 % rise after gzip.
+
+This does not change the verdict. Section 1 already said the win is that ~1,000 lines of
+state-sync machinery stop existing, and that bundle size was "still not the reason to do
+it". It is worth recording plainly rather than quietly restating the projection: on the one
+metric that was quantified in advance, the refactor came out slightly behind.
+
+Also verified: `check-exports` 🟢 for node16-from-ESM and bundler, 346 jsdom, 51 E2E,
+`type-check`, `lint`, `prettier --check`.
+
+**README.** The component list was checked member-by-member against the built surface
+(`Object.keys` on every export of `dist/index.mjs`) and is accurate. One claim was not:
+
+- **"Caption/subtitle support" is dropped from Features and added to the roadmap.** It is
+  not merely unimplemented, it is unreachable: nothing in `src/` renders a `<track>`,
+  `AudioPlayer` renders `<AudioElement />` with no children, and `AudioElement` is not
+  exported — so a consumer cannot supply one either.
+
+#### Carried decisions — all three taken
+
+None was a breaking change: the package is unpublished (`version: 0.0.0`, and the npm name
+was not ours — see below), so each was ordinary cleanup, cheap now and expensive the day
+after the first release.
+
+**1. The CSS transition on the progress element — landed.** `TimelineProgress` carries
+`transition: transform 250ms linear`, matching the `timeupdate` cadence it smooths, so the
+fill advances at the rate the audio does instead of easing into each step. It is **off while
+`dragState === "dragging"`**: the value then updates at pointer rate, and easing reads as the
+thumb lagging the finger. `props.style` spreads last, so a consumer can override or drop it.
+Only the timeline gets it — `volume` and `rate` are driven straight from the gesture and
+should be instant.
+
+Verified in Chrome against the running demo, reading `getComputedStyle` on the fill element:
+`transform 0.25s linear` at rest, no transition mid-drag, and back on after release with the
+dragged value held. The Timeline E2E specs were re-run with `--repeat-each=3` (24 passes) to
+check the added timing sensitivity does not make them flaky.
+
+Not implemented: a `prefers-reduced-motion` opt-out. It cannot be expressed in an inline
+style without adding a `matchMedia` subscription, and a progress bar filling *more* smoothly
+is a weak case for it — but a consumer who wants it can override `transition` through
+`props.style`.
+
+**2. `DRAG_START` / `SET_SLIDER_VALUE` / `DRAG` / `DRAG_END` pruned from `SideEffectAction`.**
+The union is 18 members, down from 22. Also gone: `SliderData`, three `handleSideEffect`
+arms, the now-unused `calculateSliderValue` import there, and nine jsdom tests that existed
+only to cover those arms (346 → 337). `dist/index.mjs` 19.75 KB → 19.15 KB.
+
+One thing went with them worth naming: the `step ?? 0.25` fix in the `DRAG` playbackRate arm,
+and its regression test "stays continuous on DRAG when step is 0". The behaviour it protected
+now lives in `useSlider`, where `step` defaults to `0` and flows into `calculateSliderValue`
+unmodified, so the two-ways-round bug cannot recur — but the named regression test for it is
+gone, and `useSlider`'s own suite is where an equivalent belongs if one is ever wanted.
+
+**3. `PlayButton.PlayButton` removed.** `Object.keys(PlayButton)` on the built bundle is now
+`['Playing', 'Paused']`.
+
+#### Found while verifying, not fixed
+
+`testE2E/Timeline/progress-indicator.spec.ts` ends with an assertion that cannot fail:
+
+    const progress = document.querySelector('[role="progressbar"]');
+
+Nothing in `src/` or the demo sets `role="progressbar"`, so this is always `null`,
+`progressWidth` falls back to `0`, `parentWidth` to `1`, and the comparison is `0` against a
+ratio a few hundredths above zero — inside the `toBeCloseTo(0, 0.25)` tolerance of ~0.28.
+The two assertions above it are real; this one has never tested anything. It is also the
+only E2E coverage the progress *fill* would have, which now matters more than it did, since
+the fill has a transition on it. Left alone because fixing it means deciding whether the
+fill should carry `role="progressbar"` at all — it sits inside an element that is already
+`role="slider"`, and nesting a progressbar inside a slider is questionable ARIA.
+
+#### Release blocker found while reconciling — **resolved**
+
+**The npm name `react-audio-player` was taken.** It belongs to
+`justinmc/react-audio-player` ("A simple React wrapper for the audio tag", MIT, 35 versions,
+created 2016, last published 2022-06-25). Dormant, but published, so the name could not be
+claimed — and npm's dispute process does not apply, since that is a real package with real
+users rather than a squat.
+
+**Renamed to `react-headless-audio-player`**, unscoped, verified 404 on the registry before
+taking it. Unscoped was chosen over `@heinerbehrends/react-audio-player` for discoverability:
+npm search favours unscoped names, "headless" is the term people search since Radix made it
+standard, and an unscoped name avoids both the `--access public` first-publish trap and a
+second rename if the package ever moves to an org. Nothing was published under the old name,
+so the rename cost nothing.
+
+Changed: `package.json` `name` and the matching keyword, and the README import line. **Not**
+changed: `homepage`, `bugs` and `repository` still point at
+`github.com/heinerbehrends/react-audio-player`. Those track the GitHub repo, which is a
+separate name from the npm one — they are correct as long as the repo keeps its current
+name, and want updating in the same commit if it is ever renamed to match.
 
 ## 5. Testing strategy
 
@@ -1310,23 +1408,32 @@ tests were really covering — element event in, state out, minus the bus.
 
 ## 6. Bundle figures
 
-Source at baseline: 3,294 lines across 57 files in `src/`.
+All figures minified, tree-shaken, React external.
 
-Measured, gzipped, minified, tree-shaken, React external:
+**Planning-time, measured 2026-08-21 against `b4df69c`** (which shipped 6 entries):
 
 | Consumer | 6 entries, no splitting | 6 entries, `splitting: true` |
 |---|---|---|
-| root import (`index`) | 6,007 B | 6,758 B |
-| `timeline` + `volume` + `player` subpaths | 9,825 B | 5,932 B |
+| root import (`index`) | 6,007 B gz | 6,758 B gz |
+| `timeline` + `volume` + `player` subpaths | 9,825 B gz | 5,932 B gz |
 
-`splitting: true` was taken for correctness, at +751 B on the root import. Phase 0 reverts
-it along with the subpaths, so the root import returns to ~6,007 B and the bug it was
-defending against stops being possible. `sideEffects: false` then lets consumer bundlers
-tree-shake the root entry.
+`splitting: true` was taken for correctness, at +751 B on the root import. Phase 0 reverted
+it along with the subpaths, and `sideEffects: false` lets consumer bundlers tree-shake the
+root entry.
 
-Projection for the store work: roughly 1.2–1.5 KB gz of contexts, reducers and callback
-plumbing removed, against ~200 B added for the hand-rolled primitive. A real reduction,
-unlike the wash a store dependency would have produced. Still not the reason to do it.
+**Outcome, measured 2026-08-28** — one entry on both sides, baseline rebuilt from
+`b4df69c` in a throwaway worktree:
+
+| | Baseline | Now | Δ |
+|---|---|---|---|
+| `index.mjs` | 22,918 B | 20,226 B | −2,692 B (−11.7 %) |
+| `index.mjs` gz | 5,995 B | 6,211 B | +216 B (+3.6 %) |
+
+The projection — 1.2–1.5 KB gz removed, against ~200 B added for the hand-rolled primitive
+— **did not hold**. Raw bytes fell as expected, but the three near-identical reducer stacks
+that went away were the most gzip-friendly code in the bundle, so the compressed total rose
+slightly. See Phase 6 for the full note. Section 1 called bundle size "not the reason to do
+it", which is the part that survives.
 
 ## 7. Risks
 

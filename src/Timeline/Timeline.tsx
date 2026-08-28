@@ -11,11 +11,24 @@ import { useSlider } from "../Slider/useSlider";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
+/**
+ * The one element still on `currentTime` rather than `currentSecond`, so the
+ * fill arrives in `timeupdate` steps (~4 Hz) and would visibly tick without
+ * smoothing. The duration matches that cadence and the easing is linear, so the
+ * fill advances at the rate the audio does instead of easing into each step.
+ *
+ * Off during a drag: the value then updates at pointer rate, and any easing
+ * reads as the thumb lagging the finger. `props.style` is spread last, so a
+ * consumer can override or drop the transition entirely.
+ */
 function TimelineProgress(props: ProgressProps) {
   const slider = useSliderContext();
   const style = {
     ...progressStyles,
     ...calculateProgressStyle(slider),
+    ...(slider.dragState === "dragging"
+      ? null
+      : { transition: "transform 250ms linear" }),
     ...props.style,
   };
   return <div {...props} style={style} />;

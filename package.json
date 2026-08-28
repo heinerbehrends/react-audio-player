@@ -1,5 +1,5 @@
 {
-  "name": "react-audio-player",
+  "name": "react-headless-audio-player",
   "version": "0.0.0",
   "type": "module",
   "description": "A headless React audio player library",
@@ -8,7 +8,7 @@
     "audio",
     "player",
     "headless",
-    "react-audio-player"
+    "react-headless-audio-player"
   ],
   "homepage": "https://github.com/heinerbehrends/react-audio-player",
   "bugs": "https://github.com/heinerbehrends/react-audio-player/issues",
