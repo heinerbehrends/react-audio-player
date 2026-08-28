@@ -15,8 +15,8 @@ test.afterAll(async () => {
 
 /**
  * The element parks at the end rather than being rewound, which is what
- * `<audio>` does unaided and what every streaming player shows. A consumer's
- * `onEnded` can therefore still read where playback stopped.
+ * `<audio>` does unaided, so a consumer's `onEnded` can still read where
+ * playback stopped.
  */
 test("playing to the end parks at the end, paused", async () => {
   const { duration } = await getAudioState(page);

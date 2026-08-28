@@ -67,11 +67,15 @@ export function AudioElement({
       aria-label="audio player"
       ref={ref}
       /**
-       * Passed straight through. The element parks at the end, as `<audio>` and
-       * every streaming player do, so a consumer's handler can still read where
-       * playback stopped. `play()` on an ended element seeks to 0 itself —
-       * measured in Chrome — so rewinding here bought no replay and only
-       * destroyed that information.
+       * Passed straight through. The element parks at the end, so a consumer's
+       * handler can read where playback stopped; `play()` on an ended element
+       * seeks to 0 by itself, measured in Chrome, so rewinding here bought no
+       * replay and only destroyed that.
+       *
+       * Not the same event in every browser: Firefox also fires `ended` on a
+       * *paused* seek to `duration`, where Chrome fires nothing — so a drag to
+       * the end of the timeline calls this in Firefox only. Measured; recorded
+       * in `BACKLOG.md`.
        */
       onEnded={onEnded}
     >

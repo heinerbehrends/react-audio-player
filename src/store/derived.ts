@@ -180,8 +180,10 @@ export function useIsBuffering(): boolean {
  * position moves. Use `onEnded` for the edge — "advance now" — and this for the
  * level.
  *
- * Always false with `audioProps={{ loop: true }}`: a looping element wraps to 0
- * rather than resting at the end.
+ * A looping element wraps to 0 rather than resting at the end, and does so
+ * without a `timeupdate` reporting the end — measured in Chrome, where
+ * `currentTime` peaked at 283.15 against a duration of 283.33 — so this stays
+ * false under `audioProps={{ loop: true }}`.
  */
 export function useIsAtEnd(): boolean {
   const store = usePlayerStore();

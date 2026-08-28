@@ -35,10 +35,10 @@ describe("AudioElement", () => {
    * thumb there, keeps the clock and the thumb in agreement.
    */
   /**
-   * The element parks at the end, as `<audio>` and every streaming player do.
-   * It used to be rewound here, which bought no replay — `play()` on an ended
-   * element seeks to 0 itself, measured in Chrome — and destroyed the one thing
-   * a consumer's handler might want to read.
+   * The element parks at the end, as `<audio>` does unaided. It used to be
+   * rewound here, which bought no replay — `play()` on an ended element seeks to
+   * 0 itself, measured in Chrome — and destroyed the one thing a consumer's
+   * handler might want to read.
    */
   it("leaves the element where playback stopped", () => {
     renderInPlayer(<AudioElement />);

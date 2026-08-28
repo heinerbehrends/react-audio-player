@@ -109,13 +109,17 @@ gets a row here — what shipped, how it was proven — and is struck through in
 
 ### Found during the work, not in the original review
 
-|                                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Out-of-range media writes throw**     | `volume` outside [0, 1] raises `IndexSizeError`, `playbackRate` outside [0, 16] raises `NotSupportedError`, and a non-finite `currentTime` raises `TypeError` — all measured in Chrome. Unreachable while sliders were the only callers, and **made reachable by `useAudioPlayer`**, which hands `setVolume`/`setRate`/`seek` arbitrary input. Fixed with clamping guards on the write path; 9 tests, including the two `NaN`-before-metadata paths (`SET_TIME_TO_PERCENT`, `SET_TIME_FORWARD`) that would have thrown on a real element. |
-| **`type-check` covered no config file** | `tsconfig.node.json` included only `vite.config.ts`, and the root `tsconfig.json`'s `types: ["node"]` does not reach referenced projects. `tsup.config.ts`, `vitest.config.ts` and `playwright.config.ts` were unchecked. Fixed.                                                                                                                                                                                                                                                                                                          |
-| **A third `.Set`**                      | `PlaybackRate.Set` and `PlaybackRateSlider.Set` were different components one character apart. Resolved by S7.                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| **`.Track` was the wrong rename**       | The README already calls `.Background` "the track", so `.Track` would have moved the collision rather than removed it. `.Control` was taken instead.                                                                                                                                                                                                                                                                                                                                                                                      |
-| **Fake fidelity**                       | `play()` now returns a promise and is typed as a spy, closing divergence #2 from the test review.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|                                                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Out-of-range media writes throw**                          | `volume` outside [0, 1] raises `IndexSizeError`, `playbackRate` outside [0, 16] raises `NotSupportedError`, and a non-finite `currentTime` raises `TypeError` — all measured in Chrome. Unreachable while sliders were the only callers, and **made reachable by `useAudioPlayer`**, which hands `setVolume`/`setRate`/`seek` arbitrary input. Fixed with clamping guards on the write path; 9 tests, including the two `NaN`-before-metadata paths (`SET_TIME_TO_PERCENT`, `SET_TIME_FORWARD`) that would have thrown on a real element.                                                                                                                       |
+| **`type-check` covered no config file**                      | `tsconfig.node.json` included only `vite.config.ts`, and the root `tsconfig.json`'s `types: ["node"]` does not reach referenced projects. `tsup.config.ts`, `vitest.config.ts` and `playwright.config.ts` were unchecked. Fixed.                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **A third `.Set`**                                           | `PlaybackRate.Set` and `PlaybackRateSlider.Set` were different components one character apart. Resolved by S7.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **`.Track` was the wrong rename**                            | The README already calls `.Background` "the track", so `.Track` would have moved the collision rather than removed it. `.Control` was taken instead.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Fake fidelity**                                            | `play()` now returns a promise and is typed as a spy, closing divergence #2 from the test review.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Five components had empty tooltips**                       | Every compound root is `export const X = XInternal as XComponent`, which tsup emits as a bare `declare const X` in `dist/index.d.ts` with **no comment carried over**. So JSDoc written above the implementation reached nobody — and it fails silently: types pass, tests pass, the source looks right. Affected `PlayButton`, `MuteButton`, `Timeline`, `Volume`, `PlaybackRateSlider`. Doc comments now go on the exported const, and any JSDoc change is checked by grepping `dist/index.d.ts` for a phrase from it; zero hits means it did nothing.                                                                                                        |
+| **Playwright Firefox collapses out-of-viewport coordinates** | It substitutes `clientX = 0` for a pointer position outside the viewport and dispatches **no `pointerup` at all** for a release outside it. A spec that releases at `box.x - 50` therefore leaves a drag live, which poisons every later test in the file. Diagnosed rather than assumed: the library geometry is identical in both browsers (control `left 40 width 1200`, thumb `left 620 width 40`, same `matrix(1,0,0,1,580,0)`), `onThumbPointerDown` computes the right `grabOffset` in Firefox, and the failing test **passes in isolation**. This also explains — and invalidates — the "Firefox triggers onEnded" comment in `drag-drop-time.spec.ts`. |
+| **Waiting on the element is not waiting on the UI**          | T7 replaced a 100 ms sleep in `time-display.spec.ts`'s `seekTo` with a wait on `el.currentTime`. Assigning `currentTime` is synchronous, so that wait proved almost nothing, and the spec reads _rendered text_ through a non-retrying `.textContent()` — the sleep had been covering the store-to-React lag on `currentSecond`. It now also waits on the timeline's `aria-valuenow`, which is that projection. The general rule: a bare `.textContent()` after an element-only wait is the hazard; a `expect(locator)` assertion retries and is safe.                                                                                                          |
+| **What belongs in `Shared/`**                                | Settled while splitting `sharedFunctions.ts`, and worth not re-litigating: a helper whose consumers are in one directory lives in that directory; one with consumers in two or more lives in `Shared/`. That rule moved `composeEventHandlers` out (only the two slider parts use it — the buttons _replace_ a consumer's handler rather than composing, via `theirs ?? ours`) and keeps `areNumbersClose`, `formatTime` and `useDisabledButtonProps` in. What is left is exactly "used by several domains, owned by none", so the directory name is earned rather than a dumping ground.                                                                       |
 
 ### Still open
 
@@ -203,7 +207,6 @@ second predicate shape to serve a case the library cannot yet describe.
 6. [Performance](#6-performance)
 7. [Cross-cutting](#cross-cutting-findings)
 8. [Rejected claims](#rejected-claims)
-9. [Suggested order](#suggested-order)
 
 ---
 
@@ -988,50 +991,6 @@ after unmute      {"volume":0.7,"muted":false}   ← correct
 
 The reasoning does not hold in a real browser. **Disregard — it proposed changing working
 code and "correcting" a test that is right.**
-
----
-
-## Suggested order
-
-**Best value per line changed, do these first** — all non-breaking, all one-liners:
-
-| Change                                                        | Payoff                                            |
-| ------------------------------------------------------------- | ------------------------------------------------- |
-| **P1-a** — three `Object.assign` → property assignment        | Single-component import **4.0 KB → 1.1 KB gzip**  |
-| **S1** — spread `{...props}` on two roots                     | `className` starts working at all                 |
-| **S3** — `banner: '"use client"'`                             | Unblocks the Next.js App Router                   |
-| **A2** — `if (ctrlKey \|\| metaKey \|\| altKey) return false` | Unbreaks VoiceOver                                |
-| **T1** — sample `aria-valuenow`, not `audio.currentTime`      | The one test that would let a real bug ship green |
-
-**1. Remaining ship-blockers, cheapest first** — non-breaking:
-A1 (Space) · A3 (error alert) · S4 (`type="button"` + widen three prop types) · S2 (`Time`) ·
-S5/A14 (compose handlers) · S11 (`- 50%`) · F4 (`play().catch`) · T2/T3 (vacuous assertions) ·
-T4 (`retries: process.env.CI ? 2 : 0`)
-
-**2. Breaking reshapes, while they are still free:**
-F2/F3 (`audioFiles` + `AudioFile`) · S7 (`.Track` / `SkipButton` renames) · S8 (styling
-split) · F5 (`PlayerState` gains `"buffering"`) · S15 (`KeyboardAction`) · A5/A7
-(`aria-disabled`) · A4 (toggle naming)
-
-**3. Additive wins:**
-F1 (`useAudioPlayer()`) · S10/F9 (`audioProps` + `audioRef` — also unblocks captions) ·
-S9 (`data-*`) · A6 (Home/End) · A8 (mute in volume text) · F6 (Media Session) · F8
-(`MediaError.code`) · S20 (CSS variables)
-
-**4. Test repairs** beyond T1–T4:
-T5 (assert visibility, delete two dead `vi.mock`s) · a `useTimeDisplay` clamp test ·
-a `useSliderContext` missing-provider row · one `{ mode: "rate", step: 0 }` row ·
-**a `transition` assertion on `Timeline.Progress`** (the Phase 4 deliverable is currently
-untested in both branches) · delete T6
-
-**5. Internal cleanup, no consumer impact:**
-C3 · C5 · C4 (+ the duplicate subscription, P1-b) · C7 · C8 · C1 · C2 · effects #1 and #3
-
-**6. Decide consciously:** the transition's 5 MB of GPU layers (P2-a). Keeping it is
-defensible — but **do not add `will-change`**.
-
-**7. Documentation** — the README styling section (S8/S12) is worth more to adoption than
-any three code changes on this list.
 
 ---
 
