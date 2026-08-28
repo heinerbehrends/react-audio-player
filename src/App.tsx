@@ -51,10 +51,10 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
   return (
     <AudioPlayer audioFile={{ src }}>
       <Timeline style={{ height: "40px" }}>
+        {/* `styles.css` supplies the button reset: `[data-part="control"]`
+            outranks App.css's `button` rule. */}
         <Timeline.Control
           style={{
-            border: "none",
-            background: "none",
             padding: "12px 0",
             boxSizing: "border-box",
           }}
@@ -101,8 +101,6 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
           style={{
             padding: volumeOrientation === "horizontal" ? "12px 0" : "0 12px",
             margin: 0,
-            border: "none",
-            background: "none",
           }}
         >
           <Volume.Progress style={{ backgroundColor: "darkgray" }} />

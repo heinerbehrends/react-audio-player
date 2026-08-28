@@ -235,6 +235,7 @@ class through every element:
 
 | Part          | `data-part`  |
 | ------------- | ------------ |
+| the root      | `root`       |
 | `.Control`    | `control`    |
 | `.Progress`   | `progress`   |
 | `.Background` | `background` |
@@ -247,9 +248,29 @@ class through every element:
 }
 ```
 
-`transform`, grid placement and `touch-action` are set inline, because they are
-computed from the current value. Inline styles beat any stylesheet rule, so
-override those through the `style` prop rather than a class.
+### The optional stylesheet
+
+`.Control` is a `<button>`, so without a reset it renders with the browser's own
+button chrome. The library ships those defaults as a stylesheet rather than
+inline, because an inline style outranks every rule you could write:
+
+```js
+import "react-headless-audio-player/styles.css";
+```
+
+It sets three things: `width: 100%` on the root, the button reset on
+`.Control`, and `cursor: grab` on `.Thumb`. Every rule is one selector deep, so
+a single class of your own overrides it as long as your CSS loads afterwards.
+Skip the import and you get no styling at all from the library beyond the
+structural output below — which is the point of it being optional.
+
+### What stays inline
+
+`transform`, `transform-origin`, grid placement, `position` and
+`touch-action` — plus the width and height that make the progress fill's
+`scaleX()` mean anything. These are computed from the current value, so they are
+output rather than opinion. Inline styles beat any stylesheet rule, so override
+these through the `style` prop, which is merged last and wins.
 
 **A slider root needs a height.** It has none of its own, and a zero-height
 track measures zero, which leaves the slider silently inert.

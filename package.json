@@ -39,7 +39,7 @@
     "type-check": "tsc --noEmit --project tsconfig.app.json && tsc --noEmit --project tsconfig.node.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check-exports": "attw --pack . --profile esm-only",
+    "check-exports": "attw --pack . --profile esm-only --exclude-entrypoints styles.css",
     "check-docs": "node scripts/check-docs.mjs"
   },
   "peerDependencies": {
@@ -85,6 +85,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./styles.css": "./dist/styles.css"
   }
 }

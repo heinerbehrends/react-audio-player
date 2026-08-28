@@ -1,10 +1,6 @@
 import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { useSliderContext } from "./SliderContext";
-import {
-  progressStyles,
-  containerStyles,
-  buttonStyles,
-} from "./calculateStyle";
+import { progressStyles, containerStyles } from "./calculateStyle";
 
 type SliderControlProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;
@@ -21,7 +17,6 @@ export function SliderControl({ children, ...props }: SliderControlProps) {
   const style = {
     ...progressStyles,
     ...containerStyles,
-    ...buttonStyles,
     ...props.style,
   } satisfies React.CSSProperties;
 

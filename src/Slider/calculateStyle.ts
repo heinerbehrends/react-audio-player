@@ -19,7 +19,6 @@ export function calculateDragStyle(context: StyleContext): React.CSSProperties {
     position: "absolute",
     gridColumn: "1 / 1",
     gridRow: "1 / 1",
-    cursor: "grab",
     // A percentage inside `translate()` resolves against the element's own
     // border box, so the thumb self-centres at any size. The 20px this replaced
     // assumed the demo's 40px thumbs, and drew a 16px one 12px off.
@@ -66,6 +65,10 @@ function getProgress({
   return (value - minValue) / range;
 }
 
+/**
+ * One grid cell, spanned: the three layers stack by sharing it, and `scaleX()`
+ * is relative to the size. Output rather than opinion, so it stays inline.
+ */
 export const progressStyles = {
   gridColumn: "1 / 1",
   gridRow: "1 / 1",
@@ -78,12 +81,14 @@ export const progressStyles = {
  * `position: absolute`, so without it the thumb's containing block is whichever
  * ancestor happens to be positioned. The volume and rate roots inlined a copy
  * of this without it, and their thumbs landed correctly only by luck.
+ *
+ * The root's `width` lives in `styles.css`: a layout opinion, and unreachable
+ * by a consumer's class while it was inline.
  */
 export const rootStyles = {
   display: "grid",
   gridTemplateColumns: "1fr",
   gridTemplateRows: "1fr",
-  width: "100%",
   position: "relative",
 } as const;
 
@@ -92,9 +97,3 @@ export const containerStyles = {
   ...rootStyles,
   height: "100%",
 } as const;
-
-export const buttonStyles = {
-  border: "none",
-  background: "none",
-  padding: 0,
-} satisfies React.CSSProperties;

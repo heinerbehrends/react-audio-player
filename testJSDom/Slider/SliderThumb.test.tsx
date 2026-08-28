@@ -68,7 +68,6 @@ describe("SliderThumb", () => {
 
     // Halfway along a 200px track.
     expect(thumb.style.transform).toBe("translate(calc(100px - 50%), 0)");
-    expect(thumb.style.cursor).toBe("grab");
     expect(thumb.style.touchAction).toBe("none");
   });
 

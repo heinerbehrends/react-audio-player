@@ -46,6 +46,7 @@ function VolumeContainer({
   return (
     <SliderProvider value={slider}>
       <div
+        data-part="root"
         aria-label="Volume controls"
         {...props}
         role="group"

@@ -98,11 +98,13 @@ describe("Volume", () => {
       display: "grid",
       gridTemplateColumns: "1fr",
       gridTemplateRows: "1fr",
-      width: "100%",
       // S12: `Thumb` is `position: absolute`, so without this its containing
       // block is whichever ancestor happens to be positioned.
       position: "relative",
     });
+    // S8: `width` moved to `styles.css`, where a class can beat it.
+    expect(container.style.width).toBe("");
+    expect(container).toHaveAttribute("data-part", "root");
   });
 
   it("should support composition of components", () => {

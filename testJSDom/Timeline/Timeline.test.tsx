@@ -91,14 +91,17 @@ describe("Timeline", () => {
       </Timeline>,
     );
 
-    expect(screen.getByRole("group")).toHaveStyle({
+    const root = screen.getByRole("group");
+    expect(root).toHaveStyle({
       display: "grid",
       gridTemplateColumns: "1fr",
       gridTemplateRows: "1fr",
-      width: "100%",
       height: "100%",
       position: "relative",
     });
+    // S8: `width` moved to `styles.css`, where a class can beat it.
+    expect(root.style.width).toBe("");
+    expect(root).toHaveAttribute("data-part", "root");
   });
 
   it("should support composition of components", () => {

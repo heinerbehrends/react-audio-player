@@ -4,7 +4,7 @@ import {
   calculateProgressStyle,
   progressStyles,
   containerStyles,
-  buttonStyles,
+  rootStyles,
   type StyleContext,
 } from "../../src/Slider/calculateStyle";
 
@@ -24,7 +24,6 @@ describe("calculateStyle", () => {
         position: "absolute",
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
-        cursor: "grab",
         transform: "translate(calc(50px - 50%), 0)",
         touchAction: "none",
       });
@@ -41,7 +40,6 @@ describe("calculateStyle", () => {
         position: "absolute",
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
-        cursor: "grab",
         transform: "translate(0, calc(50px - 50%))",
         touchAction: "none",
       });
@@ -161,18 +159,27 @@ describe("calculateStyle", () => {
         display: "grid",
         gridTemplateColumns: "1fr",
         gridTemplateRows: "1fr",
-        width: "100%",
         height: "100%",
         position: "relative",
       });
     });
 
-    it("has correct button styles", () => {
-      expect(buttonStyles).toEqual({
-        border: "none",
-        background: "none",
-        padding: 0,
-      });
+    /**
+     * S8. These live in `styles.css` so a consumer's class can beat them. Put
+     * any of them back inline and the stylesheet is silently outranked again,
+     * which is the regression this pins.
+     */
+    it.each(["border", "background", "padding", "cursor", "width"])(
+      "keeps %s out of the root's inline styles",
+      (property) => {
+        expect(rootStyles).not.toHaveProperty(property);
+      },
+    );
+
+    it("keeps cursor out of the thumb's inline styles", () => {
+      expect(
+        calculateDragStyle({ ...defaultContext, value: 0.5 }),
+      ).not.toHaveProperty("cursor");
     });
   });
 });

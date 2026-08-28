@@ -63,6 +63,7 @@ function PlaybackRateSliderRoot({
   return (
     <SliderProvider value={slider}>
       <div
+        data-part="root"
         style={{
           ...rootStyles,
           ...style,
