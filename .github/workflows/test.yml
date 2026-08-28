@@ -5,6 +5,13 @@ on:
   pull_request:
     branches: [main, master]
 
+# Pushing to a branch with an open PR fires both events, and the E2E specs run
+# serially. Supersede the older run instead of queueing it — except on main,
+# where the run is the record of the merge.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
