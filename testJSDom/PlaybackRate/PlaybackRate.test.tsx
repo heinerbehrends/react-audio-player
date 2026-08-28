@@ -110,4 +110,23 @@ describe("PlaybackRate", () => {
       screen.getByTestId("playback-rate-child"),
     );
   });
+
+  /** S16: the root took no props, so it could not be styled or targeted. */
+  it("takes props, and keeps its role while letting the label be replaced", () => {
+    render(
+      <PlaybackRate
+        className="rates"
+        aria-label="Abspielgeschwindigkeit"
+        data-testid="rate-group"
+      >
+        <span>1x</span>
+      </PlaybackRate>,
+    );
+
+    const group = screen.getByRole("group");
+    expect(group).toHaveClass("rates");
+    expect(group).toHaveAttribute("data-testid", "rate-group");
+    // Overridable, because it is the only way to localise the group name.
+    expect(group).toHaveAttribute("aria-label", "Abspielgeschwindigkeit");
+  });
 });

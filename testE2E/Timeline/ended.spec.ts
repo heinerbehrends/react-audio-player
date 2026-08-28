@@ -41,7 +41,7 @@ test("playing to the end returns both the element and the clock to the start", a
   expect(afterEnd.isPlaying).toBe(false);
 
   // The clock reads the same zero the thumb is at, rather than the duration.
-  await expect(page.getByLabel("elapsed", { exact: true })).toHaveText("0:00");
+  await expect(page.locator("[data-part=elapsed]")).toHaveText("0:00");
   await expect(page.getByLabel(labels.timeline)).toHaveAttribute(
     "aria-valuenow",
     "0",

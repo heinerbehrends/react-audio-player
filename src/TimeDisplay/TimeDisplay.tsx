@@ -14,6 +14,8 @@ type ChildrenProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+type TimeProps = React.TimeHTMLAttributes<HTMLTimeElement>;
+
 /**
  * Switches `Time.Elapsed` and `Time.Remaining`. Named for what pressing it will
  * do — "Show time elapsed" / "Show time remaining" — and that name is the only
@@ -33,9 +35,7 @@ function Toggle({ children, ...props }: ChildrenProps) {
   return (
     <button
       type="button"
-      // Named for what pressing it will do, like the other toggles. "time
-      // elapsed" rather than "elapsed": the bare words are the accessible
-      // names of the `<time>` elements beside it.
+      // A4: the name is this button's only state channel, so it flips.
       aria-label={
         timeDisplay === "remaining"
           ? "Show time elapsed"
@@ -62,12 +62,16 @@ function useToggleTimeDisplay() {
 }
 
 /**
- * The position, as `M:SS` or `H:MM:SS`, in a `<time>` named "elapsed".
+ * The position, as `M:SS` or `H:MM:SS`, in a `<time data-part="elapsed">`.
  *
  * Renders `null` while `Time.Remaining` is selected: render both and exactly one
  * shows. Updates once a second, not at the element's ~4 Hz.
+ *
+ * The time is its own accessible name. No `aria-label`: on a `<time>` one
+ * replaces the value rather than adding to it, and `<time>` has no ARIA role to
+ * hang a name on (A12). Pass your own if the context needs spelling out.
  */
-function Elapsed() {
+function Elapsed(props: TimeProps) {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
   const playerState = usePlayerState();
@@ -76,19 +80,22 @@ function Elapsed() {
   if (timeDisplay === "remaining") {
     return null;
   }
-  if (playerState === "loading") {
-    return <time aria-label="elapsed">0:00</time>;
-  }
-  return <time aria-label="elapsed">{formatTime(elapsed)}</time>;
+  return (
+    <time data-part="elapsed" {...props}>
+      {playerState === "loading" ? "0:00" : formatTime(elapsed)}
+    </time>
+  );
 }
 
 /**
- * The time left, negative-signed — `-1:30` — in a `<time>` named "remaining".
+ * The time left, negative-signed — `-1:30` — in a
+ * `<time data-part="remaining">`.
  *
  * Renders `null` while `Time.Elapsed` is selected. Never counts past zero, and
- * reads `0:00` until the duration is known.
+ * reads `0:00` until the duration is known. No `aria-label`, for the reason
+ * given on `Time.Elapsed`.
  */
-function Remaining() {
+function Remaining(props: TimeProps) {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
   const playerState = usePlayerState();
@@ -97,22 +104,28 @@ function Remaining() {
   if (timeDisplay === "elapsed") {
     return null;
   }
-  if (playerState === "loading") {
-    return <time aria-label="remaining">0:00</time>;
-  }
-  return <time aria-label="remaining">-{formatTime(remaining)}</time>;
+  return (
+    <time data-part="remaining" {...props}>
+      {playerState === "loading" ? "0:00" : `-${formatTime(remaining)}`}
+    </time>
+  );
 }
 
 /**
- * The track length, in a `<time>` named "duration". Independent of the toggle,
- * so it can sit beside either readout.
+ * The track length, in a `<time data-part="duration">`. Independent of the
+ * toggle, so it can sit beside either readout.
  *
- * Reads `0:00` until metadata arrives, and for a live stream.
+ * Reads `0:00` until metadata arrives, and for a live stream. No `aria-label`,
+ * for the reason given on `Time.Elapsed`.
  */
-function Duration() {
+function Duration(props: TimeProps) {
   const store = usePlayerStore();
   const duration = useStore(store.duration);
-  return <time aria-label="duration">{formatTime(duration)}</time>;
+  return (
+    <time data-part="duration" {...props}>
+      {formatTime(duration)}
+    </time>
+  );
 }
 
 /**

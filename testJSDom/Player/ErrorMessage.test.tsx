@@ -13,8 +13,48 @@ describe("ErrorMessage", () => {
 
     const errorContainer = screen.getByRole("alert");
     expect(errorContainer).toBeInTheDocument();
-    expect(errorContainer).toHaveClass("audio-player-error");
+    expect(errorContainer).toHaveAttribute("data-part", "error");
     expect(screen.getByText("Custom error message")).toBeInTheDocument();
+  });
+
+  /**
+   * S16. It used to hardcode `class="audio-player-error"`, which nothing in
+   * `styles.css` ever matched — a name in the consumer's markup that they did not
+   * choose and that did nothing.
+   */
+  it("adds no class of its own", () => {
+    renderWithStore(<ErrorMessage>Broken</ErrorMessage>, {
+      element: errored,
+    });
+
+    expect(screen.getByRole("alert").className).toBe("");
+  });
+
+  it("takes className, style and data attributes", () => {
+    renderWithStore(
+      <ErrorMessage className="mine" style={{ color: "red" }} data-testid="e">
+        Broken
+      </ErrorMessage>,
+      { element: errored },
+    );
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveClass("mine");
+    expect(alert).toHaveStyle({ color: "rgb(255, 0, 0)" });
+    expect(alert).toHaveAttribute("data-testid", "e");
+  });
+
+  /** The role and the politeness are the component, so neither is overridable. */
+  it("keeps its role and politeness whatever the consumer passes", () => {
+    renderWithStore(
+      <ErrorMessage role="status" aria-live="polite">
+        Broken
+      </ErrorMessage>,
+      { element: errored },
+    );
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveAttribute("aria-live", "assertive");
   });
 
   it("returns null when the load succeeded", () => {

@@ -4,11 +4,12 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 type ErrorMessageProps = {
   /**
    * The message. It becomes the live region's content, so it has to be visible
-   * text — an `aria-label` would replace the announced name instead of adding
-   * to it, which is why this component takes no other props.
+   * text. Do not pass an `aria-label`: it would replace the announced name
+   * rather than adding to it, and a name is not reliably announced on insertion,
+   * so the message would go unread.
    */
   children: React.ReactNode;
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
 /**
  * Renders `children` in an assertive live region while the resource is unusable,
@@ -17,8 +18,11 @@ type ErrorMessageProps = {
  * **Media errors only**: a failed load, an unsupported codec, a decode failure.
  * A refused `play()` does not render it — the resource is fine and only a user
  * gesture will help. For both kinds, use `useAudioError()`.
+ *
+ * Style it through `className`, `style`, or `[data-part="error"]`. It adds no
+ * class of its own.
  */
-export function ErrorMessage({ children }: ErrorMessageProps) {
+export function ErrorMessage({ children, ...props }: ErrorMessageProps) {
   const store = usePlayerStore();
   const loadState = useStore(store.loadState);
 
@@ -28,7 +32,13 @@ export function ErrorMessage({ children }: ErrorMessageProps) {
       // visible and the region must carry no `aria-label`: a label replaces the
       // accessible name without being reliably announced on insertion, which
       // leaves the consumer's message unread.
-      <div role="alert" aria-live="assertive" className="audio-player-error">
+      <div
+        data-part="error"
+        {...props}
+        // After the spread: the role and the politeness are the component.
+        role="alert"
+        aria-live="assertive"
+      >
         {children}
       </div>
     );

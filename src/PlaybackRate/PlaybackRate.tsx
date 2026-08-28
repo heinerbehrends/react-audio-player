@@ -16,9 +16,20 @@ import {
  * The one `role="group"` in the library. The slider roots have none, because
  * each wraps a single control that is already named; this wraps several (A11).
  */
-export function PlaybackRate({ children }: { children: React.ReactNode }) {
+type PlaybackRateProps = {
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLSpanElement>;
+
+export function PlaybackRate({ children, ...props }: PlaybackRateProps) {
   return (
-    <span role="group" aria-label="Playback rate options">
+    <span
+      data-part="root"
+      // Before the spread, so a consumer can replace it — the only way to
+      // localise the group name. `role` is after, and cannot be replaced.
+      aria-label="Playback rate options"
+      {...props}
+      role="group"
+    >
       {children}
     </span>
   );

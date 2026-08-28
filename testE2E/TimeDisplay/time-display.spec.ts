@@ -44,24 +44,21 @@ async function seekTo(seconds: number) {
 }
 
 async function ensureElapsedShown() {
-  if (await page.getByLabel("remaining", { exact: true }).isVisible()) {
+  if (await page.locator("[data-part=remaining]").isVisible()) {
     await toggle().click();
-    await expect(page.getByLabel("elapsed", { exact: true })).toBeVisible();
+    await expect(page.locator("[data-part=elapsed]")).toBeVisible();
   }
 }
 
 test("elapsed advances during playback", async () => {
   await resetAudioState(page);
   await ensureElapsedShown();
-  await expect(page.getByLabel("elapsed", { exact: true })).toHaveText("0:00");
+  await expect(page.locator("[data-part=elapsed]")).toHaveText("0:00");
 
   await page.getByRole("button", { name: labels.playAudio }).click();
-  await expect(page.getByLabel("elapsed", { exact: true })).not.toHaveText(
-    "0:00",
-    {
-      timeout: 4000,
-    },
-  );
+  await expect(page.locator("[data-part=elapsed]")).not.toHaveText("0:00", {
+    timeout: 4000,
+  });
   await page.getByRole("button", { name: labels.pauseAudio }).click();
 
   const { currentTime } = await getAudioState(page);
@@ -73,7 +70,7 @@ test("duration renders the track length", async () => {
   const minutes = Math.floor(Math.round(duration) / 60);
   const seconds = Math.round(duration) % 60;
 
-  await expect(page.getByLabel("duration", { exact: true })).toHaveText(
+  await expect(page.locator("[data-part=duration]")).toHaveText(
     `${minutes}:${seconds.toString().padStart(2, "0")}`,
   );
 });
@@ -85,9 +82,9 @@ test("toggling shows remaining, and it counts down", async () => {
 
   await toggle().click();
 
-  const remaining = page.getByLabel("remaining", { exact: true });
+  const remaining = page.locator("[data-part=remaining]");
   await expect(remaining).toBeVisible();
-  await expect(page.getByLabel("elapsed", { exact: true })).toBeHidden();
+  await expect(page.locator("[data-part=elapsed]")).toBeHidden();
   // Showing remaining, so the toggle now offers the way back.
   await expect(toggle()).toHaveAccessibleName(labels.showElapsed);
 

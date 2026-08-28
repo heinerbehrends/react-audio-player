@@ -13,6 +13,10 @@ function withTimeDisplay(timeDisplay: TimeDisplay) {
   return harness;
 }
 
+/** The parts carry no accessible name of their own — `data-part` is the hook. */
+const part = (name: string) =>
+  document.querySelector(`[data-part="${name}"]`) as HTMLElement | null;
+
 describe("Time", () => {
   it("hides Elapsed when showing remaining time", () => {
     renderWithStore(<Time.Elapsed />, {
@@ -52,20 +56,53 @@ describe("Time", () => {
       </Time.Toggle>,
       { testStore },
     );
-    expect(screen.getByLabelText("elapsed")).toBeInTheDocument();
+    expect(part("elapsed")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button"));
 
     expect(testStore.store.timeDisplay.get()).toBe("remaining");
-    expect(screen.queryByLabelText("elapsed")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("remaining")).toBeInTheDocument();
+    expect(part("elapsed")).toBeNull();
+    expect(part("remaining")).toBeInTheDocument();
+    expect(part("remaining")).toHaveTextContent("-");
+  });
+
+  /**
+   * A12. The clock carried `aria-label="elapsed"`, which *replaces* the accessible
+   * name — so a screen reader read "elapsed" and never the time. `<time>` also
+   * maps to no ARIA role, and naming a generic element is not reliably announced,
+   * so the label was unreliable in both directions. The text is the name now.
+   */
+  it.each([
+    ["elapsed", "elapsed", <Time.Elapsed key="e" />],
+    ["remaining", "remaining", <Time.Remaining key="r" />],
+    ["duration", "elapsed", <Time.Duration key="d" />],
+  ] as const)(
+    "leaves the %s time as its own accessible name",
+    (name, display, ui) => {
+      renderWithStore(ui, { testStore: withTimeDisplay(display) });
+
+      expect(part(name)).toBeInTheDocument();
+      expect(part(name)).not.toHaveAttribute("aria-label");
+      expect(screen.queryByLabelText(name)).toBeNull();
+    },
+  );
+
+  /** S16: they took no props at all, so nothing could be styled or targeted. */
+  it.each([
+    ["elapsed", "elapsed", <Time.Elapsed key="e" className="clock" />],
+    ["remaining", "remaining", <Time.Remaining key="r" className="clock" />],
+    ["duration", "elapsed", <Time.Duration key="d" className="clock" />],
+  ] as const)("passes props through on %s", (name, display, ui) => {
+    renderWithStore(ui, { testStore: withTimeDisplay(display) });
+
+    expect(part(name)).toHaveClass("clock");
   });
 
   it("renders Duration from the duration atom", () => {
     renderWithStore(<Time.Duration />, {
       element: { readyState: 1, duration: 120 },
     });
-    expect(screen.getByLabelText("duration")).toHaveTextContent("2:00");
+    expect(part("duration")).toHaveTextContent("2:00");
   });
 
   it("follows a durationchange", () => {
@@ -76,6 +113,6 @@ describe("Time", () => {
     element.duration = 121;
     emit("durationchange");
 
-    expect(screen.getByLabelText("duration")).toHaveTextContent("2:01");
+    expect(part("duration")).toHaveTextContent("2:01");
   });
 });

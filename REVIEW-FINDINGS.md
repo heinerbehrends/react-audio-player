@@ -1,7 +1,7 @@
 # Pre-1.0 Review Findings
 
 Six parallel reviews of `react-headless-audio-player`, run 2026-08-28 against the
-post-refactor tree (all six phases of `REFACTOR-PLAN.md` landed, 337 jsdom / 51 E2E green).
+post-refactor tree (all six phases of the refactor plan landed, 337 jsdom / 51 E2E green).
 
 **The package is unpublished (`version: 0.0.0`), so every breaking change on this list is
 free today and expensive after the first publish.** That single fact drives most of the
@@ -87,6 +87,8 @@ gets a row here — what shipped, how it was proven — and is struck through in
 | **A8**       | `aria-valuetext` on the volume slider composes the mute with the volume — "Muted, 80%". `aria-valuenow` deliberately unchanged: it is the volume, and muting does not move the thumb. Verified by 5 jsdom rows and an E2E round-trip through the mute button                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | **A9**       | `aria-pressed` in place of `aria-current` on `PlaybackRate.Set`. Chosen over a radio group, which ARIA suggests for a one-of-several setting but which expects arrow keys to move between the options — and arrows already seek and change the volume on every focused control, so a radiogroup would have made the keyboard model differ per control. Reconciled with A4 by stating the rule as "one state channel", not "no `aria-pressed`": the three toggles put state in their name, and this button's name is fixed. Written as `"false"` on the inactive rates rather than omitted, so the row announces as a set — **mutation-proven**: making it absent-when-false fails 2 rows |
 | **A11**      | Dropped rather than named, on all three sliders. Each root wraps one control that already carries `role="slider"` and a name, so the group had a single member and Volume's "Volume controls" was a second name for "Volume slider". `PlaybackRateSlider` already shipped without one, which was the control case. Dropping it also unlocks the root: `role` was spread last, so a consumer composing extra controls in could not add their own — now they can. `PlaybackRate` keeps its group, wrapping several buttons, which is the contrast that shows the rule rather than a blanket removal. Grouping the player as a whole is a different question and stays open as **A10**      |
+| **A12**      | The clocks carried `aria-label="elapsed"` / `"remaining"` / `"duration"`, which _replaces_ the accessible name — so a screen reader read "elapsed" and never the time, for every user, in English. Worse in both directions than the finding recorded: `<time>` maps to no ARIA role, and naming a generic element is not reliably announced, so the label was as likely to be dropped as to hide the value. Removed; the text is the name. `data-part` replaces it as the query and styling hook, and a consumer can pass their own label now that props are accepted                                                                                                                   |
+| **S16**      | `ErrorMessage`, the three `Time` parts and the `PlaybackRate` root now take the standard DOM props. `ErrorMessage`'s hardcoded `class="audio-player-error"` is gone — checked against `styles.css`, nothing ever matched it, so it was a name in the consumer's markup that they did not choose and that did nothing. `role`/`aria-live` on the alert and `role` on the group stay locked after the spread; the group's `aria-label` stays overridable, being the only way to localise it. A `format` prop is deliberately **not** part of this — see **A15**                                                                                                                            |
 | **C1**       | `RATE_BOUNDS` is the single default, read by the slider's prop defaults and `useSlider`'s; a slider with a narrower range sends its own bounds with the action, and the clamp uses them. Verified by a test pressing ArrowUp 20× against `maxValue={2}` and comparing with `End`                                                                                                                                                                                                                                                                                                                                                                                                         |
 | **S11**      | `translate(calc(…px - 50%))` in place of the hardcoded `- 20px`, so the thumb self-centres at any size. Verified by the four assertions that had pinned the 40px assumption                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | **S12**      | `position: relative` on the volume and rate roots, via a shared `rootStyles` the two had inlined a copy of. Verified by a row on each root — the thumb's containing block was previously whichever ancestor happened to be positioned                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -547,7 +549,8 @@ by F3 (no metadata fields to publish).
 **F7. `ended` is unobservable and actively erased.** 📖 `AudioElement.tsx:44` rewinds to 0;
 `usePlayerState` has no `"ended"` member. After a track finishes the UI is byte-identical to
 "never started" — no replay affordance, no autoplay-next, no completion analytics. The
-rewind is correct (see `REFACTOR-PLAN.md:356-375`); the fix is an additive atom.
+rewind is correct — the refactor plan set it out, and `AudioElement`'s `onEnded`
+handler is where it lives; the fix is an additive atom.
 
 **F8. `MediaError.code` is thrown away.** ✅ `syncFromElement.ts:142-144` collapses the
 error to `loadState = "error"` and never reads `el.error`, so consumers cannot distinguish
@@ -672,7 +675,7 @@ refactor undid.
 ## 5. Tests
 
 Both suites were run: **337/337 jsdom, 51/51 E2E green.** The jsdom tier is genuinely
-strong and does what `REFACTOR-PLAN.md` §5 promises. **The E2E tier does not hold up its
+strong and does what the refactor plan's testing strategy promised. **The E2E tier does not hold up its
 half of the bargain.**
 
 ### P0
@@ -1033,7 +1036,7 @@ any three code changes on this list.
 
 ## Method
 
-Six independent reviews, run in parallel, each given `REFACTOR-PLAN.md` for context and told
+Six independent reviews, run in parallel, each given the refactor plan for context and told
 to judge the code against its own stated invariants, to engage with deliberate trade-offs
 (the 1 Hz aria quantisation, no live-stream support, no rAF coalescing) rather than
 rediscover them, and not to pad. All six were read-only.
