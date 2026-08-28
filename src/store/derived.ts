@@ -44,11 +44,54 @@ export function useVolumeState(): VolumeState {
   return volume < 0.5 ? "low" : "high";
 }
 
+/**
+ * Only an error makes a control unavailable. Loading does not: `play()` at
+ * `readyState: 0` is legal and the browser queues it, and `volume`, `muted` and
+ * `playbackRate` are all settable before metadata — so suppressing them silently
+ * drops the first interaction most users attempt. Worse, changing
+ * `audioFile.src` re-enters loading, so a gate on the load state would recur on
+ * every playlist advance rather than only at startup.
+ *
+ * The load state is still announced, through the accessible name ("Loading
+ * audio") rather than through suppression — see A4.
+ *
+ * Not every failure disables, either: this reads `loadState`, so it sees a
+ * `MediaError` but not a `playbackError`. An autoplay refusal leaves every
+ * control enabled, which is the only workable answer — a user gesture is what
+ * lifts it, and a disabled Play button makes that gesture impossible.
+ *
+ * What loading *does* gate is seeking, which needs a duration. That is
+ * [[useIsSeekable]], keyed on the range itself rather than on the load state.
+ */
 export function useIsDisabled(): boolean {
   const store = usePlayerStore();
   const loadState = useStore(store.loadState);
 
-  return loadState !== "ready";
+  return loadState === "error";
+}
+
+/**
+ * Whether a position on the track can be named at all. Everything that has to
+ * map a value onto the duration reads this: the timeline slider, whose aria
+ * range would otherwise announce `min=0 max=0 now=0` and accept arrow keys into
+ * it (A5), and `SeekButton`, which sends `SET_TIME_FORWARD` in both directions
+ * and so reads `duration` whichever way it points.
+ *
+ * `duration > 0` is the whole predicate, and a non-finite check would be dead
+ * code: `finite()` in `syncFromElement.ts` maps `NaN` and `Infinity` to 0 at
+ * every write site, so the atom cannot hold either. That is what folds two cases
+ * into one — a player before `loadedmetadata`, and a live stream whose duration
+ * is `Infinity` while its `readyState` is perfectly healthy. No load-state check
+ * reaches the second.
+ *
+ * Derived rather than tracked, like [[useIsBuffering]]: there is no flag to get
+ * stuck on.
+ */
+export function useIsSeekable(): boolean {
+  const store = usePlayerStore();
+  const duration = useStore(store.duration);
+
+  return duration > 0;
 }
 
 /** `MediaError.code` is a numeric enum; these are its four members. */

@@ -28,7 +28,18 @@ export type AudioPlayerState = {
   rate: number;
   playerState: PlayerState;
   volumeState: VolumeState;
+  /**
+   * The track is errored. Loading does not disable: the element accepts `play()`,
+   * `volume`, `muted` and `playbackRate` before metadata. See `useIsDisabled()`.
+   */
   isDisabled: boolean;
+  /**
+   * A position on the track can be named — the duration is known and non-zero.
+   * False before `loadedmetadata` and on a live stream, which is what gates the
+   * timeline and the seek buttons rather than the load state. See
+   * `useIsSeekable()`.
+   */
+  isSeekable: boolean;
   /**
    * Playback wants to advance and cannot — the spinner condition. Independent
    * of `playerState`, which stays `"playing"` through a stall because the
@@ -96,7 +107,10 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
         : volume < 0.5
           ? "low"
           : "high",
-    isDisabled: loadState !== "ready",
+    // Inlined like the two above it, and so has to move in lockstep with
+    // `useIsDisabled` / `useIsSeekable`, which carry the reasoning.
+    isDisabled: loadState === "error",
+    isSeekable: duration > 0,
     isBuffering:
       loadState === "ready" && !paused && readyState < HAVE_FUTURE_DATA,
     error,

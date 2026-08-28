@@ -55,11 +55,26 @@ describe("Seek", () => {
   describe("Disabled state", () => {
     // A7: a natively disabled button leaves the tab order, dropping focus to
     // `<body>` when the load state changes under it.
-    it("is aria-disabled while loading", () => {
-      renderSeek(10, { readyState: 0 });
+    /**
+     * Keyed on the duration, not the ready state: `useSeek` sends
+     * `SET_TIME_FORWARD`, which reads `el.duration`, so without one the write
+     * is `NaN` and `writeTime` drops it silently. This button has no name
+     * change to carry that, unlike `PlayButton`'s "Loading audio".
+     */
+    it("is aria-disabled before the duration arrives", () => {
+      renderSeek(10, { readyState: 0, duration: 0 });
       const button = screen.getByLabelText(labels.seekForward);
       expect(button).toHaveAttribute("aria-disabled", "true");
       expect(button).not.toBeDisabled();
+    });
+
+    /** No load-state check reaches this one: the stream is perfectly healthy. */
+    it("is aria-disabled on a live stream", () => {
+      renderSeek(10, { readyState: 4, paused: false, duration: Infinity });
+      expect(screen.getByLabelText(labels.seekForward)).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
     });
 
     it("is aria-disabled on error", () => {
@@ -69,10 +84,28 @@ describe("Seek", () => {
       expect(button).not.toBeDisabled();
     });
 
-    it("does not seek while disabled", () => {
-      const { element } = renderSeek(10, { readyState: 0, currentTime: 30 });
+    it("does not seek while unseekable", () => {
+      const { element } = renderSeek(10, {
+        readyState: 0,
+        duration: 0,
+        currentTime: 30,
+      });
       fireEvent.click(screen.getByLabelText(labels.seekForward));
       expect(element.currentTime).toBe(30);
+    });
+
+    /**
+     * A loading player with a duration already known — the case the old
+     * load-state gate conflated with the one above.
+     */
+    it("seeks while still loading, once the duration is known", () => {
+      const { element } = renderSeek(10, {
+        readyState: 0,
+        duration: 100,
+        currentTime: 30,
+      });
+      fireEvent.click(screen.getByLabelText(labels.seekForward));
+      expect(element.currentTime).toBe(40);
     });
 
     it("is enabled when paused", () => {

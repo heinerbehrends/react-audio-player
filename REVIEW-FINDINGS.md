@@ -82,7 +82,7 @@ gets a row here — what shipped, how it was proven — and is struck through in
 | **S9**       | Every slider part carries `data-part` (`control`, `thumb`, `progress`, `background`), giving consumers a styling hook and tests a selector that is library output rather than demo markup. Verified by the rewritten `progress-indicator.spec.ts`, whose old query matched nothing                                                                                                                                                                                                                                                      |
 | **T5**       | The dead `useHandleSideEffect` mock is gone. Verified by the suite staying green without it, which is what proved it dead                                                                                                                                                                                                                                                                                                                                                                                                               |
 | **A4**       | One state channel on all three toggles: the name. `aria-pressed` removed from `PlayButton`, `MuteButton` and `Time.Toggle`, which gained a flipping name ("Show time elapsed" / "Show time remaining"). Verified by 3 rows asserting the attribute's absence — a re-added `aria-pressed` now fails                                                                                                                                                                                                                                      |
-| **A5 / A7**  | `aria-disabled` in place of native `disabled`, on the six gated buttons and all three sliders. `useDisabledButtonProps` blocks activation, the consumer's `onClick` included. Verified by a jsdom test that focuses a control, drops the load state under it, and finds focus still there                                                                                                                                                                                                                                               |
+| **A5 / A7**  | `aria-disabled` in place of native `disabled`, on the six gated buttons and all three sliders. `useDisabledButtonProps` blocks activation, the consumer's `onClick` included. Verified by a jsdom test that focuses a control, drops the load state under it, and finds focus still there. **Later refined** — the mechanism is unchanged, but the predicate it read was wrong; see "Two gates, not one" below                                                                                                                          |
 | **A6**       | `Home` / `End` on every slider, through `commit` so the seek slider does not snap back. Slider-scoped, not added to the global map. Verified by 7 jsdom rows plus 2 E2E — one of which pins that `Home` on a _button_ is still the browser's                                                                                                                                                                                                                                                                                            |
 | **A8**       | `aria-valuetext` on the volume slider composes the mute with the volume — "Muted, 80%". `aria-valuenow` deliberately unchanged: it is the volume, and muting does not move the thumb. Verified by 5 jsdom rows and an E2E round-trip through the mute button                                                                                                                                                                                                                                                                            |
 | **C1**       | `RATE_BOUNDS` is the single default, read by the slider's prop defaults and `useSlider`'s; a slider with a narrower range sends its own bounds with the action, and the clamp uses them. Verified by a test pressing ArrowUp 20× against `maxValue={2}` and comparing with `End`                                                                                                                                                                                                                                                        |
@@ -117,6 +117,75 @@ gets a row here — what shipped, how it was proven — and is struck through in
 sections there.
 
 ---
+
+### Two gates, not one — refining A5/A7's predicate
+
+A5/A7 shipped the right _mechanism_ (`aria-disabled`, activation blocked in the
+hook) reading the wrong _predicate_: `loadState !== "ready"`, which conflated
+"errored" with "still loading" and then applied both to every control.
+
+**What the load-state check got wrong.**
+
+- **Play was the worst case.** `play()` at `readyState: 0` is legal and the
+  browser queues it, so suppressing the click dropped the first interaction most
+  users attempt. And because changing `audioFile.src` re-enters loading, it
+  recurred on **every playlist advance**, not only at startup. The accessible name
+  already said "Loading audio" (A4), so `aria-disabled` was adding suppression,
+  not information.
+- **Volume and rate were collateral damage.** Neither reads `duration`; both write
+  properties the element accepts at `readyState: 0`. They inherited a gate that
+  was only ever about the timeline.
+- **It missed a case entirely.** A live stream has `duration: Infinity` and a
+  perfectly healthy `readyState`, so no load-state check reaches it — while the
+  timeline's `maxValue` _is_ the duration, which is exactly A5's degenerate range.
+
+**The split.** `useIsDisabled` becomes `loadState === "error"`. A new
+`useIsSeekable` — `duration > 0`, modelled on `useIsBuffering`: same file, same
+shape, derived rather than tracked, so there is no flag to get stuck on — gates
+the two controls that have to name a position on the track, the timeline slider
+and `SeekButton`.
+
+**Three corrections to the decision as first written.**
+
+1. **There is no central keydown guard to leave untouched.** `useHandleMediaKeys`
+   reads no disabled state at all — the media keys already fire on a disabled
+   control, deliberately, since they belong to the player and already fired from
+   every other focused element in that state. The load-state suppression only ever
+   covered clicks, via `useDisabledButtonProps`, and the sliders' own pointer and
+   arrow handling. **The keyboard path needed nothing**, which makes the change
+   smaller than it looked.
+2. **`SeekButton` had to move too, not become ungated.** "Loading disables
+   nothing" is right for Play, Mute, the two rate buttons and `Time.Toggle`, and
+   wrong for `SeekButton`: `useSeek` sends `SET_TIME_FORWARD` whichever way
+   `amount` points, so both directions read `el.duration`, and without one
+   `writeTime`'s finite guard drops the write silently. Unlike `PlayButton` it has
+   no name change to carry that. So it is gated on seekability — the same
+   predicate as the timeline, for the same reason.
+3. **`Infinity` never reaches the store, so the predicate is simpler than
+   proposed.** `finite()` in `syncFromElement` maps every non-finite duration to 0
+   at all three write sites, so a live stream arrives as `duration === 0` and a
+   `Number.isFinite` conjunct would be dead code. `duration > 0` is complete, and
+   the tests pin that coupling: remove `finite()` and the three `Infinity` rows
+   fail, because `Infinity > 0`.
+
+Also worth recording, since these documents are the project's memory: A5's own
+text describes the **error** state, where `duration` is 0 too — so both predicates
+fire there and A5 was satisfied either way. The loading and live-stream cases are
+an extension of A5, not a reading of it.
+
+**Mutation-proven in both directions.** Reverting `useIsDisabled` to
+`loadState !== "ready"` fails 14 rows; removing `finite()` fails 11. `isSeekable`
+is also added to `useAudioPlayer` and exported as `useIsSeekable`, since a
+consumer building custom controls needs the same predicate — including the
+live-stream subtlety, which they would otherwise have to rediscover.
+
+**Known limit, not fixed here.** At the _action_ level the picture is finer than
+one boolean: `SET_TIME_BACKWARD` (the `j` and `ArrowLeft` keys) never reads
+`duration` and is well defined with no metadata at all, and on a live stream a
+rewind is legitimate within `el.seekable`. Announcing a range for that needs
+`el.seekable` projected, which is the deferred buffered-ranges work in
+`BACKLOG.md` §3. A direction-aware gate was rejected as premature: it would add a
+second predicate shape to serve a case the library cannot yet describe.
 
 ## Contents
 

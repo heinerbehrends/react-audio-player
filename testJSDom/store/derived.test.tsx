@@ -5,6 +5,7 @@ import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import {
   useIsBuffering,
   useIsDisabled,
+  useIsSeekable,
   usePlayerState,
   useTimeDisplay,
   useVolumeState,
@@ -107,15 +108,96 @@ describe("useVolumeState", () => {
 });
 
 describe("useIsDisabled", () => {
-  it("is true while loading and on error, false once ready", () => {
-    const harness = renderDerived(useIsDisabled, { readyState: 0 });
+  it("is true on an error and false once the element recovers", () => {
+    const harness = renderDerived(useIsDisabled, {
+      error: {} as MediaError,
+    });
     expect(harness.result.current).toBe(true);
 
-    drive(harness, "loadedmetadata", { readyState: 1 });
+    drive(harness, "loadedmetadata", { error: null, readyState: 1 });
+    expect(harness.result.current).toBe(false);
+  });
+
+  /**
+   * The whole point of the split. `play()` at `readyState: 0` is legal and the
+   * browser queues it, so disabling here drops the first interaction most users
+   * attempt — and since a `src` change re-enters loading, it would recur on
+   * every playlist advance rather than only at startup.
+   */
+  it("is false while merely loading", () => {
+    const harness = renderDerived(useIsDisabled, { readyState: 0 });
+
+    expect(harness.result.current).toBe(false);
+  });
+
+  /**
+   * `loadState` sees a `MediaError` but not a `playbackError`, and that is
+   * deliberate: a user gesture is what lifts an autoplay refusal, and a disabled
+   * Play button makes that gesture impossible.
+   */
+  it("is false after a refused play(), which leaves the resource fine", () => {
+    const harness = renderDerived(useIsDisabled, { readyState: 1 });
+    harness.element.play.mockRejectedValueOnce(
+      new DOMException("blocked", "NotAllowedError"),
+    );
+
+    expect(harness.result.current).toBe(false);
+  });
+});
+
+/**
+ * Keyed on the range rather than on the load state, which folds two cases into
+ * one: a player before `loadedmetadata`, and a live stream whose `readyState` is
+ * healthy and whose duration is `Infinity`. No load-state check reaches the
+ * second, which is why this exists rather than a `loadState !== "ready"` test.
+ */
+describe("useIsSeekable", () => {
+  it("is true once the duration is known", () => {
+    const { result } = renderDerived(useIsSeekable, { duration: 100 });
+
+    expect(result.current).toBe(true);
+  });
+
+  /**
+   * `finite()` in `syncFromElement` maps both `NaN` and `Infinity` to 0, so the
+   * atom never holds either and `duration > 0` is the whole predicate. These two
+   * rows are what pin that coupling: remove `finite()` and the `Infinity` row
+   * fails, because `Infinity > 0`.
+   */
+  it.each([
+    ["a duration that has not arrived", NaN],
+    ["a live stream, whose duration is Infinity", Infinity],
+    ["a zero-length resource", 0],
+  ])("is false for %s", (_label, duration) => {
+    const { result } = renderDerived(useIsSeekable, { duration });
+
+    expect(result.current).toBe(false);
+  });
+
+  it("follows a durationchange", () => {
+    const harness = renderDerived(useIsSeekable, { duration: NaN });
     expect(harness.result.current).toBe(false);
 
-    drive(harness, "error", { error: {} as MediaError });
+    drive(harness, "durationchange", { duration: 42 });
     expect(harness.result.current).toBe(true);
+  });
+
+  /**
+   * The two predicates are independent: a healthy live stream is not seekable,
+   * and an errored file with a known duration is disabled but still has a range.
+   */
+  it("is independent of the load state", () => {
+    const streaming = renderDerived(useIsSeekable, {
+      readyState: 4,
+      duration: Infinity,
+    });
+    expect(streaming.result.current).toBe(false);
+
+    const errored = renderDerived(useIsSeekable, {
+      error: {} as MediaError,
+      duration: 100,
+    });
+    expect(errored.result.current).toBe(true);
   });
 });
 

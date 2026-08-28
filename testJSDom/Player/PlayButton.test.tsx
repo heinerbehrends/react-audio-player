@@ -15,10 +15,16 @@ const states: Record<string, Partial<MediaFields>> = {
 
 describe("PlayButton", () => {
   describe("PlayButtonComponent", () => {
+    /**
+     * Only the error state disables. Loading renames — `play()` at
+     * `readyState: 0` is legal and the browser queues it, so suppressing the
+     * click would drop the first interaction most users attempt, on every
+     * playlist advance as well as at startup.
+     */
     it.each([
       ["paused", "Play audio", undefined],
       ["playing", "Pause audio", undefined],
-      ["loading", "Loading audio", "true"],
+      ["loading", "Loading audio", undefined],
       ["error", "Error loading audio", "true"],
     ])("renders correctly in %s state", (state, name, ariaDisabled) => {
       renderWithStore(
@@ -142,6 +148,11 @@ describe("PlayButton", () => {
     emit("emptied");
 
     expect(screen.getByRole("button")).toHaveAccessibleName("Loading audio");
-    expect(screen.getByRole("button")).toHaveAttribute("aria-disabled", "true");
+    // The name carries the state; the button stays pressable, which is what
+    // makes a playlist advance work — the swap re-enters loading every time.
+    expect(screen.getByRole("button")).not.toHaveAttribute("aria-disabled");
+
+    fireEvent.click(screen.getByRole("button"));
+    expect(element.play).toHaveBeenCalled();
   });
 });

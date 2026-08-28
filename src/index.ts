@@ -13,7 +13,7 @@ export {
   useCurrentSecond,
   useCurrentTime,
 } from "./store/useAudioPlayer";
-export { useIsBuffering, useAudioError } from "./store/derived";
+export { useIsBuffering, useIsSeekable, useAudioError } from "./store/derived";
 export type { AudioFile } from "./Player/PlayerConfigContext";
 export type { KeyboardAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";

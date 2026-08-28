@@ -583,30 +583,100 @@ describe("the volume-drag pin", () => {
  * A5. A slider had no disabled path: in the error state it announced
  * `aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"` unmarked, and
  * accepted arrow keys that did nothing.
+ *
+ * Two predicates reach that now. An **error** disables all three sliders. An
+ * **unusable range** disables only the seek slider, whose `maxValue` *is* the
+ * duration — which is the degenerate range A5 actually describes. Volume and
+ * rate have their own fixed ranges and are unaffected.
+ *
+ * The fake sets `readyState` and `duration` independently, which a real element
+ * does not; that is what lets a test separate the two.
  */
 describe("the disabled slider", () => {
-  it("marks itself aria-disabled while loading and on error", () => {
+  it("marks the seek slider aria-disabled without a usable duration", () => {
     expect(
-      renderSlider({ mode: "seek" }, { readyState: 0 }).result.current.aria,
-    ).toMatchObject({ "aria-disabled": true });
-
-    expect(
-      renderSlider({ mode: "seek" }, { error: {} as MediaError }).result.current
-        .aria,
+      renderSlider({ mode: "seek" }, { readyState: 0, duration: 0 }).result
+        .current.aria,
     ).toMatchObject({ "aria-disabled": true });
   });
 
+  /** The case no load-state check reaches. */
+  it("marks the seek slider aria-disabled on a live stream", () => {
+    const { result } = renderSlider(
+      { mode: "seek" },
+      { readyState: 4, paused: false, duration: Infinity },
+    );
+
+    expect(result.current.aria["aria-disabled"]).toBe(true);
+    // And the range it would otherwise have announced.
+    expect(result.current.aria["aria-valuemax"]).toBe(0);
+  });
+
+  it.each(["seek", "volume", "rate"] as const)(
+    "marks the %s slider aria-disabled on an error",
+    (mode) => {
+      expect(
+        renderSlider({ mode }, { error: {} as MediaError }).result.current.aria,
+      ).toMatchObject({ "aria-disabled": true });
+    },
+  );
+
+  /**
+   * The collateral damage the split removes: neither of these reads the
+   * duration, and both write properties the element accepts before metadata.
+   */
+  it.each(["volume", "rate"] as const)(
+    "leaves the %s slider enabled while merely loading",
+    (mode) => {
+      const { result } = renderSlider({ mode }, { readyState: 0, duration: 0 });
+
+      expect(result.current.aria["aria-disabled"]).toBeUndefined();
+    },
+  );
+
+  it("leaves the volume slider writable while loading", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { readyState: 0, duration: 0, volume: 0.5 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("ArrowRight")));
+
+    expect(harness.store.element.volume).toBeCloseTo(0.55, 5);
+  });
+
   it("omits the attribute once ready, rather than saying false", () => {
-    const { result } = renderSlider({ mode: "seek" }, { readyState: 1 });
+    const { result } = renderSlider(
+      { mode: "seek" },
+      { readyState: 1, duration: 100 },
+    );
 
     expect(result.current.aria["aria-disabled"]).toBeUndefined();
+  });
+
+  /**
+   * A loading player whose duration is already known: seeking is well defined,
+   * so the slider works. The old load-state gate conflated this with the
+   * no-duration case.
+   */
+  it("leaves the seek slider enabled while loading with a known duration", () => {
+    const harness = renderSlider(
+      { mode: "seek" },
+      { readyState: 0, duration: 100, currentTime: 20 },
+    );
+
+    expect(harness.result.current.aria["aria-disabled"]).toBeUndefined();
+
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(0.5)));
+
+    expect(harness.store.element.currentTime).toBe(50);
   });
 
   /** Falling through to the global map would let a disabled slider seek. */
   it("ignores its arrow keys without falling through to the media map", () => {
     const harness = renderSlider(
       { mode: "volume" },
-      { readyState: 0, volume: 0.5, currentTime: 20 },
+      { error: {} as MediaError, volume: 0.5, currentTime: 20 },
     );
     const event = keyDown("ArrowRight");
 
@@ -625,7 +695,7 @@ describe("the disabled slider", () => {
   it("still passes the global media shortcuts through", () => {
     const harness = renderSlider(
       { mode: "volume" },
-      { readyState: 0, paused: true },
+      { error: {} as MediaError, paused: true },
     );
 
     act(() => harness.result.current.onKeyDown(keyDown("p")));
@@ -636,7 +706,7 @@ describe("the disabled slider", () => {
   it("does not commit a click on the track", () => {
     const harness = renderSlider(
       { mode: "seek" },
-      { readyState: 0, currentTime: 20 },
+      { readyState: 0, duration: 0, currentTime: 20 },
     );
 
     act(() => harness.result.current.onTrackPointerDown(trackPointer(0.5)));
@@ -645,7 +715,10 @@ describe("the disabled slider", () => {
   });
 
   it("does not start a drag from the thumb", () => {
-    const harness = renderSlider({ mode: "seek" }, { readyState: 0 });
+    const harness = renderSlider(
+      { mode: "seek" },
+      { readyState: 0, duration: 0 },
+    );
 
     act(() =>
       harness.result.current.onThumbPointerDown(
@@ -792,7 +865,7 @@ describe("Home and End", () => {
   it("does nothing while disabled", () => {
     const harness = renderSlider(
       { mode: "seek" },
-      { readyState: 0, currentTime: 30 },
+      { readyState: 0, duration: 0, currentTime: 30 },
     );
 
     act(() => harness.result.current.onKeyDown(keyDown("Home")));

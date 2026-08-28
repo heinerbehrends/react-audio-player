@@ -305,7 +305,8 @@ function TrackInfo() {
 | `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                     |
 | `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                    |
 | `volumeState`                                     | `"muted" \| "low" \| "high"`                                       |
-| `isDisabled`                                      | True until the track is ready, and while it is errored.            |
+| `isDisabled`                                      | The track is errored. Loading does not disable — see below.        |
+| `isSeekable`                                      | A position on the track can be named: the duration is known.       |
 | `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.      |
 | `error`                                           | The last failure, or `null`. See `useAudioError()`.                |
 | `play`, `pause`, `toggle`                         |                                                                    |
@@ -355,6 +356,37 @@ intent was honoured, so there is nothing to tell them.
 A media error wins when both are set. A playback error clears when a `play()`
 finally succeeds, and deliberately survives a `src` change: an autoplay block
 outlives the track that revealed it.
+
+### `useIsSeekable()`
+
+Whether a position on the track can be named — the duration is known and
+non-zero. It is what disables the timeline and the seek buttons, and **loading is
+not.**
+
+```jsx
+function SkipButton() {
+  const { seekBy } = useAudioPlayer();
+  const seekable = useIsSeekable();
+
+  return (
+    <button type="button" aria-disabled={!seekable} onClick={() => seekBy(30)}>
+      +30s
+    </button>
+  );
+}
+```
+
+Two things this catches that a load-state check does not:
+
+- **A live stream.** `duration` is `Infinity` while `readyState` is perfectly
+  healthy, so there is no end to seek towards. `playerState` says `"playing"`.
+- **Nothing else.** Volume, mute, playback rate and `play()` all work before
+  metadata arrives, so they are not gated. `play()` in particular: the browser
+  queues it at `readyState: 0`, and because changing `audioFile.src` re-enters
+  loading, a gate there would suppress the first press on every playlist advance.
+
+The loading state is still announced — on the accessible name, which reads
+"Loading audio" — rather than by making the button unavailable.
 
 ### `useIsBuffering()`
 

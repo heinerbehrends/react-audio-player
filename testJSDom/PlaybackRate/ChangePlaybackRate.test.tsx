@@ -69,10 +69,28 @@ describe("ChangePlaybackRate", () => {
     expect(element.playbackRate).toBeCloseTo(1.05, 10);
   });
 
-  it("is aria-disabled while the player is loading, and does not activate", () => {
+  /**
+   * `playbackRate` is settable before metadata, so loading is not a reason to
+   * suppress this button. It was only ever disabled as collateral damage from a
+   * gate meant for the timeline.
+   */
+  it("stays enabled and writable while the player is loading", () => {
     const { element } = renderChange(
       <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
-      { readyState: 0 },
+      { readyState: 0, duration: 0 },
+    );
+    const button = screen.getByRole("button");
+
+    expect(button).not.toHaveAttribute("aria-disabled");
+
+    fireEvent.click(button);
+    expect(element.playbackRate).toBe(1.25);
+  });
+
+  it("is aria-disabled on an error, and does not activate", () => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
+      { error: {} as MediaError },
     );
     const button = screen.getByRole("button");
 

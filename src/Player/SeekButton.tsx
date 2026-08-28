@@ -14,7 +14,11 @@ export function SeekButton({
 }: SeekButtonComponentProps) {
   const seekAmount = useSeek(amount);
   const handleMediaKeys = useHandleMediaKeys();
-  const disabled = useDisabledButtonProps(seekAmount, props.onClick);
+  // The one button that needs a duration: `useSeek` sends `SET_TIME_FORWARD`
+  // whichever way `amount` points, and that action reads `el.duration`.
+  const disabled = useDisabledButtonProps(seekAmount, props.onClick, {
+    requiresSeekable: true,
+  });
 
   return (
     <button

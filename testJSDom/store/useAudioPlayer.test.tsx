@@ -50,11 +50,45 @@ describe("useAudioPlayer", () => {
   it("reports loading and error ahead of paused/playing", () => {
     const loading = setup(useAudioPlayer, { readyState: 0 });
     expect(loading.result.current.playerState).toBe("loading");
-    expect(loading.result.current.isDisabled).toBe(true);
 
     const errored = setup(useAudioPlayer, { error: {} as MediaError });
     expect(errored.result.current.playerState).toBe("error");
-    expect(errored.result.current.isDisabled).toBe(true);
+  });
+
+  /**
+   * `isDisabled` and `isSeekable` are inlined here rather than calling the two
+   * hooks, so they can drift from `useIsDisabled` / `useIsSeekable`. These rows
+   * are what would catch that — a consumer building custom controls needs the
+   * same two predicates the library's own components read.
+   */
+  it("reports isDisabled for an error only, not for loading", () => {
+    expect(
+      setup(useAudioPlayer, { readyState: 0, duration: 0 }).result.current
+        .isDisabled,
+    ).toBe(false);
+
+    expect(
+      setup(useAudioPlayer, { error: {} as MediaError }).result.current
+        .isDisabled,
+    ).toBe(true);
+  });
+
+  it("reports isSeekable off the duration, independent of the load state", () => {
+    expect(
+      setup(useAudioPlayer, { readyState: 0, duration: 0 }).result.current
+        .isSeekable,
+    ).toBe(false);
+
+    // A healthy live stream: `readyState` at its maximum, no end to seek to.
+    expect(
+      setup(useAudioPlayer, { readyState: 4, duration: Infinity }).result
+        .current.isSeekable,
+    ).toBe(false);
+
+    expect(
+      setup(useAudioPlayer, { readyState: 1, duration: 100 }).result.current
+        .isSeekable,
+    ).toBe(true);
   });
 
   it("tracks the element as it changes", () => {

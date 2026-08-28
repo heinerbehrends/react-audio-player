@@ -1,10 +1,20 @@
-import { useIsDisabled } from "../store/derived";
+import { useIsDisabled, useIsSeekable } from "../store/derived";
 
 type ClickHandler = React.MouseEventHandler<HTMLButtonElement>;
 
 export type DisabledButtonProps = {
   readonly "aria-disabled": true | undefined;
   readonly onClick: ClickHandler | undefined;
+};
+
+type DisabledOptions = {
+  /**
+   * For a control whose action has to name a position on the track. It is
+   * unavailable without a duration as well as on an error — `SeekButton` is the
+   * only one, and both directions qualify, since it sends `SET_TIME_FORWARD`
+   * with a negative value rather than `SET_TIME_BACKWARD`.
+   */
+  requiresSeekable?: boolean;
 };
 
 /**
@@ -16,14 +26,21 @@ export type DisabledButtonProps = {
  * browser — including the consumer's own `onClick`, which native `disabled`
  * also blocked.
  *
+ * The one place that composes the two predicates, so a control cannot end up
+ * announcing one and enforcing the other.
+ *
  * Spread after the consumer's props, or the gate can be spread away. `theirs`
  * still replaces `ours`, as it did before the gate existed.
  */
 export function useDisabledButtonProps(
   ours: ClickHandler,
   theirs: ClickHandler | undefined,
+  { requiresSeekable = false }: DisabledOptions = {},
 ): DisabledButtonProps {
-  const isDisabled = useIsDisabled();
+  const isErrored = useIsDisabled();
+  // Called unconditionally, as a hook must be. One rarely-changing atom.
+  const isSeekable = useIsSeekable();
+  const isDisabled = isErrored || (requiresSeekable && !isSeekable);
 
   return {
     "aria-disabled": isDisabled || undefined,

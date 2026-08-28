@@ -3,7 +3,7 @@ import { calculateSliderValue } from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled } from "../store/derived";
+import { useIsDisabled, useIsSeekable } from "../store/derived";
 import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 import {
   ARROW_KEYS,
@@ -99,7 +99,18 @@ export function useSlider({
   const config = SLIDER_MODES[mode];
   const store = usePlayerStore();
   const handleMediaKeys = useHandleMediaKeys();
-  const isDisabled = useIsDisabled();
+  const isErrored = useIsDisabled();
+  const isSeekable = useIsSeekable();
+  /**
+   * Two predicates, and only the seek slider reads the second. Its `maxValue`
+   * *is* the duration, so without one it announces `min=0 max=0 now=0` and
+   * accepts arrow keys into that range — A5, and the reason the gate exists.
+   *
+   * The volume and rate sliders are unaffected by a missing duration: neither
+   * reads it, and both write properties the element accepts before metadata. A
+   * load-state gate disabled them as collateral damage.
+   */
+  const isDisabled = isErrored || (mode === "seek" && !isSeekable);
 
   const valueFromStore = useStore(
     mode === "seek"
