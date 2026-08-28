@@ -16,6 +16,7 @@ export function SliderThumb(props: SliderThumbProps) {
   return (
     <button
       type="button"
+      data-part="thumb"
       {...props}
       // `tabIndex` and `aria-hidden` are locked as a pair: unhiding the thumb
       // would put a second value-announcing element in one slider.

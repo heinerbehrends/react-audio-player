@@ -17,11 +17,17 @@ function VolumeProgress(props: ProgressProps) {
     ...calculateProgressStyle(slider),
     ...props.style,
   };
-  return <div {...props} style={style} />;
+  return <div data-part="progress" {...props} style={style} />;
 }
 
 function VolumeBackground(props: HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} style={{ ...progressStyles, ...props.style }} />;
+  return (
+    <div
+      data-part="background"
+      {...props}
+      style={{ ...progressStyles, ...props.style }}
+    />
+  );
 }
 
 type VolumeProps = HTMLAttributes<HTMLDivElement> & {

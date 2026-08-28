@@ -14,6 +14,7 @@ function PlaybackRateProgress({
   const slider = useSliderContext();
   return (
     <div
+      data-part="progress"
       {...props}
       style={{
         ...progressStyles,
@@ -30,6 +31,7 @@ function PlaybackRateBackground({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      data-part="background"
       {...props}
       style={{
         ...progressStyles,

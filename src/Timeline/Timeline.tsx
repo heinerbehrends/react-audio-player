@@ -31,12 +31,13 @@ function TimelineProgress(props: ProgressProps) {
       : { transition: "transform 250ms linear" }),
     ...props.style,
   };
-  return <div {...props} style={style} />;
+  return <div data-part="progress" {...props} style={style} />;
 }
 
 function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      data-part="background"
       {...props}
       style={{
         ...progressStyles,

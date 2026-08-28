@@ -28,6 +28,7 @@ export function SliderControl({ children, ...props }: SliderControlProps) {
   return (
     <button
       type="button"
+      data-part="control"
       ref={slider.setSliderRef}
       {...slider.aria}
       {...props}

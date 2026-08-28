@@ -26,6 +26,72 @@ severity calls below.
 Counts: **17 P0 · 28 P1 · 22 P2 · 7 P3** — 74 findings across six categories.
 One claim was checked and rejected.
 
+**Status as of 2026-08-28: all 17 P0s are resolved**, along with several P1s and
+P2s. See [Status](#status) below. The findings themselves are left as written —
+they are the evidence, and the reasoning in them is what the fixes were argued
+against. `BACKLOG.md` is the live list of what remains.
+
+---
+
+## Status
+
+Every row below was verified after the fix, by the means named. The suite went
+from **337 jsdom / 51 E2E** to **406 jsdom / 52 E2E**, all green, with
+`type-check` on both TS projects, `lint`, `prettier`, `build` and
+`check-exports` clean throughout.
+
+### All 17 P0s — resolved
+
+| Ref          | Shipped                                                                                          | Verified by                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------- | --- | -------------------------------- | --------------------------------------------------- |
+| **A1**       | Space dropped from the default key map, so it activates the focused button again                 | Browser: seeks 10 s, no longer starts playback                                                                            |
+| **A2**       | `ctrlKey                                                                                         |                                                                                                                           | metaKey |     | altKey`guard in`handleMediaKeys` | Browser: `Ctrl+Alt+→` and `Ctrl+Alt+M` both ignored |
+| **A3**       | `aria-hidden` wrapper and `aria-label` removed from the alert                                    | Browser: message announceable; the test that pinned the bug was flipped                                                   |
+| **S1**       | `{...props}` spread on the `Timeline` and `Volume` roots                                         | `className`, `id` and handlers now reach the DOM                                                                          |
+| **S2 / C6**  | `Time` is a plain namespace object; the `React.FC` call signature is gone                        | `dist/index.d.ts` declares an object; `<Time>` no longer type-checks                                                      |
+| **S3**       | `"use client"` via tsup `banner` **plus** an `onSuccess` re-apply                                | First line of `dist/index.mjs`; the Rollup treeshake pass strips the banner alone                                         |
+| **S4**       | `type="button"` on all 8 buttons; 3 prop types widened to `ButtonHTMLAttributes`                 | Browser DOM                                                                                                               |
+| **S5 / A14** | `composeEventHandlers`; handlers, `tabIndex` and `aria-hidden` moved after the spread            | 11 tests, including the `preventDefault()` opt-out                                                                        |
+| **S6 / F2**  | `audioFiles: AudioFile[]` → `audioFile: AudioFile`                                               | The array never read past `[0]`                                                                                           |
+| **S7**       | `.Seek`/`.Set` → `.Control`, `.Drag` → `.Thumb`, `Seek` → `SeekButton`                           | 406 + 52 green with **no logic change**                                                                                   |
+| **F1 / S13** | `useAudioPlayer`, `useCurrentSecond`, `useCurrentTime`, `useIsBuffering`, `useAudioError`        | 10 tests, two of which pin the subscription-granularity split                                                             |
+| **F3**       | `title`/`artist`/`album`/`artwork` on `AudioFile`; README example now compiles                   | `tsc` — the old example was a hard `TS2353`                                                                               |
+| **F4**       | `playbackError` atom written by `send`; `AbortError` swallowed                                   | 15 tests, incl. one asserting no unhandled rejection escapes                                                              |
+| **T1**       | `no-snap-back.spec.ts` samples the thumb and `aria-valuenow`, not `el.currentTime`               | **Mutation-proven**: both rows fail when the retain-until-changed rule is deleted — the mutation the old version survived |
+| **T2**       | The `role="progressbar"` query is gone; the fill is targeted by test id                          | The old query returned `null` and passed unconditionally                                                                  |
+| **T3**       | Plays until `aria-valuenow` moves, then compares like-for-like against `Math.floor(currentTime)` | The old version passed with the attribute frozen at 0                                                                     |
+
+### Also resolved
+
+| Ref          | Shipped                                                                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **F5**       | Stall signal: `readyState` projected, `useIsBuffering()` derives from it. Chosen over a 5th `PlayerState` member, which would have destroyed the play/pause affordance during a stall                               |
+| **F7**       | `onEnded` on `AudioPlayer` makes track-end observable, and userland playlists possible. An `ended` atom was rejected — the rewind clears `el.ended` within a tick, so a level would flicker where an edge is wanted |
+| **F8**       | `mediaErrorCode` projected; `useAudioError()` composes it with `playbackError` into a discriminated union                                                                                                           |
+| **F9 / S10** | `audioProps` and `audioRef` on `AudioPlayer` — unblocks `crossOrigin` (and so Web Audio), `preload`, `<track>` captions and HLS.js                                                                                  |
+| **P1-a**     | Three `Object.assign` compound roots → property assignment. Rollup: a `PlayButton`-only import went **4,025 B → 1,137 B gzipped (−72 %)**                                                                           |
+| **C8**       | _Partly_: the write path now clamps to the browser's ranges. The library's own 0.5–4 rate policy is still applied inconsistently — recorded in `BACKLOG.md`                                                         |
+| **T5**       | _Partly_: the dead `useHandleSideEffect` mock is gone; `PlaybackRate.test.tsx:10` still mocks the deleted `useAudioElement`                                                                                         |
+
+### Found during the work, not in the original review
+
+|                                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Out-of-range media writes throw**     | `volume` outside [0, 1] raises `IndexSizeError`, `playbackRate` outside [0, 16] raises `NotSupportedError`, and a non-finite `currentTime` raises `TypeError` — all measured in Chrome. Unreachable while sliders were the only callers, and **made reachable by `useAudioPlayer`**, which hands `setVolume`/`setRate`/`seek` arbitrary input. Fixed with clamping guards on the write path; 9 tests, including the two `NaN`-before-metadata paths (`SET_TIME_TO_PERCENT`, `SET_TIME_FORWARD`) that would have thrown on a real element. |
+| **`type-check` covered no config file** | `tsconfig.node.json` included only `vite.config.ts`, and the root `tsconfig.json`'s `types: ["node"]` does not reach referenced projects. `tsup.config.ts`, `vitest.config.ts` and `playwright.config.ts` were unchecked. Fixed.                                                                                                                                                                                                                                                                                                          |
+| **A third `.Set`**                      | `PlaybackRate.Set` and `PlaybackRateSlider.Set` were different components one character apart. Resolved by S7.                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **`.Track` was the wrong rename**       | The README already calls `.Background` "the track", so `.Track` would have moved the collision rather than removed it. `.Control` was taken instead.                                                                                                                                                                                                                                                                                                                                                                                      |
+| **Fake fidelity**                       | `play()` now returns a promise and is typed as a spy, closing divergence #2 from the test review.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+
+### Still open
+
+`BACKLOG.md` is authoritative. In brief: **A4–A13 and A15** (aria polish, the
+`aria-disabled` change, Home/End); **S8, S9, S11, S12, S14–S23** (the styling
+split, `data-*` attributes, the hardcoded 20 px thumb offset, the missing
+`position: relative` on two slider roots); **F6, F10–F12**; **C1–C5, C7, C9,
+C10**; **T4, T6–T11**; **P1-b, P2-a**. Codec fallback and buffered ranges have
+their own sections in `BACKLOG.md`.
+
 ---
 
 ## Contents
