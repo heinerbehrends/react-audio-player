@@ -2,7 +2,6 @@ name: Tests
 
 on:
   push:
-    branches: [main, master]
   pull_request:
     branches: [main, master]
 
@@ -46,17 +45,35 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
+      # Covers both TS projects. `tsconfig.app.json` alone left tsup.config.ts,
+      # vitest.config.ts and playwright.config.ts unchecked.
       - name: Type check
         run: pnpm type-check
 
       - name: Lint
         run: pnpm lint
 
+      - name: Format check
+        run: pnpm format:check
+
+      # Every finding is either resolved with evidence in REVIEW-FINDINGS.md or
+      # open with a reason in BACKLOG.md.
+      - name: Check docs
+        run: pnpm check-docs
+
+      # Before check-exports, which reads dist/. Without it `attw` reports
+      # "This package does not contain types" and exits 0 — a green no-op.
+      - name: Build
+        run: pnpm build
+
       - name: Check exports
         run: pnpm check-exports
 
+      # `test:run`, not `test`: bare `vitest` only runs once because Vitest
+      # disables watch when CI is set. Relying on that leaves CI one env var away
+      # from hanging until the job times out.
       - name: Run tests
-        run: pnpm test
+        run: pnpm test:run
 
       - name: Run E2E tests
         run: pnpm testE2E

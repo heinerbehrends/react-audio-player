@@ -35,8 +35,10 @@
     "testE2E": "playwright test",
     "testE2E:local": "playwright test --config playwright.local.config.ts",
     "test": "vitest",
-    "type-check": "tsc --noEmit --project tsconfig.app.json",
+    "test:run": "vitest run",
+    "type-check": "tsc --noEmit --project tsconfig.app.json && tsc --noEmit --project tsconfig.node.json",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "check-exports": "attw --pack . --profile esm-only",
     "check-docs": "node scripts/check-docs.mjs"
   },

@@ -1,0 +1,13 @@
+# Generated. `prettier --check .` is a CI gate, so anything not hand-written has
+# to be excluded or the gate fails on output nobody edits.
+dist
+test-results
+test-results.json
+playwright-report
+
+# pnpm writes this. Reformatting it produces a diff of thousands of lines and
+# risks the lockfile's own semantics.
+pnpm-lock.yaml
+
+# Untracked working notes, not project source.
+tasks
