@@ -192,6 +192,59 @@ function Playlist() {
 
 - `<ErrorMessage>` - Displays a customizable message on error
 
+## Hooks
+
+For UI the components do not cover — a mini-player in a nav bar, a waveform,
+analytics, resuming where the listener left off. All three must be called inside
+an `<AudioPlayer>`.
+
+### `useAudioPlayer()`
+
+Returns the player's state and its controls, flat:
+
+```jsx
+function TrackInfo() {
+  const { paused, duration, volume, playerState, play, pause, seekBy } =
+    useAudioPlayer();
+
+  if (playerState === "loading") return <p>Loading…</p>;
+
+  return (
+    <button type="button" onClick={paused ? play : pause}>
+      {paused ? "Play" : "Pause"} — {duration}s at {volume * 100}%
+    </button>
+  );
+}
+```
+
+| Returns                                           |                                                                    |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                     |
+| `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                    |
+| `volumeState`                                     | `"muted" \| "low" \| "high"`                                       |
+| `isDisabled`                                      | True until the track is ready, and while it is errored.            |
+| `play`, `pause`, `toggle`                         |                                                                    |
+| `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                   |
+| `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. |
+
+The control methods are stable for the lifetime of the player, so they are safe
+to put in a dependency array.
+
+### `useCurrentSecond()` and `useCurrentTime()`
+
+The playback position is **not** part of `useAudioPlayer()`, on purpose. It
+changes about four times a second, and folding it in would re-render every
+caller at that rate for values they are not watching.
+
+```jsx
+const second = useCurrentSecond(); // whole seconds — re-renders 1x/sec
+const time = useCurrentTime(); // raw position — re-renders ~4x/sec
+```
+
+Use `useCurrentSecond` for anything a human reads. Reach for `useCurrentTime`
+only for something drawn continuously, such as a waveform or a custom progress
+bar.
+
 ## Roadmap
 
 - Improve testing
@@ -217,7 +270,7 @@ pnpm testE2E
 
 Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer. Live
 streams are not supported: an unbounded duration reads as `0`, so gate any UI that
-needs a length on a duration greater than zero.
+needs a length on `useAudioPlayer().duration > 0`.
 
 ## License
 
