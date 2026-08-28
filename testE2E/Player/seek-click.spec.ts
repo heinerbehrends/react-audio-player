@@ -38,7 +38,6 @@ test("jumps to correct position when playing", async () => {
 
   await page.getByRole("button", { name: labels.playAudio }).click();
 
-  // Wait for audio to start playing
   await page.waitForTimeout(100);
 
   const seekButton = page.getByLabel(labels.seekForward);

@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components --
-   `Time` is a namespace object, not a component — it has no root element to
-   render — so the parts below reach consumers through it rather than being
-   exported individually. Fast refresh degrades for this file; a call signature
-   that type-checks and throws at runtime is the worse trade. */
+   `Time` is a namespace object, not a component, so the parts below reach
+   consumers through it rather than being exported individually. Fast refresh
+   degrades for this file; a call signature that type-checks and then throws at
+   runtime is the worse trade. */
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { formatTime } from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
@@ -87,7 +87,7 @@ function Duration() {
 }
 
 /**
- * A namespace, not a component — there is no root element to render, so unlike
+ * A namespace, not a component: there is no root element to render, so unlike
  * the sliders `Time` carries no call signature. Typing it as one made
  * `<Time>…</Time>` compile and then throw at runtime.
  */

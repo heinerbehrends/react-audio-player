@@ -65,12 +65,8 @@ test("clicking the track sets the volume without muting", async () => {
 
 /**
  * The mute round-trip `lastAudibleVolume` has to preserve. Dragging to zero
- * mutes; unmuting then has to put the player back where it was.
- *
- * This row asserted only "audible again" between Phases 2 and 3, because the
- * memory tracked every sample a drag passed through and ended up at the last
- * non-zero one. The volume-drag pin restores the pre-drag value, so the
- * assertion is tightened to it.
+ * mutes; unmuting then has to restore the pre-drag volume, not the last non-zero
+ * sample the drag passed through.
  */
 test("unmuting after a drag to zero restores the pre-drag volume", async () => {
   await setVolume(0.8);

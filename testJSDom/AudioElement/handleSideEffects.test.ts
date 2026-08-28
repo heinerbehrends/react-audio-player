@@ -7,9 +7,9 @@ import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions"
 import { createMediaElementFake } from "../store/mediaElementFake";
 
 /**
- * The write path takes a store snapshot now — a value, not an accessor, so this
- * suite gains an argument instead of a mock. Only `TOGGLE_MUTE` and `UNMUTE`
- * read it, so every other case leaves it at the default.
+ * The write path takes the store snapshot as an argument, so these need no
+ * mock. Only `TOGGLE_MUTE` and `UNMUTE` read it; every other case leaves it at
+ * the default.
  */
 const defaultContext: SideEffectContext = { lastAudibleVolume: 1 };
 
@@ -77,9 +77,8 @@ describe("handleSideEffect", () => {
     expect(audioElement.volume).toBe(0.3);
   });
 
-  // The dead-end `lastAudibleVolume` exists to fix: getting to zero by any path
-  // — drag, click, keyboard — used to leave a silent player with no way back,
-  // because only the drag path stashed anything.
+  // The dead end `lastAudibleVolume` exists to prevent: reaching zero by any
+  // path — drag, click, keyboard — and having no way back to an audible volume.
   it("restores the last audible volume when unmuting a silent player", () => {
     audioElement.muted = true;
     audioElement.volume = 0;
@@ -165,10 +164,9 @@ describe("handleSideEffect", () => {
   });
 
   /**
-   * The ten keyboard actions. `handleMediaKeys.test` verifies key → action and
-   * nothing verified action → element: two half-covered layers that never met.
-   * Every clamp here is the only thing standing between a held-down arrow key and
-   * an out-of-range media property.
+   * The ten keyboard actions. `handleMediaKeys.test` covers key → action; this
+   * covers action → element. Every clamp here is what stands between a held-down
+   * arrow key and an out-of-range media property.
    */
   describe("the keyboard actions", () => {
     it("clamps INCREASE_VOLUME at 1", () => {
@@ -177,9 +175,9 @@ describe("handleSideEffect", () => {
       expect(audioElement.volume).toBe(1);
     });
 
-    // Deliberate: the case returns before assigning, so the volume is left where
-    // it was and only `muted` changes. Unmuting then restores through
-    // `lastAudibleVolume` rather than through this leftover value.
+    // The case returns before assigning, so the volume is left where it was and
+    // only `muted` changes. Unmuting restores through `lastAudibleVolume`, not
+    // through this leftover value.
     it("mutes on DECREASE_VOLUME to near-zero and leaves volume untouched", () => {
       audioElement.volume = 0.02;
       handleSideEffect({ type: "DECREASE_VOLUME", value: 0.025 }, audioElement);
@@ -217,9 +215,9 @@ describe("handleSideEffect", () => {
       expect(audioElement.currentTime).toBe(100);
     });
 
-    // The `<Seek amount={-10}>` path: it routes a negative value through
-    // SET_TIME_FORWARD, which has no lower clamp of its own. This pins today's
-    // reliance on the browser clamping a negative `currentTime`.
+    // `<Seek amount={-10}>` routes a negative value through `SET_TIME_FORWARD`,
+    // which has no lower clamp of its own, so the browser's clamp on a negative
+    // `currentTime` is what catches it.
     it("has no lower clamp for a negative SET_TIME_FORWARD", () => {
       audioElement.currentTime = 5;
       handleSideEffect({ type: "SET_TIME_FORWARD", value: -10 }, audioElement);

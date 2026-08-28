@@ -64,23 +64,21 @@ function positionOf(event: PositionEvent, orientation: Orientation): number {
 }
 
 /**
- * One slider, whatever kind. Owns drag state and geometry and returns the whole
- * `SliderContext` value: the display value, the aria surface, a ref callback and
- * the pointer and keyboard handlers. `Timeline`, `Volume` and
+ * Drives one slider of any kind. Owns drag state and geometry, and returns the
+ * whole `SliderContext` value: the display value, the aria surface, a ref
+ * callback and the pointer and keyboard handlers. `Timeline`, `Volume` and
  * `PlaybackRateSlider` are configuration over this.
  *
- * Call it once, at the slider root. One slider is three sibling components: the
- * geometry is measured by the element carrying the semantics while the progress
- * bar and the thumb consume it, and consumers place all three freely in their own
- * markup, so there is no prop-drilling path between them.
+ * Call it once, at the slider root. A slider is three sibling components — the
+ * element carrying the semantics measures the track while the progress bar and
+ * the thumb consume that measurement — and consumers place all three freely in
+ * their own markup, so there is no prop-drilling path between them.
  *
- * Every `useCallback` below is effect-dependency stability, not render
- * memoization, so the Phase 5 memo strip deliberately left all of them in place.
- * `valueAt`, `commit`, `send` and `releaseAudibleVolume` are dependencies of the
- * drag effect: unstable identities would tear down and re-attach five window
- * listeners on every pointermove, which is the exact thing this design avoids.
- * `measure` feeds the ResizeObserver effect, and `setSliderRef` is a ref callback
- * — an unstable one detaches and re-attaches the node.
+ * The `useCallback`s below are for effect-dependency stability, not render
+ * memoization. `valueAt`, `commit`, `send` and `releaseAudibleVolume` feed the
+ * drag effect, which would otherwise re-attach five window listeners on every
+ * pointermove; `measure` feeds the ResizeObserver; `setSliderRef` is a ref
+ * callback, and an unstable one re-attaches the node.
  */
 export function useSlider({
   mode,
@@ -123,8 +121,8 @@ export function useSlider({
     storeValue: number;
   } | null>(null);
 
-  // Read by handlers that outlive a render — the drag's window listeners — so
-  // they do not have to be re-attached every time one of these changes.
+  // Read by the drag's window listeners, which outlive the render that attached
+  // them, so a change here does not force a re-attach.
   const grabOffsetRef = useRef(0);
   const releaseHoldRef = useRef<(() => void) | null>(null);
   const valueFromStoreRef = useRef(valueFromStore);
@@ -140,8 +138,8 @@ export function useSlider({
         sliderStart: orientation === "horizontal" ? rect.left : rect.top,
         sliderLength: orientation === "horizontal" ? rect.width : rect.height,
       };
-      // Bail out on an unchanged measurement: a `ResizeObserver` that always set
-      // state would loop.
+      // Bail out on an unchanged measurement, or the `ResizeObserver` would
+      // loop.
       setGeometry((current) =>
         current.sliderStart === next.sliderStart &&
         current.sliderLength === next.sliderLength
@@ -169,17 +167,17 @@ export function useSlider({
   }, [measure]);
 
   /**
-   * Dropping the local value the instant a drag ends is wrong: the commit writes
-   * the element, drag state clears, and display falls through to an atom that
-   * still holds the pre-drag value until the element echoes back — a visible
-   * snap-back of up to ~250 ms in `"seek"` mode. So the last committed value is
-   * retained until the store moves off what it held when the commit went out.
+   * Dropping the local value the instant a drag ends causes a visible
+   * snap-back: the commit writes the element, but the atom still holds the
+   * pre-drag value until the element echoes back — up to ~250 ms in `"seek"`
+   * mode. So the committed value is retained until the store moves off what it
+   * held when the commit went out.
    *
-   * Compared against the store value *at commit time*, not against the committed
-   * value: a media element may echo back a slightly different time than the one
-   * it was given, and comparing to the committed value would freeze the display
-   * for good. Click-to-set has the same gap as a drag release, which is why this
-   * is a property of `useSlider` rather than of one commit handler.
+   * Compared against the store value *at commit time*, not against the
+   * committed value: an element may echo back a slightly different time than
+   * the one it was given, which would freeze the display for good.
+   * Click-to-set has the same gap, so this lives here rather than in one commit
+   * handler.
    */
   const displayValue =
     drag.state === "dragging"
@@ -211,8 +209,8 @@ export function useSlider({
   /**
    * `CHANGE_VALUE` carries the value rather than the geometry, so the value is
    * computed once, here, where the geometry lives. It also owns the mute
-   * coupling: for the volume component it mutes at zero and unmutes above it, so
-   * "mute at zero" is one rule in one place rather than a rule per gesture.
+   * coupling: for the volume component, zero mutes and anything above it
+   * unmutes, so that is one rule in one place rather than one per gesture.
    */
   const send = useCallback(
     (value: number) => {
@@ -245,25 +243,24 @@ export function useSlider({
     releaseHoldRef.current = null;
   }, []);
 
-  // A gesture interrupted by an unmount would otherwise leave the memory frozen
-  // for the life of the store.
+  // A gesture cut short by an unmount would otherwise leave `lastAudibleVolume`
+  // frozen for the life of the store.
   useEffect(() => releaseAudibleVolume, [releaseAudibleVolume]);
 
   const onThumbPointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       const rect = event.currentTarget.getBoundingClientRect();
       const clientXY = positionOf(event, orientation);
-      // Where inside the thumb the pointer grabbed. Subtracting it is what stops
-      // an off-centre grab jumping the value on the first move — `"seek"` did
-      // this and the other two did not.
+      // Where inside the thumb the pointer grabbed. Subtracting it stops an
+      // off-centre grab from jumping the value on the first move.
       const grabOffset =
         orientation === "horizontal"
           ? clientXY - rect.left - rect.width / 2
           : clientXY - rect.top - rect.height / 2;
 
       if (config.mutesAtZero) {
-        // Grabbing the thumb of a silenced player makes it audible again — at the
-        // remembered volume, which is why the hold can come after.
+        // Grabbing the thumb of a silenced player makes it audible again, at the
+        // remembered volume — which is why the hold can come after.
         store.send({ type: "UNMUTE" });
       }
       holdAudibleVolume();

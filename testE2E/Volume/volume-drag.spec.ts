@@ -61,11 +61,8 @@ test("dragging the thumb to zero mutes", async () => {
 });
 
 /**
- * This row was written to pin the bug: volume and rate mode used to call
- * `calculateSliderValue` on the raw `clientXY`, so grabbing the thumb off-centre
- * jumped the value by the grab offset on the first move, while `"seek"` mode
- * subtracted it and did not. `useSlider` subtracts in every mode, so the
- * assertion is flipped — which is the point of having written it first.
+ * `useSlider` subtracts the grab offset in every mode, so grabbing the thumb
+ * off-centre must not jump the value on the first move.
  */
 test("grabbing the thumb off-centre does not jump the value", async () => {
   await setVolume(0.5);

@@ -14,7 +14,6 @@ test("progress indicator initial state", async () => {
   await expect(progressIndicator).toHaveAttribute("role", "slider");
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
 
-  // Check that the timeline value is close to 0 (initial state)
   const timelineValue = await progressIndicator.getAttribute("aria-valuenow");
   const timelineNumber = parseFloat(timelineValue ?? "0");
   expect(timelineNumber).toBeCloseTo(0, 0.25);
@@ -26,7 +25,6 @@ test("progress indicator updates on audio playback", async () => {
   const playButton = page.getByRole("button", { name: /Play/ });
   await playButton.click();
 
-  // Wait a bit for audio to start playing
   await page.waitForTimeout(100);
 
   const pauseButton = page.getByRole("button", { name: /Pause/ });

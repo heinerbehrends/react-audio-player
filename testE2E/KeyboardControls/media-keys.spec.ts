@@ -14,9 +14,7 @@ test.afterAll(async () => {
 });
 
 /**
- * `seek-keys` covers the time keys. The volume and rate keys were untested at
- * both layers — `handleMediaKeys.test` verified key → action and nothing
- * verified the key reaching the element.
+ * The volume and rate keys, end to end; `seek-keys` covers the time keys.
  *
  * The keys are handled by the focusable controls, so a button has to have focus.
  * `PlayButton` is the one every row here can use, since none of these keys

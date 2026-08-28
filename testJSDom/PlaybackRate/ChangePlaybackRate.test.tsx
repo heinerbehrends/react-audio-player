@@ -109,9 +109,9 @@ describe("ChangePlaybackRate", () => {
   });
 
   /**
-   * The tearing hazard this migration removes. `useAudioElement` read
-   * `playbackRate` during render; a `ratechange` the component is subscribed to
-   * is what makes the next click compute from a fresh value.
+   * The tearing hazard: reading `playbackRate` during render leaves the next
+   * click computing from a stale value. Subscribing to `ratechange` is what
+   * keeps it fresh.
    */
   it("adds to the rate the element reports after a ratechange", () => {
     const { element, emit } = renderChange(

@@ -234,11 +234,9 @@ describe("sharedFunctions", () => {
   });
 
   /**
-   * The `clientXY - offsetFromMiddle` call pattern, asserted as the property it
-   * is: for a fixed thumb centre, where inside the thumb the pointer grabbed it
-   * must not change the value. `"seek"` mode composes them this way today; Phase 3
-   * generalises it to volume and rate, which call `calculateSliderValue` on the
-   * raw `clientXY` and so jump the value on first move.
+   * The `clientXY - offsetFromMiddle` pattern, asserted as the property it is:
+   * for a fixed thumb centre, where inside the thumb the pointer grabbed must
+   * not change the value.
    */
   describe("grab-offset composition", () => {
     const geometry = {
@@ -250,9 +248,8 @@ describe("sharedFunctions", () => {
     const thumbCentre = 60;
 
     /**
-     * The two things a pointer event actually carries, kept independent: where
-     * the pointer is, and where inside the thumb it grabbed. The subtraction is
-     * what is under test.
+     * Pointer position and grab offset, kept independent. The subtraction of one
+     * from the other is what is under test.
      */
     function grab(grabOffset: number) {
       const clientXY = thumbCentre + grabOffset;
@@ -286,7 +283,7 @@ describe("sharedFunctions", () => {
       });
 
       // Drop the subtraction and the same three grabs land on three different
-      // values — which is the bug in volume and rate mode today.
+      // values.
       const raw = offsets.map((grabOffset) =>
         calculateSliderValue({
           ...geometry,

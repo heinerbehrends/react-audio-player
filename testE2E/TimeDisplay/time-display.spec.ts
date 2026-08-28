@@ -66,11 +66,7 @@ test("duration renders the track length", async () => {
   );
 });
 
-/**
- * `remaining` was `duration ?? (0 - currentTime)` — the constant track length, so
- * this half of the display never counted down. Asserts the fixed value, so it
- * lands with the precedence fix.
- */
+/** `remaining` has to count down, not sit at the constant track length. */
 test("toggling shows remaining, and it counts down", async () => {
   await ensureElapsedShown();
   await seekTo(10);

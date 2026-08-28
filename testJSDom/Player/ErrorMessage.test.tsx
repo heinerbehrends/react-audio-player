@@ -48,9 +48,8 @@ describe("ErrorMessage", () => {
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
 
-  // The live bug the `loadState` machine fixes: `AUDIO_FILE_ERROR` set
-  // `playerState: "error"` permanently, and `AUDIO_FILE_LOADED` only recovered
-  // from `"loading"`, so a bad src followed by a good one stayed broken.
+  // A bad src followed by a good one has to recover: `loadedmetadata` sets
+  // `loadState` to `"ready"` whatever it held before.
   it("goes away when a failed src is swapped for a good one", () => {
     const { emit, element } = renderWithStore(
       <ErrorMessage>Custom error message</ErrorMessage>,

@@ -14,11 +14,9 @@ test.afterAll(async () => {
 });
 
 /**
- * Intended behaviour, not previous behaviour. `handleEnded` used to push the
- * timeline's UI value to 0 while the element sat at `duration`, so the thumb was
- * at the start and the clock showed the full track length — the mirror problem in
- * its most visible form. `onEnded` moves the *element* to 0 instead: `seeked`
- * fires, the atoms follow, and the thumb and the clock agree.
+ * On `ended` the element itself is moved to 0, so `seeked` fires and the atoms
+ * follow. Pushing only the thumb there would leave the clock showing the full
+ * track length.
  */
 test("playing to the end returns both the element and the clock to the start", async () => {
   const { duration } = await getAudioState(page);

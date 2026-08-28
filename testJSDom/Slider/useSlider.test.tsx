@@ -6,17 +6,12 @@ import { useSlider, type UseSliderOptions } from "../../src/Slider/useSlider";
 import { createTestStore, type TestStore } from "../store/createTestStore";
 import type { MediaFields } from "../store/mediaElementFake";
 
-/**
- * `useSlider` is the only genuinely new logic in this phase with no existing test
- * to inherit, so its suite lands before the three wrappers are migrated onto it.
- */
-
 const TRACK_START = 100;
 const TRACK_LENGTH = 200;
 
 /**
- * jsdom gives every element a zero-sized rect, so the geometry has to be stubbed
- * — the measurement is the one thing here that a jsdom test cannot observe for
+ * jsdom gives every element a zero-sized rect, so the geometry has to be
+ * stubbed. It is the one thing about a slider a jsdom test cannot observe for
  * real.
  */
 function stubRect(overrides: Partial<DOMRect> = {}) {
@@ -263,9 +258,8 @@ describe("dragging", () => {
   });
 
   /**
-   * The invariant the grab-offset composition test asserts on
-   * `calculateSliderValue`, here at the level that used to get it wrong: volume
-   * and rate mode ignored the offset and jumped on the first move.
+   * The grab-offset invariant, at the hook level: every mode subtracts the
+   * offset, so no mode jumps the value on the first move.
    */
   it.each([-15, 0, 15])(
     "starts from the same value for a grab %i px off the thumb centre",
@@ -440,7 +434,7 @@ describe("per-mode arrow keys", () => {
     expect(harness.store.element.volume).toBeCloseTo(0.5, 5);
   });
 
-  /** The rate slider's `role="slider"` ignored arrow keys entirely before this. */
+  /** Arrow keys have to reach the rate slider's `role="slider"` element too. */
   it("steps the rate in rate mode", () => {
     const harness = renderSlider(
       { mode: "rate", minValue: 0.5, maxValue: 2, step: 0.1 },
@@ -479,9 +473,8 @@ describe("vertical orientation", () => {
 describe("the volume-drag pin", () => {
   /**
    * A drag emits a `volumechange` per sample, so without the pin the memory
-   * erodes to the last non-zero value the drag passed through and unmuting
-   * afterwards restores a whisper. The `dataset` stash this replaced kept the
-   * pre-drag volume; the pin is how the atom keeps it too.
+   * erodes to the last non-zero value the drag passed through, and unmuting
+   * afterwards restores a whisper instead of the pre-drag volume.
    */
   it("keeps the pre-drag volume through a drag to zero", () => {
     const harness = renderSlider({ mode: "volume" }, { volume: 0.8 });

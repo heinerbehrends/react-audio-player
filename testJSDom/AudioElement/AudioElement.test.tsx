@@ -5,9 +5,9 @@ import { AudioElement } from "../../src/AudioElement/AudioElement";
 import { renderInPlayer } from "../testComponents";
 
 /**
- * The element carries one handler now, and it is policy rather than projection:
- * `onEnded`. Everything else it used to wire — ten JSX handlers pushing state
- * sideways — is `syncFromElement`'s, attached by `attach` rather than by React.
+ * The element carries exactly one React handler, `onEnded`, and it is policy
+ * rather than projection. Every other listener belongs to `syncFromElement`,
+ * attached through `attach`.
  */
 describe("AudioElement", () => {
   it("renders with proper accessibility attributes", () => {
@@ -31,9 +31,8 @@ describe("AudioElement", () => {
   });
 
   /**
-   * The `ended` policy. The element used to sit at `duration` while the thumb was
-   * pushed to 0, so the clock and the thumb disagreed on screen. Moving the
-   * element instead makes them agree.
+   * The `ended` policy: moving the element itself to 0, rather than pushing the
+   * thumb there, keeps the clock and the thumb in agreement.
    */
   it("returns the element to the start when playback ends", () => {
     renderInPlayer(<AudioElement />);
@@ -47,9 +46,9 @@ describe("AudioElement", () => {
   });
 
   /**
-   * The playlist hook. The rewind above clears `el.ended` within a tick, which
-   * is why this is a callback and not a projected atom — so what has to be
-   * pinned is that it fires exactly once per `ended`, and after the rewind.
+   * The playlist hook. The rewind above clears `el.ended` within a tick, so
+   * what matters is that the callback fires exactly once per `ended`, and after
+   * the rewind.
    */
   it("calls onEnded once per ended, with the element already back at 0", () => {
     const onEnded = vi.fn();
@@ -71,10 +70,9 @@ describe("AudioElement", () => {
   });
 
   /**
-   * The escape hatch. `crossOrigin` in particular has no workaround — without
-   * it `createMediaElementSource` taints and every Web Audio visualiser is
-   * impossible — so what matters is that arbitrary attributes and `<track>`
-   * children both actually reach the element.
+   * The escape hatch. `crossOrigin` has no workaround — without it
+   * `createMediaElementSource` taints and Web Audio is off the table — so
+   * arbitrary attributes and `<track>` children both have to reach the element.
    */
   it("forwards arbitrary props to the element", () => {
     renderInPlayer(<AudioElement preload="none" crossOrigin="anonymous" />);

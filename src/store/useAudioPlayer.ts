@@ -13,7 +13,7 @@ export type AudioPlayerControls = {
   seek: (seconds: number) => void;
   /** Relative, in seconds. Negative rewinds. */
   seekBy: (seconds: number) => void;
-  /** 0–1. Muting at zero is coupled here exactly as it is for the slider. */
+  /** 0–1. Setting it to zero mutes, exactly as it does on the slider. */
   setVolume: (volume: number) => void;
   toggleMute: () => void;
   setRate: (rate: number) => void;
@@ -29,8 +29,8 @@ export type AudioPlayerState = {
   volumeState: VolumeState;
   isDisabled: boolean;
   /**
-   * Playback wants to advance and cannot — the spinner condition. Orthogonal to
-   * `playerState`, which stays `"playing"` throughout a stall because the
+   * Playback wants to advance and cannot — the spinner condition. Independent
+   * of `playerState`, which stays `"playing"` through a stall because the
    * player is still in play mode.
    */
   isBuffering: boolean;
@@ -45,8 +45,6 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const muted = useStore(store.muted);
   const rate = useStore(store.rate);
   const loadState = useStore(store.loadState);
-  // `progress` fires every few hundred ms while downloading, but the rung
-  // itself moves about four times per track, and `Object.is` drops the rest.
   const readyState = useStore(store.readyState);
 
   const controls = useMemo<AudioPlayerControls>(

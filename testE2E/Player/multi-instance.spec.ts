@@ -33,9 +33,8 @@ async function audioState() {
 }
 
 /**
- * The per-instance store factory is the one decision in the plan with nothing
- * verifying it: module-level atoms would break two players on one page, and the
- * bug is invisible until a consumer hits it.
+ * The per-instance store factory. Module-level atoms would break two players on
+ * one page, and the bug is invisible until a consumer hits it.
  */
 test("renders two independent players", async () => {
   expect((await audioState()).length).toBe(2);
@@ -44,8 +43,8 @@ test("renders two independent players", async () => {
 test("playing one player leaves the other alone", async () => {
   await playerAt(0).getByRole("button", { name: labels.playAudio }).click();
 
-  // Wait for the first element to actually advance rather than for a fixed
-  // interval: how long decoding takes before `currentTime` moves is not ours.
+  // Wait for the element to advance rather than for a fixed interval: how long
+  // decoding takes before `currentTime` moves is not ours to predict.
   await page.waitForFunction(
     () => (document.querySelectorAll("audio")[0]?.currentTime ?? 0) > 0,
     undefined,

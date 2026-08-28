@@ -146,9 +146,9 @@ describe("useAudioPlayer", () => {
   });
 
   /**
-   * The reason this hook is split in three. `currentTime` fires ~4x/second; if
-   * it were folded in, every consumer reading a track title would re-render at
-   * that rate. This pins the split rather than trusting the doc comment.
+   * Why the hook is split in three: `currentTime` fires ~4x/second, so folding
+   * it in would re-render every consumer at that rate, including ones that only
+   * read a track title.
    */
   it("does not re-render when only currentTime changes", () => {
     const harness = createTestStore({ readyState: 1, duration: 100 });

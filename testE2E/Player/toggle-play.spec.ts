@@ -23,7 +23,6 @@ test("toggle play button has correct name and aria attributes and works", async 
 
   await playButton.click();
 
-  // Wait for audio to start playing
   await page.waitForTimeout(100);
 
   const pauseButton = page.getByRole("button", { name: /Pause/ });
@@ -38,7 +37,6 @@ test("toggle play button has correct name and aria attributes and works", async 
 
   await pauseButton.click();
 
-  // Wait for audio to pause
   await page.waitForTimeout(100);
 
   await expect(playButton).toBeVisible();
@@ -66,14 +64,12 @@ test("The play button receives focus and can be used with keyboard", async () =>
   await expect(playButton).toBeFocused();
   await page.keyboard.press("Enter");
 
-  // Wait for audio to start playing
   await page.waitForTimeout(100);
 
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeFocused();
   await page.keyboard.press("Space");
 
-  // Wait for audio to pause
   await page.waitForTimeout(100);
 
   await expect(playButton).toBeFocused();

@@ -1,9 +1,8 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * The read side of an atom. The `set` handle stays inside `createPlayerStore`'s
- * closure, reachable only through `attach`, so `syncFromElement` is the only
- * writer.
+ * An atom without its `set` handle. The handle stays inside
+ * `createPlayerStore`'s closure, so `syncFromElement` is the only writer.
  */
 export type ReadableAtom<T> = {
   get: () => T;
@@ -20,9 +19,8 @@ export function atom<T>(initial: T): Atom<T> {
   return {
     get: () => value,
     set: (next: T) => {
-      // `Object.is`, not `===`: React compares snapshots with `Object.is` and the
-      // two must never disagree. The bail-out makes the 1 Hz `currentSecond`
-      // write free when the second has not changed.
+      // `Object.is` matches how React compares snapshots, so this bail-out can
+      // never disagree with one there.
       if (Object.is(next, value)) return;
       value = next;
       listeners.forEach((listener) => listener());

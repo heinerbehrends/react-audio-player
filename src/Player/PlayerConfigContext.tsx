@@ -7,9 +7,9 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 export type AudioFile = {
   src: string;
   /**
-   * Track metadata. Nothing in the library reads these yet — they exist so that
-   * shipping Media Session support later is not a breaking change to the one
-   * type every consumer passes to their root component.
+   * Track metadata. Nothing reads these yet; they are declared now so that
+   * adding Media Session support later is not a breaking change to the one type
+   * every consumer passes to their root component.
    */
   title?: string;
   artist?: string;
@@ -18,19 +18,17 @@ export type AudioFile = {
 };
 
 /**
- * Static config: `AudioPlayer`'s two props, flowing strictly downward. Neither
- * is state and neither is a projection of the element, so no atom wants them —
- * but `audioFile` is read by `AudioElement` and `customKeyboardShortcuts` by
- * `useHandleMediaKeys`, which seven components call, and there is no
- * prop-drilling path to `SetSliderValue`. Hence a context, not the store.
+ * `AudioPlayer`'s two static props, flowing strictly downward. Neither is state
+ * nor a projection of the element, so neither belongs in the store — but
+ * `customKeyboardShortcuts` is read by seven components with no prop-drilling
+ * path to them. Hence a context.
  */
 export type PlayerConfig = {
   audioFile: AudioFile;
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
-// No default value, for the reason `PlayerStoreContext` has none: a default is
-// why `AudioContext`'s `if (!context)` guard can never fire.
+// No default value: with one, the guard in `usePlayerConfig` could never fire.
 const PlayerConfigContext = createContext<PlayerConfig | null>(null);
 PlayerConfigContext.displayName = "PlayerConfigContext";
 
@@ -39,12 +37,10 @@ type PlayerConfigProviderProps = PlayerConfig & {
 };
 
 /**
- * Deliberately unmemoised. The documented usage passes `audioFile` as an
- * inline object literal, so a `memo` comparison and a `useMemo` dependency check
- * would both fail on every consumer render and buy nothing. When they bail the
- * cost is seven cheap components rendering, which is what React does by
- * default; a memo that only pays off if the consumer memoises their props is
- * worse than none, because it hides the requirement.
+ * Deliberately unmemoised. The documented usage passes `audioFile` as an inline
+ * object literal, so a `memo` comparison and a `useMemo` dependency check would
+ * both fail on every consumer render and buy nothing. The cost when they bail
+ * is seven cheap components rendering.
  */
 export function PlayerConfigProvider({
   children,

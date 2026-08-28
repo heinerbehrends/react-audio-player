@@ -10,10 +10,9 @@ type SetSliderValueProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 /**
- * The element that carries the slider semantics: the role, every `aria-value*`,
- * the arrow keys and the tab stop. It is the one part of a slider always
- * present — a consumer may render no thumb at all — and it measures the track,
- * since it *is* the track.
+ * The element that carries the slider semantics: the role, the `aria-value*`
+ * attributes, the arrow keys and the tab stop. Always present — a consumer may
+ * render no thumb at all — and it measures the track, since it is the track.
  */
 export function SetSliderValue({ children, ...props }: SetSliderValueProps) {
   const slider = useSliderContext();

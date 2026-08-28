@@ -5,10 +5,7 @@ import { renderWithStore } from "../store/renderWithStore";
 import type { MediaFields } from "../store/mediaElementFake";
 import "@testing-library/jest-dom";
 
-/**
- * The four player states are element states now, so each row says which element
- * the player is looking at rather than which reducer value it was handed.
- */
+/** The four player states are element states, so each row sets up an element. */
 const states: Record<string, Partial<MediaFields>> = {
   paused: { readyState: 1, paused: true },
   playing: { readyState: 1, paused: false },
@@ -122,9 +119,8 @@ describe("PlayButton", () => {
     });
   });
 
-  // The state the old code could not get right: a `src` swap re-primes `paused`
-  // rather than toggling it, so the button cannot end up showing Pause on a
-  // paused element.
+  // A `src` swap re-primes `paused` rather than toggling it, so the button
+  // cannot end up showing Pause on a paused element.
   it("stays correct across a src swap while playing", () => {
     const { emit, element } = renderWithStore(
       <PlayButton>

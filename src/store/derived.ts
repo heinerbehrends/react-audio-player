@@ -7,15 +7,11 @@ export type PlayerState = "loading" | "error" | "paused" | "playing";
 export type VolumeState = "muted" | "low" | "high";
 
 /**
- * Every derivation the components consume, in one auditable place. Each returns
- * a primitive computed in render: no cache to invalidate, and
- * `useSyncExternalStore`'s "getSnapshot should be cached" invariant cannot bite.
+ * Every derivation the components consume. Each returns a primitive computed
+ * during render, so there is no snapshot to cache and none to invalidate.
  */
 
-/**
- * An extension of `loadState`, not a reconstruction of it: the two non-`"ready"`
- * states pass straight through, and TypeScript narrows them.
- */
+/** Widens `loadState`: `"ready"` splits into paused and playing, the rest pass through. */
 export function usePlayerState(): PlayerState {
   const store = usePlayerStore();
   const loadState = useStore(store.loadState);
@@ -25,9 +21,8 @@ export function usePlayerState(): PlayerState {
 }
 
 /**
- * The near-zero rule is approximate — the slider can land a hair off zero and the
- * UI treats that as muted — even though `lastAudibleVolume`'s memory of what to
- * restore is exact.
+ * Treats a near-zero volume as muted, since a slider rarely lands exactly on 0.
+ * The `lastAudibleVolume` memory it restores from is exact.
  */
 export function useVolumeState(): VolumeState {
   const store = usePlayerStore();
@@ -48,18 +43,14 @@ export function useIsDisabled(): boolean {
 }
 
 /**
- * Playback wants to advance and cannot: loaded, not paused, and below the rung
- * where the element has data to play. Derived rather than tracked, so there is
- * no `waiting`/`playing` flag to get stuck on — the rung is read off the
- * element and the interpretation happens here.
+ * True while playback wants to advance and cannot: loaded, not paused, and
+ * below the rung where the element has data to play. Derived from `readyState`
+ * rather than tracked, so there is no flag to get stuck on.
  *
- * Orthogonal to `usePlayerState`, deliberately. A stalled player is still in
- * play mode, so the button must still offer Pause; replacing `"playing"` with a
- * `"buffering"` state would lose that.
+ * Independent of `usePlayerState`, which stays `"playing"` through a stall: the
+ * player is still in play mode, so the button must still offer Pause.
  *
- * A seek while paused into unbuffered audio is *not* reported as buffering,
- * because `paused` gates it. Reporting that too would need a `seeking`
- * projection as well.
+ * A seek while paused is not reported as buffering — `paused` gates it.
  */
 export function useIsBuffering(): boolean {
   const store = usePlayerStore();
@@ -71,9 +62,9 @@ export function useIsBuffering(): boolean {
 }
 
 /**
- * Both halves come off `currentSecond`, so there is no interval racing the 4 Hz
- * event source — `currentSecond` *is* the 1 Hz clock. `remaining` is derived in
- * render rather than stored, so it cannot go stale.
+ * Both values come off `currentSecond`, the store's 1 Hz clock, so no interval
+ * races the ~4 Hz event source. `remaining` is derived during render, so it
+ * cannot go stale.
  */
 export function useTimeDisplay(): { elapsed: number; remaining: number } {
   const store = usePlayerStore();

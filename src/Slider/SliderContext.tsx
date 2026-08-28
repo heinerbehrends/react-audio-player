@@ -1,16 +1,14 @@
 /* eslint-disable react-refresh/only-export-components --
-   The provider and its hook are one unit; splitting them would mean exporting
-   the context object, which is the handle the null-default guard keeps private. */
+   The provider and its hook are one unit. Splitting them would mean exporting
+   the context object, which the null-default guard relies on keeping private. */
 import { createContext, useContext } from "react";
 import type { SliderValue } from "./useSlider";
 
 /**
  * One instance per slider, published by the slider root and read by its sibling
- * subcomponents. A compound-component context, not a bus: it flows strictly
- * downward.
+ * subcomponents. It flows strictly downward; it is not a bus.
  *
- * No default value, for the reason the store context has none: a default is why
- * a missing-provider guard can never fire.
+ * No default value: with one, the missing-provider guard could never fire.
  */
 const SliderContext = createContext<SliderValue | null>(null);
 SliderContext.displayName = "SliderContext";

@@ -10,10 +10,10 @@ import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
 import { renderWithStore } from "./renderWithStore";
 
 /**
- * `useIsDisabled` gates six components on the load state. This lives in the
- * jsdom tier rather than in E2E on purpose: loading is transient and racy in a
- * real browser, and deterministic here — leave the fake at `readyState: 0` and
- * every one of the six is disabled.
+ * `useIsDisabled` gates six components on the load state. Tested in jsdom rather
+ * than E2E because loading is transient and racy in a real browser and
+ * deterministic here: leave the fake at `readyState: 0` and all six are
+ * disabled.
  */
 function renderAll() {
   return (

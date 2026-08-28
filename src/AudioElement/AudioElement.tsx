@@ -17,10 +17,9 @@ export function AudioElement({
   const { audioFile } = usePlayerConfig();
   const { src } = audioFile ?? {};
 
-  // Renders the `<audio>` tag, so it is the only component that can reach the
-  // element without a setter travelling down. A setter reachable through context
-  // would be a second write-shaped door on a store whose whole design is that
-  // `attach` is the only one.
+  // This component renders the `<audio>` tag, so it can attach the store
+  // directly. Passing a setter down through context would be a second way to
+  // write a store designed to have exactly one.
   const store = usePlayerStore();
   const [element, setElement] = useState<HTMLAudioElement | null>(null);
 
@@ -30,16 +29,15 @@ export function AudioElement({
   );
 
   // Not render memoization: React re-invokes a ref callback whose identity
-  // changed, so an inline arrow would detach and reattach the element — and
-  // therefore the store — every render.
+  // changed, so an inline arrow would detach and reattach the store every
+  // render.
   const ref = useCallback((node: HTMLAudioElement | null) => {
     setElement(node);
   }, []);
 
-  // The consumer's ref is filled from the element state rather than from the
-  // ref callback above, which has to stay stable. `RefObject.current` is
-  // readonly to consumers but writable by whoever owns the element, which here
-  // is this component — hence the cast.
+  // Filled from the element state rather than from the ref callback above,
+  // which has to stay stable. `RefObject.current` is readonly to consumers but
+  // writable by whoever owns the element — hence the cast.
   useEffect(() => {
     if (!audioRef) return;
     if (typeof audioRef === "function") {
@@ -60,15 +58,13 @@ export function AudioElement({
       aria-label="audio player"
       ref={ref}
       /**
-       * The one handler here, and it is policy rather than projection: on `ended`
-       * the element sits at `duration` while the UI wants the thumb at the start.
-       * Moving the *element* to 0 removes the divergence — `seeked` fires and the
-       * atoms follow. Projection is `syncFromElement`'s job.
+       * Policy, not projection: on `ended` the element sits at `duration` while
+       * the UI wants the thumb back at the start. Moving the element itself
+       * fires `seeked`, and the atoms follow.
        */
       onEnded={(event) => {
-        // Policy first, so the store is already consistent when the consumer
-        // reacts — someone swapping `src` from `onEnded` lands on an element
-        // that is at 0 rather than at `duration`.
+        // Rewind first, so a consumer swapping `src` from here lands on an
+        // element that is at 0 rather than at `duration`.
         store.send({ type: "SET_TIME_TO_START" });
         onEnded?.(event);
       }}

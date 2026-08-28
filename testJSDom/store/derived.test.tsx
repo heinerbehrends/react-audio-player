@@ -119,10 +119,10 @@ describe("useIsDisabled", () => {
 });
 
 /**
- * The gap this closes: `loadState` reaches `"ready"` at `HAVE_METADATA`, which
- * means "we know the duration", not "we can play". Before this derivation a
- * mid-track stall left `paused === false`, so the UI showed Pause while nothing
- * came out of the speakers.
+ * `loadState` reaches `"ready"` at `HAVE_METADATA`, which means the duration is
+ * known, not that the element can play. Without this derivation a mid-track
+ * stall leaves `paused === false`, so the UI shows Pause while nothing comes out
+ * of the speakers.
  */
 describe("useIsBuffering", () => {
   it("is true when playback is stalled below the playable rung", () => {
@@ -193,8 +193,8 @@ describe("useIsBuffering", () => {
   });
 
   /**
-   * Orthogonality is the design claim, so it gets pinned: a stalled player is
-   * still in play mode and the button must still offer Pause.
+   * A stalled player is still in play mode, so the button must still offer
+   * Pause.
    */
   it("leaves playerState reporting 'playing' throughout a stall", () => {
     const { result, element } = renderDerived(

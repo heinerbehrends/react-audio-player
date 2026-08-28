@@ -15,8 +15,8 @@ import type { MediaFields } from "../store/mediaElementFake";
 const mockHandleSideEffect = vi.fn();
 
 /**
- * `useHandleMediaKeys` dispatches through `store.send` now, so the hook's own
- * tests assert on the attached element rather than on a mocked hook.
+ * `useHandleMediaKeys` dispatches through `store.send`, so the hook's own tests
+ * assert on the attached element rather than on a mocked hook.
  */
 function renderMediaKeys(element: Partial<MediaFields> = {}) {
   const harness = createTestStore({ readyState: 1, ...element });

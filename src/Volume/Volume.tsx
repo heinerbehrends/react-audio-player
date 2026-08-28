@@ -64,9 +64,8 @@ type VolumeComponent = React.FC<VolumeProps> & {
 };
 
 // Property assignment, not `Object.assign`: the call is a side-effecting
-// expression a bundler cannot drop, which pulls the whole library into a
-// consumer who imported one component. `Timeline` and `PlayButton` already
-// use this form.
+// expression a bundler cannot drop, which would pull the whole library into a
+// consumer who imported one component.
 export const Volume = VolumeContainer as VolumeComponent;
 Volume.Progress = VolumeProgress;
 Volume.Background = VolumeBackground;

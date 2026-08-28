@@ -19,9 +19,9 @@ export const defaultKeyToActionMap: KeyToActionMap = {
   K: { type: "TOGGLE_PLAY" },
   MediaPlayPause: { type: "TOGGLE_PLAY" },
   // Space is deliberately absent. Every control this handler is attached to is
-  // a <button>, and mapping Space here `preventDefault()`s the native
-  // activation — so Space stopped activating the focused button and started
-  // playback instead. `p`/`k` cover play/pause; a consumer who wants Space can
+  // a <button>, and mapping Space here would `preventDefault()` its native
+  // activation, so Space would start playback instead of pressing the focused
+  // button. `p` and `k` cover play/pause, and a consumer who wants Space can
   // add it through `customKeyboardShortcuts`.
   s: { type: "STOP_AUDIO" },
   S: { type: "STOP_AUDIO" },
@@ -59,9 +59,9 @@ export const defaultKeyToActionMap: KeyToActionMap = {
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
   const { event, handleSideEffect, customKeyboardShortcuts } = args;
 
-  // Modifier combinations belong to the browser and to assistive technology —
+  // Modifier combinations belong to the browser and to assistive technology:
   // `Ctrl+Option+Arrow` is VoiceOver's own navigation, and swallowing it makes
-  // the player unusable with a screen reader. Shift is deliberately absent:
+  // the player unusable with a screen reader. Shift is not checked, because
   // `<` and `>` in the default map are shifted keys.
   if (event.ctrlKey || event.metaKey || event.altKey) {
     return false;
@@ -80,8 +80,8 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
   return true;
 }
 
-// Every key in the map is a `SideEffectAction`, and `store.send` has a permanent
-// identity, so no `useCallback` is needed.
+// `store.send` has a permanent identity, so the returned handler needs no
+// `useCallback`.
 export function useHandleMediaKeys() {
   const { customKeyboardShortcuts } = usePlayerConfig();
   const { send } = usePlayerStore();

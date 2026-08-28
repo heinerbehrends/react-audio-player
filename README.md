@@ -1,16 +1,18 @@
 # React Audio Player (in development)
 
-An accessible headless audio player component for React applications inspired by the Radix UI library.
+A headless, accessible audio player for React, composed the way Radix UI
+components are: you get behaviour, semantics and state, and you supply all of
+the markup and styling.
 
 ## Features
 
-- 🎨 Style the components any way you want
-- 🧩 Composable component architecture
-- 🎛️ Comprehensive playback controls (play/pause, mute, seek, volume, playbackRate)
-- ⌨️ Keyboard navigation and screen reader support
-- ✔️ No dependencies except React 18+
+- 🎨 Unstyled — every part takes your own `className` and `style`
+- 🧩 Compound components, placed anywhere in your own layout
+- 🎛️ Play/pause, mute, seek, volume and playback rate
+- ⌨️ Keyboard shortcuts, ARIA slider semantics and screen reader announcements
+- ✔️ No dependencies beyond React 18
 
-## Basic Usage
+## Basic usage
 
 ```jsx
 import {
@@ -48,18 +50,21 @@ function App() {
 
 ## Accessibility
 
-This player fully supports:
+Each slider exposes one focusable `role="slider"` element that carries the
+`aria-value*` attributes and takes the arrow keys. The drag thumbs are pointer
+affordances only: they are `aria-hidden` and out of the tab order, so a slider
+announces one value rather than two.
 
-- Keyboard navigation
-- ARIA attributes
-- Screen reader announcements
-- Focus management
+The buttons carry a live `aria-label` and, where they toggle, `aria-pressed`.
+Errors render into a live region. Every control also accepts the global media
+shortcuts while focused.
 
 ## Components
 
 ### `<AudioPlayer>`
 
-The root component that provides context to all child components.
+The root. Creates the store, renders the `<audio>` element, and provides both to
+everything below it.
 
 ```jsx
 <AudioPlayer audioFile={{ src: "audio.mp3" }}>
@@ -78,8 +83,8 @@ The root component that provides context to all child components.
 ```ts
 type AudioFile = {
   src: string;
-  // Metadata is accepted but not yet read by the library. It is here so that
-  // adding Media Session support later is not a breaking change.
+  // Metadata is accepted but not read yet. It is declared now so that adding
+  // Media Session support later is not a breaking change.
   title?: string;
   artist?: string;
   album?: string;
@@ -107,14 +112,18 @@ captions through its `children`:
 </AudioPlayer>
 ```
 
-Only one format is loaded per track — `<source>` fallback is not supported yet
-(see `BACKLOG.md`).
+Use `audioRef` for anything that needs the element itself: Web Audio,
+HLS.js/dash.js, or the Media Session API. Prefer a stable ref — an inline
+callback re-runs the forwarding effect on every render.
+
+One format is loaded per track; `<source>` fallback is not supported yet (see
+`BACKLOG.md`).
 
 #### Playlists
 
 The player holds one track. Keep the list and the index in your own state and
-advance it from `onEnded` — swapping `audioFile` reloads the element and
-re-primes every value the player exposes:
+advance it from `onEnded`. Swapping `audioFile` reloads the element and
+re-primes every value the player exposes.
 
 ```jsx
 const tracks = [{ src: "one.mp3" }, { src: "two.mp3" }];
@@ -133,74 +142,80 @@ function Playlist() {
 }
 ```
 
-### Timeline Components
+### Timeline
 
-- `<Timeline>` - Container for timeline components
-- `<Timeline.Seek>` - Clickable area for seeking, and the element that carries the
-  slider semantics
-- `<Timeline.Progress>` - Visual progress indicator
-- `<Timeline.Background>` - Track behind the indicator
-- `<Timeline.Drag>` - Draggable control for seeking
+`<Timeline step={5}>` is the root and takes an optional arrow-key step in
+seconds; its maximum is the track duration, so it takes no `maxValue`.
 
-### Playback Control Components
+- `<Timeline.Seek>` — the focusable slider: click to seek, arrow keys to step
+- `<Timeline.Progress>` — the filled part of the track
+- `<Timeline.Background>` — the track behind the fill
+- `<Timeline.Drag>` — the draggable thumb
 
-- `<PlayButton>` - Toggle play/pause
-- `<PlayButton.Playing>` - Renders its children while playing
-- `<PlayButton.Paused>` - Renders its children while not playing
-- `<MuteButton>` - Toggle mute
-- `<MuteButton.Muted>` - Renders its children while muted
-- `<MuteButton.LowVolume>` - Renders its children below half volume
-- `<MuteButton.HighVolume>` - Renders its children at or above half volume
-- `<Seek amount={10}>` - Skip forward/backward by amount in seconds
+### Playback controls
 
-### Volume Components
+- `<PlayButton>` — toggles play and pause
+- `<PlayButton.Playing>` — renders its children while playing
+- `<PlayButton.Paused>` — renders its children while not playing
+- `<MuteButton>` — toggles mute
+- `<MuteButton.Muted>` — renders its children while muted
+- `<MuteButton.LowVolume>` — renders its children below half volume
+- `<MuteButton.HighVolume>` — renders its children at or above half volume
+- `<Seek amount={10}>` — jumps by `amount` seconds; negative rewinds
 
-- `<Volume orientation="horizontal|vertical">` - Volume control container
-- `<Volume.Set>` - Clickable area for volume adjustment, and the element that
-  carries the slider semantics
-- `<Volume.Progress>` - Visual volume level indicator
-- `<Volume.Background>` - Track behind the indicator
-- `<Volume.Drag>` - Draggable control for volume
+### Volume
 
-### Time Display Components
+`<Volume orientation="horizontal | vertical">` is the root. A vertical slider
+runs bottom to top.
 
-- `<Time.Elapsed>` - Display current playback time
-- `<Time.Remaining>` - Display remaining time
-- `<Time.Duration>` - Display total duration
-- `<Time.Toggle>` - Toggle between elapsed and remaining
+- `<Volume.Set>` — the focusable slider: click to set, arrow keys to step
+- `<Volume.Progress>` — the filled part of the track
+- `<Volume.Background>` — the track behind the fill
+- `<Volume.Drag>` — the draggable thumb
 
-### Playback Rate Components
+Reaching zero mutes, by any route — drag, click, keyboard or `setVolume(0)`.
+Unmuting restores the volume the player was last audible at.
 
-- `<PlaybackRate>` - Container for the rate buttons
-- `<PlaybackRate.Display>` - Shows current playback rate
-- `<PlaybackRate.Set rate={1.5}>` - Set specific playback rate
-- `<PlaybackRate.Current rate={1.5}>` - Renders its children when that rate is
+### Time display
+
+- `<Time.Elapsed>` — position, while the display is showing elapsed time
+- `<Time.Remaining>` — time left, while the display is showing remaining time
+- `<Time.Duration>` — track length
+- `<Time.Toggle>` — switches between elapsed and remaining
+
+### Playback rate
+
+- `<PlaybackRate>` — groups the rate controls
+- `<PlaybackRate.Display>` — the current rate
+- `<PlaybackRate.Set rate={1.5}>` — sets that rate
+- `<PlaybackRate.Current rate={1.5}>` — renders its children when that rate is
   current
-- `<PlaybackRate.Change amount={0.1}>` - Adjust playback rate
+- `<PlaybackRate.Change amount={0.1}>` — adjusts the rate by `amount`
 
-### Playback Rate Slider
+### Playback rate slider
 
-- `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` - Container for a
-  continuous or stepped playback rate slider
-- `<PlaybackRateSlider.Set>` - Clickable area for setting the rate, and the element
-  that carries the slider semantics
-- `<PlaybackRateSlider.Progress>` - Visual rate indicator
-- `<PlaybackRateSlider.Background>` - Track behind the indicator
-- `<PlaybackRateSlider.Drag>` - Draggable control for the rate
+`<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` is the root. Those
+are the defaults; pass `step={0}` for a continuous slider.
 
-### Error Component
+- `<PlaybackRateSlider.Set>` — the focusable slider
+- `<PlaybackRateSlider.Progress>` — the filled part of the track
+- `<PlaybackRateSlider.Background>` — the track behind the fill
+- `<PlaybackRateSlider.Drag>` — the draggable thumb
 
-- `<ErrorMessage>` - Displays a customizable message on error
+### Errors
+
+- `<ErrorMessage>` — renders its children in a live region while the track has
+  failed to load, and nothing otherwise
 
 ## Hooks
 
-For UI the components do not cover — a mini-player in a nav bar, a waveform,
+For UI the components do not cover: a mini-player in a nav bar, a waveform,
 analytics, resuming where the listener left off. All three must be called inside
 an `<AudioPlayer>`.
 
 ### `useAudioPlayer()`
 
-Returns the player's state and its controls, flat:
+Returns the player's state and its controls in one flat object.
 
 ```jsx
 function TrackInfo() {
@@ -228,13 +243,13 @@ function TrackInfo() {
 | `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                   |
 | `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. |
 
-The control methods are stable for the lifetime of the player, so they are safe
-to put in a dependency array.
+The control methods keep the same identity for the lifetime of the player, so
+they are safe to put in a dependency array.
 
 ### `useIsBuffering()`
 
-`isBuffering` is also available on its own, for a spinner that has no reason to
-subscribe to the rest of the player:
+`isBuffering` on its own, for a spinner that has no reason to subscribe to the
+rest of the player.
 
 ```jsx
 function Spinner() {
@@ -242,20 +257,18 @@ function Spinner() {
 }
 ```
 
-It is **orthogonal to `playerState`**, on purpose. A stalled player is still in
-play mode — `playerState` stays `"playing"` throughout, so your button keeps
-offering Pause and pressing it still works. Note the difference from
-`playerState === "loading"`, which means the track has not loaded yet;
+It is independent of `playerState`, which stays `"playing"` through a stall: the
+player is still in play mode, so your button keeps offering Pause and pressing it
+still works. `playerState === "loading"` means the track has not loaded yet;
 `isBuffering` means it loaded and then ran out of data.
 
-A seek performed while paused into unbuffered audio does not report as
-buffering.
+Seeking into unbuffered audio while paused does not report as buffering.
 
 ### `useCurrentSecond()` and `useCurrentTime()`
 
-The playback position is **not** part of `useAudioPlayer()`, on purpose. It
-changes about four times a second, and folding it in would re-render every
-caller at that rate for values they are not watching.
+The playback position is not part of `useAudioPlayer()`. It changes about four
+times a second, and folding it in would re-render every caller at that rate for a
+value most of them are not watching.
 
 ```jsx
 const second = useCurrentSecond(); // whole seconds — re-renders 1x/sec
@@ -266,32 +279,57 @@ Use `useCurrentSecond` for anything a human reads. Reach for `useCurrentTime`
 only for something drawn continuously, such as a waveform or a custom progress
 bar.
 
+## Keyboard shortcuts
+
+Available on every focusable control. A slider's own arrow keys take precedence
+over the arrow shortcuts below.
+
+| Keys             | Action                     |
+| ---------------- | -------------------------- |
+| `p`, `k`         | Play/pause                 |
+| `s`              | Stop and return to start   |
+| `m`              | Mute/unmute                |
+| `←` / `→`        | Seek 5 seconds             |
+| `j` / `l`        | Seek 10 seconds            |
+| `↑` / `↓`        | Volume by 0.025            |
+| `<` `>`, `[` `]` | Playback rate by 0.05      |
+| `Backspace`      | Reset the rate to 1x       |
+| `0`–`9`          | Jump to 0–90% of the track |
+
+Media keys (`MediaPlayPause`, `MediaStop`, `MediaMute`, `MediaVolumeUp`,
+`MediaVolumeDown`) map to the same actions. Combinations with Ctrl, Cmd or Alt
+are left to the browser and to assistive technology.
+
+`Space` is not bound, so it keeps activating the focused button. Pass
+`customKeyboardShortcuts={{ " ": { type: "TOGGLE_PLAY" } }}` if you want it.
+
 ## Roadmap
 
 - Improve testing
 - Initial beta release
-- Add playlist components and skip and loop (`onEnded` already supports a userland playlist)
-- Add caption/subtitle support
-- Add multi-language support
+- Playlist components, skip and loop (`onEnded` already supports a userland
+  playlist)
+- Caption and subtitle support
+- Multi-language support
 
 ## Testing
 
 ```bash
-# Run unit tests (JSDOM)
+# Unit tests (jsdom)
 pnpm test
 
-# Run end-to-end tests (Playwright)
+# End-to-end tests (Playwright)
 pnpm testE2E
 ```
 
 ## Requirements
 
+- React 18 or later, for `useSyncExternalStore`
 - Chrome, Firefox, Safari, Edge
-- React 18+ (requires `useSyncExternalStore`)
 
 Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer. Live
-streams are not supported: an unbounded duration reads as `0`, so gate any UI that
-needs a length on `useAudioPlayer().duration > 0`.
+streams are not supported: an unbounded duration reads as `0`, so gate any UI
+that needs a length on `useAudioPlayer().duration > 0`.
 
 ## License
 

@@ -1,6 +1,5 @@
 export type SliderComponent = "timeline" | "volume" | "playbackRate";
 
-/** `SideEffectAction` is public API, so its members live where the union lives. */
 export type PlayAction = {
   type: "PLAY";
 };
@@ -29,7 +28,7 @@ type StopAudioAction = {
   type: "STOP_AUDIO";
 };
 
-/** What every slider gesture commits through: one value, one component. */
+/** What every slider gesture commits through: one value for one component. */
 type ChangeValueAction = {
   type: "CHANGE_VALUE";
   component: SliderComponent;

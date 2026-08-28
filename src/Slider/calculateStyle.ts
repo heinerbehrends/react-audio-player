@@ -1,9 +1,8 @@
 import { getOffset, type Orientation } from "../Shared/sharedFunctions";
 
 /**
- * Everything the styles need, and nothing else. Note the absence of the mode:
- * how a slider fills is a question about its orientation, not about which
- * slider it is.
+ * Everything the styles need. Not the mode: how a slider fills depends on its
+ * orientation, not on which slider it is.
  */
 export type StyleContext = {
   value: number;
@@ -44,10 +43,9 @@ export function calculateProgressStyle(
 }
 
 /**
- * The fraction of the track that is filled — the value's position in its own
- * range, and nothing else. Direction is `transformOrigin`'s job, which is why
- * this must not derive from `getOffset`: that counts vertical pixels from the
- * top, so it runs opposite to the value.
+ * The fraction of the track that is filled. Direction is `transformOrigin`'s
+ * job, so this cannot reuse `getOffset`, which counts vertical pixels from the
+ * top and therefore runs opposite to the value.
  */
 function getProgress({
   value,

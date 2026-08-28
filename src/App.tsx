@@ -19,11 +19,11 @@ function App() {
   const volumeOrientation =
     (searchParams.get("orientation") as "horizontal" | "vertical") ??
     "horizontal";
-  // Lets one spec swap a bad src for a good one inside a single page session,
-  // which is what tests recovery rather than just the error state.
+  // Lets a spec swap a bad src for a good one within one page session, which is
+  // what exercises recovery rather than just the error state.
   const src = searchParams.get("src") ?? defaultSrc;
-  // Two independent players on one page: the per-instance store factory is
-  // otherwise invisible until a consumer hits it.
+  // Two independent players on one page, so the per-instance store factory gets
+  // exercised.
   const players = Number(searchParams.get("players") ?? 1);
 
   if (players > 1) {

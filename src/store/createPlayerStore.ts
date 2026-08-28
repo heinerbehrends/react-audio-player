@@ -10,8 +10,8 @@ import {
 export type TimeDisplay = "elapsed" | "remaining";
 
 export type PlayerStore = {
-  // Projections of the audio element. Read-only: nothing writes them except
-  // `syncFromElement`, reached through `attach`.
+  // Read-only projections of the audio element. Only `syncFromElement` writes
+  // them, and only `attach` reaches it.
   currentTime: ReadableAtom<number>;
   currentSecond: ReadableAtom<number>;
   duration: ReadableAtom<number>;
@@ -23,21 +23,17 @@ export type PlayerStore = {
   readyState: ReadableAtom<number>;
   loadState: ReadableAtom<LoadState>;
 
-  /** The one UI atom: shared React state that is not on the element. */
+  /** The one writable atom: UI state with no counterpart on the element. */
   timeDisplay: Atom<TimeDisplay>;
 
   send: (action: SideEffectAction) => void;
   /**
-   * Suspends the `lastAudibleVolume` memory for the duration of a volume drag and
-   * returns its release. Counted, so overlapping holds are safe, and idempotent
-   * per release, so a double call cannot unbalance the count.
-   *
-   * It suppresses; it never writes — the volume just before a grab is already in
-   * the memory — so the projection invariant holds: `syncFromElement` is still
-   * the only writer.
+   * Freezes `lastAudibleVolume` for the duration of a volume drag and returns
+   * its release. Holds are counted, so overlapping ones are safe, and each
+   * release is idempotent. It only suppresses writes, never makes them.
    */
   holdAudibleVolume: () => () => void;
-  /** Sets the element, primes every atom off it, subscribes, returns the detach. */
+  /** Binds the store to an element and returns the detach function. */
   attach: (element: HTMLAudioElement) => () => void;
 };
 
@@ -57,8 +53,8 @@ export function createPlayerStore(): PlayerStore {
 
   const timeDisplay = atom<TimeDisplay>("elapsed");
 
-  // Closure variables, not atoms: nothing subscribes to either, and an atom would
-  // buy a `set` handle the projection invariant then has to forbid.
+  // Not atoms: nothing subscribes to either, and an atom would come with a
+  // `set` handle that the read-only projections then have to forbid.
   let element: HTMLAudioElement | null = null;
   let audibleVolumeHolds = 0;
 

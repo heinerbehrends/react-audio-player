@@ -6,8 +6,8 @@ import { renderWithStore } from "../store/renderWithStore";
 import type { MediaFields } from "../store/mediaElementFake";
 
 /**
- * `volumeState` is a derivation now, so each row is the element state it derives
- * from: the 0.5 boundary and the "muted wins whatever the volume" rule.
+ * `volumeState` is derived, so each row is the element state it derives from:
+ * the 0.5 boundary, and muted winning whatever the volume.
  */
 const volumeStates: Record<string, Partial<MediaFields>> = {
   high: { readyState: 1, volume: 0.8, muted: false },

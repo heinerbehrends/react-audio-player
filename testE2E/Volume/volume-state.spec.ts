@@ -14,12 +14,11 @@ test.afterAll(async () => {
 });
 
 /**
- * `volumeState` is a derivation of `volume` and `muted`, and a derivation is
- * where a threshold changes silently — there is no stored value to diff against.
- * The 0.5 boundary was pinned at no layer before this.
+ * `volumeState` derives from `volume` and `muted`, so its 0.5 boundary has no
+ * stored value to diff against and can move silently.
  *
- * Scoped to the mute button: the demo's debug panel prints "Muted: false" and a
- * volume state of its own, which an unscoped text query happily matches.
+ * Scoped to the mute button: the demo's debug panel prints a volume state of its
+ * own, which an unscoped text query happily matches.
  */
 const muteButton = () => page.getByRole("button", { name: /^(Mute|Unmute)$/ });
 const indicator = (text: string) =>

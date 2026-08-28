@@ -42,10 +42,8 @@ test("clicking the horizontal track at 25% sets the volume", async () => {
 });
 
 /**
- * Pins the inversion end to end. A vertical volume slider runs bottom-to-top, so
- * dragging up raises the volume — the property Phase 3 rederives from
- * `orientation` alone, where it is currently keyed on
- * `component === "volume" && vertical`.
+ * The inversion, end to end: a vertical volume slider runs bottom to top, so a
+ * higher pointer is a higher volume. Derived from `orientation` alone.
  */
 test("dragging up a vertical slider raises the volume", async () => {
   await page.goto("/?orientation=vertical");

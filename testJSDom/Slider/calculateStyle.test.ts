@@ -47,9 +47,8 @@ describe("calculateStyle", () => {
       });
     });
 
-    // The old context carried a `clientXY` the styles never read —
-    // `calculateDragStyle` positions the thumb from `value` through `getOffset`.
-    // `StyleContext` is now exactly what the styles use.
+    // `calculateDragStyle` positions the thumb from `value` through
+    // `getOffset`, so `StyleContext` carries no pointer position.
     it("positions from the value alone", () => {
       const style = calculateDragStyle({ ...defaultContext, value: 0.75 });
 
@@ -95,22 +94,9 @@ describe("calculateStyle", () => {
     });
 
     /**
-     * The three vertical cases above all sit at `value: 0.5`, which is the fixed
-     * point of `x → 1 - x`, so inverted and non-inverted agree exactly there and
-     * none of them pins the inversion. These four do.
-     *
-     * `getOffset` already inverts for vertical, and `getProgress` undoes it again
-     * for vertical volume — a double negative that happens to cancel. Phase 3
-     * derives the inversion from `orientation` alone; without these assertions
-     * that change would flip vertical volume with the suite still green.
-     */
-    /**
-     * These four are why the fix could not pass silently. They were written
-     * against the old rule — vertical volume tracking the value, every other
-     * vertical slider inverting it — at values away from 0.5, which is the fixed
-     * point of `x -> 1 - x` where the two rules agree. Deriving from
-     * `orientation` alone makes both cases track the value, so the second pair
-     * flips.
+     * The vertical cases above all sit at `value: 0.5`, the fixed point of
+     * `x -> 1 - x`, where an inverted and a non-inverted rule agree exactly. The
+     * rows below sit away from it, so they are the ones that pin the direction.
      */
     it.each([
       [0.25, "scaleY(0.25)"],

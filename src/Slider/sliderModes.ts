@@ -6,12 +6,11 @@ export type SliderMode = "seek" | "volume" | "rate";
 export type Orientation = "horizontal" | "vertical";
 
 /**
- * The three sliders differ on two correlated axes, in three of the four possible
- * combinations, so one discriminant resolved from one table:
+ * The three sliders differ on two axes, resolved from one table:
  *
- * - **`writesDuringDrag`** — `"seek"` keeps a local value to display because
+ * - **`writesDuringDrag`** — `"seek"` keeps a local value to display, because
  *   nothing echoes back mid-drag; `"volume"` and `"rate"` write the element and
- *   get their value from the `volumechange` / `ratechange` projection.
+ *   read their value back from the `volumechange` / `ratechange` projection.
  * - **`mutesAtZero`** — the mute coupling: unmute on grab, remember the audible
  *   volume, mute on release at zero. Volume only.
  */
@@ -25,9 +24,9 @@ export type SliderModeConfig = {
   quantizeAriaValue: (value: number) => number;
   ariaValueText: (value: number, maxValue: number) => string;
   /**
-   * `"seek"` is 5 s deliberately: a step under a second would move `currentTime`
-   * without moving `currentSecond`, so `aria-valuenow` would not change and the
-   * press would be announced as a no-op.
+   * 5 s for `"seek"`: a step under a second moves `currentTime` without moving
+   * `currentSecond`, so `aria-valuenow` would not change and the press would be
+   * announced as a no-op.
    */
   defaultArrowStep: number;
   increase: (amount: number) => SideEffectAction;
@@ -72,9 +71,9 @@ export const SLIDER_MODES = {
 } satisfies Record<SliderMode, SliderModeConfig>;
 
 /**
- * ARIA's slider keys: Up and Right increase, Down and Left decrease, whatever the
- * orientation. Each mode adjusts its own value; the global media shortcuts stay
- * available on every other control.
+ * ARIA's slider keys: Up and Right increase, Down and Left decrease, whatever
+ * the orientation. Each mode adjusts its own value; the global media shortcuts
+ * stay available on every other control.
  */
 export const ARROW_KEYS = {
   ArrowUp: "increase",

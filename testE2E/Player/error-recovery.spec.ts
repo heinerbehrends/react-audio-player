@@ -42,9 +42,8 @@ test("a bad src shows the error message and disables the controls", async () => 
 });
 
 /**
- * The live bug the `loadState` machine fixes: `AUDIO_FILE_ERROR` set
- * `playerState: "error"` permanently and `AUDIO_FILE_LOADED` only recovered from
- * `"loading"`, so a failed src followed by a good one stayed broken forever.
+ * Recovery, not just the error state: `loadstart` resets `loadState` and
+ * `loadedmetadata` moves it to `"ready"`, whatever it held before.
  */
 test("swapping in a good src clears the error and re-enables the controls", async () => {
   await page.goto("/?src=does-not-exist.mp3");

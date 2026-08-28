@@ -2,9 +2,8 @@ import { areNumbersClose } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./sideEffectActions";
 
 /**
- * The store state the write path needs. A value, not an accessor: only
- * `TOGGLE_MUTE` and `UNMUTE` read it, and a snapshot keeps this function pure
- * over plain data.
+ * The store state the write path needs. A snapshot rather than an accessor:
+ * only `TOGGLE_MUTE` and `UNMUTE` read it.
  */
 export type SideEffectContext = {
   lastAudibleVolume: number;
@@ -134,8 +133,8 @@ export function handleSideEffect(
 }
 
 /**
- * Unmuting a silent player has to give it something to be audible at, or it
- * dead-ends. `lastAudibleVolume` covers every path that got it to zero: drag,
+ * Unmuting a player whose volume is zero has to restore a volume too, or it
+ * stays silent. `lastAudibleVolume` covers every path that got it there: drag,
  * click, keyboard, or a consumer's `CHANGE_VALUE`.
  */
 function unmute(

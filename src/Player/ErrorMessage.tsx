@@ -11,10 +11,10 @@ export function ErrorMessage({ children }: ErrorMessageProps) {
 
   if (loadState === "error") {
     return (
-      // A live region is announced from its content, so the children must not
-      // be hidden and the region must not carry an `aria-label` — a label
-      // replaces the accessible name without being reliably announced on
-      // insertion, which left the consumer's message unread.
+      // A live region is announced from its content, so the children must stay
+      // visible and the region must carry no `aria-label`: a label replaces the
+      // accessible name without being reliably announced on insertion, which
+      // leaves the consumer's message unread.
       <div role="alert" aria-live="assertive" className="audio-player-error">
         {children}
       </div>

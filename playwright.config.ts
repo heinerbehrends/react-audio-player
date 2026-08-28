@@ -1,30 +1,18 @@
 import { defineConfig, devices } from "@playwright/test";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+// https://playwright.dev/docs/test-configuration
 export default defineConfig({
   testDir: "./testE2E",
-  /* Run tests in files in parallel */
+  // The specs share one page and one audio element, so they run serially.
   fullyParallel: false,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: 2,
-  /* Opt out of parallel tests on CI. */
   workers: 1,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  forbidOnly: !!process.env.CI,
+  retries: 2,
   reporter: [["html"], ["list"]],
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "http://localhost:5173",
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    // https://playwright.dev/docs/trace-viewer
     trace: "on-first-retry",
 
     viewport: { width: 1280, height: 720 },
@@ -35,7 +23,6 @@ export default defineConfig({
     colorScheme: "light",
   },
 
-  /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
@@ -43,7 +30,6 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
   webServer: {
     command: "pnpm run vite",
     url: "http://localhost:5173",

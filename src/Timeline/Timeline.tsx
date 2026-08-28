@@ -12,14 +12,14 @@ import { useSlider } from "../Slider/useSlider";
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
 /**
- * The one element still on `currentTime` rather than `currentSecond`, so the
+ * The one element driven by `currentTime` rather than `currentSecond`, so the
  * fill arrives in `timeupdate` steps (~4 Hz) and would visibly tick without
- * smoothing. The duration matches that cadence and the easing is linear, so the
+ * smoothing. The transition matches that cadence and eases linearly, so the
  * fill advances at the rate the audio does instead of easing into each step.
  *
- * Off during a drag: the value then updates at pointer rate, and any easing
+ * Off during a drag, where the value updates at pointer rate and any easing
  * reads as the thumb lagging the finger. `props.style` is spread last, so a
- * consumer can override or drop the transition entirely.
+ * consumer can override or drop the transition.
  */
 function TimelineProgress(props: ProgressProps) {
   const slider = useSliderContext();
@@ -52,7 +52,7 @@ type TimelineProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 /**
- * Configuration over `useSlider`. The max is not a prop — it is the duration,
+ * Configuration over `useSlider`. The max is not a prop: it is the duration,
  * which seek mode reads from the store.
  */
 const TimelineRoot: React.FC<TimelineProps> = ({

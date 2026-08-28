@@ -26,9 +26,9 @@ function createAtoms(): ProjectionAtoms {
 }
 
 /**
- * One row per event in the sync-layer table of the refactor plan. Typed as
- * `SyncEvent[]`, so a typo here is a build error rather than a name that agrees
- * with a typo in `HANDLERS` and passes the completeness check below.
+ * One row per media event the sync layer handles. Typed as `SyncEvent[]`, so a
+ * typo here is a build error rather than a name that agrees with a typo in
+ * `HANDLERS` and slips past the completeness check below.
  */
 const DOCUMENTED_EVENTS: SyncEvent[] = [
   "timeupdate",

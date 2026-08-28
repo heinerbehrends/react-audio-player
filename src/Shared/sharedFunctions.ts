@@ -142,13 +142,9 @@ export function getClientXY(
 }
 
 /**
- * `M:SS` below an hour, `H:MM:SS` at or above one.
- *
- * The clamp is a rendering fix, not a live-stream feature: `duration` is `NaN`
- * before metadata and `Infinity` for a stream, and `duration - currentSecond`
- * can go negative. A distinct `"--:--"` token for unknown duration is
- * deliberately absent — it only means something beside a timeline that knows it
- * is unbounded, so it ships with live-stream support or not at all.
+ * `M:SS` below an hour, `H:MM:SS` at or above one. Non-finite and negative
+ * inputs render as `0:00`: `duration` is `NaN` before metadata and `Infinity`
+ * for a live stream, and `duration - currentSecond` can go negative.
  */
 export function formatTime(time: number) {
   const clamped = Number.isFinite(time) && time > 0 ? time : 0;
