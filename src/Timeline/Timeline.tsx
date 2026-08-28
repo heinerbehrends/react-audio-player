@@ -39,9 +39,8 @@ type TimelineProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 /**
- * Configuration over `useSlider`: the mode, and whatever the consumer sets. The
- * max is not a prop — it is the duration, which the seek mode reads from the
- * store.
+ * Configuration over `useSlider`. The max is not a prop — it is the duration,
+ * which seek mode reads from the store.
  */
 const TimelineRoot: React.FC<TimelineProps> = ({
   children,

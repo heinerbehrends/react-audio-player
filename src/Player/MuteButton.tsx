@@ -18,7 +18,6 @@ export function MuteButtonComponent({
   return (
     <button
       aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
-      // `isMuted` was a second mirror of `muted`; this derives.
       aria-pressed={volumeState === "muted"}
       onKeyDown={handleMediaKeys}
       onClick={toggleMute}

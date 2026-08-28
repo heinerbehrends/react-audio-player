@@ -1,11 +1,9 @@
 export type SliderComponent = "timeline" | "volume" | "playbackRate";
 
 /**
- * The geometry a slider gesture used to travel with, back when the reducers
- * owned the geometry and the element write happened elsewhere. `useSlider` owns
- * both now and commits through `CHANGE_VALUE`, so nothing in `src/` dispatches
- * these — they stay because they are part of the published `SideEffectAction`
- * union.
+ * The geometry a slider gesture used to travel with. `useSlider` owns the
+ * geometry now and commits through `CHANGE_VALUE`, so nothing in `src/`
+ * dispatches these — they stay because they are published API.
  */
 export type SliderData = {
   clientXY: number;
@@ -33,11 +31,7 @@ export type DragEndAction = SliderData & {
   offsetFromMiddle: number;
 };
 
-/**
- * The five commands that used to be declared alongside the retired player
- * reducer and imported back into this file. `SideEffectAction` is public API, so the union
- * has to outlive that file — which means its members live where it lives.
- */
+/** `SideEffectAction` is public API, so its members live where the union lives. */
 export type PlayAction = {
   type: "PLAY";
 };
@@ -97,7 +91,6 @@ type DecreasePlaybackRateAction = {
   value: number;
 };
 
-/** Declared once, here: the retired player reducer had an identical copy. */
 export type SetPlaybackRateAction = {
   type: "SET_PLAYBACK_RATE";
   playbackRate: number;

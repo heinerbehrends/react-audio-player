@@ -7,8 +7,7 @@ export type Orientation = "horizontal" | "vertical";
 
 /**
  * The three sliders differ on two correlated axes, in three of the four possible
- * combinations, so one discriminant resolved from one table. The reducers looked
- * accidentally different only because they served those axes:
+ * combinations, so one discriminant resolved from one table:
  *
  * - **`writesDuringDrag`** — `"seek"` keeps a local value to display because
  *   nothing echoes back mid-drag; `"volume"` and `"rate"` write the element and
@@ -26,10 +25,9 @@ export type SliderModeConfig = {
   quantizeAriaValue: (value: number) => number;
   ariaValueText: (value: number, maxValue: number) => string;
   /**
-   * The step an arrow key moves. `"seek"` is 5 s deliberately: a step under a
-   * second would move `currentTime` without moving `currentSecond`, so
-   * `aria-valuenow` would not change and the press would be announced as a
-   * no-op.
+   * `"seek"` is 5 s deliberately: a step under a second would move `currentTime`
+   * without moving `currentSecond`, so `aria-valuenow` would not change and the
+   * press would be announced as a no-op.
    */
   defaultArrowStep: number;
   increase: (amount: number) => SideEffectAction;
@@ -75,9 +73,8 @@ export const SLIDER_MODES = {
 
 /**
  * ARIA's slider keys: Up and Right increase, Down and Left decrease, whatever the
- * orientation. Each mode adjusts its own value, so Left/Right no longer seeks
- * from the volume thumb and the rate slider stops ignoring arrows entirely. The
- * global media shortcuts stay available on every other control.
+ * orientation. Each mode adjusts its own value; the global media shortcuts stay
+ * available on every other control.
  */
 export const ARROW_KEYS = {
   ArrowUp: "increase",

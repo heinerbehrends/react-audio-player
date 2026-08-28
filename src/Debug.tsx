@@ -3,11 +3,7 @@ import { useStore } from "./store/atom";
 import { usePlayerState, useVolumeState } from "./store/derived";
 import { useSliderContext } from "./Slider/SliderContext";
 
-/**
- * Renders inside a slider root, so it reads that slider's context rather than
- * picking one of three by name — there is one `SliderContext` now, instantiated
- * per slider.
- */
+/** Renders inside a slider root, so it reads that slider's own context. */
 export function Debug() {
   const slider = useSliderContext();
 

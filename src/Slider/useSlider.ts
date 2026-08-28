@@ -11,7 +11,6 @@ import {
   type SliderMode,
 } from "./sliderModes";
 
-/** Anything carrying a pointer position, React-synthetic or native. */
 type PositionEvent =
   | { clientX: number; clientY: number }
   | { touches: ArrayLike<{ clientX: number; clientY: number }> };
@@ -27,11 +26,6 @@ export type SliderAriaAttributes = {
 
 export type SliderValue = {
   mode: SliderMode;
-  /**
-   * The display value, in the slider's own units. Consumed by `Progress` and
-   * `Drag` for pixels, so in `"seek"` mode it follows `currentTime` at event
-   * rate.
-   */
   value: number;
   minValue: number;
   maxValue: number;
@@ -40,12 +34,6 @@ export type SliderValue = {
   sliderStart: number;
   sliderLength: number;
   dragState: "idle" | "dragging";
-  /**
-   * The other half of the contract: every `aria-value*` is computed from the 1 Hz
-   * source, never from `value`. React writes a DOM attribute only when its value
-   * changes, so this is what keeps the accessibility tree quiet while the
-   * progress element moves at event rate.
-   */
   aria: SliderAriaAttributes;
   /** Ref callback for the element that carries the slider semantics. */
   setSliderRef: (element: HTMLButtonElement | null) => void;
@@ -85,6 +73,14 @@ function positionOf(event: PositionEvent, orientation: Orientation): number {
  * geometry is measured by the element carrying the semantics while the progress
  * bar and the thumb consume it, and consumers place all three freely in their own
  * markup, so there is no prop-drilling path between them.
+ *
+ * Every `useCallback` below is effect-dependency stability, not render
+ * memoization, so the Phase 5 memo strip deliberately left all of them in place.
+ * `valueAt`, `commit`, `send` and `releaseAudibleVolume` are dependencies of the
+ * drag effect: unstable identities would tear down and re-attach five window
+ * listeners on every pointermove, which is the exact thing this design avoids.
+ * `measure` feeds the ResizeObserver effect, and `setSliderRef` is a ref callback
+ * — an unstable one detaches and re-attaches the node.
  */
 export function useSlider({
   mode,
@@ -97,8 +93,6 @@ export function useSlider({
   const store = usePlayerStore();
   const handleMediaKeys = useHandleMediaKeys();
 
-  // One `useStore` per source, with the atom chosen by mode, so a volume slider
-  // does not subscribe to `currentTime` and re-render at event rate.
   const valueFromStore = useStore(
     mode === "seek"
       ? store.currentTime
@@ -106,8 +100,7 @@ export function useSlider({
         ? store.volume
         : store.rate,
   );
-  // Only `"seek"` has two sources: `volume` and `rate` are event-driven rather
-  // than sampled, so there the aria surface reads the same atom as the value.
+
   const ariaValueFromStore = useStore(
     mode === "seek"
       ? store.currentSecond
@@ -115,9 +108,7 @@ export function useSlider({
         ? store.volume
         : store.rate,
   );
-  // `"seek"`'s max is not static — it *is* the duration. The other two modes
-  // subscribe to an atom they ignore, which costs one listener on a value that
-  // changes at most a few times per track.
+
   const duration = useStore(store.duration);
 
   const minValue = minValueOption ?? (mode === "rate" ? 0.5 : 0);
@@ -243,12 +234,6 @@ export function useSlider({
     setDrag({ state: "dragging", value });
   }, []);
 
-  /**
-   * Freeze the audible-volume memory for the gesture, so unmuting afterwards
-   * restores the volume from before it rather than the last non-zero value the
-   * gesture passed through. Taken before the first write, so which value is
-   * remembered does not depend on when the element echoes back.
-   */
   const holdAudibleVolume = useCallback(() => {
     if (!config.mutesAtZero) return;
     releaseHoldRef.current?.();
@@ -293,15 +278,10 @@ export function useSlider({
       holdAudibleVolume();
       commit(valueAt(pressedAt));
 
-      // Pressing the track and *moving* before lifting continues as a drag, with
-      // no grab offset: the pointer is on the track, not on a thumb. A press
-      // that lifts without moving stays a click, so a click never leaves the
-      // slider reporting `dragState: "dragging"`.
       function onFirstMove(moveEvent: PointerEvent | TouchEvent) {
         const position = positionOf(moveEvent, orientation);
         if (position === pressedAt) return;
         stopWaiting();
-        // The drag takes over the hold from here; releasing is its business.
         beginDrag(valueAt(position), 0);
       }
 
@@ -350,10 +330,6 @@ export function useSlider({
     [step, config, store, handleMediaKeys],
   );
 
-  // Window-level for the duration of the drag, so the pointer can leave the
-  // thumb without ending it. Every dependency is stable while a drag is in
-  // progress, so the listeners are attached once per drag rather than once per
-  // pointermove.
   const dragging = drag.state === "dragging";
   useEffect(() => {
     if (!dragging) return;
@@ -367,9 +343,7 @@ export function useSlider({
       setDrag((current) =>
         current.state === "dragging" ? { state: "dragging", value } : current,
       );
-      // `"seek"` commits on release only: nothing echoes back mid-drag, so
-      // writing the element would scrub the audio. The other two write, which is
-      // also where their value comes back from.
+
       if (config.writesDuringDrag) {
         send(value);
       }
@@ -409,9 +383,6 @@ export function useSlider({
     releaseAudibleVolume,
   ]);
 
-  // The aria value follows the local value while one is in play, so a drag or a
-  // keypress is announced as the value being chosen rather than as the element's
-  // last echo.
   const ariaValue = config.quantizeAriaValue(
     displayValue === valueFromStore ? ariaValueFromStore : displayValue,
   );

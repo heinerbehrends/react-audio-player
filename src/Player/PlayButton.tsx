@@ -33,9 +33,8 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
 }
 
 /**
- * No state read at all: `TOGGLE_PLAY` already branches on `el.paused`, so the
- * old `playerState === "playing"` check was a second, staler copy of that
- * decision.
+ * Reads no state: `TOGGLE_PLAY` already branches on `el.paused`, so a
+ * `playerState` check here would be a second, staler copy of that decision.
  */
 function useHandleClick() {
   const { send } = usePlayerStore();

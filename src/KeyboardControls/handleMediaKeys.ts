@@ -67,9 +67,8 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
   return true;
 }
 
-// Every key in the map is a `SideEffectAction`, so nothing here ever needed the
-// reducer: `handlePlayerAction` was an unread argument. `store.send` has a
-// permanent identity, so the `useCallback` is gone too.
+// Every key in the map is a `SideEffectAction`, and `store.send` has a permanent
+// identity, so no `useCallback` is needed.
 export function useHandleMediaKeys() {
   const { customKeyboardShortcuts } = usePlayerConfig();
   const { send } = usePlayerStore();

@@ -19,9 +19,8 @@ export type ProjectionAtoms = {
 };
 
 /**
- * Everything the sync layer touches on the element — the media properties
- * `prime` reads plus listener registration. Deliberately narrow: it is what
- * makes the suite a stub away from testable, with no jsdom audio.
+ * Everything the sync layer touches on the element. Deliberately narrow: it is
+ * what puts the suite one stub away from testable, with no jsdom audio.
  */
 export type SyncableMediaElement = {
   currentTime: number;
@@ -37,10 +36,9 @@ export type SyncableMediaElement = {
 };
 
 /**
- * `pinned` is the one condition any row has: whether a volume drag is holding
- * `lastAudibleVolume` still. It is a parameter rather than an atom read, so
- * "no row reads an atom" survives and the exception is visible at every call
- * site instead of hidden in a closure.
+ * `pinned` — whether a volume drag is holding `lastAudibleVolume` still — is the
+ * one condition any row has. A parameter rather than an atom read, so "no row
+ * reads an atom" survives and the exception is visible at every call site.
  */
 type SyncHandler = (
   element: SyncableMediaElement,
@@ -49,14 +47,12 @@ type SyncHandler = (
 ) => void;
 
 export type SyncOptions = {
-  /** True while a volume drag holds the audible-volume memory. */
   isAudibleVolumePinned?: () => boolean;
 };
 
 /**
- * `duration` is `NaN` before metadata and `Infinity` for a live stream, and
- * `formatTime` renders those as `"NaN:NaN"` / `"Infinity:NaN"`. Normalising on
- * write means no consumer has to know.
+ * `duration` is `NaN` before metadata and `Infinity` for a live stream.
+ * Normalising on write means no consumer has to know.
  */
 function finite(value: number): number {
   return Number.isFinite(value) ? value : 0;
@@ -71,24 +67,22 @@ const projectDuration: SyncHandler = (element, atoms) => {
   atoms.duration.set(finite(element.duration));
 };
 
-/** Projected off `element.paused` on all three events, never toggled. */
+/** Never toggled: always read off the element. */
 const projectPaused: SyncHandler = (element, atoms) => {
   atoms.paused.set(element.paused);
 };
 
 /**
- * Reads the whole projection off the element in one pass. Called by `attach` —
- * an effect runs after the element exists with its `src` set, so `loadedmetadata`
- * and `error` can already have fired — and by the `emptied` / `loadstart` reset,
- * where re-reading everything cannot be wrong about which atoms a `src` swap
- * silently changed.
+ * Reads the whole projection off the element in one pass. Called by `attach`,
+ * which runs in an effect and so can miss a `loadedmetadata` or `error` that
+ * already fired, and by the `emptied` / `loadstart` reset, where re-reading
+ * everything cannot be wrong about what a `src` swap silently changed.
  *
- * `lastAudibleVolume` is seeded under the same predicate as the `volumechange`
- * row, not projected: an element that is audible right now *is* the last audible
- * volume, and if it is silent the existing memory is the better answer. Without
- * the seed a `volumechange` lost before `attach` leaves the memory at its
- * initial 1, and a click straight to zero — the dead-end the atom exists to fix
- * — would then restore full volume instead of what was playing.
+ * `lastAudibleVolume` is seeded rather than projected: an element audible right
+ * now *is* the last audible volume, and if it is silent the existing memory is
+ * the better answer. Without the seed a `volumechange` lost before `attach`
+ * leaves the memory at its initial 1, and a click straight to zero would then
+ * restore full volume instead of what was playing.
  */
 export function prime(
   element: SyncableMediaElement,
@@ -111,15 +105,14 @@ export function prime(
 }
 
 /**
- * One handler per media event. Every row writes what it reads off the element
- * and nothing else — no row computes, and no row reads an atom, `loadState`'s
- * three transitions included: each assigns a constant.
+ * One handler per media event. Every row writes what it reads off the element and
+ * nothing else: no row computes, and no row reads an atom.
  */
 export const HANDLERS = {
   timeupdate: projectTime,
-  // The fast echo after any write to `el.currentTime`. Without it an atom
-  // carries a stale time for up to ~250 ms, and the slider's retain-until-changed
-  // rule has no event to clear on.
+  // The fast echo after any write to `el.currentTime`. Without it an atom carries
+  // a stale time for up to ~250 ms, and the slider's retain-until-changed rule
+  // has no event to clear on.
   seeked: projectTime,
   loadedmetadata: (element, atoms) => {
     atoms.duration.set(finite(element.duration));
@@ -129,14 +122,13 @@ export const HANDLERS = {
   volumechange: (element, atoms, pinned) => {
     atoms.volume.set(element.volume);
     atoms.muted.set(element.muted);
-    // Not the approximate `areNumbersClose` rule the mute *derivation* uses: an
-    // audible-but-tiny volume is still worth remembering.
+    // Exact, not the approximate `areNumbersClose` rule the mute *derivation*
+    // uses: an audible-but-tiny volume is still worth remembering.
     //
     // Unless a drag holds the pin. A drag emits a `volumechange` per sample, so
-    // without this the memory erodes to the last non-zero value the drag passed
-    // through and unmuting afterwards restores a whisper instead of the volume
-    // the user was at. The values a drag passes *through* are not settings
-    // anyone chose.
+    // without this the memory erodes to the last non-zero value it passed
+    // through, and unmuting afterwards restores a whisper. The values a drag
+    // passes *through* are not settings anyone chose.
     if (!pinned && !element.muted && element.volume > 0) {
       atoms.lastAudibleVolume.set(element.volume);
     }
@@ -150,13 +142,12 @@ export const HANDLERS = {
   error: (_element, atoms) => {
     atoms.loadState.set("error");
   },
-  // The reset rows, and two things about them are load-bearing. `prime` re-reads
-  // `playbackRate` because the media load algorithm resets it to
-  // `defaultPlaybackRate` without reliably firing `ratechange` — an enumerated
-  // reset row would have left the atom stale. And the unconditional `loadState`
-  // read cannot resurrect a stale error: `emptied` is a queued task, while
-  // `error = null` and `readyState = HAVE_NOTHING` are set synchronously earlier
-  // in the same algorithm, so the handler always runs after the reset.
+  // The reset rows. `prime` re-reads `playbackRate` because the media load
+  // algorithm resets it to `defaultPlaybackRate` without reliably firing
+  // `ratechange`. Its unconditional `loadState` read cannot resurrect a stale
+  // error: `emptied` is a queued task, while `error = null` and
+  // `readyState = HAVE_NOTHING` are set synchronously earlier in the same
+  // algorithm, so the handler always runs after the reset.
   emptied: prime,
   loadstart: prime,
   // `Partial<Record<keyof HTMLMediaElementEventMap, ...>>`, not
@@ -167,9 +158,9 @@ export const HANDLERS = {
 export type SyncEvent = keyof typeof HANDLERS;
 
 /**
- * Primes every atom off the element, then attaches every listener. Returns the
- * detach. Priming first is what makes an event landing before the effect ran —
- * or in a `StrictMode` attach → detach → attach gap — harmless.
+ * Primes every atom off the element, then attaches every listener. Priming first
+ * is what makes an event landing before the effect ran — or in a `StrictMode`
+ * attach → detach → attach gap — harmless.
  */
 export function syncFromElement(
   element: SyncableMediaElement,

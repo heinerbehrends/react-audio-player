@@ -6,11 +6,11 @@ import type { SliderValue } from "./useSlider";
 
 /**
  * One instance per slider, published by the slider root and read by its sibling
- * subcomponents. This is a compound-component context, not a bus: it flows
- * strictly downward, and the four mutable callback refs it replaced are gone.
+ * subcomponents. A compound-component context, not a bus: it flows strictly
+ * downward.
  *
  * No default value, for the reason the store context has none: a default is why
- * the old `if (!context)` guards could never fire.
+ * a missing-provider guard can never fire.
  */
 const SliderContext = createContext<SliderValue | null>(null);
 SliderContext.displayName = "SliderContext";

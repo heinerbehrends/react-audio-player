@@ -27,8 +27,7 @@ export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
   );
 }
 
-// `store.send` is a closure member with a permanent identity, so the
-// `useCallback` this hook used to need is gone.
+// `store.send` has a permanent identity, so no `useCallback` is needed.
 function useSeek(amount: number) {
   const { send } = usePlayerStore();
   return () => send({ type: "SET_TIME_FORWARD", value: amount });

@@ -5,9 +5,8 @@ type DragButtonProps = React.HTMLAttributes<HTMLButtonElement>;
 
 /**
  * A pointer-only affordance: hidden from assistive technology and out of the tab
- * order, so there is exactly one element per slider that announces a value and
- * responds to arrow keys. The drag itself is `useSlider`'s — this only reports
- * where it was grabbed.
+ * order, so exactly one element per slider announces a value and takes arrow
+ * keys. The drag is `useSlider`'s; this only reports where it was grabbed.
  */
 export function DragButton(props: DragButtonProps) {
   const slider = useSliderContext();

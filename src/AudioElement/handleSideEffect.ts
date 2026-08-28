@@ -6,8 +6,8 @@ import type { SideEffectAction } from "./sideEffectActions";
 
 /**
  * The store state the write path needs. A value, not an accessor: only
- * `TOGGLE_MUTE` and `UNMUTE` read it, and passing a snapshot keeps this
- * function pure over plain data — which is what makes its tests cheap.
+ * `TOGGLE_MUTE` and `UNMUTE` read it, and a snapshot keeps this function pure
+ * over plain data.
  */
 export type SideEffectContext = {
   lastAudibleVolume: number;
@@ -209,9 +209,8 @@ export function handleSideEffect(
 
 /**
  * Unmuting a silent player has to give it something to be audible at, or it
- * dead-ends. `lastAudibleVolume` covers every path that got it to zero — drag,
- * click, keyboard or a consumer's `CHANGE_VALUE` — where the old
- * `dataset.dragStartVolume` stash only covered the drag.
+ * dead-ends. `lastAudibleVolume` covers every path that got it to zero: drag,
+ * click, keyboard, or a consumer's `CHANGE_VALUE`.
  */
 function unmute(
   audioElement: HTMLAudioElement,

@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * The read side of an atom. Projections of the audio element are handed out as
- * `ReadableAtom`s: the `set` handle stays inside `createPlayerStore`'s closure,
- * reachable only through `attach`, so `syncFromElement` is the only writer.
+ * The read side of an atom. The `set` handle stays inside `createPlayerStore`'s
+ * closure, reachable only through `attach`, so `syncFromElement` is the only
+ * writer.
  */
 export type ReadableAtom<T> = {
   get: () => T;
@@ -20,9 +20,9 @@ export function atom<T>(initial: T): Atom<T> {
   return {
     get: () => value,
     set: (next: T) => {
-      // `Object.is`, not `===`, because React compares snapshots with `Object.is`
-      // and the two must never disagree. The bail-out is what makes the 1 Hz
-      // `currentSecond` write free when the second has not changed.
+      // `Object.is`, not `===`: React compares snapshots with `Object.is` and the
+      // two must never disagree. The bail-out makes the 1 Hz `currentSecond`
+      // write free when the second has not changed.
       if (Object.is(next, value)) return;
       value = next;
       listeners.forEach((listener) => listener());
@@ -39,10 +39,7 @@ export function readable<T>(source: Atom<T>): ReadableAtom<T> {
   return { get: source.get, subscribe: source.subscribe };
 }
 
-/**
- * `get` and `subscribe` are per-atom stable references, so `useSyncExternalStore`
- * never resubscribes. The third argument is the SSR snapshot.
- */
+/** `get` and `subscribe` are per-atom stable, so this never resubscribes. */
 export function useStore<T>(source: ReadableAtom<T>): T {
   return useSyncExternalStore(source.subscribe, source.get, source.get);
 }

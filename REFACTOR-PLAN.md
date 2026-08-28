@@ -1,6 +1,6 @@
 # Refactor Plan: External Store Architecture
 
-Status: Phases 0 through 3 landed, and most of Phase 4 with them. The callback bus, all three
+Status: Phases 0 through 5 landed, and most of Phase 4 with them. The callback bus, all three
 slider reducer stacks, `AudioContext`, `PlayerContext` and their providers are gone. Two
 contexts remain — the player store and one `SliderContext` per slider — and the `<audio>`
 element carries one handler, which is policy rather than projection.
@@ -10,9 +10,9 @@ because ~16 files were deleted with their subjects, and what replaced them tests
 against a constructed store rather than reducers. `src/` is 2,976 lines across 34 files,
 down from 3,294 across 57 — and 271 of those lines are the demo app, which grew.
 
-Phase 5 (strip the memo layer) and Phase 6 (measure and reconcile) remain, plus one Phase 4
-item: the CSS transition on the progress element. Bundle figures below were measured
-2026-08-21 against commit `b4df69c` and are stale.
+Phase 6 (measure and reconcile) remains, plus one Phase 4 item: the CSS transition on the
+progress element. Bundle figures below were measured 2026-08-21 against commit `b4df69c`
+and are stale.
 
 ## 1. Why
 
@@ -1130,7 +1130,7 @@ accessibility tree — a virtual cursor parked on it, or a live-region-adjacent
 announcement — so the churn is a problem whether or not the element has focus. At 4 Hz it
 is borderline; at 60 Hz it is unusable. Not a CPU trade.
 
-### Phase 5 — Strip the memo layer — **measured; strip in progress**
+### Phase 5 — Strip the memo layer — **landed**
 
 Delete the `memo` / `useMemo` / `useCallback` layer **unconditionally**, then add back only
 what a measurement demands. Profile-then-prune biases toward keeping, and the residue is
@@ -1235,10 +1235,10 @@ keeps private. Not worth it.
 | File | Change | Status |
 |---|---|---|
 | `src/AudioElement/AudioElement.tsx` | unwrap `memo`; inline `handleEnded` (drop its `useCallback`); keep the `ref` `useCallback`, rewrite its comment | **done** |
-| `src/Player/PlayerConfigContext.tsx` | unwrap `memo` (line 33); drop the `useMemo` (line 38) and build the context value inline | todo |
-| `src/TimeDisplay/TimeDisplay.tsx` | unwrap the four `memo()`s — `Toggle` (16), `Elapsed` (54), `Remaining` (69), `Duration` (84); the exported `Time` type then loses `React.NamedExoticComponent` and needs plain `React.FC` members | todo |
-| `src/Slider/SetSliderValue.tsx` | drop the `style` `useMemo` (line 24) | todo |
-| `src/Slider/useSlider.ts` | **keep** all 12 `useCallback`s; add the comment recording why | todo |
+| `src/Player/PlayerConfigContext.tsx` | unwrap `memo` (line 33); drop the `useMemo` (line 38) and build the context value inline | **done** |
+| `src/TimeDisplay/TimeDisplay.tsx` | unwrap the four `memo()`s — `Toggle` (16), `Elapsed` (54), `Remaining` (69), `Duration` (84); the exported `Time` type then loses `React.NamedExoticComponent` and needs plain `React.FC` members | **done** |
+| `src/Slider/SetSliderValue.tsx` | drop the `style` `useMemo` (line 24) | **done** |
+| `src/Slider/useSlider.ts` | **keep** all 12 `useCallback`s; add the comment recording why | **done** |
 
 Watch for: `React.NamedExoticComponent` appears in `TimeDisplay.tsx`'s exported `Time` type
 and is the type `memo()` returns. Removing `memo` means that annotation has to change, and
@@ -1247,6 +1247,33 @@ and is the type `memo()` returns. Removing `memo` means that annotation has to c
 Re-verify after the strip: 346 jsdom tests, 51 E2E tests, `type-check`, `lint`, `build`,
 `check-exports`. `Debug.tsx` and `App.tsx` are covered by `tsconfig.app.json`, so a type
 error there is a real failure, not demo noise.
+
+#### What landed
+
+The work list above, exactly as written, with no memo added back anywhere. Every gate is
+green: 346 jsdom, 51 E2E, `type-check`, `lint`, `build`, `check-exports` (🟢 node16-from-ESM
+and bundler). `dist/index.mjs` is **19.75 KB** unzipped.
+
+Two notes for the record:
+
+- The `Time` type change is a real public-surface change. `dist/index.d.ts` now declares
+  `type Time = React.FC<…>` with `React.FC` members where it declared
+  `React.NamedExoticComponent`. Nothing structural depends on it — `Object.assign` still
+  produces the same object — but a consumer who annotated against the old type will see it.
+- `PlayerConfigProvider` carries a comment saying it is deliberately unmemoised and why, so
+  the next reader does not re-add the layer; `useSlider`'s docblock carries the converse,
+  recording that its 12 `useCallback`s are effect-dependency stability and must survive.
+
+**Gotcha for whoever re-runs the E2E suite:** `playwright.config.ts` sets
+`webServer.command: "pnpm run vite"`, and `pnpm` is not on PATH on this machine. Playwright
+does not fail fast on that — it sits out the 120 s `webServer.timeout`, ×2 retries, and looks
+like a hung test run. Start the demo yourself first (`npx vite dev`, port 5173); with
+`reuseExistingServer` true off CI, Playwright then skips the command entirely. The full run
+is ~43 s. This is unrelated to the AV-blocked headless-Chromium download, which
+`playwright.local.config.ts` (system Chrome) already works around — that config was used
+here. One aftereffect: vite's file watcher dies with `EBUSY` on
+`playwright-report/trace/assets/` once a run has written there, so the dev server exits
+after the suite.
 
 ### Phase 6 — Measure and reconcile
 
