@@ -37,8 +37,8 @@ describe("Time", () => {
     });
     const button = screen.getByRole("button");
     expect(button).toHaveAccessibleName(name);
-    // One state channel, the name -- see A4. `aria-pressed` beside a name that
-    // already says which way the toggle will go announces the fact twice.
+    // A4: with the name already saying which way the toggle goes,
+    // `aria-pressed` announces the fact twice.
     expect(button).not.toHaveAttribute("aria-pressed");
   });
 

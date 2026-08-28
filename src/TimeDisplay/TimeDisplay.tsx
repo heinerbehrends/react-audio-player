@@ -6,11 +6,8 @@
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { formatTime } from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
-import {
-  useIsDisabled,
-  usePlayerState,
-  useTimeDisplay,
-} from "../store/derived";
+import { usePlayerState, useTimeDisplay } from "../store/derived";
+import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ChildrenProps = {
@@ -22,25 +19,24 @@ function Toggle({ children, ...props }: ChildrenProps) {
   const timeDisplay = useStore(store.timeDisplay);
 
   const handleClick = useToggleTimeDisplay();
-  const isDisabled = useIsDisabled();
   const handleMediaKeys = useHandleMediaKeys();
+  const disabled = useDisabledButtonProps(handleClick, props.onClick);
 
   return (
     <button
       type="button"
-      // Named for what pressing it will do, like the other toggles: state on
-      // the name only, never on the name and `aria-pressed` at once. The name
-      // avoids the bare words "elapsed" and "remaining", which are the
-      // accessible names of the `<time>` elements this button sits beside.
+      // Named for what pressing it will do, like the other toggles. "time
+      // elapsed" rather than "elapsed": the bare words are the accessible
+      // names of the `<time>` elements beside it.
       aria-label={
         timeDisplay === "remaining"
           ? "Show time elapsed"
           : "Show time remaining"
       }
       onKeyDown={handleMediaKeys}
-      onClick={handleClick}
-      disabled={isDisabled}
       {...props}
+      // Last, so the gate cannot be spread away.
+      {...disabled}
     >
       {children}
     </button>

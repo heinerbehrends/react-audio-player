@@ -538,3 +538,81 @@ describe("the volume-drag pin", () => {
     expect(harness.store.store.lastAudibleVolume.get()).toBe(0.3);
   });
 });
+
+/**
+ * A5. A slider had no disabled path: in the error state it announced
+ * `aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"` unmarked, and
+ * accepted arrow keys that did nothing.
+ */
+describe("the disabled slider", () => {
+  it("marks itself aria-disabled while loading and on error", () => {
+    expect(
+      renderSlider({ mode: "seek" }, { readyState: 0 }).result.current.aria,
+    ).toMatchObject({ "aria-disabled": true });
+
+    expect(
+      renderSlider({ mode: "seek" }, { error: {} as MediaError }).result.current
+        .aria,
+    ).toMatchObject({ "aria-disabled": true });
+  });
+
+  it("omits the attribute once ready, rather than saying false", () => {
+    const { result } = renderSlider({ mode: "seek" }, { readyState: 1 });
+
+    expect(result.current.aria["aria-disabled"]).toBeUndefined();
+  });
+
+  /** Falling through to the global map would let a disabled slider seek. */
+  it("ignores its arrow keys without falling through to the media map", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { readyState: 0, volume: 0.5, currentTime: 20 },
+    );
+    const event = keyDown("ArrowRight");
+
+    act(() => harness.result.current.onKeyDown(event));
+
+    expect(harness.store.element.volume).toBeCloseTo(0.5, 5);
+    expect(harness.store.element.currentTime).toBe(20);
+    // A control that does nothing should not eat the scroll.
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The global shortcuts are the player's, not the slider's, and already fire
+   * from every other focused control in this state.
+   */
+  it("still passes the global media shortcuts through", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { readyState: 0, paused: true },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("p")));
+
+    expect(harness.store.element.play).toHaveBeenCalled();
+  });
+
+  it("does not commit a click on the track", () => {
+    const harness = renderSlider(
+      { mode: "seek" },
+      { readyState: 0, currentTime: 20 },
+    );
+
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(0.5)));
+
+    expect(harness.store.element.currentTime).toBe(20);
+  });
+
+  it("does not start a drag from the thumb", () => {
+    const harness = renderSlider({ mode: "seek" }, { readyState: 0 });
+
+    act(() =>
+      harness.result.current.onThumbPointerDown(
+        thumbPointer(TRACK_START + TRACK_LENGTH / 2, 0),
+      ),
+    );
+
+    expect(harness.result.current.dragState).toBe("idle");
+  });
+});

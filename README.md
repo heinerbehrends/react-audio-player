@@ -59,12 +59,21 @@ Each button is named for what pressing it will do, and the name is the only
 place its state appears: `<MuteButton>` is "Mute" or "Unmute", `<PlayButton>`
 is "Play audio", "Pause audio", "Loading audio" or "Error loading audio", and
 `<Time.Toggle>` is "Show time elapsed" or "Show time remaining". None of them
-sets `aria-pressed` -- a name that already says which way the toggle will go,
+sets `aria-pressed`: a name that already says which way the toggle will go,
 plus a pressed state saying it has already gone, announces as a contradiction
 ("Unmute, toggle button, pressed"). Pass your own `aria-label` to override.
 
+While the track is loading or has failed, every control is marked
+`aria-disabled` and does nothing when activated — your own `onClick` included.
+The native `disabled` attribute is deliberately not used: it would take the
+control out of the tab order, so a `src` swap under a focused control would drop
+focus to `<body>`. Style the unavailable state from `[aria-disabled="true"]`
+rather than `:disabled`.
+
 Errors render into a live region. Every control also accepts the global media
-shortcuts while focused.
+shortcuts while focused, whether or not it is disabled: the shortcuts belong to
+the player, not to the control. A slider's own arrow keys are the exception —
+those stop while it is disabled.
 
 ## Components
 

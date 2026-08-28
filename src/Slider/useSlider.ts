@@ -3,6 +3,7 @@ import { calculateSliderValue } from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
+import { useIsDisabled } from "../store/derived";
 import {
   ARROW_KEYS,
   SLIDER_MODES,
@@ -16,6 +17,11 @@ type PositionEvent =
   | { touches: ArrayLike<{ clientX: number; clientY: number }> };
 
 export type SliderAriaAttributes = {
+  /**
+   * `true` while the player is not ready, absent otherwise. Not the native
+   * `disabled` attribute: the tab stop is the slider's keyboard surface.
+   */
+  "aria-disabled"?: true | undefined;
   "aria-label": string;
   "aria-valuemin": number;
   "aria-valuemax": number;
@@ -90,6 +96,7 @@ export function useSlider({
   const config = SLIDER_MODES[mode];
   const store = usePlayerStore();
   const handleMediaKeys = useHandleMediaKeys();
+  const isDisabled = useIsDisabled();
 
   const valueFromStore = useStore(
     mode === "seek"
@@ -249,6 +256,7 @@ export function useSlider({
 
   const onThumbPointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (isDisabled) return;
       const rect = event.currentTarget.getBoundingClientRect();
       const clientXY = positionOf(event, orientation);
       // Where inside the thumb the pointer grabbed. Subtracting it stops an
@@ -266,11 +274,20 @@ export function useSlider({
       holdAudibleVolume();
       beginDrag(valueAt(clientXY - grabOffset), grabOffset);
     },
-    [orientation, config, store, holdAudibleVolume, beginDrag, valueAt],
+    [
+      isDisabled,
+      orientation,
+      config,
+      store,
+      holdAudibleVolume,
+      beginDrag,
+      valueAt,
+    ],
   );
 
   const onTrackPointerDown = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (isDisabled) return;
       const pressedAt = positionOf(event, orientation);
       holdAudibleVolume();
       commit(valueAt(pressedAt));
@@ -300,6 +317,7 @@ export function useSlider({
       window.addEventListener("touchend", onPressEnd);
     },
     [
+      isDisabled,
       orientation,
       commit,
       valueAt,
@@ -312,6 +330,11 @@ export function useSlider({
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if (isArrowKey(event.key)) {
+        // Swallowed, not passed on: the global map seeks on `ArrowRight` and
+        // changes the volume on `ArrowUp`, so falling through would let a
+        // disabled slider drive the player. No `preventDefault()` — a control
+        // that does nothing should not eat the scroll.
+        if (isDisabled) return;
         const amount = step || config.defaultArrowStep;
         store.send(
           ARROW_KEYS[event.key] === "increase"
@@ -324,7 +347,7 @@ export function useSlider({
       }
       handleMediaKeys(event);
     },
-    [step, config, store, handleMediaKeys],
+    [isDisabled, step, config, store, handleMediaKeys],
   );
 
   const dragging = drag.state === "dragging";
@@ -395,6 +418,7 @@ export function useSlider({
     sliderLength: geometry.sliderLength,
     dragState: drag.state,
     aria: {
+      "aria-disabled": isDisabled || undefined,
       "aria-label": config.ariaLabel,
       "aria-valuemin": minValue,
       "aria-valuemax": maxValue,

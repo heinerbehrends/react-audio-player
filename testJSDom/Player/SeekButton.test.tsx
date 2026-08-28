@@ -53,24 +53,40 @@ describe("Seek", () => {
   });
 
   describe("Disabled state", () => {
-    it("is disabled while loading", () => {
+    // A7: a natively disabled button leaves the tab order, dropping focus to
+    // `<body>` when the load state changes under it.
+    it("is aria-disabled while loading", () => {
       renderSeek(10, { readyState: 0 });
-      expect(screen.getByLabelText(labels.seekForward)).toBeDisabled();
+      const button = screen.getByLabelText(labels.seekForward);
+      expect(button).toHaveAttribute("aria-disabled", "true");
+      expect(button).not.toBeDisabled();
     });
 
-    it("is disabled on error", () => {
+    it("is aria-disabled on error", () => {
       renderSeek(10, { error: {} as MediaError });
-      expect(screen.getByLabelText(labels.seekForward)).toBeDisabled();
+      const button = screen.getByLabelText(labels.seekForward);
+      expect(button).toHaveAttribute("aria-disabled", "true");
+      expect(button).not.toBeDisabled();
+    });
+
+    it("does not seek while disabled", () => {
+      const { element } = renderSeek(10, { readyState: 0, currentTime: 30 });
+      fireEvent.click(screen.getByLabelText(labels.seekForward));
+      expect(element.currentTime).toBe(30);
     });
 
     it("is enabled when paused", () => {
       renderSeek(10, { paused: true });
-      expect(screen.getByLabelText(labels.seekForward)).not.toBeDisabled();
+      expect(screen.getByLabelText(labels.seekForward)).not.toHaveAttribute(
+        "aria-disabled",
+      );
     });
 
     it("is enabled when playing", () => {
       renderSeek(10, { paused: false });
-      expect(screen.getByLabelText(labels.seekForward)).not.toBeDisabled();
+      expect(screen.getByLabelText(labels.seekForward)).not.toHaveAttribute(
+        "aria-disabled",
+      );
     });
   });
 });

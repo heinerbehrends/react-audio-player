@@ -1,15 +1,14 @@
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled, usePlayerState } from "../store/derived";
+import { usePlayerState } from "../store/derived";
+import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlayButtonProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-// The name carries the state, and `aria-pressed` is deliberately absent: a
-// name that already says "Pause audio" plus `aria-pressed="true"` announced the
-// same fact twice, in two vocabularies. The name also reaches further than a
-// boolean can -- `loading` and `error` are states `aria-pressed` cannot express.
+// State is on the name only; `aria-pressed` beside it announced the same fact
+// twice. The name also carries `loading` and `error`, which a boolean cannot.
 const ariaLabelMap = {
   playing: "Pause audio",
   paused: "Play audio",
@@ -18,18 +17,19 @@ const ariaLabelMap = {
 };
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  const { isDisabled, ariaLabel } = usePlayButtonProps();
+  const ariaLabel = useAriaLabel();
   const handleKeyDown = useHandleMediaKeys();
   const handleClick = useHandleClick();
+  const disabled = useDisabledButtonProps(handleClick, props.onClick);
 
   return (
     <button
       type="button"
-      onClick={handleClick}
       onKeyDown={handleKeyDown}
-      disabled={isDisabled}
       aria-label={ariaLabel}
       {...props}
+      // Last, so the gate cannot be spread away.
+      {...disabled}
     >
       {children}
     </button>
@@ -45,11 +45,8 @@ function useHandleClick() {
   return () => send({ type: "TOGGLE_PLAY" });
 }
 
-function usePlayButtonProps() {
-  const playerState = usePlayerState();
-  const isDisabled = useIsDisabled();
-  const ariaLabel = ariaLabelMap[playerState];
-  return { isDisabled, ariaLabel };
+function useAriaLabel() {
+  return ariaLabelMap[usePlayerState()];
 }
 
 function Playing({

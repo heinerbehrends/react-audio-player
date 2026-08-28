@@ -32,8 +32,8 @@ test("the mute button renames itself and mutes the element", async () => {
 
   await muteButton().click();
 
-  // The name is the only state channel -- see A4 -- so "Unmute" being present
-  // is the assertion that the button reflects the muted element.
+  // A4: the name is the only state channel, so "Unmute" being present is the
+  // assertion.
   await expect(page.getByRole("button", { name: labels.unmute })).toBeVisible();
   expect((await getAudioState(page)).muted).toBe(true);
 

@@ -16,11 +16,11 @@ const states: Record<string, Partial<MediaFields>> = {
 describe("PlayButton", () => {
   describe("PlayButtonComponent", () => {
     it.each([
-      ["paused", "Play audio", false],
-      ["playing", "Pause audio", false],
-      ["loading", "Loading audio", true],
-      ["error", "Error loading audio", true],
-    ])("renders correctly in %s state", (state, name, disabled) => {
+      ["paused", "Play audio", undefined],
+      ["playing", "Pause audio", undefined],
+      ["loading", "Loading audio", "true"],
+      ["error", "Error loading audio", "true"],
+    ])("renders correctly in %s state", (state, name, ariaDisabled) => {
       renderWithStore(
         <PlayButton>
           <span>Play Icon</span>
@@ -30,11 +30,16 @@ describe("PlayButton", () => {
       const button = screen.getByRole("button");
 
       expect(button).toHaveAccessibleName(name);
-      // The name is the only state channel -- see A4. It also carries `loading`
-      // and `error`, which a boolean `aria-pressed` could not have expressed.
+      // A4: the name also carries `loading` and `error`, which `aria-pressed`
+      // could not.
       expect(button).not.toHaveAttribute("aria-pressed");
-      if (disabled) {
-        expect(button).toBeDisabled();
+      // Never native `disabled`: the tab stop has to survive a load-state
+      // change under a focused button (A7).
+      expect(button).not.toBeDisabled();
+      if (ariaDisabled) {
+        expect(button).toHaveAttribute("aria-disabled", ariaDisabled);
+      } else {
+        expect(button).not.toHaveAttribute("aria-disabled");
       }
     });
 
@@ -137,6 +142,6 @@ describe("PlayButton", () => {
     emit("emptied");
 
     expect(screen.getByRole("button")).toHaveAccessibleName("Loading audio");
-    expect(screen.getByRole("button")).toBeDisabled();
+    expect(screen.getByRole("button")).toHaveAttribute("aria-disabled", "true");
   });
 });

@@ -35,8 +35,8 @@ describe("MuteButton", () => {
       );
       const button = screen.getByRole("button");
       expect(button).toHaveAccessibleName(name);
-      // The name is the only state channel; `aria-pressed` alongside it
-      // announced "Unmute, toggle button, pressed" -- see A4.
+      // A4: `aria-pressed` alongside the name announced "Unmute, toggle
+      // button, pressed".
       expect(button).not.toHaveAttribute("aria-pressed");
     });
 

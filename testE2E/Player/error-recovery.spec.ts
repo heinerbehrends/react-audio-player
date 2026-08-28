@@ -35,10 +35,17 @@ test("a bad src shows the error message and disables the controls", async () => 
 
   await expect(errorMessage()).toBeVisible();
   await expect(errorMessage()).toHaveAttribute("aria-live", "assertive");
-  await expect(playButton()).toBeDisabled();
+  // A7: marked, but not natively disabled, so the tab order holds through the
+  // error. Playwright counts `aria-disabled` as disabled, so the native
+  // attribute is checked directly.
+  await expect(playButton()).toHaveAttribute("aria-disabled", "true");
+  await expect(playButton()).not.toHaveAttribute("disabled");
   await expect(
     page.getByRole("button", { name: labels.seekForward }),
-  ).toBeDisabled();
+  ).toHaveAttribute("aria-disabled", "true");
+
+  await playButton().focus();
+  await expect(playButton()).toBeFocused();
 });
 
 /**
@@ -54,8 +61,8 @@ test("swapping in a good src clears the error and re-enables the controls", asyn
   await expect(errorMessage()).toBeHidden();
   await expect(
     page.getByRole("button", { name: labels.playAudio }),
-  ).toBeEnabled();
+  ).not.toHaveAttribute("aria-disabled");
   await expect(
     page.getByRole("button", { name: labels.seekForward }),
-  ).toBeEnabled();
+  ).not.toHaveAttribute("aria-disabled");
 });

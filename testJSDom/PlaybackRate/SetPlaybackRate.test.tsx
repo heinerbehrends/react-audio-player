@@ -70,14 +70,16 @@ describe("SetPlaybackRate", () => {
     expect(mockHandleKeyDown).toHaveBeenCalled();
   });
 
-  it("is disabled while the player is loading", () => {
+  it("is aria-disabled while the player is loading, and does not activate", () => {
     const { element } = renderRate(
       <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
       { readyState: 0 },
     );
     const button = screen.getByRole("button");
 
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    // Not native `disabled`: the tab stop has to survive (A7).
+    expect(button).not.toBeDisabled();
 
     fireEvent.click(button);
     expect(element.playbackRate).toBe(1);

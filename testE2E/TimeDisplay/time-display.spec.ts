@@ -18,9 +18,8 @@ test.afterAll(async () => {
   await page.close();
 });
 
-// The toggle is named for what pressing it will do, so its name flips with the
-// display -- matched as either. The `<time>` elements are named "elapsed" and
-// "remaining", which is why the queries for those pass `exact`.
+// The toggle's name flips with the display, so match either. The `<time>`
+// elements are named "elapsed" and "remaining", hence `exact` on those queries.
 const toggle = () =>
   page.getByRole("button", {
     name: new RegExp(`^(${labels.showElapsed}|${labels.showRemaining})$`),

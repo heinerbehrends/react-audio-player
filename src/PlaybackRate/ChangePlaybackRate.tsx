@@ -1,6 +1,6 @@
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useStore } from "../store/atom";
-import { useIsDisabled } from "../store/derived";
+import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type IncreaseDecreaseProps = {
@@ -15,20 +15,23 @@ export function ChangePlaybackRate({
 }: IncreaseDecreaseProps) {
   const handleChangePlaybackRate = useChangePlaybackRate(amount);
   const handleMediaKeys = useHandleMediaKeys();
-  const isDisabled = useIsDisabled();
+  const disabled = useDisabledButtonProps(
+    handleChangePlaybackRate,
+    props.onClick,
+  );
 
   return (
     <button
       type="button"
-      onClick={handleChangePlaybackRate}
       onKeyDown={handleMediaKeys}
       aria-label={
         amount > 0
           ? `Increase playback rate by ${Math.abs(amount)}x`
           : `Decrease playback rate by ${Math.abs(amount)}x`
       }
-      disabled={isDisabled}
       {...props}
+      // Last, so the gate cannot be spread away.
+      {...disabled}
     >
       {children}
     </button>

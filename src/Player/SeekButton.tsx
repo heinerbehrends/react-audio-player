@@ -1,5 +1,5 @@
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled } from "../store/derived";
+import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SeekButtonComponentProps = {
@@ -14,7 +14,7 @@ export function SeekButton({
 }: SeekButtonComponentProps) {
   const seekAmount = useSeek(amount);
   const handleMediaKeys = useHandleMediaKeys();
-  const isDisabled = useIsDisabled();
+  const disabled = useDisabledButtonProps(seekAmount, props.onClick);
 
   return (
     <button
@@ -23,9 +23,9 @@ export function SeekButton({
         amount,
       )} seconds`}
       onKeyDown={handleMediaKeys}
-      onClick={seekAmount}
-      disabled={isDisabled}
       {...props}
+      // Last, so the gate cannot be spread away.
+      {...disabled}
     >
       {children}
     </button>
