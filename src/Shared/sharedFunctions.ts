@@ -118,7 +118,11 @@ export function getOffset({
   orientation = "horizontal",
 }: GetOffsetArgs): number {
   const range = maxValue - minValue;
-  const progress = (value - minValue) / range;
+  // `NaN` when `maxValue === minValue` — a live stream, or any player before
+  // `loadedmetadata`. `translate(calc(NaNpx - 50%))` is invalid, so the browser
+  // drops the transform entirely. Guarded on `progress`, not by returning early:
+  // vertical counts from the top, so its minimum is the full length.
+  const progress = range === 0 ? 0 : (value - minValue) / range;
 
   if (orientation === "horizontal") {
     return progress * sliderLength;

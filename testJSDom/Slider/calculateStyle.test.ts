@@ -183,3 +183,22 @@ describe("calculateStyle", () => {
     });
   });
 });
+
+/**
+ * F12, one layer up: an invalid `translate()` makes the browser discard the
+ * whole transform, so the thumb does not move at all.
+ */
+describe("a zero range", () => {
+  it("emits a usable transform rather than NaN", () => {
+    const style = calculateDragStyle({
+      value: 0,
+      minValue: 0,
+      maxValue: 0,
+      sliderLength: 200,
+      orientation: "horizontal",
+    });
+
+    expect(style.transform).not.toContain("NaN");
+    expect(style.transform).toBe("translate(calc(0px - 50%), 0)");
+  });
+});

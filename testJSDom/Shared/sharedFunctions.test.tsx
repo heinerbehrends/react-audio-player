@@ -174,6 +174,37 @@ describe("sharedFunctions", () => {
       });
       expect(result).toBe(50);
     });
+
+    /**
+     * F12. Reachable on a live stream, and on every player before
+     * `loadedmetadata`, where the duration is still 0.
+     */
+    it("parks at the minimum when the range is zero, rather than NaN", () => {
+      const horizontal = getOffset({
+        value: 0,
+        sliderLength: 200,
+        minValue: 0,
+        maxValue: 0,
+        orientation: "horizontal",
+      });
+      expect(horizontal).toBe(0);
+
+      // Vertical counts from the top, so its minimum is the full length.
+      const vertical = getOffset({
+        value: 0,
+        sliderLength: 200,
+        minValue: 0,
+        maxValue: 0,
+        orientation: "vertical",
+      });
+      expect(vertical).toBe(200);
+    });
+
+    it("survives a zero range on the rate slider's own bounds", () => {
+      expect(
+        getOffset({ value: 2, sliderLength: 200, minValue: 2, maxValue: 2 }),
+      ).toBe(0);
+    });
   });
 
   describe("getClientXY", () => {
