@@ -13,6 +13,10 @@ The package is still unpublished (`version: 0.0.0`), so anything marked
 **breaking** is free until the first `npm publish` and expensive after it. That
 is the deadline to weigh every item against.
 
+Sections 1 to 4 are work that was started or found and then postponed. Section 5
+is the exception and is forward-looking: demand nobody has asked for yet, its
+`D` refs originating here rather than in `REVIEW-FINDINGS.md`.
+
 ---
 
 ## 1. Codec fallback via `<source>` — **breaking, deferred**
@@ -96,9 +100,9 @@ Cross-references are to `REVIEW-FINDINGS.md`.
 | —               | **Playlist resumption is undocumented, and now more visible.** Following `onEnded`'s pattern gives a playlist that stops after every track: a `src` change arrives loaded and paused, and nothing resumes it. Two consumer-side fixes, neither discoverable from the README — `audioProps={{ autoPlay: true }}`, which also autoplays track one and may be refused by autoplay policy (surfacing as `useAudioError()` `kind: "playback"`); or an effect keyed on the playlist index calling `play()` after `loadedmetadata`. `AudioPlayer`'s `onEnded` tooltip now says this; the README's playlist section does not.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | —               | **"Only one player at a time" is a consumer concern**, and worth saying so. Two players with two playlists is a plausible route to overlapping audio. A library-owned `autoAdvance` would need cross-instance coordination — exactly the shared registry the per-`AudioPlayer` store avoids — so the shape stands: the library exposes state and control, the consumer owns the queue.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | —               | `AUDIO_FILE_ENDED` is a defined action with a handler in `handleSideEffect`, and **nothing sends it**. It was the end-of-track rewind's action; with the rewind gone it is unreachable. Delete it, or find it a sender.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| —               | **Firefox is now runnable, and 54/56 pass.** The two failures are Playwright artefacts, not library bugs: Playwright's Firefox substitutes `clientX = 0` for coordinates outside the viewport and dispatches **no `pointerup` at all** for a release outside it, so `volume-drag.spec.ts:62` and `mute.spec.ts:75` release at `box.x - 50` and leave a drag live, which then poisons the next test in the file (measured: 16/1200 = 0.01333, the exact failing value; both pass in isolation). Fix: release at `x = 0`, still left of the track start. Then add a `firefox` project — `playwright.config.ts` has only `chromium`, so no Firefox has ever run in CI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| —               | Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation: a paused seek to `duration` sets `el.ended` and fires the event, where Chrome does neither. So a drag to the end of the timeline fires a consumer's `onEnded` — advancing their playlist — in Firefox only. `useIsAtEnd` is unaffected, being derived from position, which both browsers agree on; this is one more reason the derived framing beat projecting `el.ended`. Decide whether the `onEnded` divergence is a defect to paper over or a browser difference to document.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| —               | `drag-drop-time.spec.ts:84-90`'s `browserName === "firefox"` branch is commented _"Firefox triggers onEnded, which resets the time to 0"_. That is a **misdiagnosis** of the coordinate collapse above: the move targets x = 1340 against a 1280 viewport. Correct the comment, or delete the branch once the specs release inside the viewport.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| —               | ~~Firefox has never run: `playwright.config.ts` had only a `chromium` project~~ — **done**: both engines run in CI, 112 tests. The two failures were test bugs, not library bugs — Playwright's Firefox substitutes `clientX = 0` outside the viewport and dispatches no `pointerup` for a release outside it, so four sites now go through `insideViewport()`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| —               | Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation: a paused seek to `duration` sets `el.ended` and fires the event, where Chrome does neither. So a drag to the end of the timeline calls a consumer's `onEnded` — advancing their playlist — in Firefox only. `useIsAtEnd` is unaffected, being derived from position, which both browsers agree on. **Still undecided**: whether to paper over the divergence or document it. Now testable on both engines, so whichever is chosen can be pinned.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| —               | ~~`drag-drop-time.spec.ts`'s `browserName === "firefox"` branch is a misdiagnosis of the coordinate collapse~~ — **done**: the branch is deleted rather than corrected. With the overshoot kept inside the viewport both engines agree, so there is nothing left to branch on.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | —               | The drag effect (`useSlider.ts`) ends only on `pointerup` / `pointercancel` / `touchcancel` — no `blur`, `lostpointercapture` or `visibilitychange` fallback. Any lost `pointerup` leaves the drag live and `lastAudibleVolume` held indefinitely. Browser-agnostic, and the same neighbourhood as **C9**. Found while triaging the Firefox failures, which is exactly what a stuck drag looks like.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | **S9** _(part)_ | Still open: the **state** attributes `data-state` (idle/dragging, playing/paused, muted/low/high), `data-orientation` and `data-disabled`. Drag state remains unreachable from CSS _and_ JS.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | **A6**          | ~~Home / End on the sliders~~ — **done**.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -207,3 +211,180 @@ state rather than a projection, breaking the store's central invariant that
 architecture review; reproduced in Chrome and **disproven** — unmuting after a
 click to zero correctly restores the pre-click volume. See the Rejected claims
 section of `REVIEW-FINDINGS.md`.
+
+---
+
+## 5. Predicted demand — what to expect after the first publish
+
+Added 2026-08-28, from a scan of what the neighbouring players are being asked
+for. **These are not review findings.** The `D` refs originate in this file and
+have no counterpart in `REVIEW-FINDINGS.md`, so the drift rule at the top does
+not apply to them — there is nothing to reconcile against. They are predictions
+about incoming requests, ordered by how much the answer costs once `version` is
+no longer `0.0.0`.
+
+**The market context, because it has a date on it.** In March 2026 the teams
+behind Video.js, Plyr, Vidstack and Media Chrome shipped the first beta of
+Video.js v10, a rewrite that folds all four players into one framework, with
+general availability targeted for the middle of 2026. That consolidation is
+video-first and web-component-first. It makes the position this library already
+holds — audio only, React components rather than custom elements, nothing in
+`dependencies` — both narrower and more defensible, and it is why the
+podcast-shaped items below are the ones worth wanting.
+
+### Decide before publish
+
+**D1. Polymorphism: `asChild`, or a `render` prop. — breaking after publish.**
+The README pitches the library as composed the way Radix is, and the most-used
+thing in that API is missing: there is no `asChild`, no `render` prop and no
+Slot anywhere in `src/`. Anyone with a design system reaches for it in the first
+hour, because `PlayButton` renders a `<button>` they already have a styled
+version of.
+
+The field has split on which convention to offer, so this is a choice and not a
+lookup: Radix keeps `asChild`, and Base UI went stable in December 2025 with
+`render` instead, explicitly to avoid `asChild`'s prop-merging ambiguity around
+event handlers and refs. Either is defensible. Deciding after publish is not —
+it means shipping both, or breaking the prop type of all ten roots and their
+members at once.
+
+The merge semantics are the work, not the prop. Every part here already composes
+handlers deliberately (`composeEventHandlers`), and the disabled rule — an
+`aria-disabled` control swallows the consumer's own `onClick` — has to survive
+being merged onto someone else's element.
+
+**D2. Refs on the parts. — additive, but it touches every public prop type.**
+`audioRef` reaches the `<audio>` element, which is the hard case and is already
+solved. No _part_ forwards a ref: there is no `forwardRef` in `src/`, and the
+types pin React 18, where `ref` is not an ordinary prop. Tooltips, popovers,
+scroll-into-view, measurement and every animation library want an element
+handle, and `Timeline.Control` is the one they want it on.
+
+Coupled to **S19**: React 19 makes `ref` a plain prop and deletes the
+`forwardRef` ceremony, so the shape of this depends on which React the types
+target. That makes S19 a dependency of a pre-publish item rather than the
+isolated chore it reads as today.
+
+**D3. `volume` is inert on iOS, and nothing says so.** On iOS the audio level is
+under the user's physical control by Apple's design: `HTMLMediaElement.volume`
+is not settable from JavaScript and reading it always returns 1. `muted` still
+works. So `writeVolume` assigns, the element ignores it, `syncFromElement` never
+observes a change, the atom holds, and the thumb does not move. **The store is
+behaving correctly and the user sees a dead slider** — which is the worst
+combination available, because there is no bug to find.
+
+Wanted: one derived signal, `useIsVolumeAvailable()` or similar, so a consumer
+can drop `<Volume>` on iOS and keep `<MuteButton>`, which still works. The
+detection is a capability probe rather than a UA test — assign a value other
+than 1 and read it back — and a probe is a _write_, so it has to run once at
+attach, before any consumer value is applied, and restore what it found. Ugly,
+and still cheaper than the issue it prevents.
+
+Media Chrome carries an open discussion titled "media-volume-range doesn't work
+in iOS Safari"; react-h5-audio-player has "I can't control volume while using
+audio player on iOS devices." This one gets filed.
+
+**D4. Live streams are a supported case documented as an unsupported one.** The
+README currently closes with "Live streams are not supported: an unbounded
+duration reads as 0." That sentence costs more than the feature does. Internet
+radio, live shows and call-ins are a large share of what goes into a web audio
+player, and the architecture is already most of the way there: `useIsSeekable()`
+exists _because_ `duration` is `Infinity` while `readyState` is healthy, and it
+disables exactly the two controls that have to name a position on the track.
+Play, pause, volume, mute and rate all work.
+
+What is missing is a name for the state, and it cannot be derived from the atoms
+as they stand — `syncFromElement.ts:76` flattens every non-finite duration to 0,
+so by the time a consumer sees it, a live stream and a player before
+`loadedmetadata` are the same number. So: project the distinction (an `isLive`
+boolean, or keep the raw value alongside the flattened one), and rewrite the
+README paragraph from a limitation into a branch.
+
+### Additive — what the scan reorders in section 2
+
+Nothing new here. What changes is the _order_, and these are the rows it moves
+up:
+
+- **F6 (Media Session)** is the largest single gap, not a nicety. Audio is
+  consumed on phones with the screen off, and without it there is no artwork on
+  the lock screen, no hardware buttons and no scrubbing from the notification
+  shade. Do `setPositionState` in the same pass, or the lock-screen scrubber
+  shows a frozen position and reads as a bug in the player rather than as a
+  missing call. The metadata fields on `AudioFile` were added ahead of exactly
+  this.
+- **S9 (state attributes) with S20 (custom properties)** belong together and
+  belong early. `data-part` shipped, which is half the styling contract; without
+  the other half, drag state is unreachable from CSS _and_ from JS, so a
+  grows-while-dragging thumb — the most common piece of slider polish there is —
+  cannot be written at all. It also becomes frozen API the moment anyone styles
+  against it. react-h5-audio-player has an open "Add support for css custom
+  properties (variables)" request; this is the shape that request takes here.
+- **The playlist-resumption row** (unrefed, in Additive) is a documentation bug
+  with a reproduction: everyone who copies the README's playlist example gets a
+  player that stops after every track. Fix the example, not the library.
+- **A10 (nothing names the widget)** and the "only one player at a time" row are
+  one answer rather than two: offer the wrapper and the labelling, document the
+  pause-the-others recipe, and say in the README that coordination is the
+  consumer's. react-player carries an open "Multiple instance issues on play and
+  pause"; two players on a page is how people get there.
+- **A15 (hardcoded English)** is the one item on the list a competitor names in
+  its own feature table — react-h5-audio-player advertises internationalization
+  directly. It also matters more here than in most libraries, because three of
+  the toggles carry their entire state on the accessible _name_ rather than on
+  `aria-pressed`. That is the right call, and it makes translation load-bearing
+  rather than cosmetic.
+
+**F11 (persistence) stays out**, and the scan strengthens the reason rather than
+weakening it: Vidstack carries an open issue titled "`localStorage` not always
+available, causing TypeErrors" — the cost of owning storage, itemised by someone
+who owns it. Answer it with a recipe in the docs.
+
+### Longer arc — where audio-only earns its narrowness
+
+**D5. Let `Timeline` host a waveform rather than drawing one.** wavesurfer.js is
+the centre of gravity for audio UI on the web, and it has a real gap: what it
+draws is a canvas, not a `role="slider"` with arrow keys, `Home`/`End` and an
+announced value. This library is the exact complement — the semantics with no
+drawing. The move is not a renderer; it is making the slider root able to host
+someone else's paint surface, so a consumer gets wavesurfer's pixels inside
+these keyboard and screen-reader semantics. `useCurrentTime()` already exists
+for the continuous redraw, and is already documented as being for this.
+
+**D6. The podcast surface: chapters and markers first, transcript sync second.**
+Chapter navigation, a transcript that follows playback, a sleep timer, silence
+skipping and per-show speed are what podcast listeners now treat as baseline;
+Podlove's Simple Chapters is an established web format for the first two. Two of
+them fit the existing architecture almost for free — chapters and transcript
+sync are both a sorted list plus `useCurrentSecond()`, and both want the same
+new primitive: a `<Timeline>` that can render marks at positions, which is also
+what **D5** and the buffered bar in section 3 want. The sleep timer and silence
+skipping are userland and should stay there.
+
+This is also the answer to "why not use the video player", which is worth being
+able to give before it is asked.
+
+**D7. An HLS/dash.js recipe, in the docs, not in the library.** `audioRef`
+already makes attaching hls.js possible, and almost nobody will work that out
+unaided. A worked example costs an afternoon and answers the request
+permanently. The `<source>` codec fallback underneath it is the genuinely hard
+one and stays deferred for the reasons in section 1.
+
+### Not features
+
+**D8. There is no docs site, no deployed demo and no sandbox link.** For a
+headless library this is _the_ adoption gap, because there is nothing else to
+look at: the markup is the consumer's, so the documentation is the product.
+Radix and Base UI are chosen off their docs sites. The README here is
+better-reasoned than most libraries' entire documentation, and it is 19 kB of
+prose that someone comparing five players in an afternoon will not read. One
+deployed page with four working players — minimal, podcast, waveform,
+mini-player — each with copyable source, outperforms any three features above.
+`public/The-Race.mp3` and the Vite dev app are most of the fixture already.
+
+**D9. Publish the refusals.** This file reasons about what is deliberately
+excluded better than most projects ever write down, and it does it where no
+consumer will ever read it. A short "deliberately not included" section in the
+README turns each of these from a recurring debate into a link: no queue or
+playlist manager, no storage, no full `TimeRanges`, no video, no themes and no
+bundled icons. Section 4 is the raw material; it wants a consumer-facing
+paraphrase, not a copy.
