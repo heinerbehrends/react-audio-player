@@ -3,7 +3,8 @@ import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useStore } from "./atom";
 import { usePlayerStore } from "./PlayerStoreContext";
 import { HAVE_FUTURE_DATA } from "./syncFromElement";
-import type { PlayerState, VolumeState } from "./derived";
+import { useAudioError } from "./derived";
+import type { AudioError, PlayerState, VolumeState } from "./derived";
 
 export type AudioPlayerControls = {
   play: () => void;
@@ -34,6 +35,11 @@ export type AudioPlayerState = {
    * player is still in play mode.
    */
   isBuffering: boolean;
+  /**
+   * The last failure, or `null`. `kind: "media"` means the resource is
+   * unusable; `kind: "playback"` means the browser refused the command.
+   */
+  error: AudioError | null;
 };
 
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
@@ -46,6 +52,9 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const rate = useStore(store.rate);
   const loadState = useStore(store.loadState);
   const readyState = useStore(store.readyState);
+  // Called rather than inlined: unlike the other derivations, this one reads
+  // two atoms nothing else here subscribes to, so there is no duplication.
+  const error = useAudioError();
 
   const controls = useMemo<AudioPlayerControls>(
     () => ({
@@ -90,6 +99,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     isDisabled: loadState !== "ready",
     isBuffering:
       loadState === "ready" && !paused && readyState < HAVE_FUTURE_DATA,
+    error,
     ...controls,
   };
 }

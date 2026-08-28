@@ -42,16 +42,30 @@ export type SideEffectContext = {
   lastAudibleVolume: number;
 };
 
+/**
+ * `play()` resolves once playback starts and rejects when the browser refuses —
+ * `NotAllowedError` under autoplay policy, `AbortError` when a `pause()` or a
+ * `src` change interrupts it. It returns `undefined` rather than a promise in
+ * jsdom and in browsers predating the promise form, so the result is normalised
+ * before being handed to the caller.
+ */
+function play(audioElement: HTMLAudioElement): Promise<void> {
+  return Promise.resolve(audioElement.play());
+}
+
+/**
+ * Returns the pending `play()` promise for the two actions that start playback,
+ * so the store can record a refusal. Every other action returns `undefined`.
+ */
 export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null,
   context: SideEffectContext,
-) {
-  if (!audioElement) return;
+): Promise<void> | undefined {
+  if (!audioElement) return undefined;
   switch (action.type) {
     case "PLAY": {
-      audioElement.play();
-      break;
+      return play(audioElement);
     }
     case "PAUSE": {
       audioElement.pause();
@@ -59,8 +73,7 @@ export function handleSideEffect(
     }
     case "TOGGLE_PLAY": {
       if (audioElement.paused) {
-        audioElement.play();
-        break;
+        return play(audioElement);
       }
       audioElement.pause();
       break;
@@ -119,7 +132,7 @@ export function handleSideEffect(
       const newVolume = Math.max(audioElement.volume - action.value, 0);
       if (areNumbersClose(newVolume, 0)) {
         audioElement.muted = true;
-        return;
+        return undefined;
       }
       writeVolume(audioElement, newVolume);
       break;
@@ -168,6 +181,7 @@ export function handleSideEffect(
       break;
     }
   }
+  return undefined;
 }
 
 /**

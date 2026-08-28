@@ -1,12 +1,21 @@
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
 
 /**
  * `HTMLAudioElement` declares `duration`, `paused`, `readyState` and `error` as
  * readonly, so the media fields are re-declared writable: a test drives the
  * element by assigning them and then emitting the event the browser would.
  */
-export type MediaElementFake = Omit<HTMLAudioElement, keyof MediaFields> &
+export type MediaElementFake = Omit<
+  HTMLAudioElement,
+  keyof MediaFields | "play" | "pause"
+> &
   MediaFields & {
+    /**
+     * Spies, and typed as such: staging a refused `play()` needs
+     * `mockReturnValue`, which `HTMLAudioElement`'s own signature hides.
+     */
+    play: Mock<() => Promise<void>>;
+    pause: Mock<() => void>;
     /** Fires every listener registered for `event`, in registration order. */
     emit: (event: string) => void;
     /** How many listeners are currently registered for `event`. */
@@ -52,7 +61,9 @@ export function createMediaElementFake(
     ...DEFAULTS,
     ...overrides,
     dataset: {} as Record<string, string>,
-    play: vi.fn(),
+    // Returns a promise, as a real element does — the write path normalises
+    // the result anyway, but a test cannot exercise a refusal without one.
+    play: vi.fn(() => Promise.resolve()),
     pause: vi.fn(),
     addEventListener: (event: string, listener: () => void) => {
       const forEvent = listeners.get(event) ?? [];

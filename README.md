@@ -239,12 +239,54 @@ function TrackInfo() {
 | `volumeState`                                     | `"muted" \| "low" \| "high"`                                       |
 | `isDisabled`                                      | True until the track is ready, and while it is errored.            |
 | `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.      |
+| `error`                                           | The last failure, or `null`. See `useAudioError()`.                |
 | `play`, `pause`, `toggle`                         |                                                                    |
 | `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                   |
 | `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. |
 
 The control methods keep the same identity for the lifetime of the player, so
 they are safe to put in a dependency array.
+
+### `useAudioError()`
+
+Playback fails in two ways that need different handling, so they are reported
+as a discriminated union rather than one flag:
+
+```ts
+type AudioError =
+  | {
+      kind: "media";
+      reason: "aborted" | "network" | "decode" | "unsupported" | "unknown";
+    }
+  | { kind: "playback"; reason: string };
+```
+
+`kind: "media"` comes from the element's own `MediaError` — the resource is
+unusable, and only a retry or a different `src` will help. `"network"` is worth
+retrying; `"unsupported"` is not.
+
+`kind: "playback"` means the resource is fine and the browser refused the
+command. `reason` is the `DOMException` name, almost always
+`"NotAllowedError"` — autoplay policy, which any user gesture lifts:
+
+```jsx
+function PlayPrompt() {
+  const { error, play } = useAudioPlayer();
+
+  if (error?.kind === "playback") {
+    return <button onClick={play}>Tap to play</button>;
+  }
+  return null;
+}
+```
+
+`AbortError` is never reported. It fires whenever a `pause()` or a `src` change
+overtakes a pending `play()` — a double-click, or a held key — and the user's
+intent was honoured, so there is nothing to tell them.
+
+A media error wins when both are set. A playback error clears when a `play()`
+finally succeeds, and deliberately survives a `src` change: an autoplay block
+outlives the track that revealed it.
 
 ### `useIsBuffering()`
 

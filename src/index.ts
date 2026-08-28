@@ -13,7 +13,7 @@ export {
   useCurrentSecond,
   useCurrentTime,
 } from "./store/useAudioPlayer";
-export { useIsBuffering } from "./store/derived";
+export { useIsBuffering, useAudioError } from "./store/derived";
 export type { AudioFile } from "./Player/PlayerConfigContext";
 export type { SideEffectAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
@@ -21,4 +21,9 @@ export type {
   AudioPlayerState,
   AudioPlayerControls,
 } from "./store/useAudioPlayer";
-export type { PlayerState, VolumeState } from "./store/derived";
+export type {
+  AudioError,
+  MediaErrorReason,
+  PlayerState,
+  VolumeState,
+} from "./store/derived";

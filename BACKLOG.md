@@ -77,28 +77,28 @@ Cross-references are to `REVIEW-FINDINGS.md`.
 
 ### Additive
 
-| Ref     | Item                                                                                                                                                  |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **F1**  | `useAudioPlayer()` — no way to read player state at all today. Everything needed already exists in `src/store/derived.ts` and simply is not exported. |
-| **F5**  | ~~Stall signal~~ — **done**: `readyState` is projected and `useIsBuffering()` derives from it. Buffered _ranges_ remain, see section 3.               |
-| **F6**  | Media Session API. The metadata fields on `AudioFile` were added ahead of this so it is not a breaking change when it lands.                          |
-| **F8**  | Expose `MediaError.code`, so consumers can distinguish a retryable network error from an unsupported source.                                          |
-| **S9**  | `data-*` state attributes (`data-state`, `data-orientation`, `data-disabled`). Drag state is currently unreachable from CSS _and_ JS.                 |
-| **A6**  | Home / End on the sliders — required by the APG Slider pattern.                                                                                       |
-| **A8**  | The volume slider announces "100%" while muted.                                                                                                       |
-| **S20** | CSS custom properties (`--progress`, `--offset`) alongside the computed transform.                                                                    |
+| Ref     | Item                                                                                                                                                   |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **F1**  | ~~No way to read player state~~ — **done**: `useAudioPlayer`, `useCurrentSecond`, `useCurrentTime`, `useIsBuffering` and `useAudioError` are exported. |
+| **F5**  | ~~Stall signal~~ — **done**: `readyState` is projected and `useIsBuffering()` derives from it. Buffered _ranges_ remain, see section 3.                |
+| **F6**  | Media Session API. The metadata fields on `AudioFile` were added ahead of this so it is not a breaking change when it lands.                           |
+| **S9**  | `data-*` state attributes (`data-state`, `data-orientation`, `data-disabled`). Drag state is currently unreachable from CSS _and_ JS.                  |
+| **A6**  | Home / End on the sliders — required by the APG Slider pattern.                                                                                        |
+| **A8**  | The volume slider announces "100%" while muted.                                                                                                        |
+| **S20** | CSS custom properties (`--progress`, `--offset`) alongside the computed transform.                                                                     |
 
 ### Internal, no consumer impact
 
-| Ref           | Item                                                                                                                   |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **C1**        | Rate-slider bounds live in three places and disagree — `<PlaybackRateSlider maxValue={2}>` still clamps arrows at 4.   |
-| **C2**        | `SLIDER_MODES.mutesAtZero` does not gate mute-at-zero; the real rule is keyed off `action.component` in another layer. |
-| **C3**        | `valueFromStoreRef` + its effect mirror a value `atom.get()` returns directly, and more freshly.                       |
-| **C4 / P1-b** | The mode discriminant is re-derived six times; `useSlider` subscribes to the same atom twice in volume/rate mode.      |
-| **C5**        | The `ResizeObserver` effect binds a node it can never re-bind — hold it in `useState` like `AudioElement` does.        |
-| **C7**        | `positionOf` duplicates the now-dead `getClientXY`; `Orientation` is declared twice.                                   |
-| **C9**        | The drag effect registers `touchcancel` but not `touchend`, while the press-wait block registers `touchend`.           |
+| Ref           | Item                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C1**        | Rate-slider bounds live in three places and disagree — `<PlaybackRateSlider maxValue={2}>` still clamps arrows at 4.                                                                                                                                                                                                                                                                   |
+| **C2**        | `SLIDER_MODES.mutesAtZero` does not gate mute-at-zero; the real rule is keyed off `action.component` in another layer.                                                                                                                                                                                                                                                                 |
+| **C3**        | `valueFromStoreRef` + its effect mirror a value `atom.get()` returns directly, and more freshly.                                                                                                                                                                                                                                                                                       |
+| **C4 / P1-b** | The mode discriminant is re-derived six times; `useSlider` subscribes to the same atom twice in volume/rate mode.                                                                                                                                                                                                                                                                      |
+| **C5**        | The `ResizeObserver` effect binds a node it can never re-bind — hold it in `useState` like `AudioElement` does.                                                                                                                                                                                                                                                                        |
+| **C7**        | `positionOf` duplicates the now-dead `getClientXY`; `Orientation` is declared twice.                                                                                                                                                                                                                                                                                                   |
+| **C8**        | The 0.5–4 playback-rate policy is applied inconsistently: the slider arrows and the `>` key clamp there, `SET_PLAYBACK_RATE` does not. The write path now clamps to the browser's [0, 16] so nothing throws, but the library's own range is still unenforced — deliberately, since `<PlaybackRate.Set rate={8}>` names an explicit rate. Decide whether that is the intended contract. |
+| **C9**        | The drag effect registers `touchcancel` but not `touchend`, while the press-wait block registers `touchend`.                                                                                                                                                                                                                                                                           |
 
 ### Tests
 

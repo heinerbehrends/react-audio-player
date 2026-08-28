@@ -21,7 +21,19 @@ export type PlayerStore = {
   rate: ReadableAtom<number>;
   paused: ReadableAtom<boolean>;
   readyState: ReadableAtom<number>;
+  mediaErrorCode: ReadableAtom<number | null>;
   loadState: ReadableAtom<LoadState>;
+
+  /**
+   * The name of the `DOMException` from the last refused `play()`, or `null`.
+   *
+   * Not a projection — there is no element property for "the browser said no" —
+   * so `send` writes it, making it the second writable atom after
+   * `timeDisplay`. It clears when a `play()` finally succeeds, and deliberately
+   * not on a `src` change: an autoplay block outlives the track that revealed
+   * it, and is only lifted by a user gesture.
+   */
+  playbackError: ReadableAtom<string | null>;
 
   /** The one writable atom: UI state with no counterpart on the element. */
   timeDisplay: Atom<TimeDisplay>;
@@ -48,6 +60,7 @@ export function createPlayerStore(): PlayerStore {
     rate: atom(1),
     paused: atom(true),
     readyState: atom(0),
+    mediaErrorCode: atom<number | null>(null),
     loadState: atom<LoadState>("loading"),
   };
 
@@ -81,10 +94,28 @@ export function createPlayerStore(): PlayerStore {
     };
   };
 
-  const send = (action: SideEffectAction) =>
-    handleSideEffect(action, element, {
+  const playbackError = atom<string | null>(null);
+
+  const send = (action: SideEffectAction) => {
+    const started = handleSideEffect(action, element, {
       lastAudibleVolume: atoms.lastAudibleVolume.get(),
     });
+    if (!started) return;
+
+    started.then(
+      () => playbackError.set(null),
+      (rejection: unknown) => {
+        const name =
+          (rejection as { name?: string } | null | undefined)?.name ??
+          "UnknownError";
+        // `AbortError` means a `pause()` or `src` change overtook the request,
+        // which is what a double-click or a held key produces. The user's
+        // intent was honoured, so there is nothing to report.
+        if (name === "AbortError") return;
+        playbackError.set(name);
+      },
+    );
+  };
 
   return {
     currentTime: readable(atoms.currentTime),
@@ -96,7 +127,9 @@ export function createPlayerStore(): PlayerStore {
     rate: readable(atoms.rate),
     paused: readable(atoms.paused),
     readyState: readable(atoms.readyState),
+    mediaErrorCode: readable(atoms.mediaErrorCode),
     loadState: readable(atoms.loadState),
+    playbackError: readable(playbackError),
     timeDisplay,
     send,
     holdAudibleVolume,

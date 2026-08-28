@@ -28,6 +28,12 @@ export type ProjectionAtoms = {
    * diverge.
    */
   readyState: Atom<number>;
+  /**
+   * `MediaError.code`, or `null` when the element is healthy. The code is
+   * projected rather than the `MediaError` itself, which is an object and would
+   * defeat the `Object.is` bail-out.
+   */
+  mediaErrorCode: Atom<number | null>;
   loadState: Atom<LoadState>;
 };
 
@@ -121,6 +127,7 @@ export function prime(
   atoms.currentSecond.set(Math.floor(element.currentTime));
   atoms.duration.set(finite(element.duration));
   atoms.readyState.set(element.readyState);
+  atoms.mediaErrorCode.set(element.error?.code ?? null);
   atoms.loadState.set(
     element.error ? "error" : element.readyState >= 1 ? "ready" : "loading",
   );
@@ -167,7 +174,8 @@ export const HANDLERS = {
   play: projectPaused,
   pause: projectPaused,
   ended: projectPaused,
-  error: (_element, atoms) => {
+  error: (element, atoms) => {
+    atoms.mediaErrorCode.set(element.error?.code ?? null);
     atoms.loadState.set("error");
   },
   // The reset rows. `prime` re-reads `playbackRate` because the media load

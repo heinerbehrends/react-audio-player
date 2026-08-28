@@ -21,6 +21,7 @@ function createAtoms(): ProjectionAtoms {
     rate: atom(1),
     paused: atom(true),
     readyState: atom(0),
+    mediaErrorCode: atom<number | null>(null),
     loadState: atom<LoadState>("loading"),
   };
 }

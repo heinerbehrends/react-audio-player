@@ -4,6 +4,15 @@ import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { usePlayerStore } from "./PlayerStoreContext";
 
 export type PlayerState = "loading" | "error" | "paused" | "playing";
+export type MediaErrorReason =
+  | "aborted"
+  | "network"
+  | "decode"
+  | "unsupported"
+  | "unknown";
+export type AudioError =
+  | { kind: "media"; reason: MediaErrorReason }
+  | { kind: "playback"; reason: string };
 export type VolumeState = "muted" | "low" | "high";
 
 /**
@@ -40,6 +49,37 @@ export function useIsDisabled(): boolean {
   const loadState = useStore(store.loadState);
 
   return loadState !== "ready";
+}
+
+/** `MediaError.code` is a numeric enum; these are its four members. */
+const MEDIA_ERROR_REASONS: Record<number, MediaErrorReason> = {
+  1: "aborted",
+  2: "network",
+  3: "decode",
+  4: "unsupported",
+};
+
+/**
+ * The two ways playback can fail, which differ in what a consumer should do
+ * about them: a `"media"` error means the resource is unusable and only a
+ * different `src` or a retry will help, while `"playback"` means the resource
+ * is fine and the browser refused the command — almost always autoplay policy,
+ * which a user gesture lifts.
+ *
+ * A media error wins when both are set, being the more fundamental of the two.
+ */
+export function useAudioError(): AudioError | null {
+  const store = usePlayerStore();
+  const code = useStore(store.mediaErrorCode);
+  const playbackError = useStore(store.playbackError);
+
+  if (code !== null) {
+    return { kind: "media", reason: MEDIA_ERROR_REASONS[code] ?? "unknown" };
+  }
+  if (playbackError !== null) {
+    return { kind: "playback", reason: playbackError };
+  }
+  return null;
 }
 
 /**
