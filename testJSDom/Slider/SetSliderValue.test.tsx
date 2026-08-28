@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getByRole, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
@@ -94,6 +94,73 @@ describe("SetSliderValue", () => {
 
     expect(button).toHaveAttribute("tabindex", "0");
     expect(button).not.toHaveAttribute("aria-hidden");
+  });
+
+  /**
+   * Spreading `{...props}` used to replace these rather than add to them, so a
+   * consumer adding an analytics handler silently removed arrow-key adjustment
+   * and every media shortcut — no error, and the types allowed it.
+   */
+  it("runs a consumer's onKeyDown as well as its own", () => {
+    const seen: string[] = [];
+    const { container, element } = renderInPlayer(
+      <Timeline>
+        <Timeline.Seek onKeyDown={() => seen.push("consumer")}>
+          Test
+        </Timeline.Seek>
+      </Timeline>,
+      { element: { currentTime: 30, duration: 120 } },
+    );
+
+    fireEvent.keyDown(getByRole(container, "slider"), { key: "ArrowRight" });
+
+    expect(seen).toEqual(["consumer"]);
+    expect(element.currentTime).toBe(35);
+  });
+
+  it("runs a consumer's onPointerDown as well as its own", () => {
+    const onPointerDown = vi.fn();
+    const { container, element } = renderInPlayer(
+      <Timeline>
+        <Timeline.Seek onPointerDown={onPointerDown}>Test</Timeline.Seek>
+      </Timeline>,
+      { element: { currentTime: 0, duration: 100 } },
+    );
+    const slider = getByRole(container, "slider");
+
+    fireEvent(slider, pointerEventAt("pointerdown", alongTrack(0.5)));
+
+    expect(onPointerDown).toHaveBeenCalledTimes(1);
+    expect(element.currentTime).toBe(50);
+  });
+
+  /** The documented opt-out: preventDefault suppresses the library behaviour. */
+  it("lets a consumer cancel the library handler with preventDefault", () => {
+    const { container, element } = renderInPlayer(
+      <Timeline>
+        <Timeline.Seek onKeyDown={(event) => event.preventDefault()}>
+          Test
+        </Timeline.Seek>
+      </Timeline>,
+      { element: { currentTime: 30, duration: 120 } },
+    );
+
+    fireEvent.keyDown(getByRole(container, "slider"), { key: "ArrowRight" });
+
+    expect(element.currentTime).toBe(30);
+  });
+
+  it("keeps its tab stop and role even when a consumer overrides them", () => {
+    const { container } = renderInPlayer(
+      <Timeline>
+        <Timeline.Seek tabIndex={-1} role="button">
+          Test
+        </Timeline.Seek>
+      </Timeline>,
+    );
+    const slider = getByRole(container, "slider");
+
+    expect(slider).toHaveAttribute("tabindex", "0");
   });
 
   it("seeks to the pressed fraction of the track", () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
@@ -36,6 +36,30 @@ describe("DragButton", () => {
     expect(thumb).toHaveAttribute("aria-hidden", "true");
     expect(thumb).toHaveAttribute("tabindex", "-1");
     expect(thumb).not.toHaveAttribute("role");
+  });
+
+  it("runs a consumer's onPointerDown as well as starting the drag", () => {
+    const onPointerDown = vi.fn();
+    renderThumb({ onPointerDown });
+    const thumb = screen.getByTestId("thumb");
+
+    fireEvent(thumb, pointerEventAt("pointerdown", alongTrack(0.5)));
+
+    expect(onPointerDown).toHaveBeenCalledTimes(1);
+    expect(thumb).toHaveAttribute("aria-hidden", "true");
+  });
+
+  /**
+   * `tabIndex` and `aria-hidden` are the two halves of "pointer-only", so
+   * neither is overridable — unhiding the thumb would put a second
+   * value-announcing element inside one slider.
+   */
+  it("stays hidden and unfocusable even when a consumer says otherwise", () => {
+    renderThumb({ tabIndex: 0, "aria-hidden": false });
+    const thumb = screen.getByTestId("thumb");
+
+    expect(thumb).toHaveAttribute("tabindex", "-1");
+    expect(thumb).toHaveAttribute("aria-hidden", "true");
   });
 
   it("applies the calculated position", () => {

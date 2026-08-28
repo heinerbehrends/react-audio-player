@@ -1,3 +1,4 @@
+import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { useSliderContext } from "./SliderContext";
 import {
   progressStyles,
@@ -28,11 +29,22 @@ export function SetSliderValue({ children, ...props }: SetSliderValueProps) {
     <button
       type="button"
       ref={slider.setSliderRef}
-      onPointerDown={slider.onTrackPointerDown}
-      onKeyDown={slider.onKeyDown}
-      tabIndex={0}
       {...slider.aria}
       {...props}
+      // Composed, and placed after the spread, because these four are what make
+      // the element operable: replacing `onKeyDown` alone would take out
+      // arrow-key adjustment and every media shortcut. `role` was already
+      // locked this way; the handlers and the tab stop encode the same
+      // invariant — exactly one focusable, arrow-driven element per slider.
+      //
+      // `slider.aria` stays *before* the spread on purpose: overriding
+      // `aria-label` is currently the only way to localise a slider.
+      onPointerDown={composeEventHandlers(
+        props.onPointerDown,
+        slider.onTrackPointerDown,
+      )}
+      onKeyDown={composeEventHandlers(props.onKeyDown, slider.onKeyDown)}
+      tabIndex={0}
       style={style}
       role="slider"
     >

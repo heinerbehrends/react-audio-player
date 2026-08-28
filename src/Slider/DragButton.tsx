@@ -1,3 +1,4 @@
+import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { calculateDragStyle } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
 
@@ -15,10 +16,16 @@ export function DragButton(props: DragButtonProps) {
   return (
     <button
       type="button"
-      onPointerDown={slider.onThumbPointerDown}
+      {...props}
+      // `tabIndex` and `aria-hidden` are locked together: they are the two
+      // halves of "the thumb is pointer-only", and unhiding it would put a
+      // second value-announcing element in one slider.
+      onPointerDown={composeEventHandlers(
+        props.onPointerDown,
+        slider.onThumbPointerDown,
+      )}
       tabIndex={-1}
       aria-hidden="true"
-      {...props}
       style={{ ...style, ...props.style }}
     />
   );
