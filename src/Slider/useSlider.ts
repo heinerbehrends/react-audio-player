@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { calculateSliderValue } from "../Shared/sharedFunctions";
+import {
+  calculateSliderValue,
+  type Orientation,
+} from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
@@ -11,18 +14,16 @@ import {
   SLIDER_MODES,
   isArrowKey,
   isJumpKey,
-  type Orientation,
   type SliderMode,
 } from "./sliderModes";
-
-type PositionEvent =
-  | { clientX: number; clientY: number }
-  | { touches: ArrayLike<{ clientX: number; clientY: number }> };
+import { positionOf } from "./pointerPosition";
 
 export type SliderAriaAttributes = {
   /**
-   * `true` while the player is not ready, absent otherwise. Not the native
-   * `disabled` attribute: the tab stop is the slider's keyboard surface.
+   * `true` while the control is unavailable, absent otherwise — never `false`.
+   * On an error for every slider, and additionally without a usable duration for
+   * the seek slider, whose range is the duration. Not the native `disabled`
+   * attribute: the tab stop is the slider's keyboard surface.
    */
   "aria-disabled"?: true | undefined;
   "aria-label": string;
@@ -62,15 +63,6 @@ export type UseSliderOptions = {
 const IDLE = { state: "idle" } as const;
 
 type DragState = typeof IDLE | { state: "dragging"; value: number };
-
-function positionOf(event: PositionEvent, orientation: Orientation): number {
-  if ("touches" in event) {
-    const touch = event.touches[0];
-    if (!touch) return 0;
-    return orientation === "horizontal" ? touch.clientX : touch.clientY;
-  }
-  return orientation === "horizontal" ? event.clientX : event.clientY;
-}
 
 /**
  * Drives one slider of any kind. Owns drag state and geometry, and returns the

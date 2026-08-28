@@ -14,11 +14,6 @@ export type SliderRange = {
   orientation?: Orientation;
 };
 
-/** Anything carrying a pointer position, React-synthetic or native. */
-export type PositionEvent =
-  | { clientX: number; clientY: number }
-  | { touches: ArrayLike<{ clientX: number; clientY: number }> };
-
 export function areNumbersClose(a: number, b: number): boolean {
   return Math.abs(a - b) <= 0.001;
 }
@@ -131,18 +126,6 @@ export function getOffset({
     return sliderLength - progress * sliderLength;
   }
   return 0;
-}
-
-export function getClientXY(
-  event: PositionEvent,
-  orientation: Orientation,
-): number {
-  if ("touches" in event) {
-    const touch = event.touches[0];
-    if (!touch) return 0;
-    return orientation === "horizontal" ? touch.clientX : touch.clientY;
-  }
-  return orientation === "horizontal" ? event.clientX : event.clientY;
 }
 
 /**

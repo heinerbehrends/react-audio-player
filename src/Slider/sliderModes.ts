@@ -3,8 +3,6 @@ import type { SideEffectAction } from "../AudioElement/sideEffectActions";
 import type { SliderComponent } from "../AudioElement/sideEffectActions";
 
 export type SliderMode = "seek" | "volume" | "rate";
-export type Orientation = "horizontal" | "vertical";
-
 /**
  * What `aria-valuetext` is composed from: the announced value, plus the element
  * state it has to reflect.

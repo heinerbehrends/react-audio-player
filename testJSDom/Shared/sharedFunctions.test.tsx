@@ -6,9 +6,9 @@ import {
   calculateSteppedValue,
   calculateSliderValue,
   getOffset,
-  getClientXY,
 } from "../../src/Shared/sharedFunctions";
-import type { PositionEvent } from "../../src/Shared/sharedFunctions";
+import { positionOf } from "../../src/Slider/pointerPosition";
+import type { PositionEvent } from "../../src/Slider/pointerPosition";
 
 describe("sharedFunctions", () => {
   describe("areNumbersClose", () => {
@@ -207,15 +207,22 @@ describe("sharedFunctions", () => {
     });
   });
 
-  describe("getClientXY", () => {
+  /**
+   * C7. This was `getClientXY`, a character-for-character copy of
+   * `positionOf` with no consumer left in `src/` — so the tests outlived the
+   * function they justified. Repointed rather than deleted: axis selection is
+   * only unit-testable here, since the jsdom slider fixtures set
+   * `clientX === clientY`.
+   */
+  describe("positionOf", () => {
     it("handles mouse events", () => {
       const mouseEvent = {
         clientX: 100,
         clientY: 200,
       } as unknown as PositionEvent;
 
-      expect(getClientXY(mouseEvent, "horizontal")).toBe(100);
-      expect(getClientXY(mouseEvent, "vertical")).toBe(200);
+      expect(positionOf(mouseEvent, "horizontal")).toBe(100);
+      expect(positionOf(mouseEvent, "vertical")).toBe(200);
     });
 
     it("handles touch events", () => {
@@ -223,8 +230,8 @@ describe("sharedFunctions", () => {
         touches: [{ clientX: 100, clientY: 200 }],
       } as unknown as PositionEvent;
 
-      expect(getClientXY(touchEvent, "horizontal")).toBe(100);
-      expect(getClientXY(touchEvent, "vertical")).toBe(200);
+      expect(positionOf(touchEvent, "horizontal")).toBe(100);
+      expect(positionOf(touchEvent, "vertical")).toBe(200);
     });
 
     it("handles touch events with no touches", () => {
@@ -232,8 +239,8 @@ describe("sharedFunctions", () => {
         touches: [],
       } as unknown as PositionEvent;
 
-      expect(getClientXY(touchEvent, "horizontal")).toBe(0);
-      expect(getClientXY(touchEvent, "vertical")).toBe(0);
+      expect(positionOf(touchEvent, "horizontal")).toBe(0);
+      expect(positionOf(touchEvent, "vertical")).toBe(0);
     });
   });
 
