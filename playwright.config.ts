@@ -31,6 +31,13 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    // The two engines behave differently in ways this suite can see: Firefox
+    // fires `ended` on a paused seek to `duration` where Chrome fires nothing,
+    // and parks `currentTime` exactly on it rather than past it.
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
   ],
 
   webServer: {

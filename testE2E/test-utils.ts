@@ -123,6 +123,20 @@ export function waitForMuted(
   );
 }
 
+/**
+ * Clamps a pointer target into the viewport.
+ *
+ * Overshooting a slider's bounds is the point of a clamp test, but Playwright's
+ * Firefox substitutes `clientX = 0` for a position outside the viewport and
+ * dispatches **no `pointerup` at all** for a release outside it — which leaves
+ * the drag live and poisons every later test in the file. Overshoot inside the
+ * window instead: a pixel short of the edge is still well outside any track.
+ */
+export function insideViewport(page: Page, x: number): number {
+  const width = page.viewportSize()?.width ?? 1280;
+  return Math.min(Math.max(x, 0), width - 1);
+}
+
 export async function waitForAudio(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {

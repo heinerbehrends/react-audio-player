@@ -1,5 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import {
+  insideViewport,
   getAudioState,
   labels,
   waitForAudio,
@@ -82,7 +83,7 @@ test("unmuting after a drag to zero restores the pre-drag volume", async () => {
 
   await page.mouse.move(box.x + box.width * 0.8, y);
   await page.mouse.down();
-  await page.mouse.move(box.x - 50, y, { steps: 10 });
+  await page.mouse.move(insideViewport(page, box.x - 50), y, { steps: 10 });
   await page.mouse.up();
   await waitForMuted(page, true);
 
