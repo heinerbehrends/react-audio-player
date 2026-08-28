@@ -6,8 +6,10 @@ import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useIsDisabled } from "../store/derived";
 import {
   ARROW_KEYS,
+  JUMP_KEYS,
   SLIDER_MODES,
   isArrowKey,
+  isJumpKey,
   type Orientation,
   type SliderMode,
 } from "./sliderModes";
@@ -115,6 +117,9 @@ export function useSlider({
   );
 
   const duration = useStore(store.duration);
+  // Every mode subscribes, though only `"volume"` announces it: a hook call
+  // cannot be gated on the mode, and this is one rarely-changing boolean.
+  const muted = useStore(store.muted);
 
   const minValue = minValueOption ?? (mode === "rate" ? 0.5 : 0);
   const maxValue =
@@ -345,9 +350,27 @@ export function useSlider({
         event.stopPropagation();
         return;
       }
+      if (isJumpKey(event.key)) {
+        if (isDisabled) return;
+        // `commit`, not `send`: a jump has the same echo gap as a click, so in
+        // `"seek"` mode the display would snap back until the element caught up.
+        commit(JUMP_KEYS[event.key] === "minValue" ? minValue : maxValue);
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       handleMediaKeys(event);
     },
-    [isDisabled, step, config, store, handleMediaKeys],
+    [
+      isDisabled,
+      step,
+      config,
+      store,
+      handleMediaKeys,
+      commit,
+      minValue,
+      maxValue,
+    ],
   );
 
   const dragging = drag.state === "dragging";
@@ -423,7 +446,11 @@ export function useSlider({
       "aria-valuemin": minValue,
       "aria-valuemax": maxValue,
       "aria-valuenow": ariaValue,
-      "aria-valuetext": config.ariaValueText(ariaValue, maxValue),
+      "aria-valuetext": config.ariaValueText({
+        value: ariaValue,
+        maxValue,
+        muted,
+      }),
       "aria-orientation": orientation,
     },
     setSliderRef,

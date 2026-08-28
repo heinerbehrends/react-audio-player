@@ -81,3 +81,41 @@ test("progress indicator initial state", async () => {
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
   await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");
 });
+
+/**
+ * A6. Home and End are slider keys, not global ones: they reach the timeline
+ * only through the `role="slider"` element, and the browser keeps them
+ * everywhere else.
+ */
+test("End jumps to the end of the track and Home back to the start", async () => {
+  await page.goto("/");
+  await waitForAudio(page);
+
+  const timeline = page.getByLabel(labels.timeline);
+
+  await timeline.focus();
+  await page.keyboard.press("End");
+  const atEnd = await getAudioState(page);
+  expect(atEnd.currentTime).toBeCloseTo(atEnd.duration, PRECISION);
+
+  await page.keyboard.press("Home");
+  const atStart = await getAudioState(page);
+  expect(atStart.currentTime).toBeCloseTo(0, PRECISION);
+});
+
+test("Home on a button is left to the browser", async () => {
+  await page.goto("/");
+  await waitForAudio(page);
+
+  await page.getByLabel(labels.seekForward).click();
+  await page.getByLabel(labels.seekForward).focus();
+  const before = (await getAudioState(page)).currentTime;
+  expect(before).toBeGreaterThan(0);
+
+  await page.keyboard.press("Home");
+
+  expect((await getAudioState(page)).currentTime).toBeCloseTo(
+    before,
+    PRECISION,
+  );
+});

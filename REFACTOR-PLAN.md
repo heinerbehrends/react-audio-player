@@ -1,5 +1,12 @@
 # Refactor Plan: External Store Architecture
 
+> **Historical record. Complete, and not maintained.** This describes the tree as
+> it stood when the refactor landed; the pre-1.0 review work that followed has
+> since changed parts of it — component names, accessible names and the test
+> counts below are all superseded. `REVIEW-FINDINGS.md` records what changed and
+> `BACKLOG.md` what is still open. Read this for the reasoning behind the store
+> architecture, not for the current shape of the code.
+
 Status: Phases 0 through 6 landed, and most of Phase 4 with them. The callback bus, all three
 slider reducer stacks, `AudioContext`, `PlayerContext` and their providers are gone. Two
 contexts remain — the player store and one `SliderContext` per slider — and the `<audio>`
@@ -18,13 +25,13 @@ which removed nine tests with the dead actions they covered: **337 jsdom, 51 E2E
 
 Every media value currently exists in three places at once:
 
-| Value | Source of truth | Mirror 1 | Mirror 2 |
-|---|---|---|---|
-| `currentTime` | `el.currentTime` | timeline slider `value` | `useTimeDisplay` state |
-| `volume` | `el.volume` | volume slider `value` | player `volumeState` / `isMuted` |
-| `playbackRate` | `el.playbackRate` | playbackRate slider `value` | player `playbackRate` |
-| `duration` | `el.duration` | timeline `maxValue` | player `duration` |
-| `paused` | `el.paused` | player `playerState` | — |
+| Value          | Source of truth   | Mirror 1                    | Mirror 2                         |
+| -------------- | ----------------- | --------------------------- | -------------------------------- |
+| `currentTime`  | `el.currentTime`  | timeline slider `value`     | `useTimeDisplay` state           |
+| `volume`       | `el.volume`       | volume slider `value`       | player `volumeState` / `isMuted` |
+| `playbackRate` | `el.playbackRate` | playbackRate slider `value` | player `playbackRate`            |
+| `duration`     | `el.duration`     | timeline `maxValue`         | player `duration`                |
+| `paused`       | `el.paused`       | player `playerState`        | —                                |
 
 The mirrors live in sibling subtrees, so updates have to travel sideways. That is what
 `AudioContext` + `useAttachSliderCallback` are: a hand-rolled pub/sub built from mutable
@@ -47,28 +54,28 @@ of render timing.
   concurrent React, and `ChangePlaybackRate` becomes a live "+0.1 from a stale base" bug
   the moment Phase 2 removes its incidental subscription.
 - `src/AudioElement/AudioElement.tsx:37-41` reads a ref during render to decide whether to
-  attach `onTimeUpdate`. The ref is populated by an effect in a *child*, so it works only
+  attach `onTimeUpdate`. The ref is populated by an effect in a _child_, so it works only
   by luck of the current `memo` boundaries. It survives until Phase 3, because the gate is
   checking for bus callbacks.
 
 ## 2. Decisions taken
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| React peer | **`>=18.0.0`** (done) | `useSyncExternalStore` is React 18. The old `>=16.3.0` was already wrong — the code is hooks-only. |
-| Store primitive | **hand-rolled `atom` + `useStore`**, ~20 lines | No dependency, no swap deferred to later, and the README's zero-dependency claim stays true. |
-| Derived values | **computed in render**, not in the store | `playerState` and `volumeState` are pure functions of primitive atoms. Deriving them in render removes the need for a `computed` primitive — the one piece with a genuinely subtle cache-invalidation failure mode. |
-| Load lifecycle | **one `loadState: "loading" \| "ready" \| "error"` atom**, not `hasMetadata` + `errored` | Two bools describe four states for three real ones, and the unreachable fourth is a version of the bug the reset row fixes. One atom, two subscriptions for `playerState`, and transitions that assign constants so the sync layer still never reads an atom. |
-| Element handle | **closure variable reached through `attach`**, not an atom | Nothing subscribes to it, and `attach` is the one door that can write a projection — which is what keeps every `set` inside the factory closure instead of on the returned object. |
-| Listener attachment | **eager, one effect keyed on the element, priming before it subscribes** | Lazy per-atom mounting re-creates the render-timing coupling it was meant to remove, and a write to an unsubscribed atom costs nothing. |
-| Write path | **Unchanged, with one exception in Phase 2** | `handleSideEffect` and the `SideEffectAction` union are good, and the union is public API via `customKeyboardShortcuts`. It is currently pure over the element, which is what makes the Phase 0 test investment cheap. The exception: `TOGGLE_MUTE` / `UNMUTE` / `DRAG_START` need `lastAudibleVolume`, so the signature grows a store accessor in Phase 2. See below. |
-| Instance scoping | **Per-instance factory in a stable context** | Module-level atoms would break two players on one page and leak state across SSR requests. |
-| Slider variation | **`mode: "seek" / "volume" / "rate"`** | The three sliders differ on two correlated axes, in only three combinations. One discriminant, read in one place. |
-| Slider-local state | **One `SliderContext` per slider instance** | Geometry and drag state are local to a slider but shared across its sibling subcomponents. Compound components need a context; that is not the same as a bus. |
-| Entry points | **Single entry**, `sideEffects: false` | Six entries were the *cause* of the duplicate-context bug. One entry makes it unrepresentable. |
-| Time resolution | **`currentTime` (4 Hz) for pixels, `currentSecond` (1 Hz) for text and aria** | Assistive technology reads `aria-value*` off the `role="slider"` node through the accessibility tree, focused or not. rAF is an accessibility regression, not a CPU trade. |
-| Memoisation | **Strip all, add back only on measurement** | Reducing `memo` / `useMemo` is an intention of the refactor, not a side effect. |
-| E2E in CI | **Blocking** | It already is, as of `b4df69c`. `testE2E:local` is a convenience for a machine-specific Chromium, not the gate. |
+| Decision            | Choice                                                                                   | Rationale                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React peer          | **`>=18.0.0`** (done)                                                                    | `useSyncExternalStore` is React 18. The old `>=16.3.0` was already wrong — the code is hooks-only.                                                                                                                                                                                                                                                                     |
+| Store primitive     | **hand-rolled `atom` + `useStore`**, ~20 lines                                           | No dependency, no swap deferred to later, and the README's zero-dependency claim stays true.                                                                                                                                                                                                                                                                           |
+| Derived values      | **computed in render**, not in the store                                                 | `playerState` and `volumeState` are pure functions of primitive atoms. Deriving them in render removes the need for a `computed` primitive — the one piece with a genuinely subtle cache-invalidation failure mode.                                                                                                                                                    |
+| Load lifecycle      | **one `loadState: "loading" \| "ready" \| "error"` atom**, not `hasMetadata` + `errored` | Two bools describe four states for three real ones, and the unreachable fourth is a version of the bug the reset row fixes. One atom, two subscriptions for `playerState`, and transitions that assign constants so the sync layer still never reads an atom.                                                                                                          |
+| Element handle      | **closure variable reached through `attach`**, not an atom                               | Nothing subscribes to it, and `attach` is the one door that can write a projection — which is what keeps every `set` inside the factory closure instead of on the returned object.                                                                                                                                                                                     |
+| Listener attachment | **eager, one effect keyed on the element, priming before it subscribes**                 | Lazy per-atom mounting re-creates the render-timing coupling it was meant to remove, and a write to an unsubscribed atom costs nothing.                                                                                                                                                                                                                                |
+| Write path          | **Unchanged, with one exception in Phase 2**                                             | `handleSideEffect` and the `SideEffectAction` union are good, and the union is public API via `customKeyboardShortcuts`. It is currently pure over the element, which is what makes the Phase 0 test investment cheap. The exception: `TOGGLE_MUTE` / `UNMUTE` / `DRAG_START` need `lastAudibleVolume`, so the signature grows a store accessor in Phase 2. See below. |
+| Instance scoping    | **Per-instance factory in a stable context**                                             | Module-level atoms would break two players on one page and leak state across SSR requests.                                                                                                                                                                                                                                                                             |
+| Slider variation    | **`mode: "seek" / "volume" / "rate"`**                                                   | The three sliders differ on two correlated axes, in only three combinations. One discriminant, read in one place.                                                                                                                                                                                                                                                      |
+| Slider-local state  | **One `SliderContext` per slider instance**                                              | Geometry and drag state are local to a slider but shared across its sibling subcomponents. Compound components need a context; that is not the same as a bus.                                                                                                                                                                                                          |
+| Entry points        | **Single entry**, `sideEffects: false`                                                   | Six entries were the _cause_ of the duplicate-context bug. One entry makes it unrepresentable.                                                                                                                                                                                                                                                                         |
+| Time resolution     | **`currentTime` (4 Hz) for pixels, `currentSecond` (1 Hz) for text and aria**            | Assistive technology reads `aria-value*` off the `role="slider"` node through the accessibility tree, focused or not. rAF is an accessibility regression, not a CPU trade.                                                                                                                                                                                             |
+| Memoisation         | **Strip all, add back only on measurement**                                              | Reducing `memo` / `useMemo` is an intention of the refactor, not a side effect.                                                                                                                                                                                                                                                                                        |
+| E2E in CI           | **Blocking**                                                                             | It already is, as of `b4df69c`. `testE2E:local` is a convenience for a machine-specific Chromium, not the gate.                                                                                                                                                                                                                                                        |
 
 ## 3. Target architecture
 
@@ -84,12 +91,12 @@ Two classes of atom, and the distinction is load-bearing:
 > one: `timeDisplay`. It is writable.
 
 Enforce it by typing projections as `{ get, subscribe }` and keeping the `set` handles
-inside the factory closure — reachable only through `attach`, described under *Store shape*.
+inside the factory closure — reachable only through `attach`, described under _Store shape_.
 Break this rule and the mirror problem grows straight back.
 
 Corollary, load-bearing because of `useSyncExternalStore`'s "getSnapshot should be cached"
 invariant: **never return a fresh object from a store read.** Atoms hold primitives; derive
-objects in render. This constrains *store reads only* — a `SliderContext` value may be
+objects in render. This constrains _store reads only_ — a `SliderContext` value may be
 freshly created, because it is a context value, not a snapshot.
 
 ### The primitive
@@ -109,16 +116,18 @@ export function atom<T>(initial: T) {
   return {
     get: () => value,
     set: (next: T) => {
-      if (Object.is(next, value)) return;   // 4 Hz writing the same second costs nothing
+      if (Object.is(next, value)) return; // 4 Hz writing the same second costs nothing
       value = next;
       listeners.forEach((l) => l());
     },
-    subscribe: (l: () => void) => (listeners.add(l), () => void listeners.delete(l)),
+    subscribe: (l: () => void) => (
+      listeners.add(l), () => void listeners.delete(l)
+    ),
   };
 }
 
 export const useStore = <T>(a: ReadableAtom<T>) =>
-  useSyncExternalStore(a.subscribe, a.get, a.get);   // 3rd arg = SSR snapshot
+  useSyncExternalStore(a.subscribe, a.get, a.get); // 3rd arg = SSR snapshot
 ```
 
 `get` and `subscribe` are per-atom stable references, so `useSyncExternalStore` never
@@ -128,7 +137,7 @@ resubscribes. The identity bail-out in `set` is what makes `currentSecond` free.
 never disagree: any value where they differ would mean the atom notifies and React then
 declines to re-render, or the reverse. `NaN` is the case that separates them, and the
 primitive cannot know whether a caller will ever write one — the sync layer normalises
-`duration` through `finite()`, so today none reaches an atom, but that is the *caller's*
+`duration` through `finite()`, so today none reaches an atom, but that is the _caller's_
 guarantee, not the atom's. Matching React costs nothing and keeps the primitive honest
 whatever gets written through it.
 
@@ -189,7 +198,7 @@ Derived values are computed in render, never stored:
 ```ts
 function usePlayerState() {
   const loadState = useStore(store.loadState);
-  const paused    = useStore(store.paused);
+  const paused = useStore(store.paused);
   return loadState !== "ready" ? loadState : paused ? "paused" : "playing";
 }
 ```
@@ -205,17 +214,17 @@ One effect keyed on the element, priming every atom and then attaching every lis
 re-runs when the element changes, so there is no ordering assumption anywhere. The effect
 lives in `AudioElement`, which owns the `<audio>` tag — see Phase 1.
 
-| Event | Writes |
-|---|---|
-| `timeupdate` | `currentTime = el.currentTime`, `currentSecond = Math.floor(el.currentTime)` |
-| **`seeked`** | the same two |
-| `loadedmetadata` | `duration = finite(el.duration)`, `loadState = "ready"` |
-| `durationchange` | `duration = finite(el.duration)` |
-| `volumechange` | `volume = el.volume`, `muted = el.muted`, and `lastAudibleVolume = el.volume` when `!el.muted && el.volume > 0` |
-| `ratechange` | `rate = el.playbackRate` |
-| `play` / `pause` / `ended` | `paused = el.paused` — projected, never toggled |
-| `error` | `loadState = "error"` |
-| `emptied` / `loadstart` | `prime(el)` — the whole projection, re-read |
+| Event                      | Writes                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `timeupdate`               | `currentTime = el.currentTime`, `currentSecond = Math.floor(el.currentTime)`                                    |
+| **`seeked`**               | the same two                                                                                                    |
+| `loadedmetadata`           | `duration = finite(el.duration)`, `loadState = "ready"`                                                         |
+| `durationchange`           | `duration = finite(el.duration)`                                                                                |
+| `volumechange`             | `volume = el.volume`, `muted = el.muted`, and `lastAudibleVolume = el.volume` when `!el.muted && el.volume > 0` |
+| `ratechange`               | `rate = el.playbackRate`                                                                                        |
+| `play` / `pause` / `ended` | `paused = el.paused` — projected, never toggled                                                                 |
+| `error`                    | `loadState = "error"`                                                                                           |
+| `emptied` / `loadstart`    | `prime(el)` — the whole projection, re-read                                                                     |
 
 where `finite(d) = Number.isFinite(d) ? d : 0`. Every row writes what it reads off the
 element and nothing else — no row computes, and no row reads an atom.
@@ -229,7 +238,7 @@ the unconditional form safe: a `src` swap fires `emptied` then `loadstart` befor
 else, and no `loadedmetadata` follows an `error` without a `loadstart` in between.
 
 It replaces a `hasMetadata` / `errored` bool pair. Two bools describe four states for three
-real ones, and the fourth — errored *and* has metadata — is a version of the bug the last
+real ones, and the fourth — errored _and_ has metadata — is a version of the bug the last
 table row fixes. One atom makes it unrepresentable, drops `playerState` to two
 subscriptions, and gives the whole load lifecycle one name to test against.
 
@@ -237,7 +246,7 @@ subscriptions, and gives the whole load lifecycle one name to test against.
 `el.currentTime` — drag release, click-to-seek, and every keyboard seek — and
 `AudioElement.tsx:50` wires it today (`onSeeked={handleTimeUpdate}`). Without it the atom
 carries a stale time until the next `timeupdate`, up to ~250 ms. See the retain-until-changed
-rule under *The sliders*, which depends on it.
+rule under _The sliders_, which depends on it.
 
 `duration` is normalized on write: `Number.isFinite(el.duration) ? el.duration : 0`. It is
 `NaN` before metadata and `Infinity` for live streams, and `formatTime` renders those as
@@ -263,8 +272,8 @@ const prime = (el) => {
 };
 ```
 
-*Why `attach` primes at all.* Today's handlers are JSX props, attached when the element is
-created; an effect attaches *after* the element exists with its `src` set, so anything that
+_Why `attach` primes at all._ Today's handlers are JSX props, attached when the element is
+created; an effect attaches _after_ the element exists with its `src` set, so anything that
 fires in between is lost. Two events matter. Miss `loadedmetadata` and `loadState` never
 leaves `"loading"` — `playerState` pins to `"loading"` and `useIsDisabled` disables six
 components permanently. Miss `error` and it is worse, because no further `error` event ever
@@ -276,7 +285,7 @@ This is not only an initial-load race. `StrictMode` remounts effects, so every m
 attach → detach → attach, and any event landing in that gap is lost by construction. Priming
 on every attach is what makes "no ordering assumption anywhere" true rather than aspirational.
 
-*Why the reset row is the same function.* A `src` swap runs the media load algorithm, which
+_Why the reset row is the same function._ A `src` swap runs the media load algorithm, which
 sets `paused` to true and resets `playbackRate` to `defaultPlaybackRate` **without firing
 `pause` or, reliably, `ratechange`** — it fires `emptied` and `loadstart`. Enumerating the
 atoms to reset therefore means tracking which silent element mutations the algorithm performs,
@@ -292,10 +301,10 @@ UI until the next one corrects it. Reading `el.paused` on all three events canno
 Name it in the commit; the test asserts the projection rather than inheriting the toggle.
 
 **`lastAudibleVolume`'s predicate is `!el.muted && el.volume > 0`,** which is deliberately
-*not* today's `areNumbersClose(volume, 0)` (`audioElementHooks.ts:32-34`). The old
+_not_ today's `areNumbersClose(volume, 0)` (`audioElementHooks.ts:32-34`). The old
 approximate check exists because the volume slider can land a hair off zero and the UI
 treats that as muted; the atom is a memory of what to restore, so an audible-but-tiny volume
-is still worth remembering. The mute *derivation* keeps the approximate rule; the memory
+is still worth remembering. The mute _derivation_ keeps the approximate rule; the memory
 does not.
 
 `syncFromElement(el, atoms)` needs only `addEventListener`, `removeEventListener` and the
@@ -321,7 +330,7 @@ volume, not specifically the pre-drag volume. Land it as a named commit.
 Phase 2, `lastAudibleVolume` updates on every `volumechange`, and a drag emits those
 continuously — so a drag to zero erodes the memory down to the last non-zero sample the drag
 passed through. Measured: unmuting after a drag that started at 0.8 restored 0.04. Audible,
-but not what the user had. The values a drag *passes through* are not settings anyone chose;
+but not what the user had. The values a drag _passes through_ are not settings anyone chose;
 only the value it starts from and the value it ends on are. So the drag pins the memory:
 
 - `DRAG_START` on the volume slider writes `lastAudibleVolume` from `el.volume` and takes a
@@ -340,12 +349,12 @@ anything but the element", and it is the only one, so it goes in the signature r
 a closure: `syncFromElement(el, atoms, { isVolumePinned })`. A reader of the sync table can
 then see that exactly one row has a condition, and where the condition comes from.
 
-Ordering note, load-bearing: the volume slider sends `UNMUTE` *before* `DRAG_START` — today's
+Ordering note, load-bearing: the volume slider sends `UNMUTE` _before_ `DRAG_START` — today's
 `useHandleDragStart` already does, and `useSlider` has to keep it. Grabbing the thumb of a
 muted, silent player unmutes it to the remembered volume first, so the value the pin captures
 is an audible one rather than 0.
 
-*Sequencing.* This is the one place the write path changes: those three cases need store
+_Sequencing._ This is the one place the write path changes: those three cases need store
 state, so `handleSideEffect` grows a store accessor. It cannot land in Phase 0, because the
 store does not exist until Phase 1, and fixing the dead-end twice — `dataset` in Phase 0,
 atom in Phase 2 — would violate this plan's own rule about not investing in the condemned.
@@ -371,7 +380,7 @@ form. Afterwards both read 0. That is the intended outcome and it is a visible c
 it gets an E2E row (`Timeline/ended`) asserting the intended state, landing with this
 commit in Phase 3.
 
-This is *policy*, not projection, so it stays a handler on the element and does not go into
+This is _policy_, not projection, so it stays a handler on the element and does not go into
 `syncFromElement`, which keeps projecting only `paused` from `ended`. It lands in Phase 3,
 when the timeline bus push it replaces is deleted.
 
@@ -380,11 +389,11 @@ when the timeline bus push it replaces is deleted.
 The three differ on two axes, in three of the four possible combinations — so one
 discriminant, resolved from a single `SLIDER_MODES` table that `useSlider` reads:
 
-| | `"seek"` | `"volume"` | `"rate"` |
-|---|---|---|---|
-| element written during drag | **no** — commit on release | yes | yes |
-| mute coupling: unmute on grab, remember audible volume, mute at zero | no | **yes** | no |
-| `max` | `duration` atom | 1 | prop, default 4 |
+|                                                                      | `"seek"`                   | `"volume"` | `"rate"`        |
+| -------------------------------------------------------------------- | -------------------------- | ---------- | --------------- |
+| element written during drag                                          | **no** — commit on release | yes        | yes             |
+| mute coupling: unmute on grab, remember audible volume, mute at zero | no                         | **yes**    | no              |
+| `max`                                                                | `duration` atom            | 1          | prop, default 4 |
 
 That table is the point of Phase 3. The three reducers look accidentally different only
 because they serve those two strategies: `"seek"` keeps a local value to display because
@@ -403,7 +412,7 @@ Two fixes fall out, each its own commit:
   `component === "volume" && vertical` in `calculateStyle.ts`, only because `getOffset`
   already inverts for vertical and `getProgress` has to undo it — a double negative that
   happens to cancel. Derive from `orientation` alone, and a vertical timeline works instead
-  of rendering backwards. Pin the current vertical-volume behaviour with a test *before*
+  of rendering backwards. Pin the current vertical-volume behaviour with a test _before_
   touching it.
 
 Display always reads the local drag value while dragging, in all three modes. For
@@ -420,9 +429,11 @@ one**:
 
 ```ts
 const displayValue =
-  drag.state === "dragging" ? drag.value
-  : committed !== null && committed !== valueFromStore ? committed
-  : valueFromStore;
+  drag.state === "dragging"
+    ? drag.value
+    : committed !== null && committed !== valueFromStore
+      ? committed
+      : valueFromStore;
 ```
 
 This is a property of `useSlider`, not of the seek mode's commit handler, because
@@ -438,7 +449,7 @@ not about renders.** One `SliderContext` feeds both `SetSliderValue` (which rend
 `aria-value*`) and `Timeline.Progress` (pixels), so the context object necessarily changes at
 4 Hz in `"seek"` mode and `SetSliderValue` re-renders with it. That is fine: React writes a
 DOM attribute only when its value changes, so what matters is which atom the attribute is
-*computed from*. So `useSlider` returns two things, not one:
+_computed from_. So `useSlider` returns two things, not one:
 
 - `value` — from `currentTime`, consumed by `Progress` and `Drag` for pixels.
 - the aria surface — `aria-valuenow` and `aria-valuetext` from `currentSecond`, which is
@@ -460,14 +471,14 @@ and Phase 4 has nowhere to put the second subscription.
 
 ### What lives where
 
-| State | Where it goes | Why |
-|---|---|---|
-| `currentTime`, `currentSecond`, `duration`, `volume`, `muted`, `lastAudibleVolume`, `rate`, `paused`, `loadState` | store atom | projections of the element |
-| `playerState`, `volumeState`, `isMuted`, `remaining` | derived in render | derived; not storable without desync |
-| `timeDisplay` | store atom (the one UI atom) | shared UI state, not on the element |
-| `dragState`, `drag.value`, `sliderStart`, `sliderLength` | **per-slider `SliderContext`**, from `useSlider` at the slider root | local to one slider, but read by its sibling subcomponents |
-| `audioFiles`, `customKeyboardShortcuts`, slider `min` / `step` / `orientation` | **props** | static config |
-| timeline `max` | `duration` atom | not static — it *is* the duration |
+| State                                                                                                             | Where it goes                                                       | Why                                                        |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `currentTime`, `currentSecond`, `duration`, `volume`, `muted`, `lastAudibleVolume`, `rate`, `paused`, `loadState` | store atom                                                          | projections of the element                                 |
+| `playerState`, `volumeState`, `isMuted`, `remaining`                                                              | derived in render                                                   | derived; not storable without desync                       |
+| `timeDisplay`                                                                                                     | store atom (the one UI atom)                                        | shared UI state, not on the element                        |
+| `dragState`, `drag.value`, `sliderStart`, `sliderLength`                                                          | **per-slider `SliderContext`**, from `useSlider` at the slider root | local to one slider, but read by its sibling subcomponents |
+| `audioFiles`, `customKeyboardShortcuts`, slider `min` / `step` / `orientation`                                    | **props**                                                           | static config                                              |
+| timeline `max`                                                                                                    | `duration` atom                                                     | not static — it _is_ the duration                          |
 
 `dragState` and geometry cannot be `useState` inside `useSlider`: one slider is three
 sibling components, and the geometry is measured by `Timeline.Seek` (`SetSliderValue`'s ref
@@ -552,7 +563,7 @@ export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
 `SetSliderValue` carries `role="slider"`, every `aria-value*` — and `tabIndex={-1}`
 (`SetSliderValue.tsx:51,55`). `DragButton` is the focusable element and carries only
 `aria-label`: no role, no values. So a keyboard user tabs to a thumb with no slider
-semantics, and the element that *has* the semantics is not reachable by Tab at all. In a
+semantics, and the element that _has_ the semantics is not reachable by Tab at all. In a
 library whose first feature bullet is accessibility, this outranks the
 `PlaybackRateSlider.Progress` gap above.
 
@@ -587,7 +598,7 @@ node.
 **Unit tests before the refactor — cover the survivors, not the condemned.** ~15 test files
 die in Phases 2–3; tests written for reducers, providers, contexts,
 `useAttachSliderCallback` or `useAudioElement` are work you will delete. These modules pass
-through unchanged, so their tests keep their value permanently *and* act as the oracle for
+through unchanged, so their tests keep their value permanently _and_ act as the oracle for
 "did I change behaviour I meant to preserve":
 
 **`handleSideEffect` — 11 new cases.** 12 of 22 actions are covered, and the untested ten
@@ -595,22 +606,22 @@ are exactly the keyboard actions. So `handleMediaKeys.test` verifies key → act
 nothing verifies action → element: two half-covered layers that never meet. Append to
 `testJSDom/AudioElement/handleSideEffects.test.ts` using its existing fake — a plain object
 cast to `HTMLAudioElement` with `play`/`pause` as `vi.fn()`. The fake needs `duration` and
-`dataset: {}` added; the missing `dataset` is *why* `DRAG_START` is untested today, since
+`dataset: {}` added; the missing `dataset` is _why_ `DRAG_START` is untested today, since
 `audioElement.dataset["dragStartVolume"] = …` throws on it.
 
-| # | Action | Asserts |
-|---|---|---|
-| 1 | `INCREASE_VOLUME` | clamps at 1 |
-| 2 | `DECREASE_VOLUME` | from 0.02 by 0.025 → `muted: true` **and `volume` left at 0.02** — it returns before assigning |
-| 3 | `INCREASE_PLAYBACK_RATE` | clamps at 4 |
-| 4 | `DECREASE_PLAYBACK_RATE` | clamps at 0.5 |
-| 5 | `RESET_PLAYBACK_RATE` | → 1 |
-| 6 | `SET_TIME_FORWARD` | clamps at `duration` |
-| 7 | `SET_TIME_FORWARD` negative | the `<Seek amount={-10}>` path: no lower clamp of its own — pins today's reliance on the browser |
-| 8 | `SET_TIME_BACKWARD` | clamps at 0 |
-| 9 | `SET_TIME_TO_START` | → 0 |
-| 10 | `SET_TIME_TO_PERCENT` | → `duration * percent` |
-| 11 | `DRAG_START` volume | stashes `dataset.dragStartVolume`; ignored for the other two components |
+| #   | Action                      | Asserts                                                                                          |
+| --- | --------------------------- | ------------------------------------------------------------------------------------------------ |
+| 1   | `INCREASE_VOLUME`           | clamps at 1                                                                                      |
+| 2   | `DECREASE_VOLUME`           | from 0.02 by 0.025 → `muted: true` **and `volume` left at 0.02** — it returns before assigning   |
+| 3   | `INCREASE_PLAYBACK_RATE`    | clamps at 4                                                                                      |
+| 4   | `DECREASE_PLAYBACK_RATE`    | clamps at 0.5                                                                                    |
+| 5   | `RESET_PLAYBACK_RATE`       | → 1                                                                                              |
+| 6   | `SET_TIME_FORWARD`          | clamps at `duration`                                                                             |
+| 7   | `SET_TIME_FORWARD` negative | the `<Seek amount={-10}>` path: no lower clamp of its own — pins today's reliance on the browser |
+| 8   | `SET_TIME_BACKWARD`         | clamps at 0                                                                                      |
+| 9   | `SET_TIME_TO_START`         | → 0                                                                                              |
+| 10  | `SET_TIME_TO_PERCENT`       | → `duration * percent`                                                                           |
+| 11  | `DRAG_START` volume         | stashes `dataset.dragStartVolume`; ignored for the other two components                          |
 
 Cases 1–5 and 11 have no E2E cover either — the volume and rate keys are untested at both
 layers.
@@ -644,13 +655,13 @@ only means something beside a timeline that knows it is unbounded, so it ships w
 live-stream support or not at all — see section 8. Shipping the placeholder alone would
 look more supported than it is.
 
-| Input | Expect |
-|---|---|
-| `0` | `"0:00"` |
-| `65` / `120` / `121` | `"1:05"` / `"2:00"` / `"2:01"` (the existing three) |
-| `3599` | `"59:59"` |
-| `3600` | `"1:00:00"` |
-| `3661` | `"1:01:01"` |
+| Input                     | Expect                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `0`                       | `"0:00"`                                                               |
+| `65` / `120` / `121`      | `"1:05"` / `"2:00"` / `"2:01"` (the existing three)                    |
+| `3599`                    | `"59:59"`                                                              |
+| `3600`                    | `"1:00:00"`                                                            |
+| `3661`                    | `"1:01:01"`                                                            |
 | `-5` / `NaN` / `Infinity` | `"0:00"` — one clamp, today `"-1:-5"` / `"NaN:NaN"` / `"Infinity:NaN"` |
 
 **Grab-offset composition — 1 new test.** `calculateSliderValue` is covered, but not the
@@ -674,11 +685,11 @@ regression.
 **E2E** — the plan leans on E2E as Phase 3's safety net, and today it covers nothing Phase 3
 breaks. Fifteen tests across five specs, all timeline, seek and play/pause; zero coverage of
 volume, mute, playbackRate or time display. The unit tests Phase 3 deletes are currently the
-*only* automated check on volume and rate drag semantics.
+_only_ automated check on volume and rate drag semantics.
 
 Two rules decide what belongs here, and the second is the one that catches omissions:
 
-1. Anything whose *only* automated check today is a test Phase 2 or 3 deletes — volume and
+1. Anything whose _only_ automated check today is a test Phase 2 or 3 deletes — volume and
    rate drag semantics, which live solely in the reducer tests.
 2. Anything the new architecture **derives** rather than stores. Derivation is where a
    threshold or an ordering changes silently, because there is no stored value to diff
@@ -688,42 +699,42 @@ Two rules decide what belongs here, and the second is the one that catches omiss
 Three fixture changes first, all small:
 
 - [x] Extend `getAudioState` in `testE2E/test-utils.ts` with `volume`, `muted` and
-      `playbackRate`; add the volume, rate and mute labels to the `labels` map. *(landed with
-      Phase 2, which needed it for `Volume/mute`.)*
+      `playbackRate`; add the volume, rate and mute labels to the `labels` map. _(landed with
+      Phase 2, which needed it for `Volume/mute`.)_
 - [x] Add a `?src=` URL param to `App.tsx`. It already reads `?orientation=` via
       `useUrlParams`, so this is two lines, and it lets one spec swap bad → good in a single
-      page session — which is what tests *recovery* rather than just the error state.
+      page session — which is what tests _recovery_ rather than just the error state.
 - [x] Add a `?players=2` URL param to `App.tsx`, rendering two independent `<AudioPlayer>`s.
       The player body moved into a `Player` component to make that possible, and the volume
       and rate thumbs gained test ids alongside the timeline's.
 
-| Spec | Test | Notes |
-|---|---|---|
-| `Volume/volume-drag` | drag thumb to 25% → `el.volume ≈ 0.25` | |
-| | drag thumb to zero → `muted` | pins the `DRAG_END` mute-at-zero rule |
-| | grab the thumb off-centre → value **jumps** by the grab offset | pins today's bug, so Phase 3's fix has to change it deliberately |
-| `Volume/volume-click` | click track at 25% → `el.volume ≈ 0.25` | **landed in Phase 2**, in `Volume/mute`, as the "sets the volume without muting" case |
-| | vertical (`?orientation=vertical`): drag up raises volume | pins the inversion end-to-end |
-| `Volume/mute` | mute → `aria-pressed="true"`, `el.muted` | **landed in Phase 2** |
-| | drag to zero, mute, unmute → volume is audible again | **landed in Phase 2**, on `lastAudibleVolume` rather than the `dataset` path. Asserts "audible" only; Phase 3's pin commit flips it to the pre-drag value |
-| `Volume/volume-state` | volume 0.4 → `MuteButton.LowVolume` renders | the 0.5 threshold, untested at every layer today and a `computed` after Phase 2 |
-| | volume 0.6 → `MuteButton.HighVolume` renders | |
-| | muted → `MuteButton.Muted` renders, whatever the volume | |
-| `PlaybackRate/rate-drag` | drag thumb → `el.playbackRate` lands on a 0.1 step | |
-| | `<PlaybackRate.Set rate={1.5}>` → 1.5 and `aria-current` | |
-| `KeyboardControls/media-keys` | Arrow Up / Down change `el.volume` | `seek-keys` covers only the time keys |
-| | `>` / `<` change `el.playbackRate`; Backspace resets it | |
-| `Player/multi-instance` | `?players=2`: play one → the other's element does not move | the only decision in section 2 with no verification attached; a per-instance factory bug is otherwise invisible until a consumer hits it |
-| `TimeDisplay/time-display` | elapsed advances during playback | |
-| | toggle → remaining shown, and it **counts down** | asserts the fixed value, so it lands after the precedence fix |
-| `Timeline/ended` | play to the end → thumb at start **and** elapsed reads `0:00` | *intended*, not current: today the clock shows the full duration while the thumb is at 0. Lands with the Phase 3 `onEnded` commit |
-| `Timeline/no-snap-back` | after drag release, sample progress every ~50 ms for ~500 ms; no sample falls below `target − ε` | the `seeked` + retain-until-changed guarantee. Sampled, not single-read: one post-release read can land either side of the echo and pass for the wrong reason |
-| | after click-to-seek, same | |
-| `Player/error-recovery` | `?src=` bad → `ErrorMessage` visible, controls disabled | |
-| | then swap to a good src → `ErrorMessage` gone, controls enabled | the `loadState` reset on `loadstart` |
-| `a11y/slider-semantics` | Tab reaches the element with `role="slider"` | fails today |
-| | it exposes `aria-valuenow` / `aria-valuetext` | |
-| | arrow keys on it change the value | |
+| Spec                          | Test                                                                                             | Notes                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Volume/volume-drag`          | drag thumb to 25% → `el.volume ≈ 0.25`                                                           |                                                                                                                                                               |
+|                               | drag thumb to zero → `muted`                                                                     | pins the `DRAG_END` mute-at-zero rule                                                                                                                         |
+|                               | grab the thumb off-centre → value **jumps** by the grab offset                                   | pins today's bug, so Phase 3's fix has to change it deliberately                                                                                              |
+| `Volume/volume-click`         | click track at 25% → `el.volume ≈ 0.25`                                                          | **landed in Phase 2**, in `Volume/mute`, as the "sets the volume without muting" case                                                                         |
+|                               | vertical (`?orientation=vertical`): drag up raises volume                                        | pins the inversion end-to-end                                                                                                                                 |
+| `Volume/mute`                 | mute → `aria-pressed="true"`, `el.muted`                                                         | **landed in Phase 2**                                                                                                                                         |
+|                               | drag to zero, mute, unmute → volume is audible again                                             | **landed in Phase 2**, on `lastAudibleVolume` rather than the `dataset` path. Asserts "audible" only; Phase 3's pin commit flips it to the pre-drag value     |
+| `Volume/volume-state`         | volume 0.4 → `MuteButton.LowVolume` renders                                                      | the 0.5 threshold, untested at every layer today and a `computed` after Phase 2                                                                               |
+|                               | volume 0.6 → `MuteButton.HighVolume` renders                                                     |                                                                                                                                                               |
+|                               | muted → `MuteButton.Muted` renders, whatever the volume                                          |                                                                                                                                                               |
+| `PlaybackRate/rate-drag`      | drag thumb → `el.playbackRate` lands on a 0.1 step                                               |                                                                                                                                                               |
+|                               | `<PlaybackRate.Set rate={1.5}>` → 1.5 and `aria-current`                                         |                                                                                                                                                               |
+| `KeyboardControls/media-keys` | Arrow Up / Down change `el.volume`                                                               | `seek-keys` covers only the time keys                                                                                                                         |
+|                               | `>` / `<` change `el.playbackRate`; Backspace resets it                                          |                                                                                                                                                               |
+| `Player/multi-instance`       | `?players=2`: play one → the other's element does not move                                       | the only decision in section 2 with no verification attached; a per-instance factory bug is otherwise invisible until a consumer hits it                      |
+| `TimeDisplay/time-display`    | elapsed advances during playback                                                                 |                                                                                                                                                               |
+|                               | toggle → remaining shown, and it **counts down**                                                 | asserts the fixed value, so it lands after the precedence fix                                                                                                 |
+| `Timeline/ended`              | play to the end → thumb at start **and** elapsed reads `0:00`                                    | _intended_, not current: today the clock shows the full duration while the thumb is at 0. Lands with the Phase 3 `onEnded` commit                             |
+| `Timeline/no-snap-back`       | after drag release, sample progress every ~50 ms for ~500 ms; no sample falls below `target − ε` | the `seeked` + retain-until-changed guarantee. Sampled, not single-read: one post-release read can land either side of the echo and pass for the wrong reason |
+|                               | after click-to-seek, same                                                                        |                                                                                                                                                               |
+| `Player/error-recovery`       | `?src=` bad → `ErrorMessage` visible, controls disabled                                          |                                                                                                                                                               |
+|                               | then swap to a good src → `ErrorMessage` gone, controls enabled                                  | the `loadState` reset on `loadstart`                                                                                                                          |
+| `a11y/slider-semantics`       | Tab reaches the element with `role="slider"`                                                     | fails today                                                                                                                                                   |
+|                               | it exposes `aria-valuenow` / `aria-valuetext`                                                    |                                                                                                                                                               |
+|                               | arrow keys on it change the value                                                                |                                                                                                                                                               |
 
 Play/pause, timeline drag, click-to-seek and the seek keys are already covered by the
 existing 15 tests, so the basic-operations requirement is met once the rows above land.
@@ -743,7 +754,7 @@ from writing them, each of which cost a debugging round:
 `playerState === "loading"`, but loading is transient and racy in a real browser. It belongs
 in the jsdom tier in Phase 2 — construct a store, leave `loadState` at `"loading"`, assert the
 buttons are disabled. Deterministic there, flaky here, and it is exactly the tier the store
-makes cheap. *Landed: `testJSDom/store/loadingState.test.tsx`.*
+makes cheap. _Landed: `testJSDom/store/loadingState.test.tsx`._
 
 **One row is not reachable in this harness.** Clicking the exact left edge of the volume
 track is the only path to `volume: 0` that does not also mute, and Chromium drops clicks
@@ -752,7 +763,7 @@ within ~1 px of an element's start, so the click-to-zero dead-end is pinned by t
 on hitting a slider's first pixel.
 
 Write the drag-semantics specs against current behaviour before anything is deleted. Three
-rows assert *intended* rather than current behaviour, so each follows its own fix: the
+rows assert _intended_ rather than current behaviour, so each follows its own fix: the
 counting-down remaining time and the slider semantics land with their Phase 0 fixes, and
 `Timeline/ended` lands with the Phase 3 `onEnded` commit. The off-centre grab row is the
 opposite — it pins today's bug on purpose, so that Phase 3's `offsetFromMiddle` commit has
@@ -762,7 +773,7 @@ which is deferred to Phase 2 with `lastAudibleVolume`.
 **README** — component list, dependency bullet, the stale roadmap line, and the
 `## Requrements and` heading typo.
 
-*Verify:* full suite green, `check-exports` green, root-import bundle back to its
+_Verify:_ full suite green, `check-exports` green, root-import bundle back to its
 pre-`splitting` size.
 
 ### Phase 1 — Store, sync layer, provider (no consumers) — **landed**
@@ -770,7 +781,7 @@ pre-`splitting` size.
 Add `src/store/*`. `PlayerStoreProvider` goes **outermost** in `AudioPlayer`, so Phases 2–3
 delete the providers inside it without ever moving it. The store is created once via
 `useState(() => createPlayerStore())`, so the context value never changes, and the provider
-does nothing else — no state, no effect, render-inert. No component *subscribes* to an atom
+does nothing else — no state, no effect, render-inert. No component _subscribes_ to an atom
 yet, which is what the "this gate cannot fail" argument below rests on.
 
 **`AudioElement` owns the element, not the provider.** It renders the `<audio>` tag, so it is
@@ -784,10 +795,13 @@ const store = usePlayerStore();
 
 useEffect(() => (el ? store.attach(el) : undefined), [el, store]);
 
-const ref = useCallback((node: HTMLAudioElement | null) => {
-  audioElementRef.current = node;   // the legacy object ref, gone in Phase 3
-  setEl(node);
-}, [audioElementRef]);
+const ref = useCallback(
+  (node: HTMLAudioElement | null) => {
+    audioElementRef.current = node; // the legacy object ref, gone in Phase 3
+    setEl(node);
+  },
+  [audioElementRef],
+);
 ```
 
 `setEl` is stable by React's `useState` guarantee, so the composed ref is stable and
@@ -809,7 +823,7 @@ Two things that are not optional:
 Commits, in order: `atom` + `useStore` → `prime` + `syncFromElement` → `createPlayerStore` →
 provider and `AudioElement` wiring → `Debug` rows.
 
-*Verify:* **not** "build passes, zero behaviour change" — that gate cannot fail. From here
+_Verify:_ **not** "build passes, zero behaviour change" — that gate cannot fail. From here
 to Phase 3 every media event is handled twice, by the sync layer and by the old bus; the
 atoms are unsubscribed, so a wrong `syncFromElement` is invisible and would surface mid-Phase-2
 among fifty component migrations. The real gates:
@@ -845,7 +859,7 @@ keeps the tree compiling.
 
 These block the delete, and neither is in the migration list as written.
 
-**1. Five action types in the *public* union.** `sideEffectActions.ts` imports
+**1. Five action types in the _public_ union.** `sideEffectActions.ts` imports
 `TogglePlayAction`, `ToggleMuteAction`, `UnmuteAction`, `PauseAction` and
 `AudioFileEndedAction` from `Player/PlayerContext.ts`. `SideEffectAction` is exported public
 API as of Phase 0, so deleting that file breaks the published types. Move the five into
@@ -876,17 +890,17 @@ what Phase 1 put it outermost for.
 
 `src/store/derived.ts`:
 
-| Hook | Subscribes to | Replaces |
-|---|---|---|
-| `usePlayerState()` | `loadState`, `paused` | `playerReducer`'s `playerState` |
-| `useVolumeState()` | `volume`, `muted` | `SET_VOLUME_STATE` + `isMuted` |
-| `useIsDisabled()` | `loadState` | `playerState === "loading" \|\| "error"` |
+| Hook               | Subscribes to         | Replaces                                 |
+| ------------------ | --------------------- | ---------------------------------------- |
+| `usePlayerState()` | `loadState`, `paused` | `playerReducer`'s `playerState`          |
+| `useVolumeState()` | `volume`, `muted`     | `SET_VOLUME_STATE` + `isMuted`           |
+| `useIsDisabled()`  | `loadState`           | `playerState === "loading" \|\| "error"` |
 
 `useIsDisabled` drops to one subscription and one comparison, because `loadState` already
-*is* the thing it was reconstructing. `isMuted` disappears entirely — it was a second mirror
+_is_ the thing it was reconstructing. `isMuted` disappears entirely — it was a second mirror
 of `muted`; `MuteButton`'s `aria-pressed` reads `useVolumeState() === "muted"`, which now
 derives. Keep `areNumbersClose` for the near-zero rule inside `useVolumeState`: the mute
-*derivation* stays approximate even though `lastAudibleVolume`'s memory is exact.
+_derivation_ stays approximate even though `lastAudibleVolume`'s memory is exact.
 
 One file, so the derivation rule is auditable in one place rather than spread across the six
 components that consume it.
@@ -911,19 +925,19 @@ deleted, not migrated.
 
 #### Migration
 
-| Component | Reads today | Reads after |
-|---|---|---|
-| `PlayButton` | `playerState` ×3 | `paused`; and `useHandleClick` drops its read entirely — `send({ type: "TOGGLE_PLAY" })` already branches on `el.paused` |
-| `MuteButton` | `volumeState` ×4 | `useVolumeState()` |
-| `ErrorMessage` | `playerState` | `loadState === "error"` |
-| `Seek` | `useIsDisabled` | unchanged call, new implementation |
-| `Time.Toggle` | `timeDisplay`, `handlePlayerAction` | `useStore(timeDisplay)` + `timeDisplay.set` — `TOGGLE_TIME_DISPLAY` disappears, and it was never in the public union |
-| `Time.Elapsed` / `Remaining` | `playerState`, `timeDisplay` | same two from the store; **the clock stays on `useTimeDisplay` until Phase 4** |
-| `Time.Duration` | `duration` | `useStore(duration)` |
-| `SetPlaybackRate`, `RateDisplay`, `useIsCurrent` | `playbackRate` | `useStore(rate)` |
-| `ChangePlaybackRate` | the element ref, **during render** | `useStore(rate)` — the one live bug this phase fixes |
-| `handleMediaKeys` | `handlePlayerAction`, `customKeyboardShortcuts` | `store.send` + `PlayerConfigContext` |
-| `Debug.tsx` | `playerState`, `volumeState` | delete the reducer column; `DebugStore` already exists |
+| Component                                        | Reads today                                     | Reads after                                                                                                              |
+| ------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `PlayButton`                                     | `playerState` ×3                                | `paused`; and `useHandleClick` drops its read entirely — `send({ type: "TOGGLE_PLAY" })` already branches on `el.paused` |
+| `MuteButton`                                     | `volumeState` ×4                                | `useVolumeState()`                                                                                                       |
+| `ErrorMessage`                                   | `playerState`                                   | `loadState === "error"`                                                                                                  |
+| `Seek`                                           | `useIsDisabled`                                 | unchanged call, new implementation                                                                                       |
+| `Time.Toggle`                                    | `timeDisplay`, `handlePlayerAction`             | `useStore(timeDisplay)` + `timeDisplay.set` — `TOGGLE_TIME_DISPLAY` disappears, and it was never in the public union     |
+| `Time.Elapsed` / `Remaining`                     | `playerState`, `timeDisplay`                    | same two from the store; **the clock stays on `useTimeDisplay` until Phase 4**                                           |
+| `Time.Duration`                                  | `duration`                                      | `useStore(duration)`                                                                                                     |
+| `SetPlaybackRate`, `RateDisplay`, `useIsCurrent` | `playbackRate`                                  | `useStore(rate)`                                                                                                         |
+| `ChangePlaybackRate`                             | the element ref, **during render**              | `useStore(rate)` — the one live bug this phase fixes                                                                     |
+| `handleMediaKeys`                                | `handlePlayerAction`, `customKeyboardShortcuts` | `store.send` + `PlayerConfigContext`                                                                                     |
+| `Debug.tsx`                                      | `playerState`, `volumeState`                    | delete the reducer column; `DebugStore` already exists                                                                   |
 
 `Debug`'s store rows landed in Phase 1, so the work here is removing the `usePlayerContext`
 reads above them — and one thing that is easy to miss: **`DebugStore` inlines its own
@@ -935,16 +949,16 @@ view can silently disagree with the app it is there to verify.
 "Half-emptied" is checkable, so here it is. Every `PlayerContext` dispatch goes, because the
 sync layer already covers that event; every timeline-bus push stays until Phase 3.
 
-| Export | Deleted here | Survives to Phase 3 |
-|---|---|---|
-| `useHandleTimeUpdate` | — | timeline `UPDATE_UI_VALUE` |
-| `useHandleVolumeChange` | `SET_VOLUME_STATE` ×2, and the `areNumbersClose` mute rule — it moves into `useVolumeState` | volume `UPDATE_UI_VALUE` |
-| `useHandlePlaybackRateChange` | `SET_PLAYBACK_RATE` | rate `UPDATE_UI_VALUE` |
-| `handleEnded` | `AUDIO_FILE_ENDED` | timeline `UPDATE_UI_VALUE 0` |
-| `handleLoadedMetadata` | `AUDIO_FILE_LOADED`, `SET_DURATION` | `SET_MAX_VALUE` |
-| `handleDurationChange` | `SET_DURATION` | `SET_MAX_VALUE` |
-| **`handleError`** | **the whole handler** | — |
-| **`handlePlayPause`** | **the whole handler** | — |
+| Export                        | Deleted here                                                                                | Survives to Phase 3          |
+| ----------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------- |
+| `useHandleTimeUpdate`         | —                                                                                           | timeline `UPDATE_UI_VALUE`   |
+| `useHandleVolumeChange`       | `SET_VOLUME_STATE` ×2, and the `areNumbersClose` mute rule — it moves into `useVolumeState` | volume `UPDATE_UI_VALUE`     |
+| `useHandlePlaybackRateChange` | `SET_PLAYBACK_RATE`                                                                         | rate `UPDATE_UI_VALUE`       |
+| `handleEnded`                 | `AUDIO_FILE_ENDED`                                                                          | timeline `UPDATE_UI_VALUE 0` |
+| `handleLoadedMetadata`        | `AUDIO_FILE_LOADED`, `SET_DURATION`                                                         | `SET_MAX_VALUE`              |
+| `handleDurationChange`        | `SET_DURATION`                                                                              | `SET_MAX_VALUE`              |
+| **`handleError`**             | **the whole handler**                                                                       | —                            |
+| **`handlePlayPause`**         | **the whole handler**                                                                       | —                            |
 
 So Phase 2 also deletes three JSX props from the `<audio>` element outright — `onError`,
 `onPause`, `onPlay` — and `usePlayerCallbacks` drops from five members to three. The handler
@@ -978,7 +992,7 @@ Phase 2 comes before Phase 3 for a specific reason: `audioElementHooks` feeds bo
 Killing the bus first would mean writing sync-layer-to-`PlayerContext` glue and then
 deleting it.
 
-*Verify:* play/pause, mute round-trip — including the click-to-zero spec that lands here
+_Verify:_ play/pause, mute round-trip — including the click-to-zero spec that lands here
 with `lastAudibleVolume` — seek, rate, error-recovery, and the a11y specs, since six
 components' disabled state now comes from `loadState`. Plus one case the old code could not
 get right: **a `src` swap while playing leaves `PlayButton` correct**, because `paused` is
@@ -1031,17 +1045,17 @@ The big one. These die together — do not try to split them.
   `offsetFromMiddle` fix → vertical inversion from `orientation` → per-mode arrow keys → the
   volume-drag pin → `onEnded` policy handler.
 - **Per-mode arrow keys.** All three thumbs currently share the global key map, so
-  Left/Right seeks and Up/Down changes volume on *every* slider, while the rate slider
+  Left/Right seeks and Up/Down changes volume on _every_ slider, while the rate slider
   responds only to `<` `>` `[` `]` — its `role="slider"` ignores arrow keys entirely. Each
   mode gets arrow keys that adjust its own value; the global shortcuts stay available
   elsewhere. This is the other half of the Phase 0 accessibility fix, and it needs the mode
   table to exist.
 - **The volume-drag pin.** `lastAudibleVolume` stops tracking the values a drag passes
   through, so unmuting after a drag to zero restores the pre-drag volume rather than the last
-  non-zero sample — see *A volume drag pins the memory* in section 3 for the mechanism. This
+  non-zero sample — see _A volume drag pins the memory_ in section 3 for the mechanism. This
   is a Phase 2 regression against the `dataset` stash it replaced, not a new feature: the
   stash captured the pre-drag volume and the atom did not. It lands here rather than in
-  Phase 2 because the pin has to be released on drag end *and* on pointer cancel, and
+  Phase 2 because the pin has to be released on drag end _and_ on pointer cancel, and
   `useSlider` is the first thing that owns both. Like the `offsetFromMiddle` fix, it flips an
   E2E assertion — `Volume/mute`'s last row goes from "audible again" to the pre-drag value —
   so the change cannot pass silently.
@@ -1053,7 +1067,7 @@ The big one. These die together — do not try to split them.
 - Tests removed: ~10 files under `testJSDom/Slider`, `testJSDom/Timeline`,
   `testJSDom/Volume`, `testJSDom/PlaybackRate`.
 
-*Verify:* the whole E2E suite, including everything Phase 0 added.
+_Verify:_ the whole E2E suite, including everything Phase 0 added.
 
 #### What landed, in four commits rather than seven
 
@@ -1111,7 +1125,7 @@ before it.
 ### Phase 4 — `TimeDisplay` and the aria surface — **landed**
 
 Drop the 1-second `setInterval`. It was a 1 Hz clock racing a 4 Hz event source, and
-`currentSecond` *is* the 1 Hz clock, so it cannot drift. `Time.Elapsed`, `Time.Remaining`
+`currentSecond` _is_ the 1 Hz clock, so it cannot drift. `Time.Elapsed`, `Time.Remaining`
 and the timeline's aria attributes subscribe to `currentSecond`; `remaining` becomes
 `duration - currentSecond`, derived in render, so the precedence bug cannot return.
 
@@ -1160,7 +1174,7 @@ Two exports were taken and analysed with a throwaway Node script
 as a share of wall clock, inter-commit gaps, per-component render counts with
 `changeDescriptions` (context / `didHooksChange` / hook indices / props), `updaters`, and
 the never-rendered list. **Gotcha for whoever re-runs it:** wall-clock `duration` and
-`reactVersion` live at `data.timelineData[0]`, *not* `dataForRoots[0]` — reading the wrong
+`reactVersion` live at `data.timelineData[0]`, _not_ `dataForRoots[0]` — reading the wrong
 path silently yields nonsense percentages.
 
 #### What the two traces said
@@ -1221,8 +1235,8 @@ Leave them, and add a comment at the top of the file recording that they are
 effect-dependency stability rather than a render optimisation, so the next strip does not
 have to re-derive it.
 
-The same reasoning keeps `AudioElement`'s `ref` callback. Its old comment justified it *by
-reference to `memo`*, which is now gone; the real reason is that an unstable ref would
+The same reasoning keeps `AudioElement`'s `ref` callback. Its old comment justified it _by
+reference to `memo`_, which is now gone; the real reason is that an unstable ref would
 detach and re-attach the element — and therefore the store — on every render.
 
 **Considered and rejected:** collapsing `SliderProvider`, a wrapper that only renders
@@ -1232,13 +1246,13 @@ keeps private. Not worth it.
 
 #### Work list
 
-| File | Change | Status |
-|---|---|---|
-| `src/AudioElement/AudioElement.tsx` | unwrap `memo`; inline `handleEnded` (drop its `useCallback`); keep the `ref` `useCallback`, rewrite its comment | **done** |
-| `src/Player/PlayerConfigContext.tsx` | unwrap `memo` (line 33); drop the `useMemo` (line 38) and build the context value inline | **done** |
-| `src/TimeDisplay/TimeDisplay.tsx` | unwrap the four `memo()`s — `Toggle` (16), `Elapsed` (54), `Remaining` (69), `Duration` (84); the exported `Time` type then loses `React.NamedExoticComponent` and needs plain `React.FC` members | **done** |
-| `src/Slider/SetSliderValue.tsx` | drop the `style` `useMemo` (line 24) | **done** |
-| `src/Slider/useSlider.ts` | **keep** all 12 `useCallback`s; add the comment recording why | **done** |
+| File                                 | Change                                                                                                                                                                                            | Status   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `src/AudioElement/AudioElement.tsx`  | unwrap `memo`; inline `handleEnded` (drop its `useCallback`); keep the `ref` `useCallback`, rewrite its comment                                                                                   | **done** |
+| `src/Player/PlayerConfigContext.tsx` | unwrap `memo` (line 33); drop the `useMemo` (line 38) and build the context value inline                                                                                                          | **done** |
+| `src/TimeDisplay/TimeDisplay.tsx`    | unwrap the four `memo()`s — `Toggle` (16), `Elapsed` (54), `Remaining` (69), `Duration` (84); the exported `Time` type then loses `React.NamedExoticComponent` and needs plain `React.FC` members | **done** |
+| `src/Slider/SetSliderValue.tsx`      | drop the `style` `useMemo` (line 24)                                                                                                                                                              | **done** |
+| `src/Slider/useSlider.ts`            | **keep** all 12 `useCallback`s; add the comment recording why                                                                                                                                     | **done** |
 
 Watch for: `React.NamedExoticComponent` appears in `TimeDisplay.tsx`'s exported `Time` type
 and is the type `memo()` returns. Removing `memo` means that annotation has to change, and
@@ -1290,14 +1304,14 @@ worktree — never a `git stash` in the live tree — with the same minify / tre
 React-external settings. Both numbers are the root import, the only entry either build has
 now that Phase 0 retired the subpaths.
 
-| | Baseline `b4df69c` | Now | Δ |
-|---|---|---|---|
-| `index.mjs`, minified | 22,918 B | 20,226 B | **−2,692 B (−11.7 %)** |
-| `index.mjs`, minified + gzip | 5,995 B | 6,211 B | **+216 B (+3.6 %)** |
-| `src/` | 3,294 lines / 56 files | 2,873 lines / 34 files | −421 lines / −22 files |
+|                              | Baseline `b4df69c`     | Now                    | Δ                      |
+| ---------------------------- | ---------------------- | ---------------------- | ---------------------- |
+| `index.mjs`, minified        | 22,918 B               | 20,226 B               | **−2,692 B (−11.7 %)** |
+| `index.mjs`, minified + gzip | 5,995 B                | 6,211 B                | **+216 B (+3.6 %)**    |
+| `src/`                       | 3,294 lines / 56 files | 2,873 lines / 34 files | −421 lines / −22 files |
 
 **The projection in section 6 was wrong, and in an interesting direction.** It expected
-1.2–1.5 KB gz removed; the bundle is 216 B gz *larger*. Minified bytes did fall, by a lot —
+1.2–1.5 KB gz removed; the bundle is 216 B gz _larger_. Minified bytes did fall, by a lot —
 but the code that went away was three near-identical reducer stacks, which is exactly the
 highly repetitive shape gzip compresses best. What replaced it is denser and shorter and
 compresses worse, so an 11.7 % cut in raw bytes came out as a 3.6 % rise after gzip.
@@ -1338,7 +1352,7 @@ dragged value held. The Timeline E2E specs were re-run with `--repeat-each=3` (2
 check the added timing sensitivity does not make them flaky.
 
 Not implemented: a `prefers-reduced-motion` opt-out. It cannot be expressed in an inline
-style without adding a `matchMedia` subscription, and a progress bar filling *more* smoothly
+style without adding a `matchMedia` subscription, and a progress bar filling _more_ smoothly
 is a weak case for it — but a consumer who wants it can override `transition` through
 `props.style`.
 
@@ -1366,7 +1380,7 @@ Nothing in `src/` or the demo sets `role="progressbar"`, so this is always `null
 `progressWidth` falls back to `0`, `parentWidth` to `1`, and the comparison is `0` against a
 ratio a few hundredths above zero — inside the `toBeCloseTo(0, 0.25)` tolerance of ~0.28.
 The two assertions above it are real; this one has never tested anything. It is also the
-only E2E coverage the progress *fill* would have, which now matters more than it did, since
+only E2E coverage the progress _fill_ would have, which now matters more than it did, since
 the fill has a transition on it. Left alone because fixing it means deciding whether the
 fill should carry `role="progressbar"` at all — it sits inside an element that is already
 `role="slider"`, and nesting a progressbar inside a slider is questionable ARIA.
@@ -1396,11 +1410,11 @@ name, and want updating in the same commit if it is ever renamed to match.
 
 Unit-test what can be unit-tested; E2E for what cannot, plus every basic operation.
 
-| Tier | Subject | Runs in CI |
-|---|---|---|
-| **unit** | `atom` / `useStore`; `syncFromElement(stub, atoms)`; `handleSideEffect` (all 22 actions); `calculateSliderValue` / `getOffset` / `formatTime`; the `SLIDER_MODES` table | yes |
-| **jsdom component** | `useSlider` through a rendered `<Timeline>`; `PlayButton` / `MuteButton` / `Time` against a constructed store — set an atom, assert the DOM, no mocking | yes |
-| **E2E** | real media events: drag semantics, mute round-trip, error recovery, and all basic operations | yes |
+| Tier                | Subject                                                                                                                                                                 | Runs in CI |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| **unit**            | `atom` / `useStore`; `syncFromElement(stub, atoms)`; `handleSideEffect` (all 22 actions); `calculateSliderValue` / `getOffset` / `formatTime`; the `SLIDER_MODES` table | yes        |
+| **jsdom component** | `useSlider` through a rendered `<Timeline>`; `PlayButton` / `MuteButton` / `Time` against a constructed store — set an atom, assert the DOM, no mocking                 | yes        |
+| **E2E**             | real media events: drag semantics, mute round-trip, error recovery, and all basic operations                                                                            | yes        |
 
 The store makes the middle tier cheaper than it is today: construct a store and set atoms
 instead of mocking jsdom audio. `syncFromElement` absorbs most of what the deleted reducer
@@ -1412,10 +1426,10 @@ All figures minified, tree-shaken, React external.
 
 **Planning-time, measured 2026-08-21 against `b4df69c`** (which shipped 6 entries):
 
-| Consumer | 6 entries, no splitting | 6 entries, `splitting: true` |
-|---|---|---|
-| root import (`index`) | 6,007 B gz | 6,758 B gz |
-| `timeline` + `volume` + `player` subpaths | 9,825 B gz | 5,932 B gz |
+| Consumer                                  | 6 entries, no splitting | 6 entries, `splitting: true` |
+| ----------------------------------------- | ----------------------- | ---------------------------- |
+| root import (`index`)                     | 6,007 B gz              | 6,758 B gz                   |
+| `timeline` + `volume` + `player` subpaths | 9,825 B gz              | 5,932 B gz                   |
 
 `splitting: true` was taken for correctness, at +751 B on the root import. Phase 0 reverted
 it along with the subpaths, and `sideEffects: false` lets consumer bundlers tree-shake the
@@ -1424,10 +1438,10 @@ root entry.
 **Outcome, measured 2026-08-28** — one entry on both sides, baseline rebuilt from
 `b4df69c` in a throwaway worktree:
 
-| | Baseline | Now | Δ |
-|---|---|---|---|
-| `index.mjs` | 22,918 B | 20,226 B | −2,692 B (−11.7 %) |
-| `index.mjs` gz | 5,995 B | 6,211 B | +216 B (+3.6 %) |
+|                | Baseline | Now      | Δ                  |
+| -------------- | -------- | -------- | ------------------ |
+| `index.mjs`    | 22,918 B | 20,226 B | −2,692 B (−11.7 %) |
+| `index.mjs` gz | 5,995 B  | 6,211 B  | +216 B (+3.6 %)    |
 
 The projection — 1.2–1.5 KB gz removed, against ~200 B added for the hand-rolled primitive
 — **did not hold**. Raw bytes fell as expected, but the three near-identical reducer stacks
@@ -1437,16 +1451,16 @@ it", which is the part that survives.
 
 ## 7. Risks
 
-| Risk | Mitigation |
-|---|---|
-| Phase 3 is large and hard to bisect | Land Phases 0–2 first; keep Phase 3 on its own branch; commit `useSlider`, the three migrations and each behaviour fix separately |
-| E2E cannot localise a Phase 3 failure — "the thumb didn't move" does not say whether the sync layer, the mode table or the geometry is wrong | `syncFromElement` and `useSlider` carry their own unit suites, so each layer fails independently of the others |
-| ~15 of 50 unit test files lose their subject | Expected. Phase 0 invests only in survivors; `syncFromElement` absorbs the reducer coverage; components get behavioural tests against a constructed store |
-| Unifying three divergent sliders silently changes behaviour | The differences are two named axes, not accidents — see the mode table. Each fix is its own commit, and Phase 0's E2E specs pin the current semantics first |
-| Writing to a projection atom outside the sync layer | Type projections as `{ get, subscribe }`; keep `set` in the factory closure |
-| `getSnapshot` returning fresh objects, causing an infinite loop | Atoms hold primitives only; derive objects in render |
-| The hand-rolled primitive is wrong | It is ~20 lines with no cache and no state machine, and it gets its own unit suite in Phase 1. `computed` and `onMount` — the two pieces with genuinely subtle failure modes — are out of scope by design |
-| `Debug.tsx` / `App.tsx` break `type-check` mid-phase | Migrate them in lockstep; they read every context |
+| Risk                                                                                                                                         | Mitigation                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 3 is large and hard to bisect                                                                                                          | Land Phases 0–2 first; keep Phase 3 on its own branch; commit `useSlider`, the three migrations and each behaviour fix separately                                                                         |
+| E2E cannot localise a Phase 3 failure — "the thumb didn't move" does not say whether the sync layer, the mode table or the geometry is wrong | `syncFromElement` and `useSlider` carry their own unit suites, so each layer fails independently of the others                                                                                            |
+| ~15 of 50 unit test files lose their subject                                                                                                 | Expected. Phase 0 invests only in survivors; `syncFromElement` absorbs the reducer coverage; components get behavioural tests against a constructed store                                                 |
+| Unifying three divergent sliders silently changes behaviour                                                                                  | The differences are two named axes, not accidents — see the mode table. Each fix is its own commit, and Phase 0's E2E specs pin the current semantics first                                               |
+| Writing to a projection atom outside the sync layer                                                                                          | Type projections as `{ get, subscribe }`; keep `set` in the factory closure                                                                                                                               |
+| `getSnapshot` returning fresh objects, causing an infinite loop                                                                              | Atoms hold primitives only; derive objects in render                                                                                                                                                      |
+| The hand-rolled primitive is wrong                                                                                                           | It is ~20 lines with no cache and no state machine, and it gets its own unit suite in Phase 1. `computed` and `onMount` — the two pieces with genuinely subtle failure modes — are out of scope by design |
+| `Debug.tsx` / `App.tsx` break `type-check` mid-phase                                                                                         | Migrate them in lockstep; they read every context                                                                                                                                                         |
 
 ## 8. Recorded, out of scope
 

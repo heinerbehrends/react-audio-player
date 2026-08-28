@@ -37,7 +37,8 @@
     "test": "vitest",
     "type-check": "tsc --noEmit --project tsconfig.app.json",
     "format": "prettier --write .",
-    "check-exports": "attw --pack . --profile esm-only"
+    "check-exports": "attw --pack . --profile esm-only",
+    "check-docs": "node scripts/check-docs.mjs"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

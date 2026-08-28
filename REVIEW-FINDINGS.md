@@ -29,23 +29,31 @@ One claim was checked and rejected.
 **Status as of 2026-08-28: all 17 P0s are resolved**, along with several P1s and
 P2s. See [Status](#status) below. The findings themselves are left as written —
 they are the evidence, and the reasoning in them is what the fixes were argued
-against. `BACKLOG.md` is the live list of what remains.
+against.
+
+This file is the evidence archive: what was found, and how each fix was proven.
+**`BACKLOG.md` is the only place that says what is still open, and why it was
+deferred.** Nothing below restates remaining work.
 
 ---
 
 ## Status
 
 Every row below was verified after the fix, by the means named. The suite went
-from **337 jsdom / 51 E2E** to **406 jsdom / 52 E2E**, all green, with
+from **337 jsdom / 51 E2E** to **428 jsdom / 55 E2E**, all green, with
 `type-check` on both TS projects, `lint`, `prettier`, `build` and
 `check-exports` clean throughout.
+
+**This section is the only part of this file that grows.** A resolved finding
+gets a row here — what shipped, how it was proven — and is struck through in
+`BACKLOG.md`. What remains open is never restated here: one fact, one home.
 
 ### All 17 P0s — resolved
 
 | Ref          | Shipped                                                                                                  | Verified by                                                                                                               |
-| ------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------- | --- | -------------------------------- | --------------------------------------------------- |
+| ------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | **A1**       | Space dropped from the default key map, so it activates the focused button again                         | Browser: seeks 10 s, no longer starts playback                                                                            |
-| **A2**       | `ctrlKey                                                                                                 |                                                                                                                           | metaKey |     | altKey`guard in`handleMediaKeys` | Browser: `Ctrl+Alt+→` and `Ctrl+Alt+M` both ignored |
+| **A2**       | A `ctrlKey \|\| metaKey \|\| altKey` guard at the top of `handleMediaKeys`                               | Browser: `Ctrl+Alt+→` and `Ctrl+Alt+M` both ignored                                                                       |
 | **A3**       | `aria-hidden` wrapper and `aria-label` removed from the alert                                            | Browser: message announceable; the test that pinned the bug was flipped                                                   |
 | **S1**       | `{...props}` spread on the `Timeline` and `Volume` roots                                                 | `className`, `id` and handlers now reach the DOM                                                                          |
 | **S2 / C6**  | `Time` is a plain namespace object; the `React.FC` call signature is gone                                | `dist/index.d.ts` declares an object; `<Time>` no longer type-checks                                                      |
@@ -63,16 +71,20 @@ from **337 jsdom / 51 E2E** to **406 jsdom / 52 E2E**, all green, with
 
 ### Also resolved
 
-| Ref          | Shipped                                                                                                                                                                                                                                                                                              |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **F5**       | Stall signal: `readyState` projected, `useIsBuffering()` derives from it. Chosen over a 5th `PlayerState` member, which would have destroyed the play/pause affordance during a stall                                                                                                                |
-| **F7**       | `onEnded` on `AudioPlayer` makes track-end observable, and userland playlists possible. An `ended` atom was rejected — the rewind clears `el.ended` within a tick, so a level would flicker where an edge is wanted                                                                                  |
-| **F8**       | `mediaErrorCode` projected; `useAudioError()` composes it with `playbackError` into a discriminated union                                                                                                                                                                                            |
-| **F9 / S10** | `audioProps` and `audioRef` on `AudioPlayer` — unblocks `crossOrigin` (and so Web Audio), `preload`, `<track>` captions and HLS.js                                                                                                                                                                   |
-| **P1-a**     | Three `Object.assign` compound roots → property assignment. Rollup: a `PlayButton`-only import went **4,025 B → 1,137 B gzipped (−72 %)**                                                                                                                                                            |
-| **C8**       | _Partly_: the write path now clamps to the browser's ranges. The library's own 0.5–4 rate policy is still applied inconsistently — recorded in `BACKLOG.md`                                                                                                                                          |
-| **S9**       | _Partly_: every slider part now carries `data-part` (`control`, `thumb`, `progress`, `background`), giving consumers a styling hook and tests a selector that is library output rather than demo markup. The **state** attributes (`data-state`, `data-orientation`, `data-disabled`) are still open |
-| **T5**       | _Partly_: the dead `useHandleSideEffect` mock is gone; `PlaybackRate.test.tsx:10` still mocks the deleted `useAudioElement`                                                                                                                                                                          |
+| Ref          | Shipped                                                                                                                                                                                                                                                                                            |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **F5**       | Stall signal: `readyState` projected, `useIsBuffering()` derives from it. Chosen over a 5th `PlayerState` member, which would have destroyed the play/pause affordance during a stall                                                                                                              |
+| **F7**       | `onEnded` on `AudioPlayer` makes track-end observable, and userland playlists possible. An `ended` atom was rejected — the rewind clears `el.ended` within a tick, so a level would flicker where an edge is wanted                                                                                |
+| **F8**       | `mediaErrorCode` projected; `useAudioError()` composes it with `playbackError` into a discriminated union                                                                                                                                                                                          |
+| **F9 / S10** | `audioProps` and `audioRef` on `AudioPlayer` — unblocks `crossOrigin` (and so Web Audio), `preload`, `<track>` captions and HLS.js                                                                                                                                                                 |
+| **P1-a**     | Three `Object.assign` compound roots → property assignment. Rollup: a `PlayButton`-only import went **4,025 B → 1,137 B gzipped (−72 %)**                                                                                                                                                          |
+| **C8**       | The write path clamps `playbackRate` to the browser's own range, so no rate write can throw. Verified by 9 clamp tests, including the two `NaN`-before-metadata paths                                                                                                                              |
+| **S9**       | Every slider part carries `data-part` (`control`, `thumb`, `progress`, `background`), giving consumers a styling hook and tests a selector that is library output rather than demo markup. Verified by the rewritten `progress-indicator.spec.ts`, whose old query matched nothing                 |
+| **T5**       | The dead `useHandleSideEffect` mock is gone. Verified by the suite staying green without it, which is what proved it dead                                                                                                                                                                          |
+| **A4**       | One state channel on all three toggles: the name. `aria-pressed` removed from `PlayButton`, `MuteButton` and `Time.Toggle`, which gained a flipping name ("Show time elapsed" / "Show time remaining"). Verified by 3 rows asserting the attribute's absence — a re-added `aria-pressed` now fails |
+| **A5 / A7**  | `aria-disabled` in place of native `disabled`, on the six gated buttons and all three sliders. `useDisabledButtonProps` blocks activation, the consumer's `onClick` included. Verified by a jsdom test that focuses a control, drops the load state under it, and finds focus still there          |
+| **A6**       | `Home` / `End` on every slider, through `commit` so the seek slider does not snap back. Slider-scoped, not added to the global map. Verified by 7 jsdom rows plus 2 E2E — one of which pins that `Home` on a _button_ is still the browser's                                                       |
+| **A8**       | `aria-valuetext` on the volume slider composes the mute with the volume — "Muted, 80%". `aria-valuenow` deliberately unchanged: it is the volume, and muting does not move the thumb. Verified by 5 jsdom rows and an E2E round-trip through the mute button                                       |
 
 ### Found during the work, not in the original review
 
@@ -86,12 +98,8 @@ from **337 jsdom / 51 E2E** to **406 jsdom / 52 E2E**, all green, with
 
 ### Still open
 
-`BACKLOG.md` is authoritative. In brief: **A4–A13 and A15** (aria polish, the
-`aria-disabled` change, Home/End); **S8, S11, S12, S14–S23** (and the rest of **S9**) (the styling
-split, `data-*` attributes, the hardcoded 20 px thumb offset, the missing
-`position: relative` on two slider roots); **F6, F10–F12**; **C1–C5, C7, C9,
-C10**; **T4, T6–T11**; **P1-b, P2-a**. Codec fallback and buffered ranges have
-their own sections in `BACKLOG.md`.
+`BACKLOG.md` is authoritative. Codec fallback and buffered ranges have their own
+sections there.
 
 ---
 

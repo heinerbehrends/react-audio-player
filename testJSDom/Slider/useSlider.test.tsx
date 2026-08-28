@@ -616,3 +616,147 @@ describe("the disabled slider", () => {
     expect(harness.result.current.dragState).toBe("idle");
   });
 });
+
+/**
+ * A8. `muted` is a separate element flag from `volume`, and the announcement
+ * read only the volume: a muted player at full volume announced "100%".
+ */
+describe("the muted volume slider", () => {
+  it("announces the mute alongside the volume it kept", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { volume: 0.8, muted: true },
+    );
+
+    expect(harness.result.current.aria["aria-valuetext"]).toBe("Muted, 80%");
+  });
+
+  it("drops the mute from the announcement when the element unmutes", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { volume: 0.8, muted: true },
+    );
+
+    echo(harness.store, "volumechange", { muted: false });
+
+    expect(harness.result.current.aria["aria-valuetext"]).toBe("80%");
+  });
+
+  /**
+   * The observed sequence behind the finding: arrows change the volume without
+   * unmuting, so the player stays silent while the number falls.
+   */
+  it("keeps announcing the mute while the arrows lower the volume", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { volume: 0.5, muted: true },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("ArrowDown")));
+    expect(harness.store.element.muted).toBe(true);
+
+    echo(harness.store, "volumechange", {});
+
+    expect(harness.result.current.aria["aria-valuetext"]).toBe("Muted, 45%");
+  });
+
+  it("leaves the value alone — the thumb stays where the volume is", () => {
+    const harness = renderSlider(
+      { mode: "volume" },
+      { volume: 0.8, muted: true },
+    );
+
+    expect(harness.result.current.value).toBeCloseTo(0.8, 5);
+    expect(harness.result.current.aria["aria-valuenow"]).toBeCloseTo(0.8, 5);
+  });
+
+  it("says nothing about muting on the other two sliders", () => {
+    expect(
+      renderSlider({ mode: "seek" }, { currentTime: 30, muted: true }).result
+        .current.aria["aria-valuetext"],
+    ).toBe("Position 0:30 of 1:40");
+    expect(
+      renderSlider({ mode: "rate" }, { playbackRate: 1.5, muted: true }).result
+        .current.aria["aria-valuetext"],
+    ).toBe("1.5x");
+  });
+});
+
+/** A6. Required by the APG Slider pattern, and unmapped until now. */
+describe("Home and End", () => {
+  it("jumps to the start and the end of the timeline", () => {
+    const harness = renderSlider(
+      { mode: "seek" },
+      { currentTime: 30, duration: 100 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("End")));
+    expect(harness.store.element.currentTime).toBe(100);
+
+    act(() => harness.result.current.onKeyDown(keyDown("Home")));
+    expect(harness.store.element.currentTime).toBe(0);
+  });
+
+  it("jumps to silence and to full volume, and mutes at zero", () => {
+    const harness = renderSlider({ mode: "volume" }, { volume: 0.5 });
+
+    act(() => harness.result.current.onKeyDown(keyDown("Home")));
+    expect(harness.store.element.volume).toBeCloseTo(0, 5);
+    // Zero mutes, which is the store's rule for any volume commit — the same
+    // one a click at the far end of the track goes through.
+    expect(harness.store.element.muted).toBe(true);
+
+    act(() => harness.result.current.onKeyDown(keyDown("End")));
+    expect(harness.store.element.volume).toBeCloseTo(1, 5);
+    expect(harness.store.element.muted).toBe(false);
+  });
+
+  it("jumps to the configured rate bounds, not the element's", () => {
+    const harness = renderSlider(
+      { mode: "rate", minValue: 0.5, maxValue: 2 },
+      { playbackRate: 1 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("End")));
+    expect(harness.store.element.playbackRate).toBeCloseTo(2, 5);
+
+    act(() => harness.result.current.onKeyDown(keyDown("Home")));
+    expect(harness.store.element.playbackRate).toBeCloseTo(0.5, 5);
+  });
+
+  it("claims the key rather than leaving it to the browser", () => {
+    const harness = renderSlider({ mode: "seek" }, { currentTime: 30 });
+    const event = keyDown("End");
+
+    act(() => harness.result.current.onKeyDown(event));
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
+  });
+
+  /**
+   * Retained the way a click is, or the seek slider would snap back to the
+   * pre-jump value for as long as the element takes to echo.
+   */
+  it("holds the jumped-to value until the store reports it", () => {
+    const harness = renderSlider(
+      { mode: "seek" },
+      { currentTime: 30, duration: 100 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("End")));
+
+    expect(harness.result.current.value).toBe(100);
+  });
+
+  it("does nothing while disabled", () => {
+    const harness = renderSlider(
+      { mode: "seek" },
+      { readyState: 0, currentTime: 30 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("Home")));
+
+    expect(harness.store.element.currentTime).toBe(30);
+  });
+});

@@ -90,3 +90,24 @@ test("unmuting after a drag to zero restores the pre-drag volume", async () => {
   expect(restored.muted).toBe(false);
   expect(restored.volume).toBeCloseTo(0.8, 2);
 });
+
+/**
+ * A8. The volume slider announced "100%" on a muted player: `muted` is a
+ * separate element flag, and `aria-valuetext` read the volume alone.
+ */
+test("the volume slider announces the mute alongside the volume", async () => {
+  await setVolume(0.8);
+  const slider = page.getByLabel(labels.volume);
+
+  await expect(slider).toHaveAttribute("aria-valuetext", "80%");
+
+  await muteButton().click();
+
+  await expect(slider).toHaveAttribute("aria-valuetext", "Muted, 80%");
+  // The value is the volume, which muting does not change — the thumb has not
+  // moved, so `aria-valuenow` must not either.
+  await expect(slider).toHaveAttribute("aria-valuenow", "0.8");
+
+  await muteButton().click();
+  await expect(slider).toHaveAttribute("aria-valuetext", "80%");
+});

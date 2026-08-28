@@ -51,9 +51,13 @@ function App() {
 ## Accessibility
 
 Each slider exposes one focusable `role="slider"` element that carries the
-`aria-value*` attributes and takes the arrow keys. The drag thumbs are pointer
-affordances only: they are `aria-hidden` and out of the tab order, so a slider
-announces one value rather than two.
+`aria-value*` attributes and takes the arrow keys, plus `Home` and `End`. The
+drag thumbs are pointer affordances only: they are `aria-hidden` and out of the
+tab order, so a slider announces one value rather than two.
+
+The volume slider announces the mute as well as the volume — "Muted, 80%" — since
+the two are separate on the element and the arrow keys change the volume without
+unmuting.
 
 Each button is named for what pressing it will do, and the name is the only
 place its state appears: `<MuteButton>` is "Mute" or "Unmute", `<PlayButton>`
@@ -366,8 +370,12 @@ bar.
 
 ## Keyboard shortcuts
 
-Available on every focusable control. A slider's own arrow keys take precedence
-over the arrow shortcuts below.
+Available on every focusable control. A slider's own keys take precedence over
+the shortcuts below.
+
+On a focused slider the arrow keys adjust its value, and `Home` and `End` jump to
+the ends of its range. Those two are slider-only: everywhere else they stay the
+browser's.
 
 | Keys             | Action                     |
 | ---------------- | -------------------------- |

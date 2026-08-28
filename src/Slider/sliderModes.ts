@@ -6,6 +6,16 @@ export type SliderMode = "seek" | "volume" | "rate";
 export type Orientation = "horizontal" | "vertical";
 
 /**
+ * What `aria-valuetext` is composed from: the announced value, plus the element
+ * state it has to reflect.
+ */
+export type SliderAriaState = {
+  value: number;
+  maxValue: number;
+  muted: boolean;
+};
+
+/**
  * The three sliders differ on two axes, resolved from one table:
  *
  * - **`writesDuringDrag`** — `"seek"` keeps a local value to display, because
@@ -22,7 +32,7 @@ export type SliderModeConfig = {
   ariaLabel: string;
   /** Whole seconds for `"seek"`, so the aria surface cannot churn above 1 Hz. */
   quantizeAriaValue: (value: number) => number;
-  ariaValueText: (value: number, maxValue: number) => string;
+  ariaValueText: (state: SliderAriaState) => string;
   /**
    * 5 s for `"seek"`: a step under a second moves `currentTime` without moving
    * `currentSecond`, so `aria-valuenow` would not change and the press would be
@@ -33,6 +43,8 @@ export type SliderModeConfig = {
   decrease: (amount: number) => SideEffectAction;
 };
 
+const percent = (value: number) => `${Math.round(value * 100)}%`;
+
 export const SLIDER_MODES = {
   seek: {
     component: "timeline",
@@ -40,7 +52,7 @@ export const SLIDER_MODES = {
     mutesAtZero: false,
     ariaLabel: "Timeline slider",
     quantizeAriaValue: Math.floor,
-    ariaValueText: (value, maxValue) =>
+    ariaValueText: ({ value, maxValue }) =>
       `Position ${formatTime(value)} of ${formatTime(maxValue)}`,
     defaultArrowStep: 5,
     increase: (amount) => ({ type: "SET_TIME_FORWARD", value: amount }),
@@ -52,7 +64,11 @@ export const SLIDER_MODES = {
     mutesAtZero: true,
     ariaLabel: "Volume slider",
     quantizeAriaValue: (value) => value,
-    ariaValueText: (value) => `${Math.round(value * 100)}%`,
+    // `muted` is its own element flag, so the volume alone announced "100%" on
+    // a silent player. Adjusting the volume does not unmute, so "Muted, 5%" is
+    // a reachable state rather than a contradiction.
+    ariaValueText: ({ value, muted }) =>
+      muted ? `Muted, ${percent(value)}` : percent(value),
     defaultArrowStep: 0.05,
     increase: (amount) => ({ type: "INCREASE_VOLUME", value: amount }),
     decrease: (amount) => ({ type: "DECREASE_VOLUME", value: amount }),
@@ -63,7 +79,7 @@ export const SLIDER_MODES = {
     mutesAtZero: false,
     ariaLabel: "Playback rate slider",
     quantizeAriaValue: (value) => value,
-    ariaValueText: (value) => `${Math.round(value * 100) / 100}x`,
+    ariaValueText: ({ value }) => `${Math.round(value * 100) / 100}x`,
     defaultArrowStep: 0.1,
     increase: (amount) => ({ type: "INCREASE_PLAYBACK_RATE", value: amount }),
     decrease: (amount) => ({ type: "DECREASE_PLAYBACK_RATE", value: amount }),
@@ -86,4 +102,20 @@ export type ArrowKey = keyof typeof ARROW_KEYS;
 
 export function isArrowKey(key: string): key is ArrowKey {
   return key in ARROW_KEYS;
+}
+
+/**
+ * Required by the APG Slider pattern. Deliberately absent from the global media
+ * map, unlike the arrows: everywhere but a slider, Home and End belong to the
+ * browser.
+ */
+export const JUMP_KEYS = {
+  Home: "minValue",
+  End: "maxValue",
+} as const satisfies Record<string, "minValue" | "maxValue">;
+
+export type JumpKey = keyof typeof JUMP_KEYS;
+
+export function isJumpKey(key: string): key is JumpKey {
+  return key in JUMP_KEYS;
 }
