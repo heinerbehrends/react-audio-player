@@ -1,11 +1,13 @@
 import {
   progressStyles,
   calculateProgressStyle,
+  rootStyles,
 } from "../Slider/calculateStyle";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
+import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 
 function PlaybackRateProgress({
   style,
@@ -50,8 +52,8 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
 
 function PlaybackRateSliderRoot({
   children,
-  maxValue = 4,
-  minValue = 0.5,
+  maxValue = RATE_BOUNDS.maxValue,
+  minValue = RATE_BOUNDS.minValue,
   step = 0.1,
   style,
   ...props
@@ -62,10 +64,7 @@ function PlaybackRateSliderRoot({
     <SliderProvider value={slider}>
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gridTemplateRows: "1fr",
-          width: "100%",
+          ...rootStyles,
           ...style,
         }}
         {...props}

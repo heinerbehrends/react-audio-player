@@ -25,7 +25,7 @@ describe("calculateStyle", () => {
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
         cursor: "grab",
-        transform: "translate(calc(50px - 20px), 0)",
+        transform: "translate(calc(50px - 50%), 0)",
         touchAction: "none",
       });
     });
@@ -42,7 +42,7 @@ describe("calculateStyle", () => {
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
         cursor: "grab",
-        transform: "translate(0, calc(50px - 20px))",
+        transform: "translate(0, calc(50px - 50%))",
         touchAction: "none",
       });
     });
@@ -52,7 +52,7 @@ describe("calculateStyle", () => {
     it("positions from the value alone", () => {
       const style = calculateDragStyle({ ...defaultContext, value: 0.75 });
 
-      expect(style.transform).toBe("translate(calc(75px - 20px), 0)");
+      expect(style.transform).toBe("translate(calc(75px - 50%), 0)");
     });
   });
 

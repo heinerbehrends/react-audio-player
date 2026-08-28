@@ -1,5 +1,5 @@
 import { areNumbersClose } from "../Shared/sharedFunctions";
-import type { SideEffectAction } from "./sideEffectActions";
+import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
 
 /**
  * Media properties throw on an out-of-range write rather than clamping, and
@@ -140,14 +140,20 @@ export function handleSideEffect(
     case "INCREASE_PLAYBACK_RATE": {
       writeRate(
         audioElement,
-        Math.min(audioElement.playbackRate + action.value, 4),
+        Math.min(
+          audioElement.playbackRate + action.value,
+          action.maxValue ?? RATE_BOUNDS.maxValue,
+        ),
       );
       break;
     }
     case "DECREASE_PLAYBACK_RATE": {
       writeRate(
         audioElement,
-        Math.max(audioElement.playbackRate - action.value, 0.5),
+        Math.max(
+          audioElement.playbackRate - action.value,
+          action.minValue ?? RATE_BOUNDS.minValue,
+        ),
       );
       break;
     }

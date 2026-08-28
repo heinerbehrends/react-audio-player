@@ -20,10 +20,13 @@ export function calculateDragStyle(context: StyleContext): React.CSSProperties {
     gridColumn: "1 / 1",
     gridRow: "1 / 1",
     cursor: "grab",
+    // A percentage inside `translate()` resolves against the element's own
+    // border box, so the thumb self-centres at any size. The 20px this replaced
+    // assumed the demo's 40px thumbs, and drew a 16px one 12px off.
     transform:
       orientation === "horizontal"
-        ? `translate(calc(${offset}px - 20px), 0)`
-        : `translate(0, calc(${offset}px - 20px))`,
+        ? `translate(calc(${offset}px - 50%), 0)`
+        : `translate(0, calc(${offset}px - 50%))`,
     touchAction: "none",
   };
 }
@@ -70,13 +73,24 @@ export const progressStyles = {
   height: "100%",
 } satisfies React.CSSProperties;
 
-export const containerStyles = {
+/**
+ * The slider root. `position: relative` is load-bearing: `Thumb` is
+ * `position: absolute`, so without it the thumb's containing block is whichever
+ * ancestor happens to be positioned. The volume and rate roots inlined a copy
+ * of this without it, and their thumbs landed correctly only by luck.
+ */
+export const rootStyles = {
   display: "grid",
   gridTemplateColumns: "1fr",
   gridTemplateRows: "1fr",
   width: "100%",
-  height: "100%",
   position: "relative",
+} as const;
+
+/** `rootStyles` plus the height, which the track needs to fill its root. */
+export const containerStyles = {
+  ...rootStyles,
+  height: "100%",
 } as const;
 
 export const buttonStyles = {

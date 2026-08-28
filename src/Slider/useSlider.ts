@@ -4,6 +4,7 @@ import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useIsDisabled } from "../store/derived";
+import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 import {
   ARROW_KEYS,
   JUMP_KEYS,
@@ -121,9 +122,12 @@ export function useSlider({
   // cannot be gated on the mode, and this is one rarely-changing boolean.
   const muted = useStore(store.muted);
 
-  const minValue = minValueOption ?? (mode === "rate" ? 0.5 : 0);
+  const minValue =
+    minValueOption ?? (mode === "rate" ? RATE_BOUNDS.minValue : 0);
   const maxValue =
-    mode === "seek" ? duration : (maxValueOption ?? (mode === "rate" ? 4 : 1));
+    mode === "seek"
+      ? duration
+      : (maxValueOption ?? (mode === "rate" ? RATE_BOUNDS.maxValue : 1));
   const step = stepOption ?? 0;
 
   const [geometry, setGeometry] = useState({ sliderStart: 0, sliderLength: 0 });
@@ -341,10 +345,11 @@ export function useSlider({
         // that does nothing should not eat the scroll.
         if (isDisabled) return;
         const amount = step || config.defaultArrowStep;
+        const bounds = { minValue, maxValue };
         store.send(
           ARROW_KEYS[event.key] === "increase"
-            ? config.increase(amount)
-            : config.decrease(amount),
+            ? config.increase(amount, bounds)
+            : config.decrease(amount, bounds),
         );
         event.preventDefault();
         event.stopPropagation();

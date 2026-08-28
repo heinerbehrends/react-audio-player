@@ -27,6 +27,18 @@ describe("PlaybackRateSlider", () => {
     expect(PlaybackRateSlider.Thumb).toBeDefined();
   });
 
+  // S12: `Thumb` is `position: absolute`, so without this on the root its
+  // containing block is whichever ancestor happens to be positioned.
+  it("positions its root, so the thumb resolves against it", () => {
+    renderInPlayer(
+      <PlaybackRateSlider data-testid="root">
+        <PlaybackRateSlider.Control>Set</PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+    );
+
+    expect(screen.getByTestId("root")).toHaveStyle({ position: "relative" });
+  });
+
   it("renders Set with the slider semantics", () => {
     renderInPlayer(
       <PlaybackRateSlider>

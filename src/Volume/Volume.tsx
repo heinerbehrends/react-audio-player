@@ -2,6 +2,7 @@ import type { HTMLAttributes } from "react";
 import {
   calculateProgressStyle,
   progressStyles,
+  rootStyles,
 } from "../Slider/calculateStyle";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
@@ -49,10 +50,7 @@ function VolumeContainer({
         {...props}
         role="group"
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gridTemplateRows: "1fr",
-          width: "100%",
+          ...rootStyles,
           ...props.style,
         }}
       >

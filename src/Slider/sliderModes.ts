@@ -39,9 +39,17 @@ export type SliderModeConfig = {
    * announced as a no-op.
    */
   defaultArrowStep: number;
-  increase: (amount: number) => SideEffectAction;
-  decrease: (amount: number) => SideEffectAction;
+  /**
+   * `bounds` are the slider's own, not the mode's defaults. Under
+   * `<PlaybackRateSlider maxValue={2}>` an arrow press that clamped at the
+   * library ceiling pushed the element past the end of its own track. Only
+   * `"rate"` needs them — see `RATE_BOUNDS`.
+   */
+  increase: (amount: number, bounds: SliderBounds) => SideEffectAction;
+  decrease: (amount: number, bounds: SliderBounds) => SideEffectAction;
 };
+
+export type SliderBounds = { minValue: number; maxValue: number };
 
 const percent = (value: number) => `${Math.round(value * 100)}%`;
 
@@ -70,6 +78,8 @@ export const SLIDER_MODES = {
     ariaValueText: ({ value, muted }) =>
       muted ? `Muted, ${percent(value)}` : percent(value),
     defaultArrowStep: 0.05,
+    // Bounds unused: 0–1 is the browser's own range, so the write clamp is
+    // already the number the slider would send.
     increase: (amount) => ({ type: "INCREASE_VOLUME", value: amount }),
     decrease: (amount) => ({ type: "DECREASE_VOLUME", value: amount }),
   },
@@ -81,8 +91,16 @@ export const SLIDER_MODES = {
     quantizeAriaValue: (value) => value,
     ariaValueText: ({ value }) => `${Math.round(value * 100) / 100}x`,
     defaultArrowStep: 0.1,
-    increase: (amount) => ({ type: "INCREASE_PLAYBACK_RATE", value: amount }),
-    decrease: (amount) => ({ type: "DECREASE_PLAYBACK_RATE", value: amount }),
+    increase: (amount, { maxValue }) => ({
+      type: "INCREASE_PLAYBACK_RATE",
+      value: amount,
+      maxValue,
+    }),
+    decrease: (amount, { minValue }) => ({
+      type: "DECREASE_PLAYBACK_RATE",
+      value: amount,
+      minValue,
+    }),
   },
 } satisfies Record<SliderMode, SliderModeConfig>;
 

@@ -308,6 +308,23 @@ describe("handleSideEffect", () => {
       expect(audioElement.playbackRate).toBe(0.5);
     });
 
+    // C1: a slider with a narrower range sends its own bounds, and they win.
+    it("clamps to the bounds on the action when it carries them", () => {
+      audioElement.playbackRate = 1.99;
+      handleSideEffect(
+        { type: "INCREASE_PLAYBACK_RATE", value: 0.05, maxValue: 2 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(2);
+
+      audioElement.playbackRate = 1.01;
+      handleSideEffect(
+        { type: "DECREASE_PLAYBACK_RATE", value: 0.05, minValue: 1 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(1);
+    });
+
     it("resets the rate to 1 on RESET_PLAYBACK_RATE", () => {
       audioElement.playbackRate = 2.5;
       handleSideEffect({ type: "RESET_PLAYBACK_RATE" }, audioElement);

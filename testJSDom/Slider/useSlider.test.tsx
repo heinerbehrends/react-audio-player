@@ -760,3 +760,58 @@ describe("Home and End", () => {
     expect(harness.store.element.currentTime).toBe(30);
   });
 });
+
+/**
+ * C1. The rate bounds were written down in three places, and the arrow-key
+ * clamp hardcoded 0.5 and 4 — so it ignored a narrower slider. `RATE_BOUNDS` is
+ * now the one default, and a slider sends its own bounds with the action.
+ */
+describe("configured bounds reach the arrow keys", () => {
+  it("stops an arrow press at the slider's own maximum, not the library's", () => {
+    const harness = renderSlider(
+      { mode: "rate", maxValue: 2, step: 0.1 },
+      { playbackRate: 1.95 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("ArrowUp")));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(2, 5);
+  });
+
+  it("stops at the slider's own minimum too", () => {
+    const harness = renderSlider(
+      { mode: "rate", minValue: 1, step: 0.1 },
+      { playbackRate: 1.05 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("ArrowDown")));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(1, 5);
+  });
+
+  /** Before C1 these capped at 2 and 4 respectively. */
+  it("agrees with End on where the top of the range is", () => {
+    const harness = renderSlider(
+      { mode: "rate", maxValue: 2, step: 0.1 },
+      { playbackRate: 1 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("End")));
+    const viaEnd = harness.store.element.playbackRate;
+
+    for (let press = 0; press < 20; press++) {
+      act(() => harness.result.current.onKeyDown(keyDown("ArrowUp")));
+    }
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(viaEnd, 5);
+  });
+
+  /** No slider sent it, so the library default applies. */
+  it("leaves the global rate shortcut on the library range", () => {
+    const harness = renderSlider({ mode: "seek" }, { playbackRate: 3.95 });
+
+    act(() => harness.result.current.onKeyDown(keyDown(">")));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(4, 5);
+  });
+});

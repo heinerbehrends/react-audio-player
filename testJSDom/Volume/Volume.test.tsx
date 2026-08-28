@@ -99,6 +99,9 @@ describe("Volume", () => {
       gridTemplateColumns: "1fr",
       gridTemplateRows: "1fr",
       width: "100%",
+      // S12: `Thumb` is `position: absolute`, so without this its containing
+      // block is whichever ancestor happens to be positioned.
+      position: "relative",
     });
   });
 
