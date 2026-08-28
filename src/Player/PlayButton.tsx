@@ -49,6 +49,7 @@ function useAriaLabel() {
   return ariaLabelMap[usePlayerState()];
 }
 
+/** Renders `children` only while the element is playing. */
 function Playing({
   children,
 }: {
@@ -62,6 +63,12 @@ function Playing({
   return <>{children}</>;
 }
 
+/**
+ * Renders `children` whenever the element is **not** playing — which includes
+ * loading and errored, not only paused. The pair is exhaustive by design, so a
+ * button built from `.Playing` and `.Paused` always has an icon; if you want to
+ * distinguish the other two states, branch on `useAudioPlayer().playerState`.
+ */
 function Paused({
   children,
 }: {
@@ -82,4 +89,19 @@ type PlayButtonComponent = React.FC<PlayButtonProps> & {
 PlayButtonComponent.Playing = Playing;
 PlayButtonComponent.Paused = Paused;
 
+/**
+ * Play/pause, as one button. Its accessible name is the only place its state
+ * appears — "Play audio", "Pause audio", "Loading audio" or "Error loading
+ * audio" — and it deliberately sets no `aria-pressed`; pass your own
+ * `aria-label` to override or localise.
+ *
+ * Pressable while the track is still loading: `play()` before metadata is legal
+ * and the browser queues it. Only an error marks it unavailable, and then with
+ * `aria-disabled`, never the native `disabled` attribute — so style that state
+ * from `[aria-disabled="true"]`, not `:disabled`. While it is set, activation
+ * does nothing, your own `onClick` included.
+ *
+ * An autoplay refusal is not an error in this sense: the controls stay live,
+ * because a user gesture is what lifts it. Read it with `useAudioError()`.
+ */
 export const PlayButton = PlayButtonComponent;

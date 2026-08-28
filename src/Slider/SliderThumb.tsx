@@ -5,9 +5,16 @@ import { useSliderContext } from "./SliderContext";
 type SliderThumbProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * A pointer-only thumb: hidden from assistive technology and out of the tab
- * order, so exactly one element per slider announces a value and takes arrow
- * keys. The drag belongs to `useSlider`; this only reports where it was grabbed.
+ * The draggable handle. Optional — a slider works without one, and `.Control`
+ * alone is a valid slider.
+ *
+ * Pointer-only, by design: `aria-hidden` and `tabIndex={-1}` are locked and
+ * cannot be overridden, so that exactly one element per slider announces a value
+ * and takes the arrow keys. Grabbing it off-centre does not jump the value.
+ *
+ * Position comes from an inline `transform`, which beats any stylesheet — size
+ * it with a class and it self-centres at any size. Render it as a sibling of
+ * `.Control`, never inside it.
  */
 export function SliderThumb(props: SliderThumbProps) {
   const slider = useSliderContext();

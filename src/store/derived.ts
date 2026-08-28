@@ -3,16 +3,54 @@ import { useStore } from "./atom";
 import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { usePlayerStore } from "./PlayerStoreContext";
 
+/**
+ * The four states a player can be in, in the order they are decided: an error
+ * wins over everything, then loading, then play/pause.
+ *
+ * `"loading"` means metadata has not arrived. It does **not** mean the controls
+ * are unavailable — `play()`, the volume and the rate all work there — and it is
+ * re-entered on every track change, not only at startup. A mid-track stall is
+ * not this: it stays `"playing"`, and `useIsBuffering()` reports it.
+ */
 export type PlayerState = "loading" | "error" | "paused" | "playing";
+
+/**
+ * Why a resource is unusable, from the element's `MediaError.code`.
+ *
+ * `"aborted"` — the fetch was stopped. `"network"` — it failed after starting.
+ * `"decode"` — the bytes arrived and could not be decoded. `"unsupported"` — the
+ * format or the `src` was rejected outright, which is also what an empty or
+ * 404'd `src` reports. `"unknown"` covers a code outside the spec's four.
+ */
 export type MediaErrorReason =
   | "aborted"
   | "network"
   | "decode"
   | "unsupported"
   | "unknown";
+
+/**
+ * The two ways playback fails, separated because they need different handling.
+ *
+ * `kind: "media"` — the resource is unusable, and only a different `src` or a
+ * retry will help. `kind: "playback"` — the resource is fine and the browser
+ * refused the command, almost always autoplay policy, which a user gesture
+ * lifts; `reason` is the `DOMException` name. Controls stay enabled for the
+ * second, deliberately: a disabled Play button would make that gesture
+ * impossible.
+ */
 export type AudioError =
   | { kind: "media"; reason: MediaErrorReason }
   | { kind: "playback"; reason: string };
+
+/**
+ * Which of three icons a mute button should show. Mutually exclusive and
+ * exhaustive.
+ *
+ * `"muted"` covers both a muted element and a volume within 0.001 of zero, since
+ * a slider dragged to the end rarely lands on exactly 0. The low/high boundary is
+ * 0.5, and 0.5 itself is high.
+ */
 export type VolumeState = "muted" | "low" | "high";
 
 /**

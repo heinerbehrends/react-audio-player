@@ -118,11 +118,28 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   };
 }
 
+/**
+ * The playback position in whole seconds, for anything that renders a clock.
+ *
+ * Separate from `useAudioPlayer()` on purpose: the position changes about four
+ * times a second, so folding it in would re-render every caller at that rate.
+ * This quantises to the second, so a component reading it re-renders about once
+ * a second rather than four times. Use `useCurrentTime()` if you need the raw
+ * value.
+ */
 export function useCurrentSecond(): number {
   const store = usePlayerStore();
   return useStore(store.currentSecond);
 }
 
+/**
+ * The raw playback position in seconds, fractional, updating at the element's own
+ * rate — roughly 4 Hz, and not on a timer of its own.
+ *
+ * For anything that draws rather than reads: a waveform playhead, a custom
+ * progress bar. For a clock use `useCurrentSecond()`, which re-renders a quarter
+ * as often.
+ */
 export function useCurrentTime(): number {
   const store = usePlayerStore();
   return useStore(store.currentTime);

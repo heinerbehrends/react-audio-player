@@ -67,12 +67,18 @@ sets `aria-pressed`: a name that already says which way the toggle will go,
 plus a pressed state saying it has already gone, announces as a contradiction
 ("Unmute, toggle button, pressed"). Pass your own `aria-label` to override.
 
-While the track is loading or has failed, every control is marked
-`aria-disabled` and does nothing when activated — your own `onClick` included.
-The native `disabled` attribute is deliberately not used: it would take the
-control out of the tab order, so a `src` swap under a focused control would drop
-focus to `<body>`. Style the unavailable state from `[aria-disabled="true"]`
-rather than `:disabled`.
+An unavailable control is marked `aria-disabled` and does nothing when
+activated, your own `onClick` included — so style that state from
+`[aria-disabled="true"]`, never `:disabled`. The native attribute is deliberately
+unused: it takes the control out of the tab order, so a `src` swap under a
+focused control would drop focus to `<body>`.
+
+**Loading does not make a control unavailable.** `play()`, the volume, the mute
+and the rate all work before metadata arrives, and a track change re-enters
+loading, so disabling there would swallow the first press on every playlist
+advance. An error disables everything; missing a duration disables only the
+timeline and the seek buttons, which are the two things that have to name a
+position on the track.
 
 Errors render into a live region. Every control also accepts the global media
 shortcuts while focused, whether or not it is disabled: the shortcuts belong to
@@ -273,7 +279,8 @@ output rather than opinion. Inline styles beat any stylesheet rule, so override
 these through the `style` prop, which is merged last and wins.
 
 **A slider root needs a height.** It has none of its own, and a zero-height
-track measures zero, which leaves the slider silently inert.
+track measures zero, which leaves the slider silently inert. Each slider's own
+tooltip repeats this, since it is the mistake that produces no error at all.
 
 ## Hooks
 

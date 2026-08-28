@@ -4,9 +4,24 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SeekButtonComponentProps = {
   children: React.ReactNode;
+  /**
+   * How far to jump, **in seconds**. Negative rewinds, and the accessible name
+   * follows it: "Seek forward by 10 seconds" or "Seek backward by 10 seconds".
+   * The browser clamps the result to the track.
+   */
   amount: number;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+/**
+ * A fixed-distance jump, forward or back. The one control that needs a duration:
+ * it is marked `aria-disabled` until one is known, and on a live stream, where
+ * there is no end to jump towards — in both directions, since a rewind is
+ * computed against the duration too. `useIsSeekable()` is the same predicate.
+ *
+ * As with every control here the gate is `aria-disabled`, not native
+ * `disabled`, so style it from `[aria-disabled="true"]`; while it is set,
+ * activation does nothing, your own `onClick` included.
+ */
 export function SeekButton({
   children,
   amount,

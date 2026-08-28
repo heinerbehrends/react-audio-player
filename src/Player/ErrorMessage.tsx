@@ -2,9 +2,24 @@ import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ErrorMessageProps = {
+  /**
+   * The message. Rendered as the live region's own content, so it must be
+   * visible text — this component takes no other props, and adding an
+   * `aria-label` to the region would replace the name without being reliably
+   * announced.
+   */
   children: React.ReactNode;
 };
 
+/**
+ * Renders `children` in an assertive live region while the resource is
+ * unusable, and nothing otherwise.
+ *
+ * **Media errors only** — a failed load, an unsupported codec, a decode failure.
+ * A refused `play()` does not render this: the resource is fine and the browser
+ * declined the command, so there is nothing to recover from but a user gesture.
+ * For both kinds, and the reason, use `useAudioError()`.
+ */
 export function ErrorMessage({ children }: ErrorMessageProps) {
   const store = usePlayerStore();
   const loadState = useStore(store.loadState);
