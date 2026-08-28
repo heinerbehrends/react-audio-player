@@ -3,22 +3,20 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ErrorMessageProps = {
   /**
-   * The message. Rendered as the live region's own content, so it must be
-   * visible text — this component takes no other props, and adding an
-   * `aria-label` to the region would replace the name without being reliably
-   * announced.
+   * The message. It becomes the live region's content, so it has to be visible
+   * text — an `aria-label` would replace the announced name instead of adding
+   * to it, which is why this component takes no other props.
    */
   children: React.ReactNode;
 };
 
 /**
- * Renders `children` in an assertive live region while the resource is
- * unusable, and nothing otherwise.
+ * Renders `children` in an assertive live region while the resource is unusable,
+ * and nothing otherwise.
  *
- * **Media errors only** — a failed load, an unsupported codec, a decode failure.
- * A refused `play()` does not render this: the resource is fine and the browser
- * declined the command, so there is nothing to recover from but a user gesture.
- * For both kinds, and the reason, use `useAudioError()`.
+ * **Media errors only**: a failed load, an unsupported codec, a decode failure.
+ * A refused `play()` does not render it — the resource is fine and only a user
+ * gesture will help. For both kinds, use `useAudioError()`.
  */
 export function ErrorMessage({ children }: ErrorMessageProps) {
   const store = usePlayerStore();

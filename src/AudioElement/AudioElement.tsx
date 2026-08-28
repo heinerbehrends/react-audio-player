@@ -8,6 +8,23 @@ type AudioElementProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
   audioRef?: React.Ref<HTMLAudioElement> | undefined;
 };
 
+/**
+ * Writes an element into whichever ref shape the consumer passed.
+ *
+ * At module scope so the ref arrives as a plain parameter: inside the component
+ * it is a prop, and `react-hooks/immutability` cannot tell filling a forwarded
+ * ref from mutating one. `Ref<T>`'s object form declares `current` readonly,
+ * which holds for the consumer but not for whoever owns the element — hence the
+ * cast.
+ */
+function assignRef<T>(ref: React.Ref<T>, value: T | null) {
+  if (typeof ref === "function") {
+    ref(value);
+    return;
+  }
+  (ref as React.MutableRefObject<T | null>).current = value;
+}
+
 export function AudioElement({
   children,
   onEnded,
@@ -36,19 +53,11 @@ export function AudioElement({
   }, []);
 
   // Filled from the element state rather than from the ref callback above,
-  // which has to stay stable. `RefObject.current` is readonly to consumers but
-  // writable by whoever owns the element — hence the cast.
+  // which has to stay stable.
   useEffect(() => {
     if (!audioRef) return;
-    if (typeof audioRef === "function") {
-      audioRef(element);
-      return () => audioRef(null);
-    }
-    const target = audioRef as React.MutableRefObject<HTMLAudioElement | null>;
-    target.current = element;
-    return () => {
-      target.current = null;
-    };
+    assignRef(audioRef, element);
+    return () => assignRef(audioRef, null);
   }, [element, audioRef]);
 
   return (

@@ -1,7 +1,6 @@
 /**
- * The slider's arithmetic: pixels to values and back. Pure and platform-free —
- * nothing here touches the DOM, which is what makes it testable without a
- * browser and what keeps `pointerPosition.ts` separate.
+ * The slider's arithmetic: pixels to values and back. Pure — nothing here touches
+ * the DOM, which is why `pointerPosition.ts` is a separate module.
  */
 
 export type Orientation = "horizontal" | "vertical";

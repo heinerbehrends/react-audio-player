@@ -15,13 +15,13 @@ type ProgressProps = HTMLAttributes<HTMLDivElement>;
  * The elapsed fill. Scaled with `transform`, so give it a background and let it
  * fill the root — width and height are the library's.
  *
- * Carries `transition: transform 250ms linear`, because the position arrives in
- * `timeupdate` steps (~4 Hz) and would visibly tick without it; linear rather
- * than eased so the fill advances at the rate the audio does. It is dropped for
- * the duration of a drag, where easing reads as the fill lagging the finger.
+ * Carries `transition: transform 250ms linear`: the position arrives in
+ * `timeupdate` steps (~4 Hz) and would visibly tick without it. Linear, so the
+ * fill advances at the rate the audio does. Dropped during a drag, where easing
+ * reads as the fill lagging the finger.
  *
- * Override or remove it through `style`, which is merged last:
- * `style={{ transition: "none" }}`.
+ * Override it through `style`, which is merged last: `style={{ transition:
+ * "none" }}`.
  */
 function TimelineProgress(props: ProgressProps) {
   const slider = useSliderContext();
@@ -95,21 +95,18 @@ type TimelineComponent = React.FC<TimelineProps> & {
 };
 
 /**
- * The scrub bar. Compose it from `.Control` (required), and any of
- * `.Background`, `.Progress` and `.Thumb`, in whatever order and markup you
- * like.
+ * The scrub bar. Compose it from `.Control` (required) and any of
+ * `.Background`, `.Progress` and `.Thumb`, in any order or markup.
  *
  * **Give the root a height.** It has none of its own, and a zero-height track
- * measures zero — which leaves the slider silently inert.
+ * measures zero, which leaves the slider silently inert.
  *
- * There is no `maxValue`: the range is the track's duration, read from the
- * element. Until one is known — before metadata, or on a live stream — the
- * slider is marked `aria-disabled` and ignores input, since it cannot name a
- * position. `useIsSeekable()` is the same predicate.
+ * There is no `maxValue` — the range is the duration, read from the element.
+ * Until one is known, before metadata or on a live stream, the slider is
+ * `aria-disabled` and ignores input. `useIsSeekable()` is the same test.
  *
- * Every part carries a `data-part` attribute (`root`, `control`, `progress`,
- * `background`, `thumb`) so plain CSS can reach it. All three sliders share
- * those names, so scope your selectors to your own container.
+ * Parts carry `data-part` for CSS (`root`, `control`, `progress`, `background`,
+ * `thumb`). All three sliders share those names, so scope your selectors.
  *
  * @example
  * ```jsx

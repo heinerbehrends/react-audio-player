@@ -46,8 +46,7 @@ function PlaybackRateBackground({
 type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
   /**
-   * Fastest rate the slider reaches. The arrow keys and `End` clamp to it, and
-   * it is what the slider announces as its maximum.
+   * Fastest rate the slider reaches. The arrow keys and `End` clamp to it.
    *
    * @defaultValue 4
    */
@@ -59,8 +58,8 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
    */
   minValue?: number;
   /**
-   * Snap to a multiple of this. `0` is continuous, and also makes the arrow keys
-   * fall back to a 0.1 step, since an arrow needs a discrete one.
+   * Snap to a multiple of this. `0` is continuous, and makes the arrow keys fall
+   * back to a 0.1 step — an arrow needs a discrete one.
    *
    * @defaultValue 0.1
    */
@@ -101,18 +100,15 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
 };
 
 /**
- * A slider for the playback rate. Compose it from `.Control` (required) and any
- * of `.Background`, `.Progress` and `.Thumb`.
+ * A slider for the playback rate, announced as a multiplier ("1.5x"). Compose it
+ * from `.Control` (required) and any of `.Background`, `.Progress` and `.Thumb`.
  *
  * **Give the root a height**, or the track measures zero and the slider is
  * silently inert.
  *
- * The slider clamps to its own `minValue`/`maxValue`. `PlaybackRate.Set`
- * deliberately does not — it names an explicit rate — so the two can disagree if
- * you use both; the element itself accepts 0–16.
- *
- * The rate announces as a multiplier ("1.5x"). Live while the track is loading:
- * `playbackRate` is settable before metadata.
+ * Clamps to its own `minValue`/`maxValue`. `PlaybackRate.Set` does not, since it
+ * names an explicit rate — so the two can disagree if you use both. Live while
+ * loading; only an error disables it.
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;

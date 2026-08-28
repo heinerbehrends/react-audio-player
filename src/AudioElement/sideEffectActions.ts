@@ -128,6 +128,4 @@ export type KeyboardAction =
 
 /** Everything `send` accepts: the bindable actions plus the two internal ones. */
 export type SideEffectAction =
-  | KeyboardAction
-  | ChangeValueAction
-  | AudioFileEndedAction;
+  KeyboardAction | ChangeValueAction | AudioFileEndedAction;

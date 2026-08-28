@@ -6,21 +6,18 @@ type SeekButtonComponentProps = {
   children: React.ReactNode;
   /**
    * How far to jump, **in seconds**. Negative rewinds, and the accessible name
-   * follows it: "Seek forward by 10 seconds" or "Seek backward by 10 seconds".
-   * The browser clamps the result to the track.
+   * follows the sign. The browser clamps the result to the track.
    */
   amount: number;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * A fixed-distance jump, forward or back. The one control that needs a duration:
- * it is marked `aria-disabled` until one is known, and on a live stream, where
- * there is no end to jump towards — in both directions, since a rewind is
- * computed against the duration too. `useIsSeekable()` is the same predicate.
+ * A fixed-distance jump, forward or back.
  *
- * As with every control here the gate is `aria-disabled`, not native
- * `disabled`, so style it from `[aria-disabled="true"]`; while it is set,
- * activation does nothing, your own `onClick` included.
+ * The one button that needs a duration, in both directions — a rewind is
+ * computed against the duration too. So it is `aria-disabled` before metadata
+ * and on a live stream, where there is no end to jump towards.
+ * `useIsSeekable()` is the same test.
  */
 export function SeekButton({
   children,
@@ -29,8 +26,8 @@ export function SeekButton({
 }: SeekButtonComponentProps) {
   const seekAmount = useSeek(amount);
   const handleMediaKeys = useHandleMediaKeys();
-  // The one button that needs a duration: `useSeek` sends `SET_TIME_FORWARD`
-  // whichever way `amount` points, and that action reads `el.duration`.
+  // `useSeek` sends `SET_TIME_FORWARD` whichever way `amount` points, and that
+  // action reads `el.duration` — so a rewind needs one too.
   const disabled = useDisabledButtonProps(seekAmount, props.onClick, {
     requiresSeekable: true,
   });

@@ -6,24 +6,24 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SetPlaybackRateProps = {
   /**
-   * The rate this button sets — `1` is normal speed, `2` is double.
+   * The rate to set — `1` is normal speed, `2` is double.
    *
-   * **Not clamped to the slider's range**: this names an explicit rate, so
-   * `rate={8}` sets 8 even where `PlaybackRateSlider` would stop at 4. The write
-   * path clamps to the element's own limit of 0–16, so nothing throws.
+   * **Not clamped to the slider's range.** This names an explicit rate, so
+   * `rate={8}` sets 8 where `PlaybackRateSlider` would stop at 4. The write path
+   * clamps to the element's own 0–16, so nothing throws.
    */
   rate: number;
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * Sets one specific rate — the "1x / 1.5x / 2x" row of buttons.
+ * Sets one specific rate — the "1x / 1.5x / 2x" row of buttons. Named "Set
+ * playback rate to {rate}x".
  *
- * Carries `aria-current="true"` while the element is at its rate (within 0.001),
- * and the attribute is absent otherwise rather than `"false"`. The accessible
- * name is "Set playback rate to {rate}x".
+ * Carries `aria-current="true"` while the element is at its rate, within 0.001;
+ * the attribute is absent otherwise rather than `"false"`.
  *
- * Live while the track is loading; only an error marks it `aria-disabled`.
+ * Live while loading; only an error disables it.
  */
 export function SetPlaybackRate({
   rate,
@@ -57,13 +57,12 @@ type CurrentIndicatorProps = {
 };
 
 /**
- * A marker for the rate currently in effect — a tick or a dot beside a
- * `.Set` button.
+ * A marker for the rate in effect — a tick or dot beside a `.Set` button.
  *
- * It always renders `children`, and hides them with `visibility: hidden` when
- * the rate does not match, so the row does not reflow as the marker moves. That
- * means the content is in the DOM either way: do not test for it with a presence
- * check, and do not put anything in it that must not be reachable.
+ * Always renders `children`, hiding them with `visibility: hidden` when the rate
+ * does not match, so the row does not reflow as the marker moves. The content is
+ * therefore in the DOM either way: a presence check cannot tell the two states
+ * apart, and nothing unreachable should go in it.
  */
 export function CurrentIndicator({
   rate,

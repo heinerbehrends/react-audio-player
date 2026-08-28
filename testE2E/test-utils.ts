@@ -1,17 +1,18 @@
 import { Page, expect } from "@playwright/test";
 
 /**
- * A real media element lands `currentTime` a frame or two off a seek target, so
- * every time assertion needs a little slack. 0.3 **seconds**, written as such:
- * these assertions used to read `toBeCloseTo(x, 0.25)`, where the 0.25 is a
- * fractional `numDigits` and the tolerance it produces is ±0.281 s — a number
- * that looks like a precision and is not one (T8).
+ * Slack for a time assertion, in **seconds** — a real element lands
+ * `currentTime` a frame or two off a seek target.
+ *
+ * Named because these used to read `toBeCloseTo(x, 0.25)`, where 0.25 is a
+ * fractional `numDigits` producing ±0.281 s: a number that looks like a
+ * precision and is not one (T8).
  */
 export const SEEK_TOLERANCE_S = 0.3;
 
 /**
- * A pixel budget for a laid-out coordinate: sub-pixel rounding and device pixel
- * ratio both move it, and a clamp that actually failed misses by ~100 px.
+ * Slack for a laid-out coordinate, in pixels. Sub-pixel rounding and device pixel
+ * ratio both move it, while a clamp that actually failed misses by ~100 px.
  * `toBeCloseTo(px, 1)` was ±0.05 px here — tight enough to flake on nothing.
  */
 export const LAYOUT_TOLERANCE_PX = 1;
@@ -34,9 +35,8 @@ const WAIT_TIMEOUT_MS = 5000;
 type AudioNumberField = "currentTime" | "volume" | "playbackRate";
 
 /**
- * What a numeric field has to do before the test may look at it. Exactly one of
- * the three shapes: land near a value, move away from one, or fall inside
- * bounds.
+ * What a field has to do before the test may look at it. Exactly one of three
+ * shapes: land near a value, move away from one, or fall inside bounds.
  */
 type ValueWindow = {
   /** Lands within `within` of this value (default: exactly on it). */
@@ -51,18 +51,16 @@ type ValueWindow = {
 };
 
 /**
- * Waits until the element's own field satisfies `window`, rather than sleeping
- * for a fixed interval and hoping.
+ * Waits until the element's field satisfies `window`, instead of sleeping.
  *
- * Nothing about a media element is predictable enough for a fixed wait:
- * `play()` resolves asynchronously, decode start is unbounded, and a write only
- * reaches the UI once the element has echoed its event back through the store.
- * A 50–100 ms sleep is a race that passes on an idle laptop and reports green on
- * a loaded CI box, which is the one failure mode worth eliminating (T7).
+ * A media element is not predictable enough for a fixed wait: `play()` resolves
+ * asynchronously, decode start is unbounded, and a write reaches the UI only
+ * once the element echoes its event back through the store. A 50–100 ms sleep
+ * passes on an idle laptop and races on a loaded CI box (T7).
  *
- * Prefer the *loosest* window that means "the gesture landed", and leave the
- * precise expectation to the assertion after it — otherwise the wait and the
- * assertion test the same thing and only the wait can fail.
+ * Use the *loosest* window that means "the gesture landed" and leave the precise
+ * expectation to the assertion after it. Otherwise both test the same thing and
+ * only the wait can fail.
  */
 export function waitForAudioField(
   page: Page,
@@ -91,8 +89,8 @@ export function waitForAudioField(
 }
 
 /**
- * Waits until the element is playing, or paused. `play()` returns a promise the
- * click handler does not await, so `paused` flips some time after the click.
+ * Waits until the element is playing, or paused. The click handler does not await
+ * `play()`, so `paused` flips some time after the click.
  */
 export function waitForPlaying(
   page: Page,

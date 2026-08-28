@@ -4,13 +4,13 @@ import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { usePlayerStore } from "./PlayerStoreContext";
 
 /**
- * The four states a player can be in, in the order they are decided: an error
- * wins over everything, then loading, then play/pause.
+ * The four player states, in the order they are decided: an error wins over
+ * everything, then loading, then play/pause.
  *
  * `"loading"` means metadata has not arrived. It does **not** mean the controls
- * are unavailable — `play()`, the volume and the rate all work there — and it is
- * re-entered on every track change, not only at startup. A mid-track stall is
- * not this: it stays `"playing"`, and `useIsBuffering()` reports it.
+ * are unavailable — `play()`, volume and rate all work there — and it is
+ * re-entered on every track change, not only at startup. A mid-track stall stays
+ * `"playing"`; `useIsBuffering()` reports that.
  */
 export type PlayerState = "loading" | "error" | "paused" | "playing";
 
@@ -19,25 +19,20 @@ export type PlayerState = "loading" | "error" | "paused" | "playing";
  *
  * `"aborted"` — the fetch was stopped. `"network"` — it failed after starting.
  * `"decode"` — the bytes arrived and could not be decoded. `"unsupported"` — the
- * format or the `src` was rejected outright, which is also what an empty or
- * 404'd `src` reports. `"unknown"` covers a code outside the spec's four.
+ * format or `src` was rejected outright, which is also what an empty or 404'd
+ * `src` reports. `"unknown"` — a code outside the spec's four.
  */
 export type MediaErrorReason =
-  | "aborted"
-  | "network"
-  | "decode"
-  | "unsupported"
-  | "unknown";
+  "aborted" | "network" | "decode" | "unsupported" | "unknown";
 
 /**
  * The two ways playback fails, separated because they need different handling.
  *
- * `kind: "media"` — the resource is unusable, and only a different `src` or a
- * retry will help. `kind: "playback"` — the resource is fine and the browser
- * refused the command, almost always autoplay policy, which a user gesture
- * lifts; `reason` is the `DOMException` name. Controls stay enabled for the
- * second, deliberately: a disabled Play button would make that gesture
- * impossible.
+ * `kind: "media"` — the resource is unusable; only a different `src` or a retry
+ * will help. `kind: "playback"` — the resource is fine and the browser refused
+ * the command, almost always autoplay policy, and `reason` is the
+ * `DOMException` name. Controls stay enabled for the second, since a user
+ * gesture is what lifts it.
  */
 export type AudioError =
   | { kind: "media"; reason: MediaErrorReason }
@@ -47,9 +42,9 @@ export type AudioError =
  * Which of three icons a mute button should show. Mutually exclusive and
  * exhaustive.
  *
- * `"muted"` covers both a muted element and a volume within 0.001 of zero, since
- * a slider dragged to the end rarely lands on exactly 0. The low/high boundary is
- * 0.5, and 0.5 itself is high.
+ * `"muted"` covers a muted element and a volume within 0.001 of zero — a slider
+ * dragged to the end rarely lands on exactly 0. The low/high boundary is 0.5,
+ * and 0.5 counts as high.
  */
 export type VolumeState = "muted" | "low" | "high";
 
@@ -83,23 +78,16 @@ export function useVolumeState(): VolumeState {
 }
 
 /**
- * Only an error makes a control unavailable. Loading does not: `play()` at
- * `readyState: 0` is legal and the browser queues it, and `volume`, `muted` and
- * `playbackRate` are all settable before metadata — so suppressing them silently
- * drops the first interaction most users attempt. Worse, changing
- * `audioFile.src` re-enters loading, so a gate on the load state would recur on
- * every playlist advance rather than only at startup.
+ * True only on an error. Loading disables nothing: `play()`, `volume`, `muted`
+ * and `playbackRate` all work before metadata, and a `src` change re-enters
+ * loading — so gating here would swallow the first press on every playlist
+ * advance. The accessible name says "Loading audio" instead (A4).
  *
- * The load state is still announced, through the accessible name ("Loading
- * audio") rather than through suppression — see A4.
+ * Reads `loadState`, so it sees a `MediaError` but not a `playbackError`. An
+ * autoplay refusal leaves controls enabled, since a user gesture is what lifts
+ * it.
  *
- * Not every failure disables, either: this reads `loadState`, so it sees a
- * `MediaError` but not a `playbackError`. An autoplay refusal leaves every
- * control enabled, which is the only workable answer — a user gesture is what
- * lifts it, and a disabled Play button makes that gesture impossible.
- *
- * What loading *does* gate is seeking, which needs a duration. That is
- * [[useIsSeekable]], keyed on the range itself rather than on the load state.
+ * Seeking is gated on the duration instead: [[useIsSeekable]].
  */
 export function useIsDisabled(): boolean {
   const store = usePlayerStore();
@@ -109,21 +97,15 @@ export function useIsDisabled(): boolean {
 }
 
 /**
- * Whether a position on the track can be named at all. Everything that has to
- * map a value onto the duration reads this: the timeline slider, whose aria
- * range would otherwise announce `min=0 max=0 now=0` and accept arrow keys into
- * it (A5), and `SeekButton`, which sends `SET_TIME_FORWARD` in both directions
- * and so reads `duration` whichever way it points.
+ * Whether a position on the track can be named. Read by the two controls that
+ * map a value onto the duration: the timeline slider, which would otherwise
+ * announce `min=0 max=0 now=0` and take arrow keys into it (A5), and
+ * `SeekButton`.
  *
- * `duration > 0` is the whole predicate, and a non-finite check would be dead
- * code: `finite()` in `syncFromElement.ts` maps `NaN` and `Infinity` to 0 at
- * every write site, so the atom cannot hold either. That is what folds two cases
- * into one — a player before `loadedmetadata`, and a live stream whose duration
- * is `Infinity` while its `readyState` is perfectly healthy. No load-state check
- * reaches the second.
- *
- * Derived rather than tracked, like [[useIsBuffering]]: there is no flag to get
- * stuck on.
+ * `duration > 0` is the whole test. `finite()` in `syncFromElement` maps `NaN`
+ * and `Infinity` to 0, so this covers a player before `loadedmetadata` and a
+ * live stream alike — and a stream's `readyState` is healthy, so no load-state
+ * check reaches it.
  */
 export function useIsSeekable(): boolean {
   const store = usePlayerStore();

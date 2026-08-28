@@ -119,10 +119,9 @@ describe("useIsDisabled", () => {
   });
 
   /**
-   * The whole point of the split. `play()` at `readyState: 0` is legal and the
-   * browser queues it, so disabling here drops the first interaction most users
-   * attempt — and since a `src` change re-enters loading, it would recur on
-   * every playlist advance rather than only at startup.
+   * The point of the split. `play()` at `readyState: 0` is legal and the browser
+   * queues it, and a `src` change re-enters loading — so disabling here would
+   * swallow the first press on every playlist advance.
    */
   it("is false while merely loading", () => {
     const harness = renderDerived(useIsDisabled, { readyState: 0 });
@@ -159,10 +158,10 @@ describe("useIsSeekable", () => {
   });
 
   /**
-   * `finite()` in `syncFromElement` maps both `NaN` and `Infinity` to 0, so the
-   * atom never holds either and `duration > 0` is the whole predicate. These two
-   * rows are what pin that coupling: remove `finite()` and the `Infinity` row
-   * fails, because `Infinity > 0`.
+   * `finite()` in `syncFromElement` maps `NaN` and `Infinity` to 0, so the atom
+   * holds neither and `duration > 0` is the whole test. These rows pin that
+   * coupling: remove `finite()` and the `Infinity` row fails, since
+   * `Infinity > 0`.
    */
   it.each([
     ["a duration that has not arrived", NaN],

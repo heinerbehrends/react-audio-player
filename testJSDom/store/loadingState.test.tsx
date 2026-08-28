@@ -10,29 +10,22 @@ import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
 import { renderWithStore } from "./renderWithStore";
 
 /**
- * Two gates, not one, and they are keyed on different things.
+ * Two gates, keyed on different things.
  *
- * **Error** disables every control: the resource is unusable, so nothing a
- * control could do would work.
+ * **Error** disables every control — the resource is unusable, so nothing would
+ * work.
  *
- * **Seekability** — a known, non-zero duration — disables only the controls that
- * have to name a position on the track. `SeekButton` is the one button in that
- * set; the timeline slider is the other member and lives in
+ * **Seekability**, a known non-zero duration, disables only the controls that
+ * name a position on the track: `SeekButton` here, and the timeline slider in
  * `useSlider.test.tsx`.
  *
- * **Loading disables nothing by itself.** `play()` at `readyState: 0` is legal
- * and the browser queues it, and `volume`, `muted` and `playbackRate` are all
- * settable before metadata. The load state is announced through the accessible
- * name ("Loading audio", A4) rather than through suppression.
+ * **Loading disables nothing.** `play()` at `readyState: 0` is legal and the
+ * browser queues it, and `volume`, `muted` and `playbackRate` are settable
+ * before metadata. The accessible name says "Loading audio" instead (A4).
  *
- * Tested in jsdom rather than E2E because loading is transient and racy in a
- * real browser and deterministic here. Note that the fake lets `readyState` and
- * `duration` be set independently, which a real element does not — that is what
- * makes the two predicates separable in a test.
- *
- * The gate is `aria-disabled`, not native `disabled`, so the tab stop survives a
- * state change under a focused control. `useDisabledButtonProps` has the
- * reasoning.
+ * In jsdom rather than E2E: loading is racy in a real browser and deterministic
+ * here. The fake also lets `readyState` and `duration` be set independently,
+ * which a real element does not — that is what separates the two predicates.
  */
 function renderAll() {
   return (

@@ -17,10 +17,9 @@ import { positionOf } from "./pointerPosition";
 
 export type SliderAriaAttributes = {
   /**
-   * `true` while the control is unavailable, absent otherwise — never `false`.
-   * On an error for every slider, and additionally without a usable duration for
-   * the seek slider, whose range is the duration. Not the native `disabled`
-   * attribute: the tab stop is the slider's keyboard surface.
+   * `true` when unavailable, absent otherwise — never `false`. Set on an error
+   * for every slider, and on a missing duration for the seek slider. Not the
+   * native `disabled` attribute: the tab stop is the slider's keyboard surface.
    */
   "aria-disabled"?: true | undefined;
   "aria-label": string;
@@ -90,15 +89,9 @@ export function useSlider({
   const handleMediaKeys = useHandleMediaKeys();
   const isErrored = useIsDisabled();
   const isSeekable = useIsSeekable();
-  /**
-   * Two predicates, and only the seek slider reads the second. Its `maxValue`
-   * *is* the duration, so without one it announces `min=0 max=0 now=0` and
-   * accepts arrow keys into that range — A5, and the reason the gate exists.
-   *
-   * The volume and rate sliders are unaffected by a missing duration: neither
-   * reads it, and both write properties the element accepts before metadata. A
-   * load-state gate disabled them as collateral damage.
-   */
+  // Only the seek slider needs a duration: its `maxValue` *is* the duration, so
+  // without one it announces `min=0 max=0 now=0` (A5). Volume and rate have
+  // fixed ranges and write properties the element accepts before metadata.
   const isDisabled = isErrored || (mode === "seek" && !isSeekable);
 
   const valueFromStore = useStore(
@@ -202,8 +195,16 @@ export function useSlider({
         ? committed.value
         : valueFromStore;
 
+  // Load-bearing, not housekeeping: an entry left in place matches again
+  // whenever the store returns to the value the commit was made against, and
+  // re-applies the old value. A test pins that.
+  //
+  // `react-hooks/set-state-in-effect` wants this out of an effect, but React's
+  // documented render-phase alternative does not take effect here — the test
+  // fails — so the effect stays.
   useEffect(() => {
     if (committed && committed.storeValue !== valueFromStore) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCommitted(null);
     }
   }, [committed, valueFromStore]);

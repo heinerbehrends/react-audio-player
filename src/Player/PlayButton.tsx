@@ -64,10 +64,10 @@ function Playing({
 }
 
 /**
- * Renders `children` whenever the element is **not** playing — which includes
- * loading and errored, not only paused. The pair is exhaustive by design, so a
- * button built from `.Playing` and `.Paused` always has an icon; if you want to
- * distinguish the other two states, branch on `useAudioPlayer().playerState`.
+ * Renders `children` whenever the element is **not** playing — including loading
+ * and errored, not only paused. The pair is exhaustive, so a button using both
+ * always shows an icon. To tell the other states apart, read
+ * `useAudioPlayer().playerState`.
  */
 function Paused({
   children,
@@ -90,18 +90,16 @@ PlayButtonComponent.Playing = Playing;
 PlayButtonComponent.Paused = Paused;
 
 /**
- * Play/pause, as one button. Its accessible name is the only place its state
- * appears — "Play audio", "Pause audio", "Loading audio" or "Error loading
- * audio" — and it deliberately sets no `aria-pressed`; pass your own
- * `aria-label` to override or localise.
+ * Play/pause, as one button.
  *
- * Pressable while the track is still loading: `play()` before metadata is legal
- * and the browser queues it. Only an error marks it unavailable, and then with
- * `aria-disabled`, never the native `disabled` attribute — so style that state
- * from `[aria-disabled="true"]`, not `:disabled`. While it is set, activation
- * does nothing, your own `onClick` included.
+ * The accessible name is the only place its state appears — "Play audio", "Pause
+ * audio", "Loading audio" or "Error loading audio". It sets no `aria-pressed`;
+ * pass your own `aria-label` to override.
  *
- * An autoplay refusal is not an error in this sense: the controls stay live,
- * because a user gesture is what lifts it. Read it with `useAudioError()`.
+ * Pressable while loading: `play()` before metadata is legal and the browser
+ * queues it. Only an error disables it, with `aria-disabled` rather than the
+ * native attribute — so style it from `[aria-disabled="true"]`, not
+ * `:disabled`. An autoplay refusal does not disable it; read that with
+ * `useAudioError()`.
  */
 export const PlayButton = PlayButtonComponent;

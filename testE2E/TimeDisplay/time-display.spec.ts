@@ -32,11 +32,10 @@ async function seekTo(seconds: number) {
     if (audio) audio.currentTime = next;
   }, seconds);
   // Assigning `currentTime` is synchronous, so waiting for the element to report
-  // it back proves almost nothing: this spec reads rendered text, and the clock
-  // is driven by `currentSecond`, which the store only reaches on `seeked` /
-  // `timeupdate`. So wait for the *projection* to land, using the timeline's
-  // `aria-valuenow` — it is `currentSecond` in seek mode, and it is on the page
-  // whichever of the two time labels is currently shown.
+  // it back proves little. This spec reads rendered text, driven by
+  // `currentSecond`, which the store reaches only on `seeked` / `timeupdate` —
+  // so wait for that projection too. The timeline's `aria-valuenow` *is*
+  // `currentSecond` in seek mode, and is present whichever readout is shown.
   await waitForAudioField(page, "currentTime", { near: seconds, within: 0.5 });
   await expect(page.getByLabel(labels.timeline)).toHaveAttribute(
     "aria-valuenow",

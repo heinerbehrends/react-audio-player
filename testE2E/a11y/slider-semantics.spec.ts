@@ -17,10 +17,16 @@ test("Tab reaches the element that carries the slider role", async ({
   page,
 }) => {
   const timeline = page.getByLabel(labels.timeline);
+  await expect(timeline).toBeVisible();
   await expect(timeline).toHaveAttribute("role", "slider");
 
-  // The timeline is the first control in the demo app, so one Tab from the
-  // document start has to land on the element that owns the slider semantics.
+  // Tab counts from wherever focus already is, so put it at a known place first.
+  await page.evaluate(() =>
+    (document.activeElement as HTMLElement | null)?.blur(),
+  );
+
+  // The timeline is the first control in the demo, so one Tab has to land on the
+  // element that owns the slider semantics.
   await page.keyboard.press("Tab");
 
   await expect(timeline).toBeFocused();

@@ -7,11 +7,11 @@ import {
 
 /**
  * A labelled group for a set of rate controls — an inline `<span role="group">`,
- * nothing more. Optional: `.Set`, `.Change`, `.Current` and `.Display` all work
+ * nothing more. Optional; `.Set`, `.Change`, `.Current` and `.Display` all work
  * outside it.
  *
- * Use it when the buttons form one visual cluster, so assistive technology
- * announces them as a set rather than as loose buttons.
+ * Use it when the buttons form one cluster, so assistive technology announces
+ * them as a set.
  */
 export function PlaybackRate({ children }: { children: React.ReactNode }) {
   return (

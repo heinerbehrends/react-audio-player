@@ -6,20 +6,17 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 type AudioPlayerProps = {
   children: React.ReactNode;
   /**
-   * The track. Changing `src` swaps it: the browser re-runs resource selection
-   * on its own and the player returns to loading, so a playlist is a piece of
-   * your own state driving this prop, advanced from {@link onEnded}.
+   * The track. Changing `src` swaps it — the browser re-runs resource selection
+   * and the player returns to loading — so a playlist is your own state driving
+   * this prop, advanced from {@link onEnded}.
    *
-   * Safe to pass as an inline object literal — nothing memoises on its identity.
+   * Safe to pass as an inline literal; nothing memoises on its identity.
    */
   audioFile: AudioFile;
   /**
-   * Overrides and additions to the default key map, merged over it. A key absent
-   * here keeps its default; mapping one to a different action replaces it.
+   * Merged over the default key map: a key you do not name keeps its default.
    *
-   * Bound to any focused library control, not to the document — see the
-   * accessibility notes in the README for which keys are global and which belong
-   * to a slider.
+   * Bound to any focused library control, not to the document.
    */
   customKeyboardShortcuts?: KeyToActionMap;
   /**
@@ -55,16 +52,14 @@ type AudioPlayerProps = {
 };
 
 /**
- * The player root: the store, the static config, and the `<audio>` element
- * itself. Renders no controls and no wrapper of its own beyond that element —
- * layout is entirely `children`.
+ * The player root: the store, the config, and the `<audio>` element. Renders no
+ * controls and no wrapper beyond that element — layout is entirely `children`.
  *
- * **Every other export in this library must be rendered inside one**, including
- * the hooks. They read the store through context and throw with a named error
- * outside it, rather than falling back to dead state.
+ * **Every other export must be rendered inside one**, hooks included. They read
+ * the store through context and throw a named error outside it rather than
+ * falling back to dead state.
  *
- * Several players on a page are independent: each gets its own store and its own
- * element.
+ * Several players on a page are independent, each with its own store and element.
  *
  * @example
  * ```jsx

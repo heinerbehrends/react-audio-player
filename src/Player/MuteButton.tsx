@@ -43,9 +43,8 @@ function useToggleMute() {
 }
 
 /**
- * Renders `children` while the player is silent — muted, **or** at a volume
- * within 0.001 of zero, since a slider dragged to the end rarely lands on
- * exactly 0.
+ * Renders `children` while the player is silent: muted, or within 0.001 of zero
+ * volume — a slider dragged to the end rarely lands on exactly 0.
  */
 function Muted({ children }: MutedProps): React.ReactElement | null {
   const volumeState = useVolumeState();
@@ -69,9 +68,9 @@ type HighVolumeProps = {
 };
 
 /**
- * Renders `children` while audible and at or above 0.5. The three parts are
- * mutually exclusive and exhaustive, so a button built from all three always has
- * exactly one icon; 0.5 itself is high.
+ * Renders `children` while audible and at or above 0.5, which counts as high.
+ * The three parts are mutually exclusive and exhaustive, so a button using all
+ * three always shows exactly one icon.
  */
 function HighVolume({ children }: HighVolumeProps): React.ReactElement | null {
   const volumeState = useVolumeState();
@@ -91,13 +90,12 @@ MuteButtonComponent.HighVolume = HighVolume;
 /**
  * Mute/unmute. Named "Mute" or "Unmute" for what pressing it will do, and that
  * name is the only place the state appears — no `aria-pressed`. Pass your own
- * `aria-label` to override or localise.
+ * `aria-label` to override.
  *
- * Unmuting restores the volume the player was last audible at, so muting at 80 %
- * and unmuting returns to 80 % rather than to full.
+ * Unmuting restores the volume the player was last audible at: mute at 80 % and
+ * unmuting returns to 80 %, not to full.
  *
- * Live while the track is loading: `muted` is settable before metadata. Only an
- * error marks it `aria-disabled` — never native `disabled`, so style that state
- * from `[aria-disabled="true"]`.
+ * Live while loading — `muted` is settable before metadata. Only an error
+ * disables it, via `aria-disabled`.
  */
 export const MuteButton = MuteButtonComponent as MuteButtonComponent;

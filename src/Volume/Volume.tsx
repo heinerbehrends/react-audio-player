@@ -35,8 +35,7 @@ type VolumeProps = HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
   /**
    * Which axis the slider runs along. Vertical fills from the bottom and takes
-   * its length from the root's height, so a vertical slider needs an explicit
-   * height rather than a width.
+   * its length from the root's height.
    *
    * @defaultValue "horizontal"
    */
@@ -79,18 +78,15 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * The volume slider, on a 0–1 range. Compose it from `.Control` (required) and
  * any of `.Background`, `.Progress` and `.Thumb`.
  *
- * **Give the root a height** — it has none of its own, and a zero-height track
- * measures zero, which leaves the slider silently inert.
+ * **Give the root a height**, or the track measures zero and the slider is
+ * silently inert.
  *
- * Dragging or clicking to zero also mutes, and moving back above zero unmutes;
- * the arrow keys change the volume without unmuting. The announced value
- * composes the two — "Muted, 80%" — because the element keeps them separate.
+ * Dragging or clicking to zero also mutes, and moving back above zero unmutes.
+ * The arrow keys change the volume without unmuting, so the announced value
+ * composes both — "Muted, 80%".
  *
- * Live while the track is loading: `volume` is settable before metadata. Only an
- * error disables it.
- *
- * Parts carry `data-part` (`root`, `control`, `progress`, `background`,
- * `thumb`), shared with the other two sliders, so scope your CSS.
+ * Live while loading; only an error disables it. Parts carry `data-part`, shared
+ * with the other sliders, so scope your CSS.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got

@@ -6,10 +6,10 @@ export type PositionEvent =
   | { touches: ArrayLike<{ clientX: number; clientY: number }> };
 
 /**
- * The coordinate a slider cares about, picked off whichever shape the event has.
+ * The coordinate a slider cares about, from whichever shape the event has.
  *
- * The one DOM-coupled helper in the slider's stack — everything else it uses is
- * pure arithmetic over numbers. Kept in its own module for that reason.
+ * Its own module because it is the one DOM-coupled helper in the slider's stack;
+ * everything else there is arithmetic over numbers.
  */
 export function positionOf(
   event: PositionEvent,

@@ -190,10 +190,9 @@ describe("click to set", () => {
   });
 
   /**
-   * `step` is optional and defaults to 0, which means "do not snap" —
-   * `calculateSliderValue` skips the quantiser on a falsy step. Rate mode is
-   * the one mode whose `step: 0` path was untested; volume and seek have rows
-   * of their own.
+   * `step` defaults to 0, meaning "do not snap" — `calculateSliderValue` skips
+   * the quantiser on a falsy step. Rate was the one mode whose `step: 0` path
+   * was untested.
    */
   it("stays continuous in rate mode when the step is 0", () => {
     const harness = renderSlider({
@@ -352,6 +351,26 @@ describe("retain until the store reports a different value", () => {
 
     echo(harness.store, "timeupdate", { currentTime: 50.2 });
     expect(harness.result.current.value).toBe(50.2);
+  });
+
+  /**
+   * The effect that clears `committed` is load-bearing, not housekeeping. A
+   * stale entry still matches whenever the store comes back to the value the
+   * commit was made against, and would re-apply the old display value.
+   */
+  it("does not re-apply a stale committed value when the store returns to it", () => {
+    const harness = renderSlider({ mode: "seek" }, { currentTime: 10 });
+
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(0.5)));
+    expect(harness.result.current.value).toBe(50);
+
+    // The element echoes the seek, so the retain rule releases.
+    echo(harness.store, "seeked", { currentTime: 50 });
+    expect(harness.result.current.value).toBe(50);
+
+    // Back to 10 — the store value the commit was made against.
+    echo(harness.store, "seeked", { currentTime: 10 });
+    expect(harness.result.current.value).toBe(10);
   });
 
   it("holds the value across a drag release too", () => {
@@ -584,13 +603,13 @@ describe("the volume-drag pin", () => {
  * `aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"` unmarked, and
  * accepted arrow keys that did nothing.
  *
- * Two predicates reach that now. An **error** disables all three sliders. An
+ * Two predicates reach that. An **error** disables all three sliders. An
  * **unusable range** disables only the seek slider, whose `maxValue` *is* the
- * duration — which is the degenerate range A5 actually describes. Volume and
- * rate have their own fixed ranges and are unaffected.
+ * duration — the degenerate range A5 describes. Volume and rate have fixed
+ * ranges and are unaffected.
  *
  * The fake sets `readyState` and `duration` independently, which a real element
- * does not; that is what lets a test separate the two.
+ * does not; that is what separates the two here.
  */
 describe("the disabled slider", () => {
   it("marks the seek slider aria-disabled without a usable duration", () => {

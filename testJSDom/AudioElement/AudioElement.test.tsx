@@ -119,7 +119,7 @@ describe("AudioElement", () => {
     const seen: (HTMLAudioElement | null)[] = [];
     renderInPlayer(<AudioElement audioRef={(node) => seen.push(node)} />);
 
-    expect(seen.at(-1)).toBe(screen.getByLabelText("audio player"));
+    expect(seen[seen.length - 1]).toBe(screen.getByLabelText("audio player"));
   });
 
   it("attaches the element to the store once, across parent rerenders", () => {

@@ -46,10 +46,9 @@ async function sampleUi(): Promise<{ thumbX: number; valueNow: number }[]> {
         await page.getByLabel(labels.timeline).getAttribute("aria-valuenow"),
       ),
     });
-    // Deliberate, and the one fixed interval left in the suite: this is a
-    // sampling cadence, not a wait for a condition. The snap-back it hunts is a
-    // ~250 ms transient, so anything that waited for a settled state would miss
-    // exactly the thing under test.
+    // The one fixed interval left in the suite, and deliberate: a sampling
+    // cadence, not a wait. The snap-back it hunts is a ~250 ms transient, so
+    // waiting for a settled state would step over the thing under test.
     await page.waitForTimeout(SAMPLE_INTERVAL);
   }
   return samples;

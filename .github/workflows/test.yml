@@ -18,7 +18,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        # Node 18 is EOL and the toolchain no longer runs on it: jsdom 30 wants
+        # ^22.22.2 || ^24.15.0 || >=26, and vite 8, vitest 4 and eslint 10 want
+        # >=20.19. 24.x is the current LTS and satisfies all of them.
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4

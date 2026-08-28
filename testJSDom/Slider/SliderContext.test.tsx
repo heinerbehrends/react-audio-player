@@ -15,13 +15,13 @@ afterEach(() => {
 });
 
 /**
- * Both contexts default to `null` so that the missing-provider guard can fire at
- * all — a real default would let a subcomponent render against dead state
- * instead. These rows are what keeps the default from being "helpfully" filled
- * in later; `PlayerStoreContext.test.tsx` holds the third one.
+ * Both contexts default to `null` so the missing-provider guard can fire; a real
+ * default would let a subcomponent render against dead state. These rows stop
+ * the default from being "helpfully" filled in later.
+ * `PlayerStoreContext.test.tsx` holds the third.
  *
- * S14 is the other half of this story and is still open: a *mis-nested* child
- * still fails silently, because it does reach a provider.
+ * S14 is the open other half: a *mis-nested* child still fails silently, because
+ * it does reach a provider.
  */
 describe("useSliderContext", () => {
   it("throws outside a slider root, rather than handing back a dead default", () => {

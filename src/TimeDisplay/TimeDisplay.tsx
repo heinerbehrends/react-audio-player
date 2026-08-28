@@ -15,12 +15,11 @@ type ChildrenProps = {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * Switches `Time.Elapsed` and `Time.Remaining` — whichever is showing, this
- * shows the other. Named for what pressing it will do ("Show time elapsed" /
- * "Show time remaining"), and that name is the only place the state appears; no
- * `aria-pressed`.
+ * Switches `Time.Elapsed` and `Time.Remaining`. Named for what pressing it will
+ * do — "Show time elapsed" / "Show time remaining" — and that name is the only
+ * place the state appears; no `aria-pressed`.
  *
- * The choice is player state, not this button's: every `Time.Elapsed` and
+ * The choice is player state, not this button's, so every `Time.Elapsed` and
  * `Time.Remaining` in the tree follows it.
  */
 function Toggle({ children, ...props }: ChildrenProps) {
@@ -63,11 +62,10 @@ function useToggleTimeDisplay() {
 }
 
 /**
- * The position, as `M:SS` or `H:MM:SS`, in a `<time>` element named "elapsed".
+ * The position, as `M:SS` or `H:MM:SS`, in a `<time>` named "elapsed".
  *
- * Renders `null` while `Time.Remaining` is the selected display, so the two are
- * a pair: render both and exactly one is visible. Updates once a second, not at
- * the element's ~4 Hz.
+ * Renders `null` while `Time.Remaining` is selected: render both and exactly one
+ * shows. Updates once a second, not at the element's ~4 Hz.
  */
 function Elapsed() {
   const store = usePlayerStore();
@@ -85,11 +83,10 @@ function Elapsed() {
 }
 
 /**
- * The time left, negative-signed — `-1:30` — in a `<time>` element named
- * "remaining".
+ * The time left, negative-signed — `-1:30` — in a `<time>` named "remaining".
  *
- * Renders `null` while `Time.Elapsed` is the selected display. Never counts past
- * zero, and reads `0:00` until the duration is known.
+ * Renders `null` while `Time.Elapsed` is selected. Never counts past zero, and
+ * reads `0:00` until the duration is known.
  */
 function Remaining() {
   const store = usePlayerStore();
@@ -107,11 +104,10 @@ function Remaining() {
 }
 
 /**
- * The track length, in a `<time>` element named "duration". Independent of the
- * elapsed/remaining toggle, so it can sit beside either.
+ * The track length, in a `<time>` named "duration". Independent of the toggle,
+ * so it can sit beside either readout.
  *
- * Reads `0:00` until metadata arrives, and for a live stream, whose duration is
- * unbounded.
+ * Reads `0:00` until metadata arrives, and for a live stream.
  */
 function Duration() {
   const store = usePlayerStore();
@@ -122,11 +118,11 @@ function Duration() {
 /**
  * The time readouts and the toggle between them.
  *
- * A namespace object rather than a component — there is no `<Time>` to render,
- * only `Time.Elapsed`, `Time.Remaining`, `Time.Duration` and `Time.Toggle`.
+ * A namespace object, not a component: there is no `<Time>` to render, only
+ * `Time.Elapsed`, `Time.Remaining`, `Time.Duration` and `Time.Toggle`.
  *
- * `Elapsed` and `Remaining` are two views of one piece of player state: render
- * both and exactly one shows, with `Toggle` switching which.
+ * `Elapsed` and `Remaining` are two views of one piece of state — render both
+ * and exactly one shows, with `Toggle` switching which.
  *
  * @example
  * ```jsx

@@ -4,22 +4,17 @@ import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type IncreaseDecreaseProps = {
-  /**
-   * How much to add to the current rate. Negative slows down; the sign is also
-   * what picks the accessible name.
-   */
+  /** How much to add to the current rate. Negative slows down. */
   amount: number;
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * Steps the rate by a fixed amount, relative to whatever it is now.
+ * Steps the rate by a fixed amount, relative to whatever it is now. Named
+ * "Increase playback rate by 0.25x" or "Decrease…", following the sign.
  *
  * Clamped to the library's 0.5–4 range, so holding it down stops at the ends.
- * The accessible name follows the sign: "Increase playback rate by 0.25x" or
- * "Decrease playback rate by 0.25x".
- *
- * Live while the track is loading; only an error marks it `aria-disabled`.
+ * Live while loading; only an error disables it.
  */
 export function ChangePlaybackRate({
   amount,

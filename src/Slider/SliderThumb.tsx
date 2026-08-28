@@ -5,16 +5,15 @@ import { useSliderContext } from "./SliderContext";
 type SliderThumbProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * The draggable handle. Optional — a slider works without one, and `.Control`
- * alone is a valid slider.
+ * The draggable handle. Optional — `.Control` alone is a valid slider.
  *
- * Pointer-only, by design: `aria-hidden` and `tabIndex={-1}` are locked and
- * cannot be overridden, so that exactly one element per slider announces a value
- * and takes the arrow keys. Grabbing it off-centre does not jump the value.
+ * Pointer-only: `aria-hidden` and `tabIndex={-1}` are locked, so exactly one
+ * element per slider announces a value and takes the arrow keys. Grabbing it
+ * off-centre does not jump the value.
  *
- * Position comes from an inline `transform`, which beats any stylesheet — size
- * it with a class and it self-centres at any size. Render it as a sibling of
- * `.Control`, never inside it.
+ * Position comes from an inline `transform`, which beats any stylesheet; size it
+ * with a class and it self-centres. Render it as a sibling of `.Control`, never
+ * inside it.
  */
 export function SliderThumb(props: SliderThumbProps) {
   const slider = useSliderContext();

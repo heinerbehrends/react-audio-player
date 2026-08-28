@@ -28,16 +28,12 @@ export type AudioPlayerState = {
   rate: number;
   playerState: PlayerState;
   volumeState: VolumeState;
-  /**
-   * The track is errored. Loading does not disable: the element accepts `play()`,
-   * `volume`, `muted` and `playbackRate` before metadata. See `useIsDisabled()`.
-   */
+  /** The track is errored. Loading does not disable — see `useIsDisabled()`. */
   isDisabled: boolean;
   /**
-   * A position on the track can be named — the duration is known and non-zero.
-   * False before `loadedmetadata` and on a live stream, which is what gates the
-   * timeline and the seek buttons rather than the load state. See
-   * `useIsSeekable()`.
+   * The duration is known and non-zero, so a position can be named. False before
+   * `loadedmetadata` and on a live stream. Gates the timeline and the seek
+   * buttons — see `useIsSeekable()`.
    */
   isSeekable: boolean;
   /**
@@ -107,8 +103,8 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
         : volume < 0.5
           ? "low"
           : "high",
-    // Inlined like the two above it, and so has to move in lockstep with
-    // `useIsDisabled` / `useIsSeekable`, which carry the reasoning.
+    // Inlined like the two above, so it moves in lockstep with
+    // `useIsDisabled` / `useIsSeekable`.
     isDisabled: loadState === "error",
     isSeekable: duration > 0,
     isBuffering:
@@ -119,13 +115,12 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
 }
 
 /**
- * The playback position in whole seconds, for anything that renders a clock.
+ * The playback position in whole seconds, for a clock.
  *
- * Separate from `useAudioPlayer()` on purpose: the position changes about four
- * times a second, so folding it in would re-render every caller at that rate.
- * This quantises to the second, so a component reading it re-renders about once
- * a second rather than four times. Use `useCurrentTime()` if you need the raw
- * value.
+ * Separate from `useAudioPlayer()` because the position changes about four times
+ * a second: folding it in would re-render every caller at that rate. Quantising
+ * to the second cuts that to about once a second. For the raw value, use
+ * `useCurrentTime()`.
  */
 export function useCurrentSecond(): number {
   const store = usePlayerStore();
@@ -133,8 +128,8 @@ export function useCurrentSecond(): number {
 }
 
 /**
- * The raw playback position in seconds, fractional, updating at the element's own
- * rate — roughly 4 Hz, and not on a timer of its own.
+ * The raw fractional position in seconds, updating at the element's own rate —
+ * roughly 4 Hz, not on a timer of its own.
  *
  * For anything that draws rather than reads: a waveform playhead, a custom
  * progress bar. For a clock use `useCurrentSecond()`, which re-renders a quarter

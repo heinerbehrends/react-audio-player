@@ -121,7 +121,8 @@ export function atom<T>(initial: T) {
       listeners.forEach((l) => l());
     },
     subscribe: (l: () => void) => (
-      listeners.add(l), () => void listeners.delete(l)
+      listeners.add(l),
+      () => void listeners.delete(l)
     ),
   };
 }

@@ -3,15 +3,15 @@ import { afterEach, beforeAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 try {
-  if (typeof global.ResizeObserver === "undefined") {
-    global.ResizeObserver = class ResizeObserver {
+  if (typeof globalThis.ResizeObserver === "undefined") {
+    globalThis.ResizeObserver = class ResizeObserver {
       observe = vi.fn();
       unobserve = vi.fn();
       disconnect = vi.fn();
     };
   }
 } catch {
-  global.ResizeObserver = class ResizeObserver {
+  globalThis.ResizeObserver = class ResizeObserver {
     observe = vi.fn();
     unobserve = vi.fn();
     disconnect = vi.fn();

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import process from "node:process";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useAudioError } from "../../src/store/derived";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
