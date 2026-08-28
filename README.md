@@ -26,10 +26,10 @@ function App() {
   return (
     <AudioPlayer audioFile={{ src: "audio-file.mp3" }}>
       <Timeline>
-        <Timeline.Seek>
+        <Timeline.Control>
           <Timeline.Progress />
-        </Timeline.Seek>
-        <Timeline.Drag />
+        </Timeline.Control>
+        <Timeline.Thumb />
       </Timeline>
 
       <PlayButton>
@@ -38,10 +38,10 @@ function App() {
       </PlayButton>
 
       <Volume>
-        <Volume.Set>
+        <Volume.Control>
           <Volume.Progress />
-        </Volume.Set>
-        <Volume.Drag />
+        </Volume.Control>
+        <Volume.Thumb />
       </Volume>
     </AudioPlayer>
   );
@@ -147,10 +147,10 @@ function Playlist() {
 `<Timeline step={5}>` is the root and takes an optional arrow-key step in
 seconds; its maximum is the track duration, so it takes no `maxValue`.
 
-- `<Timeline.Seek>` — the focusable slider: click to seek, arrow keys to step
+- `<Timeline.Control>` — the focusable slider: click to seek, arrow keys to step
 - `<Timeline.Progress>` — the filled part of the track
 - `<Timeline.Background>` — the track behind the fill
-- `<Timeline.Drag>` — the draggable thumb
+- `<Timeline.Thumb>` — the draggable thumb
 
 ### Playback controls
 
@@ -161,17 +161,17 @@ seconds; its maximum is the track duration, so it takes no `maxValue`.
 - `<MuteButton.Muted>` — renders its children while muted
 - `<MuteButton.LowVolume>` — renders its children below half volume
 - `<MuteButton.HighVolume>` — renders its children at or above half volume
-- `<Seek amount={10}>` — jumps by `amount` seconds; negative rewinds
+- `<SeekButton amount={10}>` — jumps by `amount` seconds; negative rewinds
 
 ### Volume
 
 `<Volume orientation="horizontal | vertical">` is the root. A vertical slider
 runs bottom to top.
 
-- `<Volume.Set>` — the focusable slider: click to set, arrow keys to step
+- `<Volume.Control>` — the focusable slider: click to set, arrow keys to step
 - `<Volume.Progress>` — the filled part of the track
 - `<Volume.Background>` — the track behind the fill
-- `<Volume.Drag>` — the draggable thumb
+- `<Volume.Thumb>` — the draggable thumb
 
 Reaching zero mutes, by any route — drag, click, keyboard or `setVolume(0)`.
 Unmuting restores the volume the player was last audible at.
@@ -197,10 +197,10 @@ Unmuting restores the volume the player was last audible at.
 `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` is the root. Those
 are the defaults; pass `step={0}` for a continuous slider.
 
-- `<PlaybackRateSlider.Set>` — the focusable slider
+- `<PlaybackRateSlider.Control>` — the focusable slider
 - `<PlaybackRateSlider.Progress>` — the filled part of the track
 - `<PlaybackRateSlider.Background>` — the track behind the fill
-- `<PlaybackRateSlider.Drag>` — the draggable thumb
+- `<PlaybackRateSlider.Thumb>` — the draggable thumb
 
 ### Errors
 

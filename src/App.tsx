@@ -5,7 +5,7 @@ import { Timeline } from "./Timeline/Timeline";
 import { MuteButton } from "./Player/MuteButton";
 import { Volume } from "./Volume/Volume";
 import { Time } from "./TimeDisplay/TimeDisplay";
-import { Seek } from "./Player/Seek";
+import { SeekButton } from "./Player/SeekButton";
 import { ErrorMessage } from "./Player/ErrorMessage";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
@@ -51,7 +51,7 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
   return (
     <AudioPlayer audioFile={{ src }}>
       <Timeline style={{ height: "40px" }}>
-        <Timeline.Seek
+        <Timeline.Control
           style={{
             border: "none",
             background: "none",
@@ -61,8 +61,8 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
         >
           <Timeline.Progress style={{ backgroundColor: "darkgray" }} />
           <Timeline.Background style={{ backgroundColor: "lightgray" }} />
-        </Timeline.Seek>
-        <Timeline.Drag
+        </Timeline.Control>
+        <Timeline.Thumb
           data-testid="timeline-drag-thumb"
           style={{
             height: "40px",
@@ -78,12 +78,12 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
         <MuteButton.HighVolume>High Volume</MuteButton.HighVolume>
         <MuteButton.Muted>Muted</MuteButton.Muted>
       </MuteButton>
-      <Seek amount={-10}>Backward</Seek>
+      <SeekButton amount={-10}>Backward</SeekButton>
       <PlayButton>
         <PlayButton.Playing>Pause</PlayButton.Playing>
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
-      <Seek amount={10}>Forward</Seek>
+      <SeekButton amount={10}>Forward</SeekButton>
       <Time.Toggle>
         <Time.Elapsed />
         <Time.Remaining />
@@ -97,7 +97,7 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
           height: volumeOrientation === "horizontal" ? "40px" : "400px",
         }}
       >
-        <Volume.Set
+        <Volume.Control
           style={{
             padding: volumeOrientation === "horizontal" ? "12px 0" : "0 12px",
             margin: 0,
@@ -107,8 +107,8 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
         >
           <Volume.Progress style={{ backgroundColor: "darkgray" }} />
           <Volume.Background style={{ backgroundColor: "lightgray" }} />
-        </Volume.Set>
-        <Volume.Drag
+        </Volume.Control>
+        <Volume.Thumb
           data-testid="volume-drag-thumb"
           style={{
             height: "40px",
@@ -124,7 +124,7 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
         minValue={0.5}
         step={0.1}
       >
-        <PlaybackRateSlider.Set
+        <PlaybackRateSlider.Control
           style={{
             padding: "12px 0",
           }}
@@ -132,8 +132,8 @@ function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
           <PlaybackRateSlider.Background
             style={{ backgroundColor: "lightgray" }}
           />
-        </PlaybackRateSlider.Set>
-        <PlaybackRateSlider.Drag
+        </PlaybackRateSlider.Control>
+        <PlaybackRateSlider.Thumb
           data-testid="rate-drag-thumb"
           style={{
             height: "40px",

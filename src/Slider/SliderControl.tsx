@@ -6,7 +6,7 @@ import {
   buttonStyles,
 } from "./calculateStyle";
 
-type SetSliderValueProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type SliderControlProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;
 };
 
@@ -15,7 +15,7 @@ type SetSliderValueProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
  * attributes, the arrow keys and the tab stop. Always present — a consumer may
  * render no thumb at all — and it measures the track, since it is the track.
  */
-export function SetSliderValue({ children, ...props }: SetSliderValueProps) {
+export function SliderControl({ children, ...props }: SliderControlProps) {
   const slider = useSliderContext();
 
   const style = {

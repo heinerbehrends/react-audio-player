@@ -1,13 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
-import { Seek } from "../../src/Player/Seek";
+import { SeekButton } from "../../src/Player/SeekButton";
 import { renderWithStore } from "../store/renderWithStore";
 import { labels } from "../../testE2E/test-utils";
 import type { MediaFields } from "../store/mediaElementFake";
 
 describe("Seek", () => {
   const renderSeek = (amount: number, element: Partial<MediaFields> = {}) =>
-    renderWithStore(<Seek amount={amount}>Seek {amount}</Seek>, { element });
+    renderWithStore(<SeekButton amount={amount}>Seek {amount}</SeekButton>, {
+      element,
+    });
 
   describe("Rendering", () => {
     it("renders with correct aria-label", () => {

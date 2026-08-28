@@ -23,15 +23,15 @@ describe("Volume", () => {
   it("should export all subcomponents", () => {
     expect(Volume.Progress).toBeDefined();
     expect(Volume.Background).toBeDefined();
-    expect(Volume.Set).toBeDefined();
-    expect(Volume.Drag).toBeDefined();
+    expect(Volume.Control).toBeDefined();
+    expect(Volume.Thumb).toBeDefined();
   });
 
   describe("Subcomponents render correctly", () => {
     it("should render Volume.Progress with expected styles", () => {
       renderInPlayer(
         <Volume>
-          <Volume.Set>track</Volume.Set>
+          <Volume.Control>track</Volume.Control>
           <Volume.Progress data-testid="progress" />
         </Volume>,
         { element: { volume: 0.5 } },
@@ -60,10 +60,10 @@ describe("Volume", () => {
       });
     });
 
-    it("should render Volume.Set with expected attributes", () => {
+    it("should render Volume.Control with expected attributes", () => {
       renderInPlayer(
         <Volume>
-          <Volume.Set data-testid="set">Set</Volume.Set>
+          <Volume.Control data-testid="set">Set</Volume.Control>
         </Volume>,
       );
 
@@ -72,10 +72,10 @@ describe("Volume", () => {
       expect(set).toHaveAttribute("aria-label", "Volume slider");
     });
 
-    it("should render Volume.Drag with expected attributes", () => {
+    it("should render Volume.Thumb with expected attributes", () => {
       renderInPlayer(
         <Volume>
-          <Volume.Drag data-testid="drag" />
+          <Volume.Thumb data-testid="drag" />
         </Volume>,
       );
 
@@ -88,7 +88,7 @@ describe("Volume", () => {
   it("should render a labelled container with proper styles", () => {
     renderInPlayer(
       <Volume>
-        <Volume.Set>track</Volume.Set>
+        <Volume.Control>track</Volume.Control>
       </Volume>,
     );
 
@@ -105,11 +105,11 @@ describe("Volume", () => {
   it("should support composition of components", () => {
     renderInPlayer(
       <Volume>
-        <Volume.Set data-testid="set">
+        <Volume.Control data-testid="set">
           <Volume.Progress data-testid="progress" />
           <Volume.Background data-testid="background" />
-        </Volume.Set>
-        <Volume.Drag data-testid="drag" />
+        </Volume.Control>
+        <Volume.Thumb data-testid="drag" />
       </Volume>,
     );
 
@@ -122,7 +122,7 @@ describe("Volume", () => {
   it("writes the volume when the track is pressed", () => {
     const { element } = renderInPlayer(
       <Volume>
-        <Volume.Set data-testid="set">track</Volume.Set>
+        <Volume.Control data-testid="set">track</Volume.Control>
       </Volume>,
       { element: { volume: 1 } },
     );
@@ -139,7 +139,7 @@ describe("Volume", () => {
   it("inverts the pointer position when vertical", () => {
     const { element } = renderInPlayer(
       <Volume orientation="vertical">
-        <Volume.Set data-testid="set">track</Volume.Set>
+        <Volume.Control data-testid="set">track</Volume.Control>
       </Volume>,
       { element: { volume: 1 } },
     );

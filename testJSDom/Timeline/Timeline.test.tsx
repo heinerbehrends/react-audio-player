@@ -18,15 +18,15 @@ describe("Timeline", () => {
   it("should export all subcomponents", () => {
     expect(Timeline.Progress).toBeDefined();
     expect(Timeline.Background).toBeDefined();
-    expect(Timeline.Seek).toBeDefined();
-    expect(Timeline.Drag).toBeDefined();
+    expect(Timeline.Control).toBeDefined();
+    expect(Timeline.Thumb).toBeDefined();
   });
 
   describe("Subcomponents render correctly", () => {
     it("should render Timeline.Progress with expected styles", () => {
       renderInPlayer(
         <Timeline>
-          <Timeline.Seek>track</Timeline.Seek>
+          <Timeline.Control>track</Timeline.Control>
           <Timeline.Progress data-testid="progress" />
         </Timeline>,
         { element: { currentTime: 50, duration: 100 } },
@@ -59,10 +59,10 @@ describe("Timeline", () => {
       });
     });
 
-    it("should render Timeline.Seek with expected attributes", () => {
+    it("should render Timeline.Control with expected attributes", () => {
       renderInPlayer(
         <Timeline>
-          <Timeline.Seek data-testid="seek">Seek</Timeline.Seek>
+          <Timeline.Control data-testid="seek">Seek</Timeline.Control>
         </Timeline>,
       );
 
@@ -71,10 +71,10 @@ describe("Timeline", () => {
       expect(seek).toHaveAttribute("aria-label", "Timeline slider");
     });
 
-    it("should render Timeline.Drag with expected attributes", () => {
+    it("should render Timeline.Thumb with expected attributes", () => {
       renderInPlayer(
         <Timeline>
-          <Timeline.Drag data-testid="drag" />
+          <Timeline.Thumb data-testid="drag" />
         </Timeline>,
       );
 
@@ -87,7 +87,7 @@ describe("Timeline", () => {
   it("should render a container with proper styles", () => {
     renderInPlayer(
       <Timeline>
-        <Timeline.Seek>track</Timeline.Seek>
+        <Timeline.Control>track</Timeline.Control>
       </Timeline>,
     );
 
@@ -104,11 +104,11 @@ describe("Timeline", () => {
   it("should support composition of components", () => {
     renderInPlayer(
       <Timeline>
-        <Timeline.Seek data-testid="seek">
+        <Timeline.Control data-testid="seek">
           <Timeline.Progress data-testid="progress" />
           <Timeline.Background data-testid="background" />
-        </Timeline.Seek>
-        <Timeline.Drag data-testid="drag" />
+        </Timeline.Control>
+        <Timeline.Thumb data-testid="drag" />
       </Timeline>,
     );
 
@@ -122,7 +122,7 @@ describe("Timeline", () => {
   it("takes its range from the duration atom", () => {
     const { emit, element } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek data-testid="seek">track</Timeline.Seek>
+        <Timeline.Control data-testid="seek">track</Timeline.Control>
       </Timeline>,
       { element: { duration: 100 } },
     );

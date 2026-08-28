@@ -320,7 +320,7 @@ describe("handleSideEffect", () => {
       expect(audioElement.currentTime).toBe(100);
     });
 
-    // `<Seek amount={-10}>` routes a negative value through `SET_TIME_FORWARD`,
+    // `<SeekButton amount={-10}>` routes a negative value through `SET_TIME_FORWARD`,
     // which has no lower clamp of its own, so the browser's clamp on a negative
     // `currentTime` is what catches it.
     it("has no lower clamp for a negative SET_TIME_FORWARD", () => {

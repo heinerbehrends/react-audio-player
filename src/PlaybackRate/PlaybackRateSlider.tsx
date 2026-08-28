@@ -2,8 +2,8 @@ import {
   progressStyles,
   calculateProgressStyle,
 } from "../Slider/calculateStyle";
-import { SetSliderValue } from "../Slider/SetSliderValue";
-import { DragButton } from "../Slider/DragButton";
+import { SliderControl } from "../Slider/SliderControl";
+import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 
@@ -77,13 +77,13 @@ function PlaybackRateSliderRoot({
 type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
   Background: typeof PlaybackRateBackground;
   Progress: typeof PlaybackRateProgress;
-  Set: typeof SetSliderValue;
-  Drag: typeof DragButton;
+  Control: typeof SliderControl;
+  Thumb: typeof SliderThumb;
 };
 
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;
 PlaybackRateSlider.Background = PlaybackRateBackground;
 PlaybackRateSlider.Progress = PlaybackRateProgress;
-PlaybackRateSlider.Set = SetSliderValue;
-PlaybackRateSlider.Drag = DragButton;
+PlaybackRateSlider.Control = SliderControl;
+PlaybackRateSlider.Thumb = SliderThumb;

@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PlayButton } from "../../src/Player/PlayButton";
 import { MuteButton } from "../../src/Player/MuteButton";
-import { Seek } from "../../src/Player/Seek";
+import { SeekButton } from "../../src/Player/SeekButton";
 import { Time } from "../../src/TimeDisplay/TimeDisplay";
 import { SetPlaybackRate } from "../../src/PlaybackRate/SetPlaybackRate";
 import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
@@ -20,7 +20,7 @@ function renderAll() {
     <>
       <PlayButton>play</PlayButton>
       <MuteButton>mute</MuteButton>
-      <Seek amount={10}>seek</Seek>
+      <SeekButton amount={10}>seek</SeekButton>
       <Time.Toggle>toggle</Time.Toggle>
       <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>
       <ChangePlaybackRate amount={0.25}>faster</ChangePlaybackRate>

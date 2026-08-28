@@ -2,14 +2,14 @@ import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { calculateDragStyle } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
 
-type DragButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+type SliderThumbProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
  * A pointer-only thumb: hidden from assistive technology and out of the tab
  * order, so exactly one element per slider announces a value and takes arrow
  * keys. The drag belongs to `useSlider`; this only reports where it was grabbed.
  */
-export function DragButton(props: DragButtonProps) {
+export function SliderThumb(props: SliderThumbProps) {
   const slider = useSliderContext();
   const style = calculateDragStyle(slider);
 

@@ -23,14 +23,16 @@ describe("PlaybackRateSlider", () => {
   it("should export all subcomponents", () => {
     expect(PlaybackRateSlider.Background).toBeDefined();
     expect(PlaybackRateSlider.Progress).toBeDefined();
-    expect(PlaybackRateSlider.Set).toBeDefined();
-    expect(PlaybackRateSlider.Drag).toBeDefined();
+    expect(PlaybackRateSlider.Control).toBeDefined();
+    expect(PlaybackRateSlider.Thumb).toBeDefined();
   });
 
   it("renders Set with the slider semantics", () => {
     renderInPlayer(
       <PlaybackRateSlider>
-        <PlaybackRateSlider.Set data-testid="set">Set</PlaybackRateSlider.Set>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
       { element: { playbackRate: 1 } },
     );
@@ -44,7 +46,9 @@ describe("PlaybackRateSlider", () => {
   it("defaults to a 0.5 to 4 range", () => {
     renderInPlayer(
       <PlaybackRateSlider>
-        <PlaybackRateSlider.Set data-testid="set">Set</PlaybackRateSlider.Set>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
     );
 
@@ -55,7 +59,9 @@ describe("PlaybackRateSlider", () => {
   it("takes a range from props", () => {
     renderInPlayer(
       <PlaybackRateSlider minValue={1} maxValue={2}>
-        <PlaybackRateSlider.Set data-testid="set">Set</PlaybackRateSlider.Set>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
     );
 
@@ -66,7 +72,7 @@ describe("PlaybackRateSlider", () => {
   it("renders Progress from the rate", () => {
     renderInPlayer(
       <PlaybackRateSlider minValue={0.5} maxValue={2.5}>
-        <PlaybackRateSlider.Set>track</PlaybackRateSlider.Set>
+        <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
         <PlaybackRateSlider.Progress data-testid="progress" />
       </PlaybackRateSlider>,
       { element: { playbackRate: 1.5 } },
@@ -97,7 +103,7 @@ describe("PlaybackRateSlider", () => {
   it("renders Drag out of the tab order", () => {
     renderInPlayer(
       <PlaybackRateSlider>
-        <PlaybackRateSlider.Drag data-testid="drag" />
+        <PlaybackRateSlider.Thumb data-testid="drag" />
       </PlaybackRateSlider>,
     );
 
@@ -109,7 +115,9 @@ describe("PlaybackRateSlider", () => {
   it("snaps a press on the track to the step", () => {
     const { element } = renderInPlayer(
       <PlaybackRateSlider minValue={0.5} maxValue={2} step={0.1}>
-        <PlaybackRateSlider.Set data-testid="set">track</PlaybackRateSlider.Set>
+        <PlaybackRateSlider.Control data-testid="set">
+          track
+        </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
       { element: { playbackRate: 1 } },
     );
@@ -125,11 +133,11 @@ describe("PlaybackRateSlider", () => {
   it("should integrate all components together", () => {
     renderInPlayer(
       <PlaybackRateSlider>
-        <PlaybackRateSlider.Set data-testid="set">
+        <PlaybackRateSlider.Control data-testid="set">
           <PlaybackRateSlider.Progress data-testid="progress" />
           <PlaybackRateSlider.Background data-testid="background" />
-        </PlaybackRateSlider.Set>
-        <PlaybackRateSlider.Drag data-testid="drag" />
+        </PlaybackRateSlider.Control>
+        <PlaybackRateSlider.Thumb data-testid="drag" />
       </PlaybackRateSlider>,
     );
 

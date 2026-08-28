@@ -4,8 +4,8 @@ import {
   progressStyles,
   containerStyles,
 } from "../Slider/calculateStyle";
-import { DragButton } from "../Slider/DragButton";
-import { SetSliderValue } from "../Slider/SetSliderValue";
+import { SliderThumb } from "../Slider/SliderThumb";
+import { SliderControl } from "../Slider/SliderControl";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 
@@ -84,12 +84,12 @@ const TimelineRoot: React.FC<TimelineProps> = ({
 type TimelineComponent = React.FC<TimelineProps> & {
   Progress: typeof TimelineProgress;
   Background: typeof TimelineBackground;
-  Seek: typeof SetSliderValue;
-  Drag: typeof DragButton;
+  Control: typeof SliderControl;
+  Thumb: typeof SliderThumb;
 };
 
 export const Timeline: TimelineComponent = TimelineRoot as TimelineComponent;
 Timeline.Progress = TimelineProgress;
-Timeline.Seek = SetSliderValue;
-Timeline.Drag = DragButton;
+Timeline.Control = SliderControl;
+Timeline.Thumb = SliderThumb;
 Timeline.Background = TimelineBackground;

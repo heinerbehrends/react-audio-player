@@ -1,7 +1,7 @@
 export { AudioPlayer } from "./Player/AudioPlayer";
 export { PlayButton } from "./Player/PlayButton";
 export { MuteButton } from "./Player/MuteButton";
-export { Seek } from "./Player/Seek";
+export { SeekButton } from "./Player/SeekButton";
 export { ErrorMessage } from "./Player/ErrorMessage";
 export { Timeline } from "./Timeline/Timeline";
 export { Volume } from "./Volume/Volume";

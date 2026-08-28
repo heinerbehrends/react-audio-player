@@ -12,11 +12,11 @@ import {
 } from "../testUtils";
 
 /**
- * `SetSliderValue` is `Timeline.Seek`, `Volume.Set` and `PlaybackRateSlider.Set`,
+ * `SliderControl` is `Timeline.Control`, `Volume.Control` and `PlaybackRateSlider.Control`,
  * so it is tested through a real slider root: it reads the context its root
  * publishes and has no props of its own beyond the DOM's.
  */
-describe("SetSliderValue", () => {
+describe("SliderControl", () => {
   let restoreRects: () => void;
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe("SetSliderValue", () => {
   it("renders with correct ARIA attributes", () => {
     const { container } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek>Test</Timeline.Seek>
+        <Timeline.Control>Test</Timeline.Control>
       </Timeline>,
       { element: { currentTime: 30, duration: 120 } },
     );
@@ -47,7 +47,7 @@ describe("SetSliderValue", () => {
   it("takes its label and value text from the mode", () => {
     const { container } = renderInPlayer(
       <Volume>
-        <Volume.Set>Test</Volume.Set>
+        <Volume.Control>Test</Volume.Control>
       </Volume>,
       { element: { volume: 0.42 } },
     );
@@ -61,7 +61,9 @@ describe("SetSliderValue", () => {
   it("merges custom styles with calculated styles", () => {
     const { container } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek style={{ backgroundColor: "red" }}>Test</Timeline.Seek>
+        <Timeline.Control style={{ backgroundColor: "red" }}>
+          Test
+        </Timeline.Control>
       </Timeline>,
     );
     const button = getByRole(container, "slider");
@@ -73,9 +75,9 @@ describe("SetSliderValue", () => {
   it("passes through additional props", () => {
     const { container } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek data-testid="slider" className="custom-class">
+        <Timeline.Control data-testid="slider" className="custom-class">
           Test
-        </Timeline.Seek>
+        </Timeline.Control>
       </Timeline>,
     );
     const button = getByRole(container, "slider");
@@ -87,7 +89,7 @@ describe("SetSliderValue", () => {
   it("is in the tab order, unlike the thumb", () => {
     const { container } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek>Test</Timeline.Seek>
+        <Timeline.Control>Test</Timeline.Control>
       </Timeline>,
     );
     const button = getByRole(container, "slider");
@@ -105,9 +107,9 @@ describe("SetSliderValue", () => {
     const seen: string[] = [];
     const { container, element } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek onKeyDown={() => seen.push("consumer")}>
+        <Timeline.Control onKeyDown={() => seen.push("consumer")}>
           Test
-        </Timeline.Seek>
+        </Timeline.Control>
       </Timeline>,
       { element: { currentTime: 30, duration: 120 } },
     );
@@ -122,7 +124,7 @@ describe("SetSliderValue", () => {
     const onPointerDown = vi.fn();
     const { container, element } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek onPointerDown={onPointerDown}>Test</Timeline.Seek>
+        <Timeline.Control onPointerDown={onPointerDown}>Test</Timeline.Control>
       </Timeline>,
       { element: { currentTime: 0, duration: 100 } },
     );
@@ -138,9 +140,9 @@ describe("SetSliderValue", () => {
   it("lets a consumer cancel the library handler with preventDefault", () => {
     const { container, element } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek onKeyDown={(event) => event.preventDefault()}>
+        <Timeline.Control onKeyDown={(event) => event.preventDefault()}>
           Test
-        </Timeline.Seek>
+        </Timeline.Control>
       </Timeline>,
       { element: { currentTime: 30, duration: 120 } },
     );
@@ -153,9 +155,9 @@ describe("SetSliderValue", () => {
   it("keeps its tab stop and role even when a consumer overrides them", () => {
     const { container } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek tabIndex={-1} role="button">
+        <Timeline.Control tabIndex={-1} role="button">
           Test
-        </Timeline.Seek>
+        </Timeline.Control>
       </Timeline>,
     );
     const slider = getByRole(container, "slider");
@@ -166,7 +168,7 @@ describe("SetSliderValue", () => {
   it("seeks to the pressed fraction of the track", () => {
     const { container, element } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek>Test</Timeline.Seek>
+        <Timeline.Control>Test</Timeline.Control>
       </Timeline>,
       { element: { duration: 100 } },
     );
@@ -180,7 +182,7 @@ describe("SetSliderValue", () => {
   it("responds to arrow keys, so the semantic slider is operable by keyboard", () => {
     const { container, element } = renderInPlayer(
       <Timeline>
-        <Timeline.Seek>Test</Timeline.Seek>
+        <Timeline.Control>Test</Timeline.Control>
       </Timeline>,
       { element: { currentTime: 20, duration: 100 } },
     );

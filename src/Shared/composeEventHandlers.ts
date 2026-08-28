@@ -2,7 +2,7 @@
  * Calls `theirs`, then `ours` — unless `theirs` called `preventDefault()`.
  *
  * A spread prop replaces a handler rather than adding to it, and does so
- * silently: `<Timeline.Seek onKeyDown={…}>` would drop arrow-key adjustment and
+ * silently: `<Timeline.Control onKeyDown={…}>` would drop arrow-key adjustment and
  * every media shortcut, leaving an element that still renders and announces a
  * value but no longer responds.
  *

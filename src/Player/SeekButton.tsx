@@ -7,7 +7,11 @@ type SeekButtonComponentProps = {
   amount: number;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
+export function SeekButton({
+  children,
+  amount,
+  ...props
+}: SeekButtonComponentProps) {
   const seekAmount = useSeek(amount);
   const handleMediaKeys = useHandleMediaKeys();
   const isDisabled = useIsDisabled();

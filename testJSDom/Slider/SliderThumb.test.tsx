@@ -10,7 +10,7 @@ import {
   stubResizeObserver,
 } from "../testUtils";
 
-describe("DragButton", () => {
+describe("SliderThumb", () => {
   let restoreRects: () => void;
 
   beforeEach(() => {
@@ -23,8 +23,8 @@ describe("DragButton", () => {
   const renderThumb = (props: React.HTMLAttributes<HTMLButtonElement> = {}) =>
     renderInPlayer(
       <Timeline>
-        <Timeline.Seek>track</Timeline.Seek>
-        <Timeline.Drag data-testid="thumb" {...props} />
+        <Timeline.Control>track</Timeline.Control>
+        <Timeline.Thumb data-testid="thumb" {...props} />
       </Timeline>,
       { element: { currentTime: 50, duration: 100 } },
     );
