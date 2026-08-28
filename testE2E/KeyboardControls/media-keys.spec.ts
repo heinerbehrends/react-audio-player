@@ -1,5 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getAudioState, labels } from "../test-utils";
+import {
+  getAudioState,
+  labels,
+  waitForAudio,
+  waitForAudioField,
+} from "../test-utils";
 
 let page: Page;
 
@@ -36,7 +41,8 @@ async function setState(volume: number, rate: number) {
     },
     { nextVolume: volume, nextRate: rate },
   );
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "volume", { near: volume, within: 1e-6 });
+  await waitForAudioField(page, "playbackRate", { near: rate, within: 1e-6 });
 }
 
 test("Arrow Up raises the volume", async () => {
@@ -44,7 +50,8 @@ test("Arrow Up raises the volume", async () => {
   await focusPlayButton();
 
   await page.keyboard.press("ArrowUp");
-  await page.waitForTimeout(50);
+  // The loose wait is "the key was handled"; the assertion is the step size.
+  await waitForAudioField(page, "volume", { differsFrom: 0.5 });
 
   expect((await getAudioState(page)).volume).toBeCloseTo(0.525, 3);
 });
@@ -54,7 +61,7 @@ test("Arrow Down lowers the volume", async () => {
   await focusPlayButton();
 
   await page.keyboard.press("ArrowDown");
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "volume", { differsFrom: 0.5 });
 
   expect((await getAudioState(page)).volume).toBeCloseTo(0.475, 3);
 });
@@ -64,11 +71,11 @@ test("> raises and < lowers the playback rate", async () => {
   await focusPlayButton();
 
   await page.keyboard.press(">");
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "playbackRate", { differsFrom: 1 });
   expect((await getAudioState(page)).playbackRate).toBeCloseTo(1.05, 3);
 
   await page.keyboard.press("<");
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "playbackRate", { differsFrom: 1.05 });
   expect((await getAudioState(page)).playbackRate).toBeCloseTo(1, 3);
 });
 
@@ -77,7 +84,7 @@ test("Backspace resets the playback rate", async () => {
   await focusPlayButton();
 
   await page.keyboard.press("Backspace");
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "playbackRate", { differsFrom: 1.75 });
 
   expect((await getAudioState(page)).playbackRate).toBeCloseTo(1, 5);
 });

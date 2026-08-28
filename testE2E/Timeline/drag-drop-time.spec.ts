@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test";
 import {
-  waitForAudio,
-  getTimelineState,
+  LAYOUT_TOLERANCE_PX,
+  expectNear,
   getAudioState,
+  getTimelineState,
   testIds,
+  waitForAudio,
 } from "../test-utils";
-
-const PRECISION = 0.25;
 
 test("drag timeline button to seek when paused", async ({ page }) => {
   await page.goto("/");
@@ -24,7 +24,7 @@ test("drag timeline button to seek when paused", async ({ page }) => {
   await page.mouse.up();
 
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(duration / 2, PRECISION);
+  expectNear(currentTime, duration / 2);
 });
 
 test("drag timeline button to seek while playing", async ({ page }) => {
@@ -50,7 +50,7 @@ test("drag timeline button to seek while playing", async ({ page }) => {
 
   const { currentTime: currentTimeUpdated } = await getAudioState(page);
 
-  expect(currentTimeUpdated).toBeCloseTo(currentTime, PRECISION);
+  expectNear(currentTimeUpdated, currentTime);
 
   const { isPlaying } = await getAudioState(page);
   expect(isPlaying).toBe(true);
@@ -75,17 +75,26 @@ test("drag button cannot move beyond timeline bounds", async ({
 
   let buttonBox = await dragButton.boundingBox();
 
-  expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
+  expectNear(
+    buttonBox?.x ?? 0,
+    sliderStart - BUTTON_OFFSET,
+    LAYOUT_TOLERANCE_PX,
+  );
 
   // Firefox triggers onEnded, which resets the time to 0
   await page.mouse.move(sliderStart + sliderLength + 100, initialBox?.y ?? 0);
   buttonBox = await dragButton.boundingBox();
   if (browserName === "firefox") {
-    expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
+    expectNear(
+      buttonBox?.x ?? 0,
+      sliderStart - BUTTON_OFFSET,
+      LAYOUT_TOLERANCE_PX,
+    );
   } else {
-    expect(buttonBox?.x).toBeCloseTo(
+    expectNear(
+      buttonBox?.x ?? 0,
       sliderStart + sliderLength - BUTTON_OFFSET,
-      1,
+      LAYOUT_TOLERANCE_PX,
     );
   }
 });

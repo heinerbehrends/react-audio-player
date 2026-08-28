@@ -1,5 +1,11 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getAudioState, labels } from "../test-utils";
+import {
+  getAudioState,
+  labels,
+  waitForAudio,
+  waitForAudioField,
+  waitForMuted,
+} from "../test-utils";
 
 let page: Page;
 
@@ -22,7 +28,8 @@ async function setVolume(volume: number) {
       audio.volume = next;
     }
   }, volume);
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "volume", { near: volume, within: 1e-6 });
+  await waitForMuted(page, false);
 }
 
 const muteButton = () => page.getByRole("button", { name: /^(Mute|Unmute)$/ });
@@ -53,7 +60,7 @@ test("clicking the track sets the volume without muting", async () => {
     position: { x: box.width * 0.25, y: box.height / 2 },
     force: true,
   });
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "volume", { differsFrom: 0.8 });
 
   const { volume, muted } = await getAudioState(page);
   expect(volume).toBeCloseTo(0.25, 1);
@@ -77,14 +84,14 @@ test("unmuting after a drag to zero restores the pre-drag volume", async () => {
   await page.mouse.down();
   await page.mouse.move(box.x - 50, y, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(80);
+  await waitForMuted(page, true);
 
   const atZero = await getAudioState(page);
   expect(atZero.volume).toBeCloseTo(0, 2);
   expect(atZero.muted).toBe(true);
 
   await muteButton().click();
-  await page.waitForTimeout(80);
+  await waitForMuted(page, false);
 
   const restored = await getAudioState(page);
   expect(restored.muted).toBe(false);

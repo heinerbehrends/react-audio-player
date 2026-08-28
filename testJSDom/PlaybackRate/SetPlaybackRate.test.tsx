@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import {
@@ -6,7 +6,6 @@ import {
   CurrentIndicator,
   RateDisplay,
 } from "../../src/PlaybackRate/SetPlaybackRate";
-import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
 import { renderWithStore } from "../store/renderWithStore";
 import type { MediaFields } from "../store/mediaElementFake";
 
@@ -16,15 +15,6 @@ const renderRate = (
 ) => renderWithStore(ui, { element });
 
 describe("SetPlaybackRate", () => {
-  const mockHandleKeyDown = vi.fn();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.spyOn(mediaKeysModule, "useHandleMediaKeys").mockReturnValue(
-      mockHandleKeyDown,
-    );
-  });
-
   it("renders a button with correct text", () => {
     renderRate(<SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>);
     const button = screen.getByRole("button");
@@ -62,12 +52,22 @@ describe("SetPlaybackRate", () => {
     expect(screen.getByRole("button")).toHaveAttribute("aria-current", "true");
   });
 
-  it("uses handleMediaKeys for keyboard events", () => {
-    renderRate(<SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>);
+  /**
+   * Against the element, not a mock of the hook: mocking `useHandleMediaKeys`
+   * passes even when the real handler does nothing (T9).
+   */
+  it("handles media keys, writing the element", () => {
+    const { element } = renderRate(
+      <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>,
+    );
+    const button = screen.getByRole("button");
 
-    fireEvent.keyDown(screen.getByRole("button"), { key: "p" });
+    fireEvent.keyDown(button, { key: "p" });
+    expect(element.play).toHaveBeenCalled();
 
-    expect(mockHandleKeyDown).toHaveBeenCalled();
+    // `>` steps the rate by 0.05; it does not jump to this button's own 1.5.
+    fireEvent.keyDown(button, { key: ">" });
+    expect(element.playbackRate).toBeCloseTo(1.05, 10);
   });
 
   it("is aria-disabled while the player is loading, and does not activate", () => {

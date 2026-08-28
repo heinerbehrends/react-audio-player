@@ -1,5 +1,11 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getAudioState, labels } from "../test-utils";
+import {
+  getAudioState,
+  labels,
+  waitForAudio,
+  waitForAudioField,
+  waitForMuted,
+} from "../test-utils";
 
 let page: Page;
 
@@ -21,7 +27,8 @@ async function setVolume(volume: number) {
       audio.volume = next;
     }
   }, volume);
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "volume", { near: volume, within: 1e-6 });
+  await waitForMuted(page, false);
 }
 
 test("clicking the horizontal track at 25% sets the volume", async () => {
@@ -36,7 +43,7 @@ test("clicking the horizontal track at 25% sets the volume", async () => {
     position: { x: box.width * 0.25, y: box.height / 2 },
     force: true,
   });
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "volume", { differsFrom: 0.8 });
 
   expect((await getAudioState(page)).volume).toBeCloseTo(0.25, 1);
 });
@@ -60,7 +67,7 @@ test("dragging up a vertical slider raises the volume", async () => {
   await page.mouse.down();
   await page.mouse.move(x, top, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "volume", { differsFrom: 0.2 });
 
   expect((await getAudioState(page)).volume).toBeGreaterThan(0.6);
 });
@@ -77,7 +84,7 @@ test("clicking low on a vertical slider lowers the volume", async () => {
     position: { x: box.width / 2, y: box.height * 0.75 },
     force: true,
   });
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "volume", { differsFrom: 0.9 });
 
   expect((await getAudioState(page)).volume).toBeCloseTo(0.25, 1);
 });

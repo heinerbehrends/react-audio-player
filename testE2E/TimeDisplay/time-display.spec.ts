@@ -1,9 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
 import {
-  waitForAudio,
-  resetAudioState,
   getAudioState,
   labels,
+  resetAudioState,
+  waitForAudio,
+  waitForAudioField,
 } from "../test-utils";
 
 let page: Page;
@@ -30,13 +31,15 @@ async function seekTo(seconds: number) {
     const audio = document.querySelector("audio");
     if (audio) audio.currentTime = next;
   }, seconds);
-  await page.waitForTimeout(100);
+  // A seek is synchronous on the element but reaches the clock through
+  // `timeupdate` / `seeked`, so wait for the element to report it back.
+  await waitForAudioField(page, "currentTime", { near: seconds, within: 0.5 });
 }
 
 async function ensureElapsedShown() {
   if (await page.getByLabel("remaining", { exact: true }).isVisible()) {
     await toggle().click();
-    await page.waitForTimeout(50);
+    await expect(page.getByLabel("elapsed", { exact: true })).toBeVisible();
   }
 }
 
@@ -74,7 +77,6 @@ test("toggling shows remaining, and it counts down", async () => {
   await seekTo(10);
 
   await toggle().click();
-  await page.waitForTimeout(80);
 
   const remaining = page.getByLabel("remaining", { exact: true });
   await expect(remaining).toBeVisible();

@@ -1,5 +1,12 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getAudioState, labels, testIds } from "../test-utils";
+import {
+  getAudioState,
+  labels,
+  testIds,
+  waitForAudio,
+  waitForAudioField,
+  waitForMuted,
+} from "../test-utils";
 
 let page: Page;
 
@@ -21,7 +28,8 @@ async function setVolume(volume: number) {
       audio.volume = next;
     }
   }, volume);
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "volume", { near: volume, within: 1e-6 });
+  await waitForMuted(page, false);
 }
 
 async function trackBox() {
@@ -39,7 +47,7 @@ test("dragging the thumb to 25% sets the volume", async () => {
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.25, y, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "volume", { differsFrom: 0.8 });
 
   expect((await getAudioState(page)).volume).toBeCloseTo(0.25, 1);
 });
@@ -53,7 +61,7 @@ test("dragging the thumb to zero mutes", async () => {
   await page.mouse.down();
   await page.mouse.move(box.x - 50, y, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(80);
+  await waitForMuted(page, true);
 
   const { volume, muted } = await getAudioState(page);
   expect(volume).toBeCloseTo(0, 2);
@@ -81,7 +89,8 @@ test("grabbing the thumb off-centre does not jump the value", async () => {
   await page.mouse.down();
   await page.mouse.move(thumbCentre + grabOffset + 1, y, { steps: 2 });
   await page.mouse.up();
-  await page.waitForTimeout(80);
+  // A one-pixel drag, so "moved at all" is the whole of what can be waited for.
+  await waitForAudioField(page, "volume", { differsFrom: 0.5 });
 
   const { volume } = await getAudioState(page);
   const onePixel = 1 / box.width;

@@ -1,12 +1,11 @@
 import { test, expect } from "@playwright/test";
 import {
+  expectNear,
   getAudioState,
   labels,
   resetAudioState,
   waitForAudio,
 } from "../test-utils";
-
-const PRECISION = 0.25;
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -48,13 +47,13 @@ test("arrow keys on the focused slider change the value", async ({ page }) => {
   await page.keyboard.press("ArrowRight");
 
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(5, PRECISION);
+  expectNear(currentTime, 5);
   await expect(timeline).toHaveAttribute("aria-valuenow", /[^0]/);
 
   await page.keyboard.press("ArrowLeft");
 
   const { currentTime: afterLeft } = await getAudioState(page);
-  expect(afterLeft).toBeCloseTo(0, PRECISION);
+  expectNear(afterLeft, 0);
 });
 
 test("the drag thumb is hidden from assistive technology", async ({ page }) => {

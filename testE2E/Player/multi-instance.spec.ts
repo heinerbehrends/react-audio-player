@@ -62,7 +62,11 @@ test("playing one player leaves the other alone", async () => {
 
 test("seeking one player leaves the other alone", async () => {
   await playerAt(1).getByRole("button", { name: labels.seekForward }).click();
-  await page.waitForTimeout(150);
+  await page.waitForFunction(
+    () => (document.querySelectorAll("audio")[1]?.currentTime ?? 0) > 0,
+    undefined,
+    { timeout: 5000 },
+  );
 
   const [first, second] = await audioState();
   expect(second!.currentTime).toBeCloseTo(10, 0);
@@ -73,7 +77,11 @@ test("each player's mute button reads its own element", async () => {
   await playerAt(0)
     .getByRole("button", { name: /^(Mute|Unmute)$/ })
     .click();
-  await page.waitForTimeout(120);
+  await page.waitForFunction(
+    () => document.querySelectorAll("audio")[0]?.muted === true,
+    undefined,
+    { timeout: 5000 },
+  );
 
   await expect(
     playerAt(0).getByRole("button", { name: labels.unmute }),

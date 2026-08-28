@@ -1,5 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getAudioState, labels } from "../test-utils";
+import {
+  getAudioState,
+  labels,
+  waitForAudio,
+  waitForAudioField,
+} from "../test-utils";
 
 let page: Page;
 
@@ -18,7 +23,11 @@ async function setRate(rate: number) {
     const audio = document.querySelector("audio");
     if (audio) audio.playbackRate = next;
   }, rate);
-  await page.waitForTimeout(50);
+  await waitForAudioField(page, "playbackRate", { near: rate, within: 1e-6 });
+  await expect(page.getByLabel(labels.playbackRate)).toHaveAttribute(
+    "aria-valuenow",
+    String(rate),
+  );
 }
 
 test("dragging the rate thumb lands on a 0.1 step", async () => {
@@ -31,7 +40,7 @@ test("dragging the rate thumb lands on a 0.1 step", async () => {
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.66, y, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "playbackRate", { differsFrom: 1 });
 
   // The demo slider runs 0.5 to 2 in steps of 0.1.
   const { playbackRate } = await getAudioState(page);
@@ -47,7 +56,7 @@ test("PlaybackRate.Set writes the rate and marks itself current", async () => {
     name: "Set playback rate to 1.5x",
   });
   await setToOneAndAHalf.click();
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "playbackRate", { differsFrom: 1 });
 
   expect((await getAudioState(page)).playbackRate).toBeCloseTo(1.5, 5);
   await expect(setToOneAndAHalf).toHaveAttribute("aria-current", "true");
@@ -62,7 +71,7 @@ test("PlaybackRate.Display follows the element", async () => {
   await page
     .getByRole("button", { name: "Increase playback rate by 0.1x" })
     .click();
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "playbackRate", { differsFrom: 1 });
 
   await expect(page.getByLabel("Current playback rate")).toHaveText("1.1x");
 });

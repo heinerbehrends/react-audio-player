@@ -1,22 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ChangePlaybackRate } from "../../src/PlaybackRate/ChangePlaybackRate";
-import * as mediaKeysModule from "../../src/KeyboardControls/handleMediaKeys";
 import { renderWithStore } from "../store/renderWithStore";
 import type { MediaFields } from "../store/mediaElementFake";
 
 describe("ChangePlaybackRate", () => {
-  const mockHandleMediaKeys = vi.fn();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    vi.spyOn(mediaKeysModule, "useHandleMediaKeys").mockReturnValue(
-      mockHandleMediaKeys,
-    );
-  });
-
   const renderChange = (
     ui: React.ReactElement,
     element: Partial<MediaFields> = {},
@@ -61,12 +50,23 @@ describe("ChangePlaybackRate", () => {
     expect(element.playbackRate).toBe(1.25);
   });
 
-  it("uses the useHandleMediaKeys hook for keyboard events", () => {
-    renderChange(<ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>);
+  /**
+   * Against the element, not a mock of the hook: mocking `useHandleMediaKeys`
+   * passes even when the real handler does nothing (T9).
+   */
+  it("handles media keys, writing the element", () => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
+    );
+    const button = screen.getByRole("button");
 
-    fireEvent.keyDown(screen.getByRole("button"), { key: "p" });
+    fireEvent.keyDown(button, { key: "p" });
+    expect(element.play).toHaveBeenCalled();
 
-    expect(mockHandleMediaKeys).toHaveBeenCalled();
+    // `>` is the global rate key, a different path from this button's own
+    // `amount`: it steps 0.05, not 0.25.
+    fireEvent.keyDown(button, { key: ">" });
+    expect(element.playbackRate).toBeCloseTo(1.05, 10);
   });
 
   it("is aria-disabled while the player is loading, and does not activate", () => {

@@ -77,20 +77,6 @@ describe("calculateStyle", () => {
       });
     });
 
-    it("fills a vertical slider from its value, whatever the slider is", () => {
-      const context = {
-        ...defaultContext,
-        orientation: "vertical" as const,
-        value: 0.5,
-      };
-      const style = calculateProgressStyle(context);
-
-      expect(style).toEqual({
-        transform: "scaleY(0.5)",
-        transformOrigin: "bottom",
-      });
-    });
-
     /**
      * The vertical cases above all sit at `value: 0.5`, the fixed point of
      * `x -> 1 - x`, where an inverted and a non-inverted rule agree exactly. The

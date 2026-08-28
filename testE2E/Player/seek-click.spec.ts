@@ -1,12 +1,13 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, Page } from "@playwright/test";
 import {
-  waitForAudio,
+  expectNear,
   getAudioState,
-  resetAudioState,
   labels,
+  resetAudioState,
+  waitForAudio,
+  waitForAudioField,
+  waitForPlaying,
 } from "../test-utils";
-
-const PRECISION = 0.25;
 
 let page: Page;
 
@@ -26,19 +27,17 @@ test("jumps to correct position when paused", async () => {
   const seekButton = page.getByLabel(labels.seekForward);
   await seekButton.waitFor({ state: "visible" });
   await seekButton.click({ force: true });
-
-  await page.waitForTimeout(100);
+  await waitForAudioField(page, "currentTime", { differsFrom: 0 });
 
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(10, PRECISION);
+  expectNear(currentTime, 10);
 });
 
 test("jumps to correct position when playing", async () => {
   await resetAudioState(page);
 
   await page.getByRole("button", { name: labels.playAudio }).click();
-
-  await page.waitForTimeout(100);
+  await waitForPlaying(page);
 
   const seekButton = page.getByLabel(labels.seekForward);
   await seekButton.waitFor({ state: "visible" });
@@ -51,5 +50,5 @@ test("jumps to correct position when playing", async () => {
 
   const expectedTime = 10;
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(expectedTime, PRECISION);
+  expectNear(currentTime, expectedTime);
 });

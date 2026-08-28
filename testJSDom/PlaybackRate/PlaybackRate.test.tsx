@@ -1,15 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { PlaybackRate } from "../../src/PlaybackRate/PlaybackRate";
 import { TestProviders } from "../testComponents";
-
-const mockAudioElement = {
-  playbackRate: 1.5,
-} as unknown as HTMLAudioElement;
-
-vi.mock("../../src/AudioElement/useAudioElement", () => ({
-  useAudioElement: () => mockAudioElement,
-}));
 
 describe("PlaybackRate", () => {
   it("should export all subcomponents", () => {
@@ -53,14 +45,28 @@ describe("PlaybackRate", () => {
       expect(button).toHaveTextContent("Faster");
     });
 
-    it("should render PlaybackRate.Current with current rate", () => {
-      render(
-        <TestProviders>
+    /**
+     * `.Current` renders its children in **both** branches — the non-current one
+     * is a `visibility: hidden` span — so presence in the document says nothing.
+     * Visibility is the discriminant (T5).
+     */
+    it("should show PlaybackRate.Current only at the element's rate", () => {
+      const { unmount } = render(
+        <TestProviders element={{ playbackRate: 1.5 }}>
           <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
         </TestProviders>,
       );
 
-      expect(screen.getByText("*")).toBeInTheDocument();
+      expect(screen.getByText("*")).toBeVisible();
+      unmount();
+
+      render(
+        <TestProviders element={{ playbackRate: 1 }}>
+          <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
+        </TestProviders>,
+      );
+
+      expect(screen.getByText("*")).not.toBeVisible();
     });
   });
 

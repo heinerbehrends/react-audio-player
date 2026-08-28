@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
 import { renderInPlayer } from "../testComponents";
-import { stubElementRects, stubResizeObserver } from "../testUtils";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 describe("Timeline", () => {
   let restoreRects: () => void;
@@ -41,6 +46,65 @@ describe("Timeline", () => {
         height: "100%",
         transform: "scaleX(0.5)",
         transformOrigin: "left",
+        transition: "transform 250ms linear",
+      });
+    });
+
+    /**
+     * The fill is driven by `currentTime`, which arrives in `timeupdate` steps
+     * (~4 Hz), so it would visibly tick without the transition. 250 ms linear
+     * matches that cadence: any easing would make the fill advance at a rate the
+     * audio does not.
+     */
+    describe("the progress transition", () => {
+      const renderTimeline = () =>
+        renderInPlayer(
+          <Timeline>
+            <Timeline.Control>track</Timeline.Control>
+            <Timeline.Thumb data-testid="thumb" />
+            <Timeline.Progress data-testid="progress" />
+          </Timeline>,
+          { element: { currentTime: 50, duration: 100 } },
+        );
+
+      it("smooths the timeupdate steps while idle", () => {
+        renderTimeline();
+
+        expect(screen.getByTestId("progress").style.transition).toBe(
+          "transform 250ms linear",
+        );
+      });
+
+      /**
+       * Off during a drag: there the value updates at pointer rate, and easing
+       * reads as the fill lagging the finger.
+       */
+      it("drops out for the duration of a drag", () => {
+        renderTimeline();
+        const progress = screen.getByTestId("progress");
+
+        fireEvent(
+          screen.getByTestId("thumb"),
+          pointerEventAt("pointerdown", alongTrack(0.5)),
+        );
+        expect(progress.style.transition).toBe("");
+
+        fireEvent(window, pointerEventAt("pointerup", alongTrack(0.75)));
+        expect(progress.style.transition).toBe("transform 250ms linear");
+      });
+
+      it("lets a consumer's own style win, so it can be dropped", () => {
+        renderInPlayer(
+          <Timeline>
+            <Timeline.Control>track</Timeline.Control>
+            <Timeline.Progress
+              data-testid="progress"
+              style={{ transition: "none" }}
+            />
+          </Timeline>,
+        );
+
+        expect(screen.getByTestId("progress").style.transition).toBe("none");
       });
     });
 

@@ -6,6 +6,7 @@ import {
   useIsBuffering,
   useIsDisabled,
   usePlayerState,
+  useTimeDisplay,
   useVolumeState,
 } from "../../src/store/derived";
 import { createTestStore, type TestStore } from "./createTestStore";
@@ -209,5 +210,55 @@ describe("useIsBuffering", () => {
 
     expect(result.current.buffering).toBe(true);
     expect(result.current.state).toBe("playing");
+  });
+});
+
+describe("useTimeDisplay", () => {
+  it("reports the elapsed and the remaining time", () => {
+    const { result } = renderDerived(useTimeDisplay, {
+      currentTime: 30,
+      duration: 100,
+    });
+
+    expect(result.current).toEqual({ elapsed: 30, remaining: 70 });
+  });
+
+  /**
+   * Both halves come off `currentSecond`, the store's 1 Hz clock, so a
+   * sub-second `currentTime` reads as the whole second below it — and the two
+   * always sum to the duration rather than drifting apart.
+   */
+  it("quantises both halves to the same whole second", () => {
+    const { result } = renderDerived(useTimeDisplay, {
+      currentTime: 30.9,
+      duration: 100,
+    });
+
+    expect(result.current).toEqual({ elapsed: 30, remaining: 70 });
+  });
+
+  it("follows a timeupdate", () => {
+    const { result, ...harness } = renderDerived(useTimeDisplay, {
+      currentTime: 0,
+      duration: 100,
+    });
+
+    drive(harness, "timeupdate", { currentTime: 42 });
+
+    expect(result.current).toEqual({ elapsed: 42, remaining: 58 });
+  });
+
+  /**
+   * The clamp. `currentSecond` can pass `duration`: the element fires a last
+   * `timeupdate` at the very end, and `duration` is `NaN` until metadata
+   * arrives, which would otherwise render as "-NaN" or a negative countdown.
+   */
+  it.each([
+    ["currentTime past the duration", { currentTime: 101, duration: 100 }],
+    ["a duration that is still NaN", { currentTime: 5, duration: NaN }],
+  ])("holds remaining at zero with %s", (_label, element) => {
+    const { result } = renderDerived(useTimeDisplay, element);
+
+    expect(result.current.remaining).toBe(0);
   });
 });

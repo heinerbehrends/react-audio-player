@@ -1,5 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, labels } from "../test-utils";
+import {
+  labels,
+  waitForAudio,
+  waitForAudioField,
+  waitForMuted,
+} from "../test-utils";
 
 let page: Page;
 
@@ -35,7 +40,8 @@ async function setVolume(volume: number, muted = false) {
     },
     { next: volume, isMuted: muted },
   );
-  await page.waitForTimeout(80);
+  await waitForAudioField(page, "volume", { near: volume, within: 1e-6 });
+  await waitForMuted(page, muted);
 }
 
 test("a volume below 0.5 renders MuteButton.LowVolume", async () => {

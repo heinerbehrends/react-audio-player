@@ -189,6 +189,31 @@ describe("click to set", () => {
     expect(harness.store.element.playbackRate).toBeCloseTo(1.3, 5);
   });
 
+  /**
+   * `step` is optional and defaults to 0, which means "do not snap" —
+   * `calculateSliderValue` skips the quantiser on a falsy step. Rate mode is
+   * the one mode whose `step: 0` path was untested; volume and seek have rows
+   * of their own.
+   */
+  it("stays continuous in rate mode when the step is 0", () => {
+    const harness = renderSlider({
+      mode: "rate",
+      minValue: 0.5,
+      maxValue: 2,
+      step: 0,
+    });
+
+    // A third of the way along a 0.5 to 2 range: 0.5 + 1.5/3 = 1. Off-step for
+    // any step a rate slider would plausibly use, so a snap would move it.
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(1 / 3)));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(1, 5);
+
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(0.42)));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(0.5 + 1.5 * 0.42, 5);
+  });
+
   it("mutes when the volume track is clicked at zero", () => {
     const harness = renderSlider({ mode: "volume" }, { volume: 0.8 });
 
@@ -446,6 +471,21 @@ describe("per-mode arrow keys", () => {
 
     act(() => harness.result.current.onKeyDown(keyDown("ArrowLeft")));
     expect(harness.store.element.playbackRate).toBeCloseTo(1, 5);
+  });
+
+  /**
+   * `step || config.defaultArrowStep` — a continuous slider still needs a
+   * discrete arrow step, so 0 falls through to the mode's own 0.1.
+   */
+  it("falls back to the mode's arrow step when the step is 0", () => {
+    const harness = renderSlider(
+      { mode: "rate", minValue: 0.5, maxValue: 2, step: 0 },
+      { playbackRate: 1 },
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown("ArrowRight")));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(1.1, 5);
   });
 
   it("leaves every other key to the global media shortcuts", () => {

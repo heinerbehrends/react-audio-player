@@ -27,8 +27,7 @@ describe("handleSideEffect", () => {
   });
 
   it("should do nothing if audio element is null", () => {
-    const result = handleSideEffect({ type: "TOGGLE_PLAY" }, null);
-    expect(result).toBeUndefined();
+    expect(() => handleSideEffect({ type: "TOGGLE_PLAY" }, null)).not.toThrow();
   });
 
   it("should handle PLAY and PAUSE action", () => {
