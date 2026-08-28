@@ -16,7 +16,9 @@ type SliderThumbProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
  * inside it.
  */
 export function SliderThumb(props: SliderThumbProps) {
-  const slider = useSliderContext();
+  // Destructured like `SliderControl`: `react-hooks/refs` treats a context object
+  // holding a ref callback as ref-like, and flags every member read off it.
+  const { onThumbPointerDown, ...slider } = useSliderContext();
   const style = calculateDragStyle(slider);
 
   return (
@@ -26,7 +28,7 @@ export function SliderThumb(props: SliderThumbProps) {
       {...props}
       onPointerDown={composeEventHandlers(
         props.onPointerDown,
-        slider.onThumbPointerDown,
+        onThumbPointerDown,
       )}
       // Locked as a pair, and after the spread so neither can be overridden:
       // unhiding the thumb would put a second value-announcing element in one
