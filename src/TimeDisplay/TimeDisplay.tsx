@@ -92,8 +92,9 @@ function Elapsed(props: TimeProps) {
  * `<time data-part="remaining">`.
  *
  * Renders `null` while `Time.Elapsed` is selected. Never counts past zero, and
- * reads `0:00` until the duration is known. No `aria-label`, for the reason
- * given on `Time.Elapsed`.
+ * reads `0:00` — unsigned — both before the duration is known and once the track
+ * has finished, where a "-0:00" would read as a glitch. No `aria-label`, for the
+ * reason given on `Time.Elapsed`.
  */
 function Remaining(props: TimeProps) {
   const store = usePlayerStore();
@@ -106,7 +107,9 @@ function Remaining(props: TimeProps) {
   }
   return (
     <time data-part="remaining" {...props}>
-      {playerState === "loading" ? "0:00" : `-${formatTime(remaining)}`}
+      {playerState === "loading" || Math.round(remaining) === 0
+        ? "0:00"
+        : `-${formatTime(remaining)}`}
     </time>
   );
 }

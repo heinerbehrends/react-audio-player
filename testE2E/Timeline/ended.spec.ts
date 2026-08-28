@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, getAudioState, labels } from "../test-utils";
+import { getAudioState, labels, waitForAudio } from "../test-utils";
 
 let page: Page;
 
@@ -14,11 +14,11 @@ test.afterAll(async () => {
 });
 
 /**
- * On `ended` the element itself is moved to 0, so `seeked` fires and the atoms
- * follow. Pushing only the thumb there would leave the clock showing the full
- * track length.
+ * The element parks at the end rather than being rewound, which is what
+ * `<audio>` does unaided and what every streaming player shows. A consumer's
+ * `onEnded` can therefore still read where playback stopped.
  */
-test("playing to the end returns both the element and the clock to the start", async () => {
+test("playing to the end parks at the end, paused", async () => {
   const { duration } = await getAudioState(page);
   expect(duration).toBeGreaterThan(1);
 
@@ -31,19 +31,42 @@ test("playing to the end returns both the element and the clock to the start", a
   await page.getByRole("button", { name: labels.playAudio }).click();
 
   await page.waitForFunction(
-    () => (document.querySelector("audio")?.currentTime ?? -1) === 0,
+    () => document.querySelector("audio")?.ended === true,
     undefined,
     { timeout: 5000 },
   );
 
   const afterEnd = await getAudioState(page);
-  expect(afterEnd.currentTime).toBe(0);
   expect(afterEnd.isPlaying).toBe(false);
+  // At or fractionally past it: Chrome parks a little beyond `duration`.
+  expect(afterEnd.currentTime).toBeGreaterThanOrEqual(duration - 0.01);
 
-  // The clock reads the same zero the thumb is at, rather than the duration.
-  await expect(page.locator("[data-part=elapsed]")).toHaveText("0:00");
+  // The clock and the thumb both show the end, not a start they never reached.
   await expect(page.getByLabel(labels.timeline)).toHaveAttribute(
     "aria-valuenow",
-    "0",
+    String(Math.floor(duration)),
   );
+});
+
+/**
+ * Why the rewind was not needed: the platform already does it, at the point it
+ * actually matters. Pressing Play on an ended element seeks to 0 itself.
+ */
+test("pressing play after the end restarts the track", async () => {
+  await page.getByRole("button", { name: labels.playAudio }).click();
+
+  await page.waitForFunction(
+    () => {
+      const audio = document.querySelector("audio");
+      return !!audio && !audio.paused && audio.currentTime < 5;
+    },
+    undefined,
+    { timeout: 5000 },
+  );
+
+  const restarted = await getAudioState(page);
+  expect(restarted.currentTime).toBeLessThan(5);
+  expect(restarted.isPlaying).toBe(true);
+
+  await page.getByRole("button", { name: labels.pauseAudio }).click();
 });

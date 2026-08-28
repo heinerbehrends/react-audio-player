@@ -67,16 +67,13 @@ export function AudioElement({
       aria-label="audio player"
       ref={ref}
       /**
-       * Policy, not projection: on `ended` the element sits at `duration` while
-       * the UI wants the thumb back at the start. Moving the element itself
-       * fires `seeked`, and the atoms follow.
+       * Passed straight through. The element parks at the end, as `<audio>` and
+       * every streaming player do, so a consumer's handler can still read where
+       * playback stopped. `play()` on an ended element seeks to 0 itself —
+       * measured in Chrome — so rewinding here bought no replay and only
+       * destroyed that information.
        */
-      onEnded={(event) => {
-        // Rewind first, so a consumer swapping `src` from here lands on an
-        // element that is at 0 rather than at `duration`.
-        store.send({ type: "SET_TIME_TO_START" });
-        onEnded?.(event);
-      }}
+      onEnded={onEnded}
     >
       {children ? children : undefined}
     </audio>

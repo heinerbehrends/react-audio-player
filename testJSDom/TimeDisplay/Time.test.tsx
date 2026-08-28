@@ -98,6 +98,23 @@ describe("Time", () => {
     expect(part(name)).toHaveClass("clock");
   });
 
+  /**
+   * The resting state after a track finishes, now that the element parks at the
+   * end instead of being rewound. A signed "-0:00" reads as a glitch.
+   */
+  it("drops the sign once nothing is remaining", () => {
+    const harness = createTestStore({
+      readyState: 1,
+      duration: 120,
+      currentTime: 120,
+    });
+    harness.store.timeDisplay.set("remaining");
+    renderWithStore(<Time.Remaining />, { testStore: harness });
+
+    expect(part("remaining")).toHaveTextContent("0:00");
+    expect(part("remaining")?.textContent).not.toContain("-");
+  });
+
   it("renders Duration from the duration atom", () => {
     renderWithStore(<Time.Duration />, {
       element: { readyState: 1, duration: 120 },

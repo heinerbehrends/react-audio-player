@@ -20,13 +20,16 @@ type AudioPlayerProps = {
    */
   customKeyboardShortcuts?: KeyToActionMap;
   /**
-   * Fired once when the track finishes, after the element has been returned to
-   * the start. The hook for a playlist: hold the index in your own state and
-   * advance it here.
+   * Fired once when the track finishes. The element is left parked at the end,
+   * so a handler can read where playback stopped.
    *
-   * A callback rather than an `ended` atom, because the rewind clears
-   * `el.ended` within a tick — a state would flicker, and a playlist wants the
-   * edge, not the level.
+   * The hook for a playlist: hold the index in your own state and advance it
+   * here. Nothing resumes playback on its own — a `src` change arrives loaded
+   * and paused — so call `play()` after the new track reports metadata, or pass
+   * `audioProps={{ autoPlay: true }}` and handle a possible autoplay refusal.
+   *
+   * This is the edge, "the track just finished". For the level, "the position is
+   * the end", use `useIsAtEnd()`.
    */
   onEnded?: () => void;
   /**

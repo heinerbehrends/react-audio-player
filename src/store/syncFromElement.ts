@@ -173,7 +173,13 @@ export const HANDLERS = {
   },
   play: projectPaused,
   pause: projectPaused,
-  ended: projectPaused,
+  // Both, not just `paused`: the element parks past `duration` and the final
+  // `timeupdate` is not ordered against this event, so `useIsAtEnd` would race
+  // it. Chrome reports `currentTime` slightly *greater* than `duration` here.
+  ended: (element, atoms, pinned) => {
+    projectPaused(element, atoms, pinned);
+    projectTime(element, atoms, pinned);
+  },
   error: (element, atoms) => {
     atoms.mediaErrorCode.set(element.error?.code ?? null);
     atoms.loadState.set("error");

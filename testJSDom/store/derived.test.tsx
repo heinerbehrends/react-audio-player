@@ -3,6 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { act } from "@testing-library/react";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import {
+  useIsAtEnd,
   useIsBuffering,
   useIsDisabled,
   useIsSeekable,
@@ -341,5 +342,73 @@ describe("useTimeDisplay", () => {
     const { result } = renderDerived(useTimeDisplay, element);
 
     expect(result.current.remaining).toBe(0);
+  });
+});
+
+/**
+ * Position, not history: it says "the playhead is at the end", which is why it
+ * needs no clearing and cannot go stale across a `src` change. `onEnded` is the
+ * edge; this is the level.
+ */
+describe("useIsAtEnd", () => {
+  it("is false mid-track and true at the end", () => {
+    const harness = renderDerived(useIsAtEnd, {
+      duration: 100,
+      currentTime: 50,
+    });
+    expect(harness.result.current).toBe(false);
+
+    drive(harness, "timeupdate", { currentTime: 100 });
+    expect(harness.result.current).toBe(true);
+  });
+
+  /**
+   * A browser parks slightly *past* `duration` when playback ends — Chrome
+   * reports about 0.5 s beyond. So the test is `>=`, not an approximate match:
+   * a 0.001 tolerance reads false at exactly the moment the track finishes.
+   */
+  it("is true when the element parks past the duration", () => {
+    const { result } = renderDerived(useIsAtEnd, {
+      duration: 283.333333,
+      currentTime: 283.807869,
+    });
+
+    expect(result.current).toBe(true);
+  });
+
+  it("clears as soon as the position moves off the end", () => {
+    const harness = renderDerived(useIsAtEnd, {
+      duration: 100,
+      currentTime: 100,
+    });
+    expect(harness.result.current).toBe(true);
+
+    drive(harness, "seeked", { currentTime: 0 });
+    expect(harness.result.current).toBe(false);
+  });
+
+  /** No duration, no end: before metadata, and on a live stream. */
+  it.each([
+    ["a duration that has not arrived", NaN],
+    ["a live stream", Infinity],
+  ])("is false with %s", (_label, duration) => {
+    const { result } = renderDerived(useIsAtEnd, { duration, currentTime: 30 });
+
+    expect(result.current).toBe(false);
+  });
+
+  /**
+   * The `ended` event projects the position as well as `paused`. Without that
+   * this would race the final `timeupdate`, which is not ordered against it.
+   */
+  it("sees the end from the ended event alone", () => {
+    const harness = renderDerived(useIsAtEnd, {
+      duration: 100,
+      currentTime: 50,
+    });
+
+    drive(harness, "ended", { currentTime: 100.4, paused: true });
+
+    expect(harness.result.current).toBe(true);
   });
 });

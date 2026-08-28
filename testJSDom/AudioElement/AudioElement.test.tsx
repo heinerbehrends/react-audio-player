@@ -34,23 +34,25 @@ describe("AudioElement", () => {
    * The `ended` policy: moving the element itself to 0, rather than pushing the
    * thumb there, keeps the clock and the thumb in agreement.
    */
-  it("returns the element to the start when playback ends", () => {
+  /**
+   * The element parks at the end, as `<audio>` and every streaming player do.
+   * It used to be rewound here, which bought no replay — `play()` on an ended
+   * element seeks to 0 itself, measured in Chrome — and destroyed the one thing
+   * a consumer's handler might want to read.
+   */
+  it("leaves the element where playback stopped", () => {
     renderInPlayer(<AudioElement />);
     const audio = screen.getByLabelText("audio player") as HTMLAudioElement;
-    // jsdom's `<audio>` is inert, so assign a time the handler can reset.
+    // jsdom's `<audio>` is inert, so the position is assigned.
     Object.defineProperty(audio, "currentTime", { value: 100, writable: true });
 
     audio.dispatchEvent(new Event("ended"));
 
-    expect(audio.currentTime).toBe(0);
+    expect(audio.currentTime).toBe(100);
   });
 
-  /**
-   * The playlist hook. The rewind above clears `el.ended` within a tick, so
-   * what matters is that the callback fires exactly once per `ended`, and after
-   * the rewind.
-   */
-  it("calls onEnded once per ended, with the element already back at 0", () => {
+  /** The playlist hook: exactly once per `ended`, with the position intact. */
+  it("calls onEnded once per ended, at the position it stopped", () => {
     const onEnded = vi.fn();
     renderInPlayer(<AudioElement onEnded={onEnded} />);
     const audio = screen.getByLabelText("audio player") as HTMLAudioElement;
@@ -59,7 +61,7 @@ describe("AudioElement", () => {
     audio.dispatchEvent(new Event("ended"));
 
     expect(onEnded).toHaveBeenCalledTimes(1);
-    expect(audio.currentTime).toBe(0);
+    expect(audio.currentTime).toBe(100);
   });
 
   it("does not require onEnded", () => {

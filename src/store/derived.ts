@@ -165,6 +165,33 @@ export function useIsBuffering(): boolean {
 }
 
 /**
+ * Whether the position is the end of the track — for an end-of-track card, a
+ * Replay button, or greying out "next".
+ *
+ * Derived rather than tracked, like [[useIsBuffering]]: there is no flag to get
+ * stuck on, and nothing to go stale across a `src` change.
+ *
+ * `>=`, not an approximate match: a browser parks slightly *past* `duration`
+ * when playback ends — Chrome reports `currentTime` about 0.5 s beyond it — so a
+ * tolerance-based test reads false at exactly the moment the track finishes.
+ *
+ * This is a statement about position, not about history. Dragging to the end
+ * reports `true` without anything having played, and it clears as soon as the
+ * position moves. Use `onEnded` for the edge — "advance now" — and this for the
+ * level.
+ *
+ * Always false with `audioProps={{ loop: true }}`: a looping element wraps to 0
+ * rather than resting at the end.
+ */
+export function useIsAtEnd(): boolean {
+  const store = usePlayerStore();
+  const currentTime = useStore(store.currentTime);
+  const duration = useStore(store.duration);
+
+  return duration > 0 && currentTime >= duration;
+}
+
+/**
  * Both values come off `currentSecond`, the store's 1 Hz clock, so no interval
  * races the ~4 Hz event source. `remaining` is derived during render, so it
  * cannot go stale.
