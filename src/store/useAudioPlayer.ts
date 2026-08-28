@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useStore } from "./atom";
 import { usePlayerStore } from "./PlayerStoreContext";
+import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import type { PlayerState, VolumeState } from "./derived";
 
 export type AudioPlayerControls = {
@@ -27,6 +28,12 @@ export type AudioPlayerState = {
   playerState: PlayerState;
   volumeState: VolumeState;
   isDisabled: boolean;
+  /**
+   * Playback wants to advance and cannot — the spinner condition. Orthogonal to
+   * `playerState`, which stays `"playing"` throughout a stall because the
+   * player is still in play mode.
+   */
+  isBuffering: boolean;
 };
 
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
@@ -38,6 +45,9 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const muted = useStore(store.muted);
   const rate = useStore(store.rate);
   const loadState = useStore(store.loadState);
+  // `progress` fires every few hundred ms while downloading, but the rung
+  // itself moves about four times per track, and `Object.is` drops the rest.
+  const readyState = useStore(store.readyState);
 
   const controls = useMemo<AudioPlayerControls>(
     () => ({
@@ -80,6 +90,8 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
           ? "low"
           : "high",
     isDisabled: loadState !== "ready",
+    isBuffering:
+      loadState === "ready" && !paused && readyState < HAVE_FUTURE_DATA,
     ...controls,
   };
 }

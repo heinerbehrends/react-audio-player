@@ -20,6 +20,7 @@ function createAtoms(): ProjectionAtoms {
     lastAudibleVolume: atom(1),
     rate: atom(1),
     paused: atom(true),
+    readyState: atom(0),
     loadState: atom<LoadState>("loading"),
   };
 }
@@ -42,11 +43,76 @@ const DOCUMENTED_EVENTS: SyncEvent[] = [
   "error",
   "emptied",
   "loadstart",
+  "waiting",
+  "stalled",
+  "playing",
+  "canplay",
+  "canplaythrough",
+  "progress",
 ];
 
 describe("HANDLERS", () => {
   it("has exactly one row per documented event", () => {
     expect(Object.keys(HANDLERS).sort()).toEqual([...DOCUMENTED_EVENTS].sort());
+  });
+});
+
+describe("readyState projection", () => {
+  const STALL_EVENTS: SyncEvent[] = [
+    "waiting",
+    "stalled",
+    "playing",
+    "canplay",
+    "canplaythrough",
+    "progress",
+  ];
+
+  it.each(STALL_EVENTS)("projects the rung off the element on %s", (event) => {
+    const atoms = createAtoms();
+    const element = createMediaElementFake({ readyState: 4 });
+
+    HANDLERS[event](element, atoms, false);
+
+    expect(atoms.readyState.get()).toBe(4);
+  });
+
+  it("follows the rung down as well as up", () => {
+    const atoms = createAtoms();
+    const element = createMediaElementFake({ readyState: 4 });
+
+    HANDLERS.canplaythrough(element, atoms, false);
+    expect(atoms.readyState.get()).toBe(4);
+
+    element.readyState = 1;
+    HANDLERS.waiting(element, atoms, false);
+    expect(atoms.readyState.get()).toBe(1);
+  });
+
+  /**
+   * `progress` fires every few hundred milliseconds while downloading, so the
+   * bail-out is what keeps a download from waking every subscriber. Without it
+   * this is the noisiest atom in the store.
+   */
+  it("does not wake subscribers when the rung has not moved", () => {
+    const atoms = createAtoms();
+    const element = createMediaElementFake({ readyState: 4 });
+    let wakes = 0;
+    atoms.readyState.subscribe(() => (wakes += 1));
+
+    HANDLERS.progress(element, atoms, false);
+    HANDLERS.progress(element, atoms, false);
+    HANDLERS.progress(element, atoms, false);
+
+    expect(wakes).toBe(1);
+  });
+
+  it("is primed off the element, alongside loadState", () => {
+    const atoms = createAtoms();
+
+    prime(createMediaElementFake({ readyState: 2 }), atoms);
+
+    expect(atoms.readyState.get()).toBe(2);
+    expect(atoms.loadState.get()).toBe("ready");
   });
 });
 

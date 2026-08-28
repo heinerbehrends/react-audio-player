@@ -20,6 +20,7 @@ export type PlayerStore = {
   lastAudibleVolume: ReadableAtom<number>;
   rate: ReadableAtom<number>;
   paused: ReadableAtom<boolean>;
+  readyState: ReadableAtom<number>;
   loadState: ReadableAtom<LoadState>;
 
   /** The one UI atom: shared React state that is not on the element. */
@@ -50,6 +51,7 @@ export function createPlayerStore(): PlayerStore {
     lastAudibleVolume: atom(1),
     rate: atom(1),
     paused: atom(true),
+    readyState: atom(0),
     loadState: atom<LoadState>("loading"),
   };
 
@@ -97,6 +99,7 @@ export function createPlayerStore(): PlayerStore {
     lastAudibleVolume: readable(atoms.lastAudibleVolume),
     rate: readable(atoms.rate),
     paused: readable(atoms.paused),
+    readyState: readable(atoms.readyState),
     loadState: readable(atoms.loadState),
     timeDisplay,
     send,

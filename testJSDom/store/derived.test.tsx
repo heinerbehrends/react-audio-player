@@ -3,6 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { act } from "@testing-library/react";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import {
+  useIsBuffering,
   useIsDisabled,
   usePlayerState,
   useVolumeState,
@@ -114,5 +115,99 @@ describe("useIsDisabled", () => {
 
     drive(harness, "error", { error: {} as MediaError });
     expect(harness.result.current).toBe(true);
+  });
+});
+
+/**
+ * The gap this closes: `loadState` reaches `"ready"` at `HAVE_METADATA`, which
+ * means "we know the duration", not "we can play". Before this derivation a
+ * mid-track stall left `paused === false`, so the UI showed Pause while nothing
+ * came out of the speakers.
+ */
+describe("useIsBuffering", () => {
+  it("is true when playback is stalled below the playable rung", () => {
+    const { result } = renderDerived(useIsBuffering, {
+      readyState: 1,
+      paused: false,
+    });
+
+    expect(result.current).toBe(true);
+  });
+
+  it("is false once the element has data to advance", () => {
+    const { result } = renderDerived(useIsBuffering, {
+      readyState: 3,
+      paused: false,
+    });
+
+    expect(result.current).toBe(false);
+  });
+
+  it("is false while paused, however little is buffered", () => {
+    const { result } = renderDerived(useIsBuffering, {
+      readyState: 1,
+      paused: true,
+    });
+
+    expect(result.current).toBe(false);
+  });
+
+  it("is false before metadata — that is loading, not buffering", () => {
+    const { result } = renderDerived(useIsBuffering, {
+      readyState: 0,
+      paused: false,
+    });
+
+    expect(result.current).toBe(false);
+  });
+
+  it("stays false for an errored element", () => {
+    const { result } = renderDerived(useIsBuffering, {
+      readyState: 1,
+      paused: false,
+      error: {} as MediaError,
+    });
+
+    expect(result.current).toBe(false);
+  });
+
+  it("follows the element as it stalls and recovers", () => {
+    const { result, element } = renderDerived(useIsBuffering, {
+      readyState: 4,
+      paused: false,
+    });
+
+    expect(result.current).toBe(false);
+
+    act(() => {
+      element.readyState = 1;
+      element.emit("waiting");
+    });
+    expect(result.current).toBe(true);
+
+    act(() => {
+      element.readyState = 4;
+      element.emit("playing");
+    });
+    expect(result.current).toBe(false);
+  });
+
+  /**
+   * Orthogonality is the design claim, so it gets pinned: a stalled player is
+   * still in play mode and the button must still offer Pause.
+   */
+  it("leaves playerState reporting 'playing' throughout a stall", () => {
+    const { result, element } = renderDerived(
+      () => ({ state: usePlayerState(), buffering: useIsBuffering() }),
+      { readyState: 4, paused: false },
+    );
+
+    act(() => {
+      element.readyState = 1;
+      element.emit("waiting");
+    });
+
+    expect(result.current.buffering).toBe(true);
+    expect(result.current.state).toBe("playing");
   });
 });

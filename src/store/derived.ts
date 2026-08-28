@@ -1,5 +1,6 @@
 import { areNumbersClose } from "../Shared/sharedFunctions";
 import { useStore } from "./atom";
+import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { usePlayerStore } from "./PlayerStoreContext";
 
 export type PlayerState = "loading" | "error" | "paused" | "playing";
@@ -44,6 +45,29 @@ export function useIsDisabled(): boolean {
   const loadState = useStore(store.loadState);
 
   return loadState !== "ready";
+}
+
+/**
+ * Playback wants to advance and cannot: loaded, not paused, and below the rung
+ * where the element has data to play. Derived rather than tracked, so there is
+ * no `waiting`/`playing` flag to get stuck on — the rung is read off the
+ * element and the interpretation happens here.
+ *
+ * Orthogonal to `usePlayerState`, deliberately. A stalled player is still in
+ * play mode, so the button must still offer Pause; replacing `"playing"` with a
+ * `"buffering"` state would lose that.
+ *
+ * A seek while paused into unbuffered audio is *not* reported as buffering,
+ * because `paused` gates it. Reporting that too would need a `seeking`
+ * projection as well.
+ */
+export function useIsBuffering(): boolean {
+  const store = usePlayerStore();
+  const loadState = useStore(store.loadState);
+  const paused = useStore(store.paused);
+  const readyState = useStore(store.readyState);
+
+  return loadState === "ready" && !paused && readyState < HAVE_FUTURE_DATA;
 }
 
 /**

@@ -71,23 +71,22 @@ Cross-references are to `REVIEW-FINDINGS.md`.
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **S7**      | Rename `Timeline.Seek` / `Volume.Set` / `PlaybackRateSlider.Set` → `.Track` (all three are the same component under three names), and the top-level `Seek` → `SkipButton`. Two exports currently named "Seek" mean different things.                          |
 | **S8**      | Split the inline styles: keep structural (`transform`, grid placement, `touch-action`), move opinion (`width/height: 100%`, `border`/`background`/`padding` resets, `cursor`) into an optional stylesheet. Inline styles currently beat every consumer class. |
-| **F5**      | `PlayerState` gains `"buffering"`. Breaking because consumers switch on that union exhaustively.                                                                                                                                                              |
 | **S15**     | Narrow the exported `SideEffectAction` to a `KeyboardAction` union; export `SliderComponent`, which is referenced by the public type but not exported.                                                                                                        |
 | **A4**      | Toggle buttons change name _and_ `aria-pressed` — pick one channel.                                                                                                                                                                                           |
 | **A5 / A7** | `aria-disabled` instead of native `disabled`, so the tab stop survives and focus is not dropped to `<body>` on load-state change.                                                                                                                             |
 
 ### Additive
 
-| Ref     | Item                                                                                                                                                                                                                    |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **F1**  | `useAudioPlayer()` — no way to read player state at all today. Everything needed already exists in `src/store/derived.ts` and simply is not exported.                                                                   |
-| **F5**  | Buffering state: `waiting`/`stalled`/`progress` rows in `HANDLERS`, a `buffered` atom, a `<Timeline.Buffered>` part. `loadState` currently reports `"ready"` at `HAVE_METADATA`, so mid-track rebuffering is invisible. |
-| **F6**  | Media Session API. The metadata fields on `AudioFile` were added ahead of this so it is not a breaking change when it lands.                                                                                            |
-| **F8**  | Expose `MediaError.code`, so consumers can distinguish a retryable network error from an unsupported source.                                                                                                            |
-| **S9**  | `data-*` state attributes (`data-state`, `data-orientation`, `data-disabled`). Drag state is currently unreachable from CSS _and_ JS.                                                                                   |
-| **A6**  | Home / End on the sliders — required by the APG Slider pattern.                                                                                                                                                         |
-| **A8**  | The volume slider announces "100%" while muted.                                                                                                                                                                         |
-| **S20** | CSS custom properties (`--progress`, `--offset`) alongside the computed transform.                                                                                                                                      |
+| Ref     | Item                                                                                                                                                  |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **F1**  | `useAudioPlayer()` — no way to read player state at all today. Everything needed already exists in `src/store/derived.ts` and simply is not exported. |
+| **F5**  | ~~Stall signal~~ — **done**: `readyState` is projected and `useIsBuffering()` derives from it. Buffered _ranges_ remain, see section 3.               |
+| **F6**  | Media Session API. The metadata fields on `AudioFile` were added ahead of this so it is not a breaking change when it lands.                          |
+| **F8**  | Expose `MediaError.code`, so consumers can distinguish a retryable network error from an unsupported source.                                          |
+| **S9**  | `data-*` state attributes (`data-state`, `data-orientation`, `data-disabled`). Drag state is currently unreachable from CSS _and_ JS.                 |
+| **A6**  | Home / End on the sliders — required by the APG Slider pattern.                                                                                       |
+| **A8**  | The volume slider announces "100%" while muted.                                                                                                       |
+| **S20** | CSS custom properties (`--progress`, `--offset`) alongside the computed transform.                                                                    |
 
 ### Internal, no consumer impact
 
@@ -123,7 +122,39 @@ Cross-references are to `REVIEW-FINDINGS.md`.
 
 ---
 
-## 3. Considered and rejected
+## 3. Buffered ranges — additive, deferred
+
+The second half of F5. The stall signal shipped (`useIsBuffering()`); this is
+the _other_ thing called buffering — how much of the track is downloaded, for
+the lighter bar behind the progress bar.
+
+**Shape.** `el.buffered` is a live `TimeRanges` object, and atoms hold
+primitives so the `Object.is` bail-out works. So project a number:
+
+```ts
+bufferedEnd: Atom<number>; // end of the range containing currentTime
+```
+
+Updated from `progress`, `timeupdate` and `seeked`. Needs `buffered` added to
+`SyncableMediaElement` — the first new field that interface has needed here,
+since the stall signal reused `readyState`, which was already present. Then a
+`<Timeline.Buffered>` part styled like `TimelineProgress`.
+
+**Explicitly not modelling every range.** After seeking around, `buffered` holds
+several disjoint ranges. An array atom would take a new identity on every
+`progress` event, so `Object.is` would never bail and every subscriber would
+wake several times a second — the exact hazard the store exists to avoid.
+Serialising or custom equality would work but is not worth it: **`audioRef`
+already ships**, so anyone needing full `TimeRanges` can read `el.buffered`
+directly. That is what the escape hatch is for.
+
+**Testing.** jsdom has no networking, so the projection is unit-testable against
+the fake but real buffering is E2E-only, and triggering it deterministically
+needs CDP network throttling. Expect thin coverage.
+
+---
+
+## 4. Considered and rejected
 
 **A projected `ended` atom.** Rejected in favour of the `onEnded` callback.
 `AudioElement` rewinds the element on `ended`, which clears `el.ended` within a

@@ -3,6 +3,13 @@ import type { Atom } from "./atom";
 export type LoadState = "loading" | "ready" | "error";
 
 /**
+ * `HTMLMediaElement.HAVE_FUTURE_DATA` — the rung at which the element has
+ * enough data to actually advance. Below it, playback either has not started or
+ * has stalled.
+ */
+export const HAVE_FUTURE_DATA = 3;
+
+/**
  * The write side of the projection atoms. Only `createPlayerStore` holds this
  * bundle, and only through `attach` does it reach `syncFromElement`.
  */
@@ -15,6 +22,13 @@ export type ProjectionAtoms = {
   lastAudibleVolume: Atom<number>;
   rate: Atom<number>;
   paused: Atom<boolean>;
+  /**
+   * The raw `readyState` rung, projected so buffering can be *derived* rather
+   * than tracked as policy. It overlaps `loadState` — which is roughly
+   * `readyState >= 1` plus the error case — but both are direct projections
+   * read from the same element at the same events, so they cannot diverge.
+   */
+  readyState: Atom<number>;
   loadState: Atom<LoadState>;
 };
 
@@ -73,6 +87,16 @@ const projectPaused: SyncHandler = (element, atoms) => {
 };
 
 /**
+ * The rows that carry the stall signal. Every one of them reads the same
+ * property — the events differ only in *when* the rung can have changed, and
+ * `Object.is` drops the writes that did not move it, so `progress` firing
+ * every few hundred milliseconds during a download wakes nobody.
+ */
+const projectReadyState: SyncHandler = (element, atoms) => {
+  atoms.readyState.set(element.readyState);
+};
+
+/**
  * Reads the whole projection off the element in one pass. Called by `attach`,
  * which runs in an effect and so can miss a `loadedmetadata` or `error` that
  * already fired, and by the `emptied` / `loadstart` reset, where re-reading
@@ -99,6 +123,7 @@ export function prime(
   atoms.currentTime.set(element.currentTime);
   atoms.currentSecond.set(Math.floor(element.currentTime));
   atoms.duration.set(finite(element.duration));
+  atoms.readyState.set(element.readyState);
   atoms.loadState.set(
     element.error ? "error" : element.readyState >= 1 ? "ready" : "loading",
   );
@@ -116,8 +141,17 @@ export const HANDLERS = {
   seeked: projectTime,
   loadedmetadata: (element, atoms) => {
     atoms.duration.set(finite(element.duration));
+    atoms.readyState.set(element.readyState);
     atoms.loadState.set("ready");
   },
+  // Stall signal. `waiting` and `stalled` mark the rung dropping below
+  // playable; the rest mark it recovering.
+  waiting: projectReadyState,
+  stalled: projectReadyState,
+  playing: projectReadyState,
+  canplay: projectReadyState,
+  canplaythrough: projectReadyState,
+  progress: projectReadyState,
   durationchange: projectDuration,
   volumechange: (element, atoms, pinned) => {
     atoms.volume.set(element.volume);

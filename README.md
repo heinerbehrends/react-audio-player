@@ -223,12 +223,33 @@ function TrackInfo() {
 | `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                    |
 | `volumeState`                                     | `"muted" \| "low" \| "high"`                                       |
 | `isDisabled`                                      | True until the track is ready, and while it is errored.            |
+| `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.      |
 | `play`, `pause`, `toggle`                         |                                                                    |
 | `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                   |
 | `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. |
 
 The control methods are stable for the lifetime of the player, so they are safe
 to put in a dependency array.
+
+### `useIsBuffering()`
+
+`isBuffering` is also available on its own, for a spinner that has no reason to
+subscribe to the rest of the player:
+
+```jsx
+function Spinner() {
+  return useIsBuffering() ? <div className="spinner" /> : null;
+}
+```
+
+It is **orthogonal to `playerState`**, on purpose. A stalled player is still in
+play mode — `playerState` stays `"playing"` throughout, so your button keeps
+offering Pause and pressing it still works. Note the difference from
+`playerState === "loading"`, which means the track has not loaded yet;
+`isBuffering` means it loaded and then ran out of data.
+
+A seek performed while paused into unbuffered audio does not report as
+buffering.
 
 ### `useCurrentSecond()` and `useCurrentTime()`
 

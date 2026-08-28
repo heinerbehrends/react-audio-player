@@ -128,6 +128,23 @@ describe("useAudioPlayer", () => {
     expect(harness.element.muted).toBe(true);
   });
 
+  it("reports isBuffering, orthogonally to playerState", () => {
+    const { result, harness } = setup(useAudioPlayer, {
+      readyState: 4,
+      paused: false,
+    });
+
+    expect(result.current.isBuffering).toBe(false);
+
+    act(() => {
+      harness.element.readyState = 1;
+      harness.element.emit("waiting");
+    });
+
+    expect(result.current.isBuffering).toBe(true);
+    expect(result.current.playerState).toBe("playing");
+  });
+
   /**
    * The reason this hook is split in three. `currentTime` fires ~4x/second; if
    * it were folded in, every consumer reading a track title would re-render at
