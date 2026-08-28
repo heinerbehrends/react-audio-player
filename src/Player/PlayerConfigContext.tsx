@@ -6,6 +6,15 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 
 export type AudioFile = {
   src: string;
+  /**
+   * Track metadata. Nothing in the library reads these yet — they exist so that
+   * shipping Media Session support later is not a breaking change to the one
+   * type every consumer passes to their root component.
+   */
+  title?: string;
+  artist?: string;
+  album?: string;
+  artwork?: MediaImage[];
 };
 
 /**

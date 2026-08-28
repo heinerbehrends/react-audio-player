@@ -4,11 +4,14 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type AudioElementProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
   children?: React.ReactNode;
+  /** Forwarded to the consumer, alongside the store's own attachment. */
+  audioRef?: React.Ref<HTMLAudioElement> | undefined;
 };
 
 export function AudioElement({
   children,
   onEnded,
+  audioRef,
   ...props
 }: AudioElementProps) {
   const { audioFile } = usePlayerConfig();
@@ -32,6 +35,23 @@ export function AudioElement({
   const ref = useCallback((node: HTMLAudioElement | null) => {
     setElement(node);
   }, []);
+
+  // The consumer's ref is filled from the element state rather than from the
+  // ref callback above, which has to stay stable. `RefObject.current` is
+  // readonly to consumers but writable by whoever owns the element, which here
+  // is this component — hence the cast.
+  useEffect(() => {
+    if (!audioRef) return;
+    if (typeof audioRef === "function") {
+      audioRef(element);
+      return () => audioRef(null);
+    }
+    const target = audioRef as React.MutableRefObject<HTMLAudioElement | null>;
+    target.current = element;
+    return () => {
+      target.current = null;
+    };
+  }, [element, audioRef]);
 
   return (
     <audio

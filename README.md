@@ -67,11 +67,48 @@ The root component that provides context to all child components.
 </AudioPlayer>
 ```
 
-| Prop                      | Type                               | Description                                                                            |
-| ------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------- |
-| `audioFile`               | `{ src: string }`                  | The track to play. Required.                                                           |
-| `onEnded`                 | `() => void`                       | Called once when the track finishes, after the element has been returned to the start. |
-| `customKeyboardShortcuts` | `Record<string, SideEffectAction>` | Merged over the defaults, so a key you do not name keeps its default binding.          |
+| Prop                      | Type                               | Description                                                                                      |
+| ------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `audioFile`               | `AudioFile`                        | The track to play. Required.                                                                     |
+| `onEnded`                 | `() => void`                       | Called once when the track finishes, after the element has been returned to the start.           |
+| `customKeyboardShortcuts` | `Record<string, SideEffectAction>` | Merged over the defaults, so a key you do not name keeps its default binding.                    |
+| `audioProps`              | `AudioHTMLAttributes`              | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props. |
+| `audioRef`                | `Ref<HTMLAudioElement>`            | A ref to the `<audio>` element itself.                                                           |
+
+```ts
+type AudioFile = {
+  src: string;
+  // Metadata is accepted but not yet read by the library. It is here so that
+  // adding Media Session support later is not a breaking change.
+  title?: string;
+  artist?: string;
+  album?: string;
+  artwork?: MediaImage[];
+};
+```
+
+#### Reaching the `<audio>` element
+
+Anything the library does not model goes through `audioProps`, and `<track>`
+captions through its `children`:
+
+```jsx
+<AudioPlayer
+  audioFile={{ src: "audio.mp3" }}
+  audioProps={{
+    preload: "none",
+    // Required for Web Audio — without it `createMediaElementSource` taints.
+    crossOrigin: "anonymous",
+    children: <track kind="captions" src="captions.vtt" srcLang="en" default />,
+  }}
+  audioRef={audioRef}
+>
+  {/* Player UI components */}
+</AudioPlayer>
+```
+
+Only one format is loaded per track — `<source>` fallback is not supported yet
+(see `BACKLOG.md`).
 
 #### Playlists
 

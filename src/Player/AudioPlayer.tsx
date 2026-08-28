@@ -18,6 +18,28 @@ type AudioPlayerProps = {
    * the level.
    */
   onEnded?: () => void;
+  /**
+   * Forwarded to the underlying `<audio>`. The escape hatch for everything the
+   * library does not model: `preload`, `loop`, `controlsList`, and
+   * `crossOrigin` — which Web Audio needs and nothing else can supply.
+   *
+   * `<track>` captions go through `children`:
+   * `audioProps={{ children: <track kind="captions" src="…" default /> }}`.
+   *
+   * `src` and `onEnded` are excluded: both have dedicated props, and a second
+   * way to set either would be two sources of truth.
+   */
+  audioProps?: Omit<
+    React.AudioHTMLAttributes<HTMLAudioElement>,
+    "src" | "onEnded"
+  >;
+  /**
+   * A ref to the `<audio>` element itself, for Web Audio
+   * (`createMediaElementSource`), HLS.js/dash.js attachment, or Media Session.
+   * Prefer a stable ref — an inline callback re-runs the forwarding effect on
+   * every render.
+   */
+  audioRef?: React.Ref<HTMLAudioElement>;
 };
 
 export function AudioPlayer({
@@ -25,6 +47,8 @@ export function AudioPlayer({
   audioFile,
   customKeyboardShortcuts,
   onEnded,
+  audioProps,
+  audioRef,
 }: AudioPlayerProps) {
   return (
     <PlayerStoreProvider>
@@ -32,7 +56,7 @@ export function AudioPlayer({
         audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
       >
-        <AudioElement onEnded={onEnded} />
+        <AudioElement {...audioProps} onEnded={onEnded} audioRef={audioRef} />
         {children}
       </PlayerConfigProvider>
     </PlayerStoreProvider>
