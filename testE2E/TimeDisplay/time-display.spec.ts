@@ -18,10 +18,13 @@ test.afterAll(async () => {
   await page.close();
 });
 
-// `exact`, because the toggle button is labelled "Toggle elapsed and remaining
-// time" and a substring match picks it up alongside the time elements.
+// The toggle is named for what pressing it will do, so its name flips with the
+// display -- matched as either. The `<time>` elements are named "elapsed" and
+// "remaining", which is why the queries for those pass `exact`.
 const toggle = () =>
-  page.getByRole("button", { name: "Toggle elapsed and remaining time" });
+  page.getByRole("button", {
+    name: new RegExp(`^(${labels.showElapsed}|${labels.showRemaining})$`),
+  });
 
 async function seekTo(seconds: number) {
   await page.evaluate((next) => {
@@ -77,7 +80,8 @@ test("toggling shows remaining, and it counts down", async () => {
   const remaining = page.getByLabel("remaining", { exact: true });
   await expect(remaining).toBeVisible();
   await expect(page.getByLabel("elapsed", { exact: true })).toBeHidden();
-  await expect(toggle()).toHaveAttribute("aria-pressed", "true");
+  // Showing remaining, so the toggle now offers the way back.
+  await expect(toggle()).toHaveAccessibleName(labels.showElapsed);
 
   const first = await remaining.textContent();
 

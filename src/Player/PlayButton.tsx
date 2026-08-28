@@ -6,6 +6,10 @@ type PlayButtonProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+// The name carries the state, and `aria-pressed` is deliberately absent: a
+// name that already says "Pause audio" plus `aria-pressed="true"` announced the
+// same fact twice, in two vocabularies. The name also reaches further than a
+// boolean can -- `loading` and `error` are states `aria-pressed` cannot express.
 const ariaLabelMap = {
   playing: "Pause audio",
   paused: "Play audio",
@@ -14,7 +18,7 @@ const ariaLabelMap = {
 };
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  const { isPlaying, isDisabled, ariaLabel } = usePlayButtonProps();
+  const { isDisabled, ariaLabel } = usePlayButtonProps();
   const handleKeyDown = useHandleMediaKeys();
   const handleClick = useHandleClick();
 
@@ -25,7 +29,6 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
       onKeyDown={handleKeyDown}
       disabled={isDisabled}
       aria-label={ariaLabel}
-      aria-pressed={isPlaying}
       {...props}
     >
       {children}
@@ -44,10 +47,9 @@ function useHandleClick() {
 
 function usePlayButtonProps() {
   const playerState = usePlayerState();
-  const isPlaying = playerState === "playing";
   const isDisabled = useIsDisabled();
   const ariaLabel = ariaLabelMap[playerState];
-  return { isPlaying, isDisabled, ariaLabel };
+  return { isDisabled, ariaLabel };
 }
 
 function Playing({

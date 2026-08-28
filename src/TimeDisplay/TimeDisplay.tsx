@@ -28,8 +28,15 @@ function Toggle({ children, ...props }: ChildrenProps) {
   return (
     <button
       type="button"
-      aria-label="Toggle elapsed and remaining time"
-      aria-pressed={timeDisplay === "remaining"}
+      // Named for what pressing it will do, like the other toggles: state on
+      // the name only, never on the name and `aria-pressed` at once. The name
+      // avoids the bare words "elapsed" and "remaining", which are the
+      // accessible names of the `<time>` elements this button sits beside.
+      aria-label={
+        timeDisplay === "remaining"
+          ? "Show time elapsed"
+          : "Show time remaining"
+      }
       onKeyDown={handleMediaKeys}
       onClick={handleClick}
       disabled={isDisabled}

@@ -18,8 +18,10 @@ export function MuteButtonComponent({
   return (
     <button
       type="button"
+      // State rides on the name alone. Carrying it on `aria-pressed` as well
+      // announced "Unmute, toggle button, pressed" -- the name says the button
+      // will unmute, the state says it already is. One channel per fact.
       aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
-      aria-pressed={volumeState === "muted"}
       onKeyDown={handleMediaKeys}
       onClick={toggleMute}
       disabled={isDisabled}

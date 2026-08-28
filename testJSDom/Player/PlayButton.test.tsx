@@ -16,11 +16,11 @@ const states: Record<string, Partial<MediaFields>> = {
 describe("PlayButton", () => {
   describe("PlayButtonComponent", () => {
     it.each([
-      ["paused", "Play audio", "false", false],
-      ["playing", "Pause audio", "true", false],
-      ["loading", "Loading audio", "false", true],
-      ["error", "Error loading audio", "false", true],
-    ])("renders correctly in %s state", (state, name, pressed, disabled) => {
+      ["paused", "Play audio", false],
+      ["playing", "Pause audio", false],
+      ["loading", "Loading audio", true],
+      ["error", "Error loading audio", true],
+    ])("renders correctly in %s state", (state, name, disabled) => {
       renderWithStore(
         <PlayButton>
           <span>Play Icon</span>
@@ -30,7 +30,9 @@ describe("PlayButton", () => {
       const button = screen.getByRole("button");
 
       expect(button).toHaveAccessibleName(name);
-      expect(button).toHaveAttribute("aria-pressed", pressed);
+      // The name is the only state channel -- see A4. It also carries `loading`
+      // and `error`, which a boolean `aria-pressed` could not have expressed.
+      expect(button).not.toHaveAttribute("aria-pressed");
       if (disabled) {
         expect(button).toBeDisabled();
       }

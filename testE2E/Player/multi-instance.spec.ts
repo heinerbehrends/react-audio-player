@@ -75,10 +75,12 @@ test("each player's mute button reads its own element", async () => {
     .click();
   await page.waitForTimeout(120);
 
+  // Each button names its own element state -- see A4 for why the name is the
+  // only channel. One reads "Unmute", the other still "Mute".
   await expect(
     playerAt(0).getByRole("button", { name: labels.unmute }),
-  ).toHaveAttribute("aria-pressed", "true");
+  ).toBeVisible();
   await expect(
     playerAt(1).getByRole("button", { name: labels.mute }),
-  ).toHaveAttribute("aria-pressed", "false");
+  ).toBeVisible();
 });

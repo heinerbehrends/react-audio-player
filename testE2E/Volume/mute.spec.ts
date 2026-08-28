@@ -27,22 +27,19 @@ async function setVolume(volume: number) {
 
 const muteButton = () => page.getByRole("button", { name: /^(Mute|Unmute)$/ });
 
-test("mute reports itself pressed and mutes the element", async () => {
+test("the mute button renames itself and mutes the element", async () => {
   await setVolume(0.8);
 
   await muteButton().click();
 
-  await expect(
-    page.getByRole("button", { name: labels.unmute }),
-  ).toHaveAttribute("aria-pressed", "true");
+  // The name is the only state channel -- see A4 -- so "Unmute" being present
+  // is the assertion that the button reflects the muted element.
+  await expect(page.getByRole("button", { name: labels.unmute })).toBeVisible();
   expect((await getAudioState(page)).muted).toBe(true);
 
   await muteButton().click();
 
-  await expect(page.getByRole("button", { name: labels.mute })).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
+  await expect(page.getByRole("button", { name: labels.mute })).toBeVisible();
   expect((await getAudioState(page)).muted).toBe(false);
 });
 

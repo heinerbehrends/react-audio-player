@@ -23,10 +23,10 @@ const renderMuteButton = (
 describe("MuteButton", () => {
   describe("MuteButtonComponent", () => {
     it.each([
-      ["high", "Mute", "false"],
-      ["low", "Mute", "false"],
-      ["muted", "Unmute", "true"],
-    ])("renders correctly in %s state", (state, name, pressed) => {
+      ["high", "Mute"],
+      ["low", "Mute"],
+      ["muted", "Unmute"],
+    ])("renders correctly in %s state", (state, name) => {
       renderMuteButton(
         <MuteButton>
           <span>Mute Icon</span>
@@ -35,7 +35,9 @@ describe("MuteButton", () => {
       );
       const button = screen.getByRole("button");
       expect(button).toHaveAccessibleName(name);
-      expect(button).toHaveAttribute("aria-pressed", pressed);
+      // The name is the only state channel; `aria-pressed` alongside it
+      // announced "Unmute, toggle button, pressed" -- see A4.
+      expect(button).not.toHaveAttribute("aria-pressed");
     });
 
     it("mutes the element on click", () => {
@@ -69,18 +71,11 @@ describe("MuteButton", () => {
         </MuteButton>,
         volumeStates["high"]!,
       );
-      expect(screen.getByRole("button")).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      expect(screen.getByRole("button")).toHaveAccessibleName("Mute");
 
       element.muted = true;
       emit("volumechange");
 
-      expect(screen.getByRole("button")).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
       expect(screen.getByRole("button")).toHaveAccessibleName("Unmute");
     });
   });

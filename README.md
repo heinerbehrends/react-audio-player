@@ -55,7 +55,14 @@ Each slider exposes one focusable `role="slider"` element that carries the
 affordances only: they are `aria-hidden` and out of the tab order, so a slider
 announces one value rather than two.
 
-The buttons carry a live `aria-label` and, where they toggle, `aria-pressed`.
+Each button is named for what pressing it will do, and the name is the only
+place its state appears: `<MuteButton>` is "Mute" or "Unmute", `<PlayButton>`
+is "Play audio", "Pause audio", "Loading audio" or "Error loading audio", and
+`<Time.Toggle>` is "Show time elapsed" or "Show time remaining". None of them
+sets `aria-pressed` -- a name that already says which way the toggle will go,
+plus a pressed state saying it has already gone, announces as a contradiction
+("Unmute, toggle button, pressed"). Pass your own `aria-label` to override.
+
 Errors render into a live region. Every control also accepts the global media
 shortcuts while focused.
 
@@ -206,6 +213,33 @@ are the defaults; pass `step={0}` for a continuous slider.
 
 - `<ErrorMessage>` — renders its children in a live region while the track has
   failed to load, and nothing otherwise
+
+## Styling
+
+Every part takes `className` and `style`. Each slider part also carries a
+`data-part` attribute, so you can style them from plain CSS without threading a
+class through every element:
+
+| Part          | `data-part`  |
+| ------------- | ------------ |
+| `.Control`    | `control`    |
+| `.Progress`   | `progress`   |
+| `.Background` | `background` |
+| `.Thumb`      | `thumb`      |
+
+```css
+/* Scope to your own container: all three sliders share these part names. */
+.player [data-part="progress"] {
+  background: rebeccapurple;
+}
+```
+
+`transform`, grid placement and `touch-action` are set inline, because they are
+computed from the current value. Inline styles beat any stylesheet rule, so
+override those through the `style` prop rather than a class.
+
+**A slider root needs a height.** It has none of its own, and a zero-height
+track measures zero, which leaves the slider silently inert.
 
 ## Hooks
 

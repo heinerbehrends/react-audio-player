@@ -28,16 +28,18 @@ describe("Time", () => {
     expect(screen.queryByLabelText("remaining")).not.toBeInTheDocument();
   });
 
-  it("has correct aria attributes", () => {
+  it.each([
+    ["remaining", "Show time elapsed"],
+    ["elapsed", "Show time remaining"],
+  ])("is named for what it will do while showing %s", (shown, name) => {
     renderWithStore(<Time.Toggle>Toggle</Time.Toggle>, {
-      testStore: withTimeDisplay("remaining"),
+      testStore: withTimeDisplay(shown as TimeDisplay),
     });
     const button = screen.getByRole("button");
-    expect(button).toHaveAttribute(
-      "aria-label",
-      "Toggle elapsed and remaining time",
-    );
-    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).toHaveAccessibleName(name);
+    // One state channel, the name -- see A4. `aria-pressed` beside a name that
+    // already says which way the toggle will go announces the fact twice.
+    expect(button).not.toHaveAttribute("aria-pressed");
   });
 
   it("flips the atom on click, so the two halves swap", () => {
