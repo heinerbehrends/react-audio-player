@@ -19,21 +19,15 @@ describe("AudioElement", () => {
     );
   });
 
-  it("sets the src from the config's first audio file", () => {
+  it("sets the src from the config's audio file", () => {
     renderInPlayer(<AudioElement />, {
-      audioFiles: [{ src: "test-audio.mp3" }],
+      audioFile: { src: "test-audio.mp3" },
     });
 
     expect(screen.getByLabelText("audio player")).toHaveAttribute(
       "src",
       "test-audio.mp3",
     );
-  });
-
-  it("handles the case when no audio files are provided", () => {
-    renderInPlayer(<AudioElement />, { audioFiles: [] });
-
-    expect(screen.getByLabelText("audio player")).not.toHaveAttribute("src");
   });
 
   /**
@@ -50,6 +44,30 @@ describe("AudioElement", () => {
     audio.dispatchEvent(new Event("ended"));
 
     expect(audio.currentTime).toBe(0);
+  });
+
+  /**
+   * The playlist hook. The rewind above clears `el.ended` within a tick, which
+   * is why this is a callback and not a projected atom — so what has to be
+   * pinned is that it fires exactly once per `ended`, and after the rewind.
+   */
+  it("calls onEnded once per ended, with the element already back at 0", () => {
+    const onEnded = vi.fn();
+    renderInPlayer(<AudioElement onEnded={onEnded} />);
+    const audio = screen.getByLabelText("audio player") as HTMLAudioElement;
+    Object.defineProperty(audio, "currentTime", { value: 100, writable: true });
+
+    audio.dispatchEvent(new Event("ended"));
+
+    expect(onEnded).toHaveBeenCalledTimes(1);
+    expect(audio.currentTime).toBe(0);
+  });
+
+  it("does not require onEnded", () => {
+    renderInPlayer(<AudioElement />);
+    const audio = screen.getByLabelText("audio player") as HTMLAudioElement;
+
+    expect(() => audio.dispatchEvent(new Event("ended"))).not.toThrow();
   });
 
   it("attaches the element to the store once, across parent rerenders", () => {

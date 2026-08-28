@@ -6,9 +6,13 @@ type AudioElementProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
   children?: React.ReactNode;
 };
 
-export function AudioElement({ children, ...props }: AudioElementProps) {
-  const { audioFiles } = usePlayerConfig();
-  const { src } = audioFiles?.[0] || {};
+export function AudioElement({
+  children,
+  onEnded,
+  ...props
+}: AudioElementProps) {
+  const { audioFile } = usePlayerConfig();
+  const { src } = audioFile ?? {};
 
   // Renders the `<audio>` tag, so it is the only component that can reach the
   // element without a setter travelling down. A setter reachable through context
@@ -41,7 +45,13 @@ export function AudioElement({ children, ...props }: AudioElementProps) {
        * Moving the *element* to 0 removes the divergence — `seeked` fires and the
        * atoms follow. Projection is `syncFromElement`'s job.
        */
-      onEnded={() => store.send({ type: "SET_TIME_TO_START" })}
+      onEnded={(event) => {
+        // Policy first, so the store is already consistent when the consumer
+        // reacts — someone swapping `src` from `onEnded` lands on an element
+        // that is at 0 rather than at `duration`.
+        store.send({ type: "SET_TIME_TO_START" });
+        onEnded?.(event);
+      }}
     >
       {children ? children : undefined}
     </audio>

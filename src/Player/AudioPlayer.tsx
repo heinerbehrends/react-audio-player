@@ -5,22 +5,34 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 
 type AudioPlayerProps = {
   children: React.ReactNode;
-  audioFiles: AudioFile[];
+  audioFile: AudioFile;
   customKeyboardShortcuts?: KeyToActionMap;
+  /**
+   * Fired once when the track finishes, after the element has been returned to
+   * the start. This is the hook for a playlist: hold the index in your own
+   * state and advance it here.
+   *
+   * A callback rather than a projected `ended` atom, because the element is
+   * rewound on `ended` (see `AudioElement`), which clears `el.ended` within a
+   * tick — a state would flicker, and advancing a playlist wants the edge, not
+   * the level.
+   */
+  onEnded?: () => void;
 };
 
 export function AudioPlayer({
   children,
-  audioFiles,
+  audioFile,
   customKeyboardShortcuts,
+  onEnded,
 }: AudioPlayerProps) {
   return (
     <PlayerStoreProvider>
       <PlayerConfigProvider
-        audioFiles={audioFiles}
+        audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
       >
-        <AudioElement />
+        <AudioElement onEnded={onEnded} />
         {children}
       </PlayerConfigProvider>
     </PlayerStoreProvider>

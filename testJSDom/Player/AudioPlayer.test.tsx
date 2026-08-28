@@ -1,25 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
+import { useState } from "react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
 import type { AudioFile } from "../../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
 
-// `audioFiles` and `customKeyboardShortcuts` are static config, so the assertion
-// is that they reach `PlayerConfigProvider` — the carrier that survives this
-// phase, rather than the reducer provider being retired.
+// `audioFile` and `customKeyboardShortcuts` are static config, so the assertion
+// is that they reach `PlayerConfigProvider`. `onEnded` is not config — it is a
+// callback bound straight to the element — so it is asserted on `AudioElement`.
 vi.mock("../../src/Player/PlayerConfigContext", () => ({
   PlayerConfigProvider: ({
     children,
-    audioFiles,
+    audioFile,
     customKeyboardShortcuts,
   }: {
     children: React.ReactNode;
-    audioFiles: AudioFile[];
+    audioFile: AudioFile;
     customKeyboardShortcuts?: KeyToActionMap;
   }) => (
     <div
       data-testid="player-config-provider"
-      data-audio-files={audioFiles.length}
+      data-audio-src={audioFile.src}
       data-keyboard-shortcuts={JSON.stringify(customKeyboardShortcuts)}
     >
       {children}
@@ -28,18 +29,17 @@ vi.mock("../../src/Player/PlayerConfigContext", () => ({
 }));
 
 vi.mock("../../src/AudioElement/AudioElement", () => ({
-  AudioElement: () => <div data-testid="audio-element" />,
+  AudioElement: ({ onEnded }: { onEnded?: () => void }) => (
+    <button data-testid="audio-element" onClick={onEnded} />
+  ),
 }));
 
 describe("AudioPlayer", () => {
-  const mockAudioFiles = [
-    { id: "1", src: "test1.mp3", title: "Test 1" },
-    { id: "2", src: "test2.mp3", title: "Test 2" },
-  ];
+  const mockAudioFile = { src: "test1.mp3" };
 
   it("renders all required components", () => {
     render(
-      <AudioPlayer audioFiles={mockAudioFiles}>
+      <AudioPlayer audioFile={mockAudioFile}>
         <div data-testid="child-content">Test Content</div>
       </AudioPlayer>,
     );
@@ -49,39 +49,68 @@ describe("AudioPlayer", () => {
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
   });
 
-  it("passes audioFiles to PlayerConfigProvider", () => {
+  it("passes audioFile to PlayerConfigProvider", () => {
     render(
-      <AudioPlayer audioFiles={mockAudioFiles}>
+      <AudioPlayer audioFile={mockAudioFile}>
         <div>Test Content</div>
       </AudioPlayer>,
     );
 
-    const provider = screen.getByTestId("player-config-provider");
-    expect(provider).toHaveAttribute(
-      "data-audio-files",
-      mockAudioFiles.length.toString(),
+    expect(screen.getByTestId("player-config-provider")).toHaveAttribute(
+      "data-audio-src",
+      "test1.mp3",
     );
   });
 
-  it("handles empty audioFiles array", () => {
+  /**
+   * The playlist contract: `onEnded` has to reach the element, since that is the
+   * only place the `ended` event exists. A consumer swapping `audioFile` from
+   * this callback is the supported way to build a playlist.
+   */
+  it("passes onEnded through to the element", () => {
+    const onEnded = vi.fn();
     render(
-      <AudioPlayer audioFiles={[]}>
+      <AudioPlayer audioFile={mockAudioFile} onEnded={onEnded}>
         <div>Test Content</div>
       </AudioPlayer>,
     );
 
-    const provider = screen.getByTestId("player-config-provider");
-    expect(provider).toHaveAttribute("data-audio-files", "0");
+    screen.getByTestId("audio-element").click();
+
+    expect(onEnded).toHaveBeenCalledTimes(1);
+  });
+
+  it("advances a consumer-held playlist across renders", () => {
+    function Playlist() {
+      const tracks = [{ src: "one.mp3" }, { src: "two.mp3" }];
+      const [index, setIndex] = useState(0);
+      return (
+        <AudioPlayer
+          audioFile={tracks[index]!}
+          onEnded={() => setIndex((i) => i + 1)}
+        >
+          <div>Test Content</div>
+        </AudioPlayer>
+      );
+    }
+
+    render(<Playlist />);
+    expect(screen.getByTestId("player-config-provider")).toHaveAttribute(
+      "data-audio-src",
+      "one.mp3",
+    );
+
+    act(() => screen.getByTestId("audio-element").click());
+
+    expect(screen.getByTestId("player-config-provider")).toHaveAttribute(
+      "data-audio-src",
+      "two.mp3",
+    );
   });
 });
 
 describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
-  const mockAudioFiles = [{ src: "test.mp3" }];
-
-  const mockHandleSideEffect = vi.fn();
-  vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
-    useHandleSideEffect: () => mockHandleSideEffect,
-  }));
+  const mockAudioFile = { src: "test.mp3" };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -95,7 +124,7 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
 
     render(
       <AudioPlayer
-        audioFiles={mockAudioFiles}
+        audioFile={mockAudioFile}
         customKeyboardShortcuts={customShortcuts}
       >
         <div>Test Content</div>

@@ -49,7 +49,7 @@ type PlayerProps = {
 
 function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
   return (
-    <AudioPlayer audioFiles={[{ src }]}>
+    <AudioPlayer audioFile={{ src }}>
       <Timeline style={{ height: "40px" }}>
         <Timeline.Seek
           style={{

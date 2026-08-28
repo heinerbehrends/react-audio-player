@@ -11,12 +11,12 @@ export type AudioFile = {
 /**
  * Static config: `AudioPlayer`'s two props, flowing strictly downward. Neither
  * is state and neither is a projection of the element, so no atom wants them —
- * but `audioFiles` is read by `AudioElement` and `customKeyboardShortcuts` by
+ * but `audioFile` is read by `AudioElement` and `customKeyboardShortcuts` by
  * `useHandleMediaKeys`, which seven components call, and there is no
  * prop-drilling path to `SetSliderValue`. Hence a context, not the store.
  */
 export type PlayerConfig = {
-  audioFiles: AudioFile[];
+  audioFile: AudioFile;
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
@@ -30,8 +30,8 @@ type PlayerConfigProviderProps = PlayerConfig & {
 };
 
 /**
- * Deliberately unmemoised. The documented usage passes `audioFiles` as an
- * inline array literal, so a `memo` comparison and a `useMemo` dependency check
+ * Deliberately unmemoised. The documented usage passes `audioFile` as an
+ * inline object literal, so a `memo` comparison and a `useMemo` dependency check
  * would both fail on every consumer render and buy nothing. When they bail the
  * cost is seven cheap components rendering, which is what React does by
  * default; a memo that only pays off if the consumer memoises their props is
@@ -39,12 +39,12 @@ type PlayerConfigProviderProps = PlayerConfig & {
  */
 export function PlayerConfigProvider({
   children,
-  audioFiles,
+  audioFile,
   customKeyboardShortcuts,
 }: PlayerConfigProviderProps) {
   return (
     <PlayerConfigContext.Provider
-      value={{ audioFiles, customKeyboardShortcuts }}
+      value={{ audioFile, customKeyboardShortcuts }}
     >
       {children}
     </PlayerConfigContext.Provider>

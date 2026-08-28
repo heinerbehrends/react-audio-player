@@ -22,7 +22,7 @@ import {
 
 function App() {
   return (
-    <AudioPlayer audioFiles={[{ src: "audio-file.mp3" }]}>
+    <AudioPlayer audioFile={{ src: "audio-file.mp3" }}>
       <Timeline>
         <Timeline.Seek>
           <Timeline.Progress />
@@ -62,9 +62,38 @@ This player fully supports:
 The root component that provides context to all child components.
 
 ```jsx
-<AudioPlayer audioFiles={[{ src: "audio.mp3", type: "audio/mpeg" }]}>
+<AudioPlayer audioFile={{ src: "audio.mp3" }}>
   {/* Player UI components */}
 </AudioPlayer>
+```
+
+| Prop                      | Type                               | Description                                                                            |
+| ------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------- |
+| `audioFile`               | `{ src: string }`                  | The track to play. Required.                                                           |
+| `onEnded`                 | `() => void`                       | Called once when the track finishes, after the element has been returned to the start. |
+| `customKeyboardShortcuts` | `Record<string, SideEffectAction>` | Merged over the defaults, so a key you do not name keeps its default binding.          |
+
+#### Playlists
+
+The player holds one track. Keep the list and the index in your own state and
+advance it from `onEnded` — swapping `audioFile` reloads the element and
+re-primes every value the player exposes:
+
+```jsx
+const tracks = [{ src: "one.mp3" }, { src: "two.mp3" }];
+
+function Playlist() {
+  const [index, setIndex] = useState(0);
+
+  return (
+    <AudioPlayer
+      audioFile={tracks[index]}
+      onEnded={() => setIndex((i) => Math.min(i + 1, tracks.length - 1))}
+    >
+      {/* Player UI components */}
+    </AudioPlayer>
+  );
+}
 ```
 
 ### Timeline Components
@@ -130,7 +159,7 @@ The root component that provides context to all child components.
 
 - Improve testing
 - Initial beta release
-- Add playlist components and skip and loop
+- Add playlist components and skip and loop (`onEnded` already supports a userland playlist)
 - Add caption/subtitle support
 - Add multi-language support
 

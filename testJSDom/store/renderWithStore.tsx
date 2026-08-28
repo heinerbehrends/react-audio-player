@@ -16,7 +16,7 @@ type RenderWithStoreOptions = Omit<RenderOptions, "wrapper"> & {
   testStore?: TestStore | undefined;
   /** Otherwise: the element fields to prime from. */
   element?: Partial<MediaFields> | undefined;
-  audioFiles?: AudioFile[] | undefined;
+  audioFile?: AudioFile | undefined;
   customKeyboardShortcuts?: KeyToActionMap | undefined;
 };
 
@@ -26,7 +26,7 @@ export type RenderWithStoreResult = RenderResult &
     emit: (event: string) => void;
   };
 
-const defaultAudioFiles: AudioFile[] = [{ src: "test-audio.mp3" }];
+const defaultAudioFile: AudioFile = { src: "test-audio.mp3" };
 
 /**
  * Mounts a component against a store and the static config, instead of a full
@@ -38,7 +38,7 @@ export function renderWithStore(
   {
     testStore,
     element,
-    audioFiles = defaultAudioFiles,
+    audioFile = defaultAudioFile,
     customKeyboardShortcuts,
     ...renderOptions
   }: RenderWithStoreOptions = {},
@@ -50,7 +50,7 @@ export function renderWithStore(
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <PlayerStoreProvider store={harness.store}>
       <PlayerConfigProvider
-        audioFiles={audioFiles}
+        audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
       >
         {children}

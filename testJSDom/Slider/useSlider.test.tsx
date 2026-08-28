@@ -54,7 +54,7 @@ function renderSlider(
     wrapper: ({ children }: { children: React.ReactNode }) => (
       <PlayerStoreProvider store={store.store}>
         <PlayerConfigProvider
-          audioFiles={[]}
+          audioFile={{ src: "test-audio.mp3" }}
           customKeyboardShortcuts={undefined}
         >
           {children}

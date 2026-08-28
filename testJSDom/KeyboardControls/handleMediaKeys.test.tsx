@@ -24,7 +24,7 @@ function renderMediaKeys(element: Partial<MediaFields> = {}) {
     wrapper: ({ children }: { children: React.ReactNode }) => (
       <PlayerStoreProvider store={harness.store}>
         <PlayerConfigProvider
-          audioFiles={[]}
+          audioFile={{ src: "test-audio.mp3" }}
           customKeyboardShortcuts={undefined}
         >
           {children}

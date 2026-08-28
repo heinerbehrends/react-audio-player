@@ -9,7 +9,7 @@ import type { MediaFields } from "./store/mediaElementFake";
 
 type TestProvidersProps = {
   children: React.ReactNode;
-  audioFiles?: AudioFile[] | undefined;
+  audioFile?: AudioFile | undefined;
   customKeyboardShortcuts?: KeyToActionMap | undefined;
   /** An existing harness, when the test needs the store it renders against. */
   testStore?: TestStore | undefined;
@@ -24,7 +24,7 @@ type TestProvidersProps = {
  */
 export function TestProviders({
   children,
-  audioFiles = [],
+  audioFile = { src: "test-audio.mp3" },
   customKeyboardShortcuts,
   testStore,
   element,
@@ -36,7 +36,7 @@ export function TestProviders({
   return (
     <PlayerStoreProvider store={harness.store}>
       <PlayerConfigProvider
-        audioFiles={audioFiles}
+        audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
       >
         {children}
