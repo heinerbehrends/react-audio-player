@@ -92,13 +92,13 @@ everything below it.
 </AudioPlayer>
 ```
 
-| Prop                      | Type                               | Description                                                                                      |
-| ------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `audioFile`               | `AudioFile`                        | The track to play. Required.                                                                     |
-| `onEnded`                 | `() => void`                       | Called once when the track finishes, after the element has been returned to the start.           |
-| `customKeyboardShortcuts` | `Record<string, SideEffectAction>` | Merged over the defaults, so a key you do not name keeps its default binding.                    |
-| `audioProps`              | `AudioHTMLAttributes`              | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props. |
-| `audioRef`                | `Ref<HTMLAudioElement>`            | A ref to the `<audio>` element itself.                                                           |
+| Prop                      | Type                    | Description                                                                                      |
+| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                     |
+| `onEnded`                 | `() => void`            | Called once when the track finishes, after the element has been returned to the start.           |
+| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding.                    |
+| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props. |
+| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                           |
 
 ```ts
 type AudioFile = {
@@ -416,6 +416,12 @@ are left to the browser and to assistive technology.
 
 `Space` is not bound, so it keeps activating the focused button. Pass
 `customKeyboardShortcuts={{ " ": { type: "TOGGLE_PLAY" } }}` if you want it.
+
+A binding is a `KeyboardAction` — `KeyToActionMap` is `Record<string, KeyboardAction>`.
+Two of the player's internal actions are deliberately not bindable: the slider
+commit, which carries a value in one component's units and means nothing without
+the gesture that produced it, and the end-of-track signal, which would fake a
+track ending and advance your playlist.
 
 ## Roadmap
 

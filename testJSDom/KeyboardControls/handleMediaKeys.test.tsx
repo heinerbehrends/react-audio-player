@@ -394,3 +394,32 @@ describe("useHandleMediaKeys", () => {
     expect(event.stopPropagation).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * S15. A type, so the assertions are compile-time: `@ts-expect-error` fails the
+ * build if the error stops happening — which is what a widened `KeyToActionMap`
+ * would do.
+ */
+describe("what a key can be bound to", () => {
+  it("accepts the actions a key should reach", () => {
+    const map: KeyToActionMap = {
+      a: { type: "TOGGLE_PLAY" },
+      b: { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
+      c: { type: "INCREASE_PLAYBACK_RATE", value: 0.1, maxValue: 2 },
+      d: { type: "STOP_AUDIO" },
+    };
+
+    expect(Object.keys(map)).toHaveLength(4);
+  });
+
+  it("rejects the slider commit and the end-of-track signal", () => {
+    const map: KeyToActionMap = {
+      // @ts-expect-error the slider commit path — see `KeyboardAction`
+      a: { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
+      // @ts-expect-error the end-of-track signal — see `KeyboardAction`
+      b: { type: "AUDIO_FILE_ENDED" },
+    };
+
+    expect(Object.keys(map)).toHaveLength(2);
+  });
+});

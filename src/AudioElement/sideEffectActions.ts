@@ -97,16 +97,25 @@ type SetTimeToPercentAction = {
   percent: number;
 };
 
-export type SideEffectAction =
+/**
+ * What a key may be bound to, and the only action type the package exports.
+ *
+ * `CHANGE_VALUE` and `AUDIO_FILE_ENDED` are deliberately absent: the first is
+ * the slider commit path, a value in one component's units that means nothing
+ * without the gesture behind it; the second is the end-of-track signal, so a
+ * key bound to it would fake a track ending and advance a playlist.
+ *
+ * Listed rather than derived with `Exclude`, so a new internal action cannot
+ * widen the public surface by default.
+ */
+export type KeyboardAction =
   | PlayAction
   | PauseAction
   | TogglePlayAction
   | ToggleMuteAction
+  | UnmuteAction
   | StopAudioAction
   | SetPlaybackRateAction
-  | ChangeValueAction
-  | AudioFileEndedAction
-  | UnmuteAction
   | IncreaseVolumeAction
   | DecreaseVolumeAction
   | IncreasePlaybackRateAction
@@ -116,3 +125,9 @@ export type SideEffectAction =
   | SetTimeBackwardAction
   | SetTimeToStartAction
   | SetTimeToPercentAction;
+
+/** Everything `send` accepts: the bindable actions plus the two internal ones. */
+export type SideEffectAction =
+  | KeyboardAction
+  | ChangeValueAction
+  | AudioFileEndedAction;

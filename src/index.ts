@@ -15,7 +15,7 @@ export {
 } from "./store/useAudioPlayer";
 export { useIsBuffering, useAudioError } from "./store/derived";
 export type { AudioFile } from "./Player/PlayerConfigContext";
-export type { SideEffectAction } from "./AudioElement/sideEffectActions";
+export type { KeyboardAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
 export type {
   AudioPlayerState,

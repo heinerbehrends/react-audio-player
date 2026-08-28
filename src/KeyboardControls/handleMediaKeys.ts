@@ -1,5 +1,8 @@
 import { usePlayerConfig } from "../Player/PlayerConfigContext";
-import type { SideEffectAction } from "../AudioElement/sideEffectActions";
+import type {
+  KeyboardAction,
+  SideEffectAction,
+} from "../AudioElement/sideEffectActions";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 export type HandleMediaKeysArgs = {
@@ -9,7 +12,7 @@ export type HandleMediaKeysArgs = {
 };
 
 export type KeyToActionMap = {
-  [key: string]: SideEffectAction;
+  [key: string]: KeyboardAction;
 };
 
 export const defaultKeyToActionMap: KeyToActionMap = {
