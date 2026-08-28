@@ -168,6 +168,111 @@ describe("handleSideEffect", () => {
    * covers action → element. Every clamp here is what stands between a held-down
    * arrow key and an out-of-range media property.
    */
+  /**
+   * Browsers throw on out-of-range media writes rather than clamping. Measured
+   * in Chrome: `volume` outside [0, 1] raises IndexSizeError, `playbackRate`
+   * outside [0, 16] raises NotSupportedError, and a non-finite `currentTime`
+   * raises TypeError.
+   *
+   * The sliders clamp by construction, so this was unreachable until
+   * `useAudioPlayer` exposed `setVolume`, `setRate` and `seek` to arbitrary
+   * consumer input. These rows are the guard against it coming back.
+   */
+  describe("out-of-range writes", () => {
+    it("clamps a volume above 1 instead of throwing", () => {
+      handleSideEffect(
+        { type: "CHANGE_VALUE", component: "volume", value: 1.5 },
+        audioElement,
+      );
+      expect(audioElement.volume).toBe(1);
+    });
+
+    it("clamps a volume below 0", () => {
+      handleSideEffect(
+        { type: "CHANGE_VALUE", component: "volume", value: -0.5 },
+        audioElement,
+      );
+      expect(audioElement.volume).toBe(0);
+    });
+
+    it("clamps a negative playback rate to the browser's floor", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: -1 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(0);
+    });
+
+    it("clamps a playback rate above the browser's ceiling", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 100 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(16);
+    });
+
+    /**
+     * The library's own 0.5–4 policy is narrower than the browser's, and is
+     * deliberately not enforced here — `<PlaybackRate.Set rate={8}>` names an
+     * explicit rate and the write path should not silently override it.
+     */
+    it("does not impose the slider's 0.5-4 policy on an explicit rate", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 8 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(8);
+    });
+
+    it("drops a non-finite seek rather than throwing", () => {
+      audioElement.currentTime = 10;
+
+      handleSideEffect(
+        { type: "CHANGE_VALUE", component: "timeline", value: NaN },
+        audioElement,
+      );
+
+      expect(audioElement.currentTime).toBe(10);
+    });
+
+    /**
+     * `duration` is `NaN` before metadata, so both of these compute `NaN` and
+     * would have thrown `TypeError` on a real element.
+     */
+    it("survives SET_TIME_TO_PERCENT before metadata", () => {
+      const beforeMetadata = createMediaElementFake({
+        duration: NaN,
+        currentTime: 5,
+      }) as unknown as HTMLAudioElement;
+
+      handleSideEffect(
+        { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
+        beforeMetadata,
+      );
+
+      expect(beforeMetadata.currentTime).toBe(5);
+    });
+
+    it("survives SET_TIME_FORWARD before metadata", () => {
+      const beforeMetadata = createMediaElementFake({
+        duration: NaN,
+        currentTime: 5,
+      }) as unknown as HTMLAudioElement;
+
+      handleSideEffect({ type: "SET_TIME_FORWARD", value: 10 }, beforeMetadata);
+
+      expect(beforeMetadata.currentTime).toBe(5);
+    });
+
+    it("clamps a volume nudged past 1 by the keyboard", () => {
+      audioElement.volume = 0.95;
+
+      handleSideEffect({ type: "INCREASE_VOLUME", value: 0.5 }, audioElement);
+
+      expect(audioElement.volume).toBe(1);
+    });
+  });
+
   describe("the keyboard actions", () => {
     it("clamps INCREASE_VOLUME at 1", () => {
       audioElement.volume = 0.99;

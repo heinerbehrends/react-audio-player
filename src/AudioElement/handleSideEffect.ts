@@ -2,6 +2,39 @@ import { areNumbersClose } from "../Shared/sharedFunctions";
 import type { SideEffectAction } from "./sideEffectActions";
 
 /**
+ * Media properties throw on an out-of-range write rather than clamping, and
+ * each accepts a different range:
+ *
+ * - `volume` — [0, 1]; outside throws `IndexSizeError`
+ * - `playbackRate` — [0, 16] in Chrome; outside throws `NotSupportedError`
+ * - `currentTime` — any finite number, clamped to [0, duration] by the browser;
+ *   `NaN` throws `TypeError`
+ *
+ * Sliders clamp by construction, so only consumer input arrives unguarded.
+ * Non-finite values are dropped rather than clamped: `NaN` has no meaningful
+ * target, and usually means `duration` was read before metadata.
+ */
+const MAX_PLAYBACK_RATE = 16;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+function writeVolume(audioElement: HTMLAudioElement, value: number) {
+  if (!Number.isFinite(value)) return;
+  audioElement.volume = clamp(value, 0, 1);
+}
+
+function writeRate(audioElement: HTMLAudioElement, value: number) {
+  if (!Number.isFinite(value)) return;
+  audioElement.playbackRate = clamp(value, 0, MAX_PLAYBACK_RATE);
+}
+
+function writeTime(audioElement: HTMLAudioElement, value: number) {
+  if (!Number.isFinite(value)) return;
+  audioElement.currentTime = value;
+}
+
+/**
  * The store state the write path needs. A snapshot rather than an accessor:
  * only `TOGGLE_MUTE` and `UNMUTE` read it.
  */
@@ -53,7 +86,7 @@ export function handleSideEffect(
     case "CHANGE_VALUE": {
       switch (action.component) {
         case "timeline": {
-          audioElement.currentTime = action.value;
+          writeTime(audioElement, action.value);
           break;
         }
         case "volume": {
@@ -64,43 +97,45 @@ export function handleSideEffect(
           if (isCloseToZero) {
             audioElement.muted = true;
           }
-          audioElement.volume = action.value;
+          writeVolume(audioElement, action.value);
           break;
         }
         case "playbackRate": {
-          audioElement.playbackRate = action.value;
+          writeRate(audioElement, action.value);
           break;
         }
       }
       break;
     }
     case "SET_PLAYBACK_RATE": {
-      audioElement.playbackRate = action.playbackRate;
+      writeRate(audioElement, action.playbackRate);
       break;
     }
     case "INCREASE_VOLUME": {
-      const newVolume = Math.min(audioElement.volume + action.value, 1);
-      audioElement.volume = newVolume;
+      writeVolume(audioElement, audioElement.volume + action.value);
       break;
     }
     case "DECREASE_VOLUME": {
       const newVolume = Math.max(audioElement.volume - action.value, 0);
-      const isCloseToZero = areNumbersClose(newVolume, 0);
-      if (isCloseToZero) {
+      if (areNumbersClose(newVolume, 0)) {
         audioElement.muted = true;
         return;
       }
-      audioElement.volume = newVolume;
+      writeVolume(audioElement, newVolume);
       break;
     }
     case "INCREASE_PLAYBACK_RATE": {
-      const newRate = Math.min(audioElement.playbackRate + action.value, 4);
-      audioElement.playbackRate = newRate;
+      writeRate(
+        audioElement,
+        Math.min(audioElement.playbackRate + action.value, 4),
+      );
       break;
     }
     case "DECREASE_PLAYBACK_RATE": {
-      const newRate = Math.max(audioElement.playbackRate - action.value, 0.5);
-      audioElement.playbackRate = newRate;
+      writeRate(
+        audioElement,
+        Math.max(audioElement.playbackRate - action.value, 0.5),
+      );
       break;
     }
     case "RESET_PLAYBACK_RATE": {
@@ -108,16 +143,20 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_FORWARD": {
-      const newTime = Math.min(
-        audioElement.currentTime + action.value,
-        audioElement.duration,
+      writeTime(
+        audioElement,
+        Math.min(
+          audioElement.currentTime + action.value,
+          audioElement.duration,
+        ),
       );
-      audioElement.currentTime = newTime;
       break;
     }
     case "SET_TIME_BACKWARD": {
-      const newTime = Math.max(audioElement.currentTime - action.value, 0);
-      audioElement.currentTime = newTime;
+      writeTime(
+        audioElement,
+        Math.max(audioElement.currentTime - action.value, 0),
+      );
       break;
     }
     case "SET_TIME_TO_START": {
@@ -125,8 +164,7 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_TO_PERCENT": {
-      const newTime = audioElement.duration * action.percent;
-      audioElement.currentTime = newTime;
+      writeTime(audioElement, audioElement.duration * action.percent);
       break;
     }
   }
@@ -142,7 +180,7 @@ function unmute(
   { lastAudibleVolume }: SideEffectContext,
 ) {
   if (areNumbersClose(audioElement.volume, 0)) {
-    audioElement.volume = lastAudibleVolume;
+    writeVolume(audioElement, lastAudibleVolume);
   }
   audioElement.muted = false;
 }

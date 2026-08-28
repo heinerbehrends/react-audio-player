@@ -1,16 +1,13 @@
 /**
- * Runs the consumer's handler, then the library's — unless the consumer called
- * `preventDefault()`, which is their opt-out.
+ * Calls `theirs`, then `ours` — unless `theirs` called `preventDefault()`.
  *
- * Spreading `{...props}` over a handler *replaces* it rather than adding to it,
- * and the failure is silent: `<Timeline.Seek onKeyDown={…}>` would drop
- * arrow-key adjustment and every media shortcut, leaving an element that still
- * renders and still announces a value but no longer responds. The types allow
- * it, since `onKeyDown` is a legitimate button prop.
+ * A spread prop replaces a handler rather than adding to it, and does so
+ * silently: `<Timeline.Seek onKeyDown={…}>` would drop arrow-key adjustment and
+ * every media shortcut, leaving an element that still renders and announces a
+ * value but no longer responds.
  *
- * Consumer-first is the Radix convention, and it is what makes the opt-out
- * possible. The trade is that a `preventDefault()` called for an unrelated
- * reason — stopping a scroll, say — also cancels the library behaviour.
+ * Consumer-first ordering is what makes `preventDefault()` an opt-out. The cost
+ * is that one called for an unrelated reason cancels `ours` too.
  */
 export function composeEventHandlers<E extends { defaultPrevented: boolean }>(
   theirs: ((event: E) => void) | undefined,

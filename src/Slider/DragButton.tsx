@@ -17,9 +17,8 @@ export function DragButton(props: DragButtonProps) {
     <button
       type="button"
       {...props}
-      // `tabIndex` and `aria-hidden` are locked together: they are the two
-      // halves of "the thumb is pointer-only", and unhiding it would put a
-      // second value-announcing element in one slider.
+      // `tabIndex` and `aria-hidden` are locked as a pair: unhiding the thumb
+      // would put a second value-announcing element in one slider.
       onPointerDown={composeEventHandlers(
         props.onPointerDown,
         slider.onThumbPointerDown,
