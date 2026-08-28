@@ -1130,7 +1130,7 @@ accessibility tree — a virtual cursor parked on it, or a live-region-adjacent
 announcement — so the churn is a problem whether or not the element has focus. At 4 Hz it
 is borderline; at 60 Hz it is unusable. Not a CPU trade.
 
-### Phase 5 — Strip the memo layer
+### Phase 5 — Strip the memo layer — **measured; strip in progress**
 
 Delete the `memo` / `useMemo` / `useCallback` layer **unconditionally**, then add back only
 what a measurement demands. Profile-then-prune biases toward keeping, and the residue is
@@ -1148,6 +1148,106 @@ what this refactor exists to remove. The one candidate for a genuine `useMemo` i
 per-slider `SliderContext` value, which churns at pointermove rate during a drag; add it
 only if the drag trace shows it mattering.
 
+#### How the traces were captured
+
+`pnpm` is **not on PATH** on this machine; only `node`, `npm`, `npx`. `npm run dev` is
+`tsup --watch`, not the demo. The demo is `npx vite dev` (or `npm run vite`), served at
+`http://localhost:5173`. React DevTools was opened as a browser extension next to the app,
+Profiler tab, record → drive the interaction → stop → export JSON.
+
+Two exports were taken and analysed with a throwaway Node script
+(`scratchpad/analyse2.mjs`): commits by React lane, duration percentiles, total render time
+as a share of wall clock, inter-commit gaps, per-component render counts with
+`changeDescriptions` (context / `didHooksChange` / hook indices / props), `updaters`, and
+the never-rendered list. **Gotcha for whoever re-runs it:** wall-clock `duration` and
+`reactVersion` live at `data.timelineData[0]`, *not* `dataForRoots[0]` — reading the wrong
+path silently yields nonsense percentages.
+
+#### What the two traces said
+
+**Playback (~10 s).** Only `DebugStore`, `TimelineRoot`, `Elapsed2` and `Remaining2`
+committed, at 0.6–1.0 ms each. Nothing else. The playback pass mark is met.
+
+**Timeline drag (3418 ms wall clock).**
+
+- 349 of 353 commits on the **InputContinuous** lane — a genuine pointermove drag.
+- Median inter-commit gap **7.0 ms** (~143 commits/s): the drag commits at pointer rate,
+  uncoalesced. Median commit **0.5 ms**, max **1.8 ms**.
+- Total render **205 ms of 3418 ms = 6.0 % of wall clock**, in a dev build. No rAF
+  coalescing is warranted, and none should be added.
+- `TimelineRoot` re-rendered on **`hooks: [7]` — the local drag state — on 351 of 353
+  commits. Hook 0 (the `currentTime` subscription) fired exactly once in 3.4 s.** That is
+  seek mode's `writesDuringDrag: false` proven in data: during a seek drag the store is
+  silent, every commit is local state, there is no element→store→UI feedback loop, and the
+  retain-until-changed rule is never even exercised.
+- `Elapsed2` and `Remaining2` rendered **exactly once each** across 353 slider commits —
+  the two-value aria contract insulating the 1 Hz clock from a 143 Hz gesture.
+- **Both other sliders never re-rendered** (`VolumeContainer`, `VolumeProgress`,
+  `VolumeBackground`, `PlaybackRateSliderRoot`, `PlaybackRateBackground`, `RateDisplay`),
+  nor did any button, `Toggle2`, `Duration2`, `ErrorMessage`, `AudioElement2`,
+  `PlayerConfigProvider2`. **42 of 57 components untouched** — per-slider context
+  confinement works.
+- Self time totalled 126.5 ms, of which `Debug` + `DebugStore` = **43.5 ms (34 %)** is the
+  demo-only panel. Library-only work ≈ 83 ms of 3418 ms = **2.4 % of wall clock**.
+
+Both traces meet the pass mark. The `SliderContext` `useMemo` candidate named above is
+**not** warranted: the churn is real (143/s) but confined to one slider's own subtree, which
+is exactly the subtree that has to re-render anyway.
+
+#### The verdict: strip everything, add nothing back
+
+`Elapsed2`, `Remaining2`, `Toggle2`, `Duration2`, `AudioElement2` and `PlayerConfigProvider2`
+are all `memo()`, and in **both** traces every one of their parents sits in the
+never-rendered list. **Not one `memo` prevented a single render in either trace.** The layer
+is inert — precisely the residue the unconditional-delete rule exists to clear.
+
+The two `memo`/`useMemo` on `PlayerConfigProvider` deserve their own note, because a trace
+cannot reach them: the demo has no state above `AudioPlayer`, so the provider never renders.
+They are still not worth keeping. `audioFiles` is an array prop and the documented usage
+passes an inline literal, so on a consumer re-render the `memo` comparison fails and the
+`useMemo` dependency changes — both bail and buy nothing. When they do bail the cost is
+seven cheap components re-rendering, which is what React does by default. A memo that only
+works if the consumer memoises their props is worse than none, because it hides the
+requirement.
+
+#### The carve-out: `useSlider`'s callbacks stay
+
+The 12 `useCallback`s in `useSlider.ts` are **not** render memoization and must survive the
+strip. `valueAt`, `commit`, `send` and `releaseAudibleVolume` are dependencies of the drag
+effect — unstable identities would tear down and re-attach five window listeners on every
+pointermove, which is the exact thing the design avoids. `measure` feeds the ResizeObserver
+effect. `setSliderRef` is a ref callback: an unstable one detaches and re-attaches the node.
+Leave them, and add a comment at the top of the file recording that they are
+effect-dependency stability rather than a render optimisation, so the next strip does not
+have to re-derive it.
+
+The same reasoning keeps `AudioElement`'s `ref` callback. Its old comment justified it *by
+reference to `memo`*, which is now gone; the real reason is that an unstable ref would
+detach and re-attach the element — and therefore the store — on every render.
+
+**Considered and rejected:** collapsing `SliderProvider`, a wrapper that only renders
+`SliderContext.Provider` and costs one extra fiber per slider (8.0 ms across the drag
+trace). It would require exporting the context object, which is the handle the null-guard
+keeps private. Not worth it.
+
+#### Work list
+
+| File | Change | Status |
+|---|---|---|
+| `src/AudioElement/AudioElement.tsx` | unwrap `memo`; inline `handleEnded` (drop its `useCallback`); keep the `ref` `useCallback`, rewrite its comment | **done** |
+| `src/Player/PlayerConfigContext.tsx` | unwrap `memo` (line 33); drop the `useMemo` (line 38) and build the context value inline | todo |
+| `src/TimeDisplay/TimeDisplay.tsx` | unwrap the four `memo()`s — `Toggle` (16), `Elapsed` (54), `Remaining` (69), `Duration` (84); the exported `Time` type then loses `React.NamedExoticComponent` and needs plain `React.FC` members | todo |
+| `src/Slider/SetSliderValue.tsx` | drop the `style` `useMemo` (line 24) | todo |
+| `src/Slider/useSlider.ts` | **keep** all 12 `useCallback`s; add the comment recording why | todo |
+
+Watch for: `React.NamedExoticComponent` appears in `TimeDisplay.tsx`'s exported `Time` type
+and is the type `memo()` returns. Removing `memo` means that annotation has to change, and
+`Time` is part of the public surface — `check-exports` and the API snapshot both see it.
+
+Re-verify after the strip: 346 jsdom tests, 51 E2E tests, `type-check`, `lint`, `build`,
+`check-exports`. `Debug.tsx` and `App.tsx` are covered by `tsconfig.app.json`, so a type
+error there is a real failure, not demo noise.
+
 ### Phase 6 — Measure and reconcile
 
 Rebuild, compare against section 6, re-run `check-exports`, update the README.
@@ -1155,6 +1255,17 @@ Rebuild, compare against section 6, re-run `check-exports`, update the README.
 `Debug.tsx` and `App.tsx` read every context and are covered by `tsconfig.app.json`, so they
 must migrate in lockstep with every phase or `pnpm type-check` fails CI. They are
 tree-shaken out of `dist`, not out of the build.
+
+#### Carried in, needing a decision
+
+- **The CSS transition on the progress element** — the one piece of Phase 4 that did not
+  land. The progress element still tracks `currentTime` at `timeupdate` rate (~4 Hz) with no
+  smoothing.
+- **Prune `SET_SLIDER_VALUE` / `DRAG` / `DRAG_END` from the published `SideEffectAction`
+  union?** Nothing in `src/` dispatches them since Phase 3 retired the bus. Removing them is
+  a breaking change to a public type, so it is the maintainer's call, not a cleanup.
+- **The README claims "Caption/subtitle support"**, which appears to be untrue of the
+  current code. Verify and either implement or drop the claim before the README rewrite.
 
 ## 5. Testing strategy
 
