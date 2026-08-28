@@ -66,20 +66,28 @@ type CurrentIndicatorProps = {
 /**
  * A marker for the rate in effect — a tick or dot beside a `.Set` button.
  *
- * Always renders `children`, hiding them with `visibility: hidden` when the rate
- * does not match, so the row does not reflow as the marker moves. The content is
- * therefore in the DOM either way: a presence check cannot tell the two states
- * apart, and nothing unreachable should go in it.
+ * Always renders `children`, in a wrapper span that is `visibility: hidden` when
+ * the rate does not match, so the marker keeps its box and the row does not
+ * reflow as it moves. **The wrapper is unconditional for that same reason**: a
+ * fragment in one state and a span in the other would change which element is
+ * the flex or grid item, reflowing the row on every rate change — the very thing
+ * the hidden span exists to prevent (S17).
+ *
+ * The content is therefore in the DOM in both states, and reserves space in
+ * both: a presence check cannot tell the two apart, and nothing unreachable
+ * should go in it. `visibility: hidden` also keeps the hidden marker out of the
+ * accessibility tree, leaving `.Set`'s `aria-pressed` as the announced signal.
  */
 export function CurrentIndicator({
   rate,
   children,
-}: CurrentIndicatorProps): React.ReactElement | null {
+}: CurrentIndicatorProps): React.ReactElement {
   const isCurrent = useIsCurrent(rate);
-  if (isCurrent) {
-    return <>{children}</>;
-  }
-  return <span style={{ visibility: "hidden" }}>{children}</span>;
+  return (
+    <span style={isCurrent ? undefined : { visibility: "hidden" }}>
+      {children}
+    </span>
+  );
 }
 
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;

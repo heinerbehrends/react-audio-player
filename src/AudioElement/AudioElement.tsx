@@ -74,8 +74,7 @@ export function AudioElement({
        *
        * Not the same event in every browser: Firefox also fires `ended` on a
        * *paused* seek to `duration`, where Chrome fires nothing — so a drag to
-       * the end of the timeline calls this in Firefox only. Measured; recorded
-       * in `BACKLOG.md`.
+       * the end of the timeline calls this in Firefox only. 
        */
       onEnded={onEnded}
     >

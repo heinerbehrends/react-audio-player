@@ -119,7 +119,13 @@ describe("AudioElement", () => {
 
   it("calls a consumer's callback ref with the element", () => {
     const seen: (HTMLAudioElement | null)[] = [];
-    renderInPlayer(<AudioElement audioRef={(node) => seen.push(node)} />);
+    renderInPlayer(
+      <AudioElement
+        audioRef={(node) => {
+          seen.push(node);
+        }}
+      />,
+    );
 
     expect(seen[seen.length - 1]).toBe(screen.getByLabelText("audio player"));
   });

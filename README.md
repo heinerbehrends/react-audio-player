@@ -231,8 +231,10 @@ Unmuting restores the volume the player was last audible at.
 - `<PlaybackRate>` — groups the rate controls
 - `<PlaybackRate.Display>` — the current rate
 - `<PlaybackRate.Set rate={1.5}>` — sets that rate
-- `<PlaybackRate.Current rate={1.5}>` — renders its children when that rate is
-  current
+- `<PlaybackRate.Current rate={1.5}>` — marks that rate as the current one. Its
+  children are always rendered, in a `<span>` that is `visibility: hidden` while
+  the rate is not current, so the marker reserves its space in both states and
+  the row does not reflow as it moves
 - `<PlaybackRate.Change amount={0.1}>` — adjusts the rate by `amount`
 
 ### Playback rate slider
@@ -500,7 +502,8 @@ pnpm testE2E
 
 ## Requirements
 
-- React 18 or later, for `useSyncExternalStore`
+- React 18 or later, for `useSyncExternalStore` — CI runs the whole suite
+  against React 18 and React 19
 - Chrome, Firefox, Safari, Edge
 
 Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer. Live

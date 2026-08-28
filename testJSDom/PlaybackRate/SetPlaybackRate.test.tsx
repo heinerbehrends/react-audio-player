@@ -177,6 +177,38 @@ describe("CurrentIndicator", () => {
     expect(indicator.parentElement).toHaveStyle({ visibility: "hidden" });
   });
 
+  /**
+   * The wrapper is what reserves the space, so it has to be present in both
+   * states. With a fragment in the matching one, the marker itself is the flex
+   * or grid item and the row reflows every time the marker moves — the reflow
+   * the hidden span exists to prevent (S17). Restore the fragment branch and
+   * this fails: `parentElement` is then the render container.
+   */
+  it("wraps children in a span in both states, so the row cannot reflow", () => {
+    const { unmount } = renderRate(
+      <CurrentIndicator rate={1}>
+        <span data-testid="indicator">Current</span>
+      </CurrentIndicator>,
+      { playbackRate: 1 },
+    );
+
+    const shown = screen.getByTestId("indicator").parentElement;
+    expect(shown?.tagName).toBe("SPAN");
+    expect(shown).not.toHaveStyle({ visibility: "hidden" });
+    unmount();
+
+    renderRate(
+      <CurrentIndicator rate={2}>
+        <span data-testid="indicator">Current</span>
+      </CurrentIndicator>,
+      { playbackRate: 1 },
+    );
+
+    const hidden = screen.getByTestId("indicator").parentElement;
+    expect(hidden?.tagName).toBe("SPAN");
+    expect(hidden).toHaveStyle({ visibility: "hidden" });
+  });
+
   it("handles close but not exact rate values", () => {
     renderRate(
       <CurrentIndicator rate={1}>

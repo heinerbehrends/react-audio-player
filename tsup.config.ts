@@ -7,6 +7,9 @@ export default defineConfig({
   splitting: false,
   clean: true,
   treeshake: true,
+  // `react-dom` is not a peer dependency (S18) and nothing in `src/index.ts`
+  // imports it. It stays listed so that if something ever does, the import is
+  // left for the consumer's renderer rather than bundling a second React DOM.
   external: ["react", "react-dom"],
   outDir: "dist",
   tsconfig: "tsconfig.build.json",

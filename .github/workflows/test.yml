@@ -16,12 +16,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    name: node ${{ matrix.node-version }} · react ${{ matrix.react-version }}
+
     strategy:
+      # Both legs report. A failure on one end of the peer range should not
+      # cancel the run that would have said whether the other end is fine too.
+      fail-fast: false
       matrix:
         # Node 18 is EOL and the toolchain no longer runs on it: jsdom 30 wants
         # ^22.22.2 || ^24.15.0 || >=26, and vite 8, vitest 4 and eslint 10 want
         # >=20.19. 24.x is the current LTS and satisfies all of them.
         node-version: [24.x]
+        # `peerDependencies` promises `react: >=18.0.0`, and devDependencies can
+        # pin only one version — so the far end of that range was never run
+        # (S19). Both ends now run the whole gauntlet. Type-check earns its place
+        # in both: the one real React 19 difference found so far was a type, not
+        # a behaviour (a ref callback may now return a cleanup function, which
+        # makes a concise arrow returning anything else an error).
+        react-version: ["18", "19"]
 
     steps:
       - uses: actions/checkout@v4
@@ -52,11 +64,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      # The lockfile pins React 18, so only the other leg has anything to do.
+      # `react-dom` moves in lockstep — it is no longer a peer dependency (S18),
+      # but the demo app mounts with it and the jsdom suite renders with it, and
+      # a React 19 / react-dom 18 pair fails at import.
+      - name: Install React ${{ matrix.react-version }}
+        if: matrix.react-version != '18'
+        run: >-
+          pnpm add -D
+          react@${{ matrix.react-version }}
+          react-dom@${{ matrix.react-version }}
+          @types/react@${{ matrix.react-version }}
+          @types/react-dom@${{ matrix.react-version }}
+
       # Both projects in playwright.config.ts, so both engines are installed.
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps chromium firefox
 
-      # Covers both TS projects. `tsconfig.app.json` alone left tsup.config.ts,
+      # Covers all three TS projects. `tsconfig.app.json` alone left tsup.config.ts,
       # vitest.config.ts and playwright.config.ts unchecked.
       - name: Type check
         run: pnpm type-check
