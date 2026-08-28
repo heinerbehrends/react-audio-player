@@ -53,9 +53,7 @@ function VolumeContainer({
     <SliderProvider value={slider}>
       <div
         data-part="root"
-        aria-label="Volume controls"
         {...props}
-        role="group"
         style={{
           ...rootStyles,
           ...props.style,
@@ -85,8 +83,14 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * The arrow keys change the volume without unmuting, so the announced value
  * composes both — "Muted, 80%".
  *
- * Live while loading; only an error disables it. Parts carry `data-part`, shared
- * with the other sliders, so scope your CSS.
+ * Live while loading; only an error disables it.
+ *
+ * The root is a plain `<div>` with no ARIA role: the slider semantics are on
+ * `.Control`, which is already named "Volume slider", so a wrapper role and
+ * label announced a group with one member and a second name for it (A11). Add
+ * your own `role`/`aria-label` if you compose more controls in.
+ *
+ * Parts carry `data-part`, shared with the other sliders, so scope your CSS.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got

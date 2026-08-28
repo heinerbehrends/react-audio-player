@@ -75,7 +75,6 @@ const TimelineRoot: React.FC<TimelineProps> = ({
       <div
         data-part="root"
         {...props}
-        role="group"
         style={{
           ...containerStyles,
           ...props.style,
@@ -104,6 +103,11 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * There is no `maxValue` — the range is the duration, read from the element.
  * Until one is known, before metadata or on a live stream, the slider is
  * `aria-disabled` and ignores input. `useIsSeekable()` is the same test.
+ *
+ * The root is a plain `<div>` with no ARIA role of its own: the slider
+ * semantics live on `.Control`, so a wrapper role would announce a group with
+ * one member (A11). If you compose other controls in beside the slider, add your
+ * own `role="group"` and `aria-label` — props are spread through.
  *
  * Parts carry `data-part` for CSS (`root`, `control`, `progress`, `background`,
  * `thumb`). All three sliders share those names, so scope your selectors.

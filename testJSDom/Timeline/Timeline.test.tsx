@@ -148,14 +148,20 @@ describe("Timeline", () => {
     });
   });
 
-  it("should render a container with proper styles", () => {
-    renderInPlayer(
+  /**
+   * A11: no `role="group"` on the root. It wrapped a single control that already
+   * carries `role="slider"` and a name, so it announced a group of one.
+   */
+  it("should render a container with proper styles and no role of its own", () => {
+    const { container } = renderInPlayer(
       <Timeline>
         <Timeline.Control>track</Timeline.Control>
       </Timeline>,
     );
 
-    const root = screen.getByRole("group");
+    expect(screen.queryByRole("group")).toBeNull();
+
+    const root = container.querySelector('[data-part="root"]') as HTMLElement;
     expect(root).toHaveStyle({
       display: "grid",
       gridTemplateColumns: "1fr",

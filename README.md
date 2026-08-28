@@ -55,6 +55,13 @@ Each slider exposes one focusable `role="slider"` element that carries the
 drag thumbs are pointer affordances only: they are `aria-hidden` and out of the
 tab order, so a slider announces one value rather than two.
 
+A slider root is a plain `<div>` with no role of its own. The parts inside it
+are the slider, its fill and its thumb — one control, already named — so a
+wrapper role would announce a group of one. `<PlaybackRate>` is the exception
+and keeps `role="group"`, because it wraps several buttons. If you compose other
+controls into a slider root, add your own `role="group"` and `aria-label`; props
+are spread through.
+
 The volume slider announces the mute as well as the volume — "Muted, 80%" — since
 the two are separate on the element and the arrow keys change the volume without
 unmuting.

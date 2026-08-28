@@ -85,15 +85,24 @@ describe("Volume", () => {
     });
   });
 
-  it("should render a labelled container with proper styles", () => {
-    renderInPlayer(
+  /**
+   * A11: the root carries no role and no name. "Volume controls" wrapped a
+   * single control already named "Volume slider" — a group of one, announced
+   * twice.
+   */
+  it("should render a container with proper styles and no role of its own", () => {
+    const view = renderInPlayer(
       <Volume>
         <Volume.Control>track</Volume.Control>
       </Volume>,
     );
 
-    const container = screen.getByRole("group", { name: "Volume controls" });
-    expect(container).toBeInTheDocument();
+    expect(screen.queryByRole("group")).toBeNull();
+    expect(screen.queryByLabelText("Volume controls")).toBeNull();
+
+    const container = view.container.querySelector(
+      '[data-part="root"]',
+    ) as HTMLElement;
     expect(container).toHaveStyle({
       display: "grid",
       gridTemplateColumns: "1fr",

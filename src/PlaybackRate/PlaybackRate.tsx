@@ -12,6 +12,9 @@ import {
  *
  * Use it when the buttons form one cluster, so assistive technology announces
  * them as a set.
+ *
+ * The one `role="group"` in the library. The slider roots have none, because
+ * each wraps a single control that is already named; this wraps several (A11).
  */
 export function PlaybackRate({ children }: { children: React.ReactNode }) {
   return (

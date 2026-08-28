@@ -109,6 +109,9 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  * Clamps to its own `minValue`/`maxValue`. `PlaybackRate.Set` does not, since it
  * names an explicit rate — so the two can disagree if you use both. Live while
  * loading; only an error disables it.
+ *
+ * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
+ * semantics are on `.Control` (A11).
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;
