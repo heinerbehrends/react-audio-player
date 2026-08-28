@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  calculateSliderValue,
-  type Orientation,
-} from "../Shared/sharedFunctions";
+import { calculateSliderValue, type Orientation } from "./sliderMath";
 import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";

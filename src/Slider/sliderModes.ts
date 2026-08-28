@@ -1,4 +1,4 @@
-import { formatTime } from "../Shared/sharedFunctions";
+import { formatTime } from "../Shared/formatTime";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
 import type { SliderComponent } from "../AudioElement/sideEffectActions";
 

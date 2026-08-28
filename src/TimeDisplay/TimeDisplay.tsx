@@ -4,7 +4,7 @@
    degrades for this file; a call signature that type-checks and then throws at
    runtime is the worse trade. */
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { formatTime } from "../Shared/sharedFunctions";
+import { formatTime } from "../Shared/formatTime";
 import { useStore } from "../store/atom";
 import { usePlayerState, useTimeDisplay } from "../store/derived";
 import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { areNumbersClose } from "../Shared/sharedFunctions";
+import { areNumbersClose } from "../Shared/areNumbersClose";
 import { useStore } from "./atom";
 import { usePlayerStore } from "./PlayerStoreContext";
 import { HAVE_FUTURE_DATA } from "./syncFromElement";

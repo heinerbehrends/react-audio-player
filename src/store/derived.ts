@@ -1,4 +1,4 @@
-import { areNumbersClose } from "../Shared/sharedFunctions";
+import { areNumbersClose } from "../Shared/areNumbersClose";
 import { useStore } from "./atom";
 import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { usePlayerStore } from "./PlayerStoreContext";

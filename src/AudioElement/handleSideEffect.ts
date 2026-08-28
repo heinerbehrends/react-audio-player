@@ -1,4 +1,4 @@
-import { areNumbersClose } from "../Shared/sharedFunctions";
+import { areNumbersClose } from "../Shared/areNumbersClose";
 import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
 
 /**

@@ -1,5 +1,5 @@
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { areNumbersClose } from "../Shared/sharedFunctions";
+import { areNumbersClose } from "../Shared/areNumbersClose";
 import { useStore } from "../store/atom";
 import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";

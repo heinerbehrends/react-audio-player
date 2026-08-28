@@ -1,4 +1,4 @@
-import { getOffset, type Orientation } from "../Shared/sharedFunctions";
+import { getOffset, type Orientation } from "./sliderMath";
 
 /**
  * Everything the styles need. Not the mode: how a slider fills depends on its

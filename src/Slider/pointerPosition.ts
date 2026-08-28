@@ -1,4 +1,4 @@
-import type { Orientation } from "../Shared/sharedFunctions";
+import type { Orientation } from "./sliderMath";
 
 /** Anything carrying a pointer position, React-synthetic or native. */
 export type PositionEvent =
