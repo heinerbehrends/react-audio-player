@@ -25,12 +25,13 @@ export function SliderThumb(props: SliderThumbProps) {
       type="button"
       data-part="thumb"
       {...props}
-      // `tabIndex` and `aria-hidden` are locked as a pair: unhiding the thumb
-      // would put a second value-announcing element in one slider.
       onPointerDown={composeEventHandlers(
         props.onPointerDown,
         slider.onThumbPointerDown,
       )}
+      // Locked as a pair, and after the spread so neither can be overridden:
+      // unhiding the thumb would put a second value-announcing element in one
+      // slider.
       tabIndex={-1}
       aria-hidden="true"
       style={{ ...style, ...props.style }}

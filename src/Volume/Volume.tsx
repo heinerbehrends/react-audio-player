@@ -75,9 +75,6 @@ type VolumeComponent = React.FC<VolumeProps> & {
   Thumb: typeof SliderThumb;
 };
 
-// Property assignment, not `Object.assign`: the call is a side-effecting
-// expression a bundler cannot drop, which would pull the whole library into a
-// consumer who imported one component.
 /**
  * The volume slider, on a 0–1 range. Compose it from `.Control` (required) and
  * any of `.Background`, `.Progress` and `.Thumb`.
@@ -95,6 +92,10 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * Parts carry `data-part` (`root`, `control`, `progress`, `background`,
  * `thumb`), shared with the other two sliders, so scope your CSS.
  */
+// Property assignment, not `Object.assign`: the call is a side-effecting
+// expression a bundler cannot drop, so a consumer importing one component got
+// the whole library. Measured under P1-a; the same pattern is used for every
+// compound root here.
 export const Volume = VolumeContainer as VolumeComponent;
 Volume.Progress = VolumeProgress;
 Volume.Background = VolumeBackground;

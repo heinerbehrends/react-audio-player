@@ -7,8 +7,8 @@ type PlayButtonProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-// State is on the name only; `aria-pressed` beside it announced the same fact
-// twice. The name also carries `loading` and `error`, which a boolean cannot.
+// Four names, not a play/pause pair: the name is the button's only state
+// channel, so it has to carry `loading` and `error` too (A4).
 const ariaLabelMap = {
   playing: "Pause audio",
   paused: "Play audio",

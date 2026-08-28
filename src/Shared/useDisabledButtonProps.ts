@@ -38,7 +38,8 @@ export function useDisabledButtonProps(
   { requiresSeekable = false }: DisabledOptions = {},
 ): DisabledButtonProps {
   const isErrored = useIsDisabled();
-  // Called unconditionally, as a hook must be. One rarely-changing atom.
+  // Read by every button, including the five that ignore it. One
+  // rarely-changing atom, so the extra subscription is not worth branching for.
   const isSeekable = useIsSeekable();
   const isDisabled = isErrored || (requiresSeekable && !isSeekable);
 
