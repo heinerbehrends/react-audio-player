@@ -68,6 +68,7 @@ const TimelineRoot: React.FC<TimelineProps> = ({
   return (
     <SliderProvider value={slider}>
       <div
+        {...props}
         role="group"
         style={{
           ...containerStyles,

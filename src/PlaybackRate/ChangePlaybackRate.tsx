@@ -19,6 +19,7 @@ export function ChangePlaybackRate({
 
   return (
     <button
+      type="button"
       onClick={handleChangePlaybackRate}
       onKeyDown={handleMediaKeys}
       aria-label={

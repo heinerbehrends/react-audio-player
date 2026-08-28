@@ -4,7 +4,7 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlayButtonProps = {
   children: React.ReactNode;
-} & React.HTMLAttributes<HTMLButtonElement>;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const ariaLabelMap = {
   playing: "Pause audio",
@@ -20,6 +20,7 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       disabled={isDisabled}

@@ -1,7 +1,7 @@
 import { calculateDragStyle } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
 
-type DragButtonProps = React.HTMLAttributes<HTMLButtonElement>;
+type DragButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
  * A pointer-only affordance: hidden from assistive technology and out of the tab
@@ -14,6 +14,7 @@ export function DragButton(props: DragButtonProps) {
 
   return (
     <button
+      type="button"
       onPointerDown={slider.onThumbPointerDown}
       tabIndex={-1}
       aria-hidden="true"

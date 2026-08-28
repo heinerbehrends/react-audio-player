@@ -14,6 +14,7 @@ export function Seek({ children, amount, ...props }: SeekButtonComponentProps) {
 
   return (
     <button
+      type="button"
       aria-label={`Seek ${amount > 0 ? "forward" : "backward"} by ${Math.abs(
         amount,
       )} seconds`}

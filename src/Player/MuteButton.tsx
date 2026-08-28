@@ -17,6 +17,7 @@ export function MuteButtonComponent({
 
   return (
     <button
+      type="button"
       aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
       aria-pressed={volumeState === "muted"}
       onKeyDown={handleMediaKeys}

@@ -39,8 +39,9 @@ function VolumeContainer({
   return (
     <SliderProvider value={slider}>
       <div
-        role="group"
         aria-label="Volume controls"
+        {...props}
+        role="group"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr",
@@ -62,9 +63,12 @@ type VolumeComponent = React.FC<VolumeProps> & {
   Drag: typeof DragButton;
 };
 
-export const Volume = Object.assign(VolumeContainer as VolumeComponent, {
-  Progress: VolumeProgress,
-  Background: VolumeBackground,
-  Set: SetSliderValue,
-  Drag: DragButton,
-});
+// Property assignment, not `Object.assign`: the call is a side-effecting
+// expression a bundler cannot drop, which pulls the whole library into a
+// consumer who imported one component. `Timeline` and `PlayButton` already
+// use this form.
+export const Volume = VolumeContainer as VolumeComponent;
+Volume.Progress = VolumeProgress;
+Volume.Background = VolumeBackground;
+Volume.Set = SetSliderValue;
+Volume.Drag = DragButton;

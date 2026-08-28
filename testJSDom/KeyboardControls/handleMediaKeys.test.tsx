@@ -66,7 +66,7 @@ describe("handleMediaKeys", () => {
 
   describe("Playback control keys", () => {
     it("should handle play/pause keys (p, k, MediaPlayPause)", () => {
-      const playPauseKeys = ["p", "P", "k", "K", "MediaPlayPause", " "];
+      const playPauseKeys = ["p", "P", "k", "K", "MediaPlayPause"];
 
       playPauseKeys.forEach((key) => {
         mockHandleSideEffect.mockClear();

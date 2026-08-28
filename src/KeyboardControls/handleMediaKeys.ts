@@ -18,7 +18,11 @@ export const defaultKeyToActionMap: KeyToActionMap = {
   k: { type: "TOGGLE_PLAY" },
   K: { type: "TOGGLE_PLAY" },
   MediaPlayPause: { type: "TOGGLE_PLAY" },
-  " ": { type: "TOGGLE_PLAY" },
+  // Space is deliberately absent. Every control this handler is attached to is
+  // a <button>, and mapping Space here `preventDefault()`s the native
+  // activation — so Space stopped activating the focused button and started
+  // playback instead. `p`/`k` cover play/pause; a consumer who wants Space can
+  // add it through `customKeyboardShortcuts`.
   s: { type: "STOP_AUDIO" },
   S: { type: "STOP_AUDIO" },
   MediaStop: { type: "STOP_AUDIO" },
@@ -54,6 +58,15 @@ export const defaultKeyToActionMap: KeyToActionMap = {
 
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
   const { event, handleSideEffect, customKeyboardShortcuts } = args;
+
+  // Modifier combinations belong to the browser and to assistive technology —
+  // `Ctrl+Option+Arrow` is VoiceOver's own navigation, and swallowing it makes
+  // the player unusable with a screen reader. Shift is deliberately absent:
+  // `<` and `>` in the default map are shifted keys.
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return false;
+  }
+
   const keyToActionMap = {
     ...defaultKeyToActionMap,
     ...customKeyboardShortcuts,

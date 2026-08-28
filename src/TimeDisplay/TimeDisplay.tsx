@@ -1,3 +1,8 @@
+/* eslint-disable react-refresh/only-export-components --
+   `Time` is a namespace object, not a component — it has no root element to
+   render — so the parts below reach consumers through it rather than being
+   exported individually. Fast refresh degrades for this file; a call signature
+   that type-checks and throws at runtime is the worse trade. */
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { formatTime } from "../Shared/sharedFunctions";
 import { useStore } from "../store/atom";
@@ -22,6 +27,7 @@ function Toggle({ children, ...props }: ChildrenProps) {
 
   return (
     <button
+      type="button"
       aria-label="Toggle elapsed and remaining time"
       aria-pressed={timeDisplay === "remaining"}
       onKeyDown={handleMediaKeys}
@@ -80,18 +86,14 @@ function Duration() {
   return <time aria-label="duration">{formatTime(duration)}</time>;
 }
 
-type Time = React.FC<{
-  children: React.ReactNode;
-}> & {
-  Elapsed: React.FC;
-  Remaining: React.FC;
-  Duration: React.FC;
-  Toggle: React.FC<{ children: React.ReactNode }>;
-};
-
-export const Time: Time = Object.assign({
+/**
+ * A namespace, not a component — there is no root element to render, so unlike
+ * the sliders `Time` carries no call signature. Typing it as one made
+ * `<Time>…</Time>` compile and then throw at runtime.
+ */
+export const Time = {
   Elapsed,
   Remaining,
   Duration,
   Toggle,
-});
+};

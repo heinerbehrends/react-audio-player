@@ -5,7 +5,7 @@ import {
   buttonStyles,
 } from "./calculateStyle";
 
-type SetSliderValueProps = React.HTMLAttributes<HTMLButtonElement> & {
+type SetSliderValueProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;
 };
 
@@ -27,6 +27,7 @@ export function SetSliderValue({ children, ...props }: SetSliderValueProps) {
 
   return (
     <button
+      type="button"
       ref={slider.setSliderRef}
       onPointerDown={slider.onTrackPointerDown}
       onKeyDown={slider.onKeyDown}

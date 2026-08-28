@@ -81,9 +81,9 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
   Drag: typeof DragButton;
 };
 
-export const PlaybackRateSlider = Object.assign(PlaybackRateSliderRoot, {
-  Background: PlaybackRateBackground,
-  Progress: PlaybackRateProgress,
-  Set: SetSliderValue,
-  Drag: DragButton,
-}) as PlaybackRateSliderComponent;
+export const PlaybackRateSlider =
+  PlaybackRateSliderRoot as PlaybackRateSliderComponent;
+PlaybackRateSlider.Background = PlaybackRateBackground;
+PlaybackRateSlider.Progress = PlaybackRateProgress;
+PlaybackRateSlider.Set = SetSliderValue;
+PlaybackRateSlider.Drag = DragButton;

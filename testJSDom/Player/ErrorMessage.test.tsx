@@ -33,8 +33,10 @@ describe("ErrorMessage", () => {
     const errorContainer = screen.getByRole("alert");
     expect(errorContainer).toHaveAttribute("aria-live", "assertive");
 
+    // The message must be announced, so it must NOT be hidden from AT.
     const visibleContent = screen.getByText("Custom error message");
-    expect(visibleContent).toHaveAttribute("aria-hidden", "true");
+    expect(visibleContent).not.toHaveAttribute("aria-hidden");
+    expect(errorContainer).not.toHaveAttribute("aria-label");
   });
 
   it("handles different error messages", () => {

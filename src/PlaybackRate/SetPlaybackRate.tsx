@@ -21,6 +21,7 @@ export function SetPlaybackRate({
 
   return (
     <button
+      type="button"
       onClick={setPlaybackRate}
       onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
