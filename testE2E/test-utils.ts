@@ -137,23 +137,38 @@ export function insideViewport(page: Page, x: number): number {
   return Math.min(Math.max(x, 0), width - 1);
 }
 
+/**
+ * Resolves once the track has data, and throws if it never will.
+ *
+ * Every caller passes a src that is meant to load, so a failure is a broken
+ * fixture or a missing decoder — not something to wait out. Resolving on
+ * `error` here instead hid that: the setup passed and the spec failed later on
+ * a clock that never moved, which says nothing about why.
+ */
 export async function waitForAudio(page: Page) {
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
+  const failure = await page.evaluate(() => {
+    return new Promise<string | null>((resolve) => {
       const audio = document.querySelector("audio");
       if (!audio) {
-        console.warn("No audio element found");
-        resolve();
+        resolve("no <audio> element on the page");
         return;
       }
+      const describe = () =>
+        `code ${audio.error?.code ?? "none"}, readyState ${audio.readyState}, src ${audio.currentSrc || audio.src}`;
       if (audio.readyState >= 2) {
-        resolve();
+        resolve(null);
         return;
       }
-      audio.addEventListener("loadeddata", () => resolve(), { once: true });
-      audio.addEventListener("error", () => resolve(), { once: true });
+      audio.addEventListener("loadeddata", () => resolve(null), { once: true });
+      audio.addEventListener("error", () => resolve(describe()), {
+        once: true,
+      });
     });
   });
+
+  if (failure) {
+    throw new Error(`waitForAudio: the track failed to load — ${failure}`);
+  }
 }
 
 export async function getTimelineState(page: Page) {

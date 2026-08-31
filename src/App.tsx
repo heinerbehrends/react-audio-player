@@ -12,7 +12,11 @@ import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 import { Debug } from "./Debug";
 
-const defaultSrc = "The-Race.mp3";
+// A generated WAV, not the MP3 beside it: uncompressed PCM is the one format no
+// engine decodes through a system codec, and Linux Firefox reaches MP3 through
+// the platform's FFmpeg. See `scripts/generate-test-tone.mjs`. The MP3 is still
+// there for listening to — `?src=The-Race.mp3`.
+const defaultSrc = "test-tone.wav";
 
 function App() {
   const searchParams = useUrlParams();
