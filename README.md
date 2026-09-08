@@ -1,4 +1,4 @@
-# React Audio Player (in development)
+# React Headless Audio Player (in development)
 
 A headless, accessible audio player for React, composed the way Radix UI
 components are: you get behaviour, semantics and state, and you supply all of
