@@ -1,39 +1,43 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Volume } from "../../src/Volume/Volume";
-import { VolumeContext } from "../../src/Volume/VolumeContext";
-import { createPlayerContext, createSliderContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
-
-const defaultSliderContext = createSliderContext({
-  component: "volume" as const,
-  value: 0.5,
-  minValue: 0,
-  maxValue: 1,
-});
-
-const playerContext = createPlayerContext();
+import { renderInPlayer } from "../testComponents";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 describe("Volume", () => {
+  let restoreRects: () => void;
+
+  beforeEach(() => {
+    stubResizeObserver();
+    restoreRects = stubElementRects();
+  });
+
+  afterEach(() => restoreRects());
+
   it("should export all subcomponents", () => {
     expect(Volume.Progress).toBeDefined();
     expect(Volume.Background).toBeDefined();
-    expect(Volume.Set).toBeDefined();
-    expect(Volume.Drag).toBeDefined();
+    expect(Volume.Control).toBeDefined();
+    expect(Volume.Thumb).toBeDefined();
   });
 
   describe("Subcomponents render correctly", () => {
     it("should render Volume.Progress with expected styles", () => {
-      render(
-        <VolumeContext.Provider value={defaultSliderContext}>
+      renderInPlayer(
+        <Volume>
+          <Volume.Control>track</Volume.Control>
           <Volume.Progress data-testid="progress" />
-        </VolumeContext.Provider>,
+        </Volume>,
+        { element: { volume: 0.5 } },
       );
 
-      const progress = screen.getByTestId("progress");
-      expect(progress).toBeInTheDocument();
-      expect(progress).toHaveStyle({
+      expect(screen.getByTestId("progress")).toHaveStyle({
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
         width: "100%",
@@ -44,82 +48,121 @@ describe("Volume", () => {
     });
 
     it("should render Volume.Background with expected styles", () => {
-      renderWithPlayerContext({
-        component: <Volume.Background data-testid="background" />,
-        playerContext,
-      });
+      renderInPlayer(
+        <Volume>
+          <Volume.Background data-testid="background" />
+        </Volume>,
+      );
 
-      const background = screen.getByTestId("background");
-      expect(background).toBeInTheDocument();
-      expect(background).toHaveStyle({
-        gridColumn: "1 / 1",
-        gridRow: "1 / 1",
+      expect(screen.getByTestId("background")).toHaveStyle({
         width: "100%",
         height: "100%",
       });
     });
 
-    it("should render Volume.Set with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext,
-        component: <Volume.Set data-testid="set">Set</Volume.Set>,
-      });
+    it("should render Volume.Control with expected attributes", () => {
+      renderInPlayer(
+        <Volume>
+          <Volume.Control data-testid="set">Set</Volume.Control>
+        </Volume>,
+      );
 
       const set = screen.getByTestId("set");
-      expect(set).toBeInTheDocument();
       expect(set).toHaveAttribute("role", "slider");
+      expect(set).toHaveAttribute("aria-label", "Volume slider");
     });
 
-    it("should render Volume.Drag with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext,
-        component: <Volume.Drag data-testid="drag" />,
-      });
+    it("should render Volume.Thumb with expected attributes", () => {
+      renderInPlayer(
+        <Volume>
+          <Volume.Thumb data-testid="drag" />
+        </Volume>,
+      );
 
       const drag = screen.getByTestId("drag");
-      expect(drag).toBeInTheDocument();
-      expect(drag).toHaveAttribute(
-        "aria-label",
-        "Drag or use up and down arrow keys to adjust volume",
-      );
+      expect(drag).toHaveAttribute("aria-hidden", "true");
+      expect(drag).toHaveAttribute("tabindex", "-1");
     });
   });
 
-  it("should support composition of components", () => {
-    render(
-      <VolumeContext.Provider value={defaultSliderContext}>
-        <Volume>
-          <Volume.Background data-testid="background" />
-          <Volume.Progress data-testid="progress" />
-          <Volume.Set data-testid="set">Set</Volume.Set>
-          <Volume.Drag data-testid="drag" />
-        </Volume>
-      </VolumeContext.Provider>,
+  /**
+   * A11: the root carries no role and no name. "Volume controls" wrapped a
+   * single control already named "Volume slider" — a group of one, announced
+   * twice.
+   */
+  it("should render a container with proper styles and no role of its own", () => {
+    const view = renderInPlayer(
+      <Volume>
+        <Volume.Control>track</Volume.Control>
+      </Volume>,
     );
 
-    expect(screen.getByTestId("background")).toBeInTheDocument();
-    expect(screen.getByTestId("progress")).toBeInTheDocument();
-    expect(screen.getByTestId("set")).toBeInTheDocument();
-    expect(screen.getByTestId("drag")).toBeInTheDocument();
-  });
+    expect(screen.queryByRole("group")).toBeNull();
+    expect(screen.queryByLabelText("Volume controls")).toBeNull();
 
-  it("should render a container with proper styles and accessibility attributes", () => {
-    render(
-      <VolumeContext.Provider value={defaultSliderContext}>
-        <Volume>
-          <div data-testid="volume-child">Content</div>
-        </Volume>
-      </VolumeContext.Provider>,
-    );
-
-    const container = screen.getByRole("group");
-    expect(container).toBeInTheDocument();
-    expect(container).toHaveAttribute("aria-label", "Volume controls");
+    const container = view.container.querySelector(
+      '[data-part="root"]',
+    ) as HTMLElement;
     expect(container).toHaveStyle({
       display: "grid",
       gridTemplateColumns: "1fr",
       gridTemplateRows: "1fr",
-      width: "100%",
+      // S12: `Thumb` is `position: absolute`, so without this its containing
+      // block is whichever ancestor happens to be positioned.
+      position: "relative",
     });
+    // S8: `width` moved to `styles.css`, where a class can beat it.
+    expect(container.style.width).toBe("");
+    expect(container).toHaveAttribute("data-part", "root");
+  });
+
+  it("should support composition of components", () => {
+    renderInPlayer(
+      <Volume>
+        <Volume.Control data-testid="set">
+          <Volume.Progress data-testid="progress" />
+          <Volume.Background data-testid="background" />
+        </Volume.Control>
+        <Volume.Thumb data-testid="drag" />
+      </Volume>,
+    );
+
+    expect(screen.getByTestId("set")).toBeInTheDocument();
+    expect(screen.getByTestId("progress")).toBeInTheDocument();
+    expect(screen.getByTestId("background")).toBeInTheDocument();
+    expect(screen.getByTestId("drag")).toBeInTheDocument();
+  });
+
+  it("writes the volume when the track is pressed", () => {
+    const { element } = renderInPlayer(
+      <Volume>
+        <Volume.Control data-testid="set">track</Volume.Control>
+      </Volume>,
+      { element: { volume: 1 } },
+    );
+
+    fireEvent(
+      screen.getByTestId("set"),
+      pointerEventAt("pointerdown", alongTrack(0.25)),
+    );
+
+    expect(element.volume).toBeCloseTo(0.25, 5);
+  });
+
+  // Vertical volume runs bottom to top, so a low pointer is a low volume.
+  it("inverts the pointer position when vertical", () => {
+    const { element } = renderInPlayer(
+      <Volume orientation="vertical">
+        <Volume.Control data-testid="set">track</Volume.Control>
+      </Volume>,
+      { element: { volume: 1 } },
+    );
+
+    fireEvent(
+      screen.getByTestId("set"),
+      pointerEventAt("pointerdown", alongTrack(0.75)),
+    );
+
+    expect(element.volume).toBeCloseTo(0.25, 5);
   });
 });

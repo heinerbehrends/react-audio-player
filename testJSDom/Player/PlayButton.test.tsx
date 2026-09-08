@@ -1,174 +1,158 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { PlayButton } from "../../src/Player/PlayButton";
-import type { PlayerState } from "../../src/Player/PlayerContext";
-import { createPlayerContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
+import { renderWithStore } from "../store/renderWithStore";
+import type { MediaFields } from "../store/mediaElementFake";
 import "@testing-library/jest-dom";
 
-const mockHandleSideEffect = vi.fn();
-vi.mock("../../src/AudioElement/useHandleSideEffect", () => ({
-  useHandleSideEffect: () => mockHandleSideEffect,
-}));
+/** The four player states are element states, so each row sets up an element. */
+const states: Record<string, Partial<MediaFields>> = {
+  paused: { readyState: 1, paused: true },
+  playing: { readyState: 1, paused: false },
+  loading: { readyState: 0 },
+  error: { error: {} as MediaError },
+};
 
 describe("PlayButton", () => {
-  const mockPlayerContext = createPlayerContext();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe("PlayButtonComponent", () => {
+    /**
+     * Only the error state disables. Loading renames — `play()` at
+     * `readyState: 0` is legal and the browser queues it, so suppressing the
+     * click would drop the first interaction most users attempt, on every
+     * playlist advance as well as at startup.
+     */
     it.each([
-      ["paused", "Play audio", "false", false],
-      ["playing", "Pause audio", "true", false],
-      ["loading", "Loading audio", "false", true],
-      ["error", "Error loading audio", "false", true],
-    ])("renders correctly in %s state", (state, name, pressed, disabled) => {
-      renderWithPlayerContext({
-        playerContext: {
-          ...mockPlayerContext,
-          playerState: state as PlayerState,
-        },
-        component: (
-          <PlayButton>
-            <span>Play Icon</span>
-          </PlayButton>
-        ),
-      });
+      ["paused", "Play audio", undefined],
+      ["playing", "Pause audio", undefined],
+      ["loading", "Loading audio", undefined],
+      ["error", "Error loading audio", "true"],
+    ])("renders correctly in %s state", (state, name, ariaDisabled) => {
+      renderWithStore(
+        <PlayButton>
+          <span>Play Icon</span>
+        </PlayButton>,
+        { element: states[state] },
+      );
       const button = screen.getByRole("button");
 
       expect(button).toHaveAccessibleName(name);
-      expect(button).toHaveAttribute("aria-pressed", pressed);
-      if (disabled) {
-        expect(button).toBeDisabled();
+      // A4: the name also carries `loading` and `error`, which `aria-pressed`
+      // could not.
+      expect(button).not.toHaveAttribute("aria-pressed");
+      // Never native `disabled`: the tab stop has to survive a load-state
+      // change under a focused button (A7).
+      expect(button).not.toBeDisabled();
+      if (ariaDisabled) {
+        expect(button).toHaveAttribute("aria-disabled", ariaDisabled);
+      } else {
+        expect(button).not.toHaveAttribute("aria-disabled");
       }
     });
 
-    it("handles click events", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "paused" },
-        component: (
-          <PlayButton>
-            <span>Play Icon</span>
-          </PlayButton>
-        ),
-      });
-      const button = screen.getByRole("button", { name: "Play audio" });
-      fireEvent.click(button);
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "PLAY",
-      });
+    it("plays a paused element on click", () => {
+      const { element } = renderWithStore(
+        <PlayButton>
+          <span>Play Icon</span>
+        </PlayButton>,
+        { element: states["paused"] },
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Play audio" }));
+
+      expect(element.play).toHaveBeenCalled();
+    });
+
+    it("pauses a playing element on click", () => {
+      const { element } = renderWithStore(
+        <PlayButton>
+          <span>Play Icon</span>
+        </PlayButton>,
+        { element: states["playing"] },
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Pause audio" }));
+
+      expect(element.pause).toHaveBeenCalled();
     });
 
     it("handles keyboard events", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "paused" },
-        component: (
-          <PlayButton>
-            <span>Play Icon</span>
-          </PlayButton>
-        ),
+      const { element } = renderWithStore(
+        <PlayButton>
+          <span>Play Icon</span>
+        </PlayButton>,
+        { element: states["paused"] },
+      );
+      fireEvent.keyDown(screen.getByRole("button", { name: "Play audio" }), {
+        key: "p",
       });
-      const button = screen.getByRole("button", { name: "Play audio" });
-      fireEvent.keyDown(button, { key: "p" });
-      expect(mockHandleSideEffect).toHaveBeenCalled();
+
+      expect(element.play).toHaveBeenCalled();
     });
   });
 
   describe("Playing subcomponent", () => {
-    it("renders children when player state is playing", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "playing" },
-        component: (
-          <PlayButton.Playing>
-            <span>Playing Icon</span>
-          </PlayButton.Playing>
-        ),
-      });
+    it("renders children while playing", () => {
+      renderWithStore(
+        <PlayButton.Playing>
+          <span>Playing Icon</span>
+        </PlayButton.Playing>,
+        { element: states["playing"] },
+      );
       expect(screen.getByText("Playing Icon")).toBeInTheDocument();
     });
 
-    it("returns null when player state is not playing", () => {
-      const { container } = renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "paused" },
-        component: (
-          <PlayButton.Playing>
-            <span>Playing Icon</span>
-          </PlayButton.Playing>
-        ),
-      });
+    it("returns null when not playing", () => {
+      const { container } = renderWithStore(
+        <PlayButton.Playing>
+          <span>Playing Icon</span>
+        </PlayButton.Playing>,
+        { element: states["paused"] },
+      );
       expect(container).toBeEmptyDOMElement();
     });
   });
 
   describe("Paused subcomponent", () => {
-    it("renders children when player state is not playing", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "paused" },
-        component: (
-          <PlayButton.Paused>
-            <span>Paused Icon</span>
-          </PlayButton.Paused>
-        ),
-      });
+    it("renders children when not playing", () => {
+      renderWithStore(
+        <PlayButton.Paused>
+          <span>Paused Icon</span>
+        </PlayButton.Paused>,
+        { element: states["paused"] },
+      );
       expect(screen.getByText("Paused Icon")).toBeInTheDocument();
     });
 
-    it("returns null when player state is playing", () => {
-      const { container } = renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "playing" },
-        component: (
-          <PlayButton.Paused>
-            <span>Paused Icon</span>
-          </PlayButton.Paused>
-        ),
-      });
+    it("returns null while playing", () => {
+      const { container } = renderWithStore(
+        <PlayButton.Paused>
+          <span>Paused Icon</span>
+        </PlayButton.Paused>,
+        { element: states["playing"] },
+      );
       expect(container).toBeEmptyDOMElement();
     });
   });
 
-  describe("usePlayButtonProps hook", () => {
-    it("returns correct props for playing state", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "playing" },
-        component: (
-          <PlayButton>
-            <span>Play Icon</span>
-          </PlayButton>
-        ),
-      });
-      const button = screen.getByRole("button", { name: "Pause audio" });
-      expect(button).toHaveAttribute("aria-pressed", "true");
-      expect(button).not.toBeDisabled();
-    });
+  // A `src` swap re-primes `paused` rather than toggling it, so the button
+  // cannot end up showing Pause on a paused element.
+  it("stays correct across a src swap while playing", () => {
+    const { emit, element } = renderWithStore(
+      <PlayButton>
+        <span>Play Icon</span>
+      </PlayButton>,
+      { element: states["playing"] },
+    );
+    expect(screen.getByRole("button")).toHaveAccessibleName("Pause audio");
 
-    it("returns correct props for loading state", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "loading" },
-        component: (
-          <PlayButton>
-            <span>Play Icon</span>
-          </PlayButton>
-        ),
-      });
-      const button = screen.getByRole("button", { name: "Loading audio" });
-      expect(button).toBeDisabled();
-    });
+    element.paused = true;
+    element.readyState = 0;
+    emit("emptied");
 
-    it("returns correct props for error state", () => {
-      renderWithPlayerContext({
-        playerContext: { ...mockPlayerContext, playerState: "error" },
-        component: (
-          <PlayButton>
-            <span>Play Icon</span>
-          </PlayButton>
-        ),
-      });
-      const button = screen.getByRole("button", {
-        name: "Error loading audio",
-      });
-      expect(button).toBeDisabled();
-    });
+    expect(screen.getByRole("button")).toHaveAccessibleName("Loading audio");
+    // The name carries the state; the button stays pressable, which is what
+    // makes a playlist advance work — the swap re-enters loading every time.
+    expect(screen.getByRole("button")).not.toHaveAttribute("aria-disabled");
+
+    fireEvent.click(screen.getByRole("button"));
+    expect(element.play).toHaveBeenCalled();
   });
 });

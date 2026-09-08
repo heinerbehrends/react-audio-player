@@ -3,6 +3,12 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
     "useDefineForClassFields": true,
+    /* Below `tsconfig.build.json`'s ES2022 on purpose — the two do different
+       jobs. That target controls the *syntax* esbuild emits; this `lib` controls
+       which *runtime built-ins* the checker accepts in `src`. Nothing polyfills a
+       built-in, so this is what stops an `Object.hasOwn` from shipping and
+       throwing in an older browser. Raise it only with a declared support
+       floor. */
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
@@ -27,5 +33,5 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "testJSDom"]
+  "include": ["src"]
 }

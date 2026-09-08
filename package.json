@@ -1,5 +1,5 @@
 {
-  "name": "react-audio-player",
+  "name": "react-headless-audio-player",
   "version": "0.0.0",
   "type": "module",
   "description": "A headless React audio player library",
@@ -8,7 +8,7 @@
     "audio",
     "player",
     "headless",
-    "react-audio-player"
+    "react-headless-audio-player"
   ],
   "homepage": "https://github.com/heinerbehrends/react-audio-player",
   "bugs": "https://github.com/heinerbehrends/react-audio-player/issues",
@@ -25,6 +25,7 @@
     "dist",
     "README.md"
   ],
+  "sideEffects": false,
   "scripts": {
     "dev": "tsup --watch",
     "vite": "vite dev",
@@ -32,40 +33,43 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "testE2E": "playwright test",
+    "testE2E:local": "playwright test --config playwright.local.config.ts",
     "test": "vitest",
-    "type-check": "tsc --noEmit --project tsconfig.app.json",
+    "test:run": "vitest run",
+    "type-check": "tsc --noEmit --project tsconfig.app.json && tsc --noEmit --project tsconfig.test.json && tsc --noEmit --project tsconfig.node.json",
     "format": "prettier --write .",
-    "check-exports": "attw --pack . --profile esm-only"
+    "format:check": "prettier --check .",
+    "check-exports": "attw --pack . --profile esm-only --exclude-entrypoints styles.css",
+    "check-docs": "node scripts/check-docs.mjs"
   },
   "peerDependencies": {
-    "react": ">=16.3.0",
-    "react-dom": ">=16.3.0"
+    "react": ">=18.0.0"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.2",
-    "@eslint/js": "^9.29.0",
-    "@playwright/test": "^1.53.1",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^22.15.32",
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/node": "^26.4.0",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react": "^4.5.2",
-    "eslint": "^9.29.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^10.9.1",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^15.15.0",
-    "jsdom": "^26.1.0",
-    "prettier": "^3.5.3",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.5",
+    "globals": "^17.11.0",
+    "jsdom": "^30.0.1",
+    "prettier": "^3.9.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tsup": "^8.5.0",
-    "typescript": "~5.7.3",
-    "typescript-eslint": "^8.34.1",
-    "vite": "^6.3.5",
-    "vitest": "^3.2.4"
+    "tsup": "^8.5.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.68.0",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   },
   "pnpm": {
     "ignoredBuiltDependencies": [
@@ -81,30 +85,6 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
-    "./volume": {
-      "types": "./dist/volume.d.ts",
-      "import": "./dist/volume.mjs",
-      "default": "./dist/volume.mjs"
-    },
-    "./timeline": {
-      "types": "./dist/timeline.d.ts",
-      "import": "./dist/timeline.mjs",
-      "default": "./dist/timeline.mjs"
-    },
-    "./playback-rate": {
-      "types": "./dist/playback-rate.d.ts",
-      "import": "./dist/playback-rate.mjs",
-      "default": "./dist/playback-rate.mjs"
-    },
-    "./player": {
-      "types": "./dist/player.d.ts",
-      "import": "./dist/player.mjs",
-      "default": "./dist/player.mjs"
-    },
-    "./time-display": {
-      "types": "./dist/time-display.d.ts",
-      "import": "./dist/time-display.mjs",
-      "default": "./dist/time-display.mjs"
-    }
+    "./styles.css": "./dist/styles.css"
   }
 }

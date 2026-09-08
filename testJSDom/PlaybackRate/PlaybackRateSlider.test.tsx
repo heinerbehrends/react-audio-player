@@ -1,177 +1,161 @@
-vi.mock("../../src/PlaybackRate/PlaybackRateProvider", () => ({
-  PlaybackRateProvider: ({
-    children,
-    ...props
-  }: { children: React.ReactNode } & {
-    maxValue?: number;
-    minValue?: number;
-    step?: number;
-  }) => (
-    <div
-      data-testid="mock-PlaybackRateProvider"
-      data-props={JSON.stringify(props)}
-    >
-      {children}
-    </div>
-  ),
-}));
-
-import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { PlaybackRateSlider } from "../../src/PlaybackRate/PlaybackRateSlider";
-import { SliderContextType } from "../../src/Slider/SliderContext";
-import { createSliderContext } from "../testUtils";
-
-const mockContextValue: SliderContextType = createSliderContext({
-  sliderStart: 10,
-  sliderLength: 100,
-  value: 1.5,
-  clientXY: 0,
-  step: 0.1,
-  component: "playbackRate" as const,
-  handleSliderAction: vi.fn(),
-});
+import { renderInPlayer } from "../testComponents";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 describe("PlaybackRateSlider", () => {
+  let restoreRects: () => void;
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    stubResizeObserver();
+    restoreRects = stubElementRects();
   });
 
-  it("should pass custom props to provider", () => {
-    render(
-      <PlaybackRateSlider maxValue={8} minValue={1} step={0.5}>
-        <div>Test</div>
+  afterEach(() => restoreRects());
+
+  it("should export all subcomponents", () => {
+    expect(PlaybackRateSlider.Background).toBeDefined();
+    expect(PlaybackRateSlider.Progress).toBeDefined();
+    expect(PlaybackRateSlider.Control).toBeDefined();
+    expect(PlaybackRateSlider.Thumb).toBeDefined();
+  });
+
+  // S12: `Thumb` is `position: absolute`, so without this on the root its
+  // containing block is whichever ancestor happens to be positioned.
+  it("positions its root, so the thumb resolves against it", () => {
+    renderInPlayer(
+      <PlaybackRateSlider data-testid="root">
+        <PlaybackRateSlider.Control>Set</PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
     );
 
-    const providerProps = JSON.parse(
-      screen
-        .getByTestId("mock-PlaybackRateProvider")
-        .getAttribute("data-props") || "{}",
-    );
-    expect(providerProps.maxValue).toBe(8);
-    expect(providerProps.minValue).toBe(1);
-    expect(providerProps.step).toBe(0.5);
+    expect(screen.getByTestId("root")).toHaveStyle({ position: "relative" });
   });
 
-  it("should apply custom styles", () => {
-    render(
-      <PlaybackRateSlider
-        data-testid="slider"
-        style={{ backgroundColor: "red", margin: "10px" }}
-      >
-        Test
+  it("renders Set with the slider semantics", () => {
+    renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+      { element: { playbackRate: 1 } },
+    );
+
+    const set = screen.getByTestId("set");
+    expect(set).toHaveAttribute("role", "slider");
+    expect(set).toHaveAttribute("aria-label", "Playback rate slider");
+    expect(set).toHaveAttribute("aria-valuetext", "1x");
+  });
+
+  it("defaults to a 0.5 to 4 range", () => {
+    renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
     );
 
-    const div = screen.getByTestId("slider");
-    expect(div).toHaveStyle("background-color: rgb(255, 0, 0)");
-    expect(div).toHaveStyle("margin: 10px");
-    expect(div).toHaveStyle("display: grid");
-    expect(div).toHaveStyle("width: 100%");
-    expect(div).toHaveStyle("grid-template-columns: 1fr");
-    expect(div).toHaveStyle("grid-template-rows: 1fr");
+    expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemin", "0.5");
+    expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemax", "4");
   });
 
-  describe("PlaybackRateSlider.Background", () => {
-    it("should render with progress styles", () => {
-      render(<PlaybackRateSlider.Background data-testid="background" />);
-      const background = screen.getByTestId("background");
-      expect(background).toBeInTheDocument();
-      expect(background).toHaveStyle("grid-column: 1 / 1");
-      expect(background).toHaveStyle("grid-row: 1 / 1");
-      expect(background).toHaveStyle("width: 100%");
-      expect(background).toHaveStyle("height: 100%");
-    });
+  it("takes a range from props", () => {
+    renderInPlayer(
+      <PlaybackRateSlider minValue={1} maxValue={2}>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+    );
 
-    it("should merge custom styles with default styles", () => {
-      render(
-        <PlaybackRateSlider.Background
-          data-testid="background"
-          style={{ backgroundColor: "blue" }}
-        />,
-      );
+    expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemin", "1");
+    expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemax", "2");
+  });
 
-      const background = screen.getByTestId("background");
-      expect(background).toBeInTheDocument();
-      const styleAttr = background.getAttribute("style") || "";
-      expect(styleAttr).toContain("blue");
-      expect(styleAttr).toContain("grid-column: 1 / 1");
-      expect(styleAttr).toContain("grid-row: 1 / 1");
-      expect(styleAttr).toContain("width: 100%");
-      expect(styleAttr).toContain("height: 100%");
+  it("renders Progress from the rate", () => {
+    renderInPlayer(
+      <PlaybackRateSlider minValue={0.5} maxValue={2.5}>
+        <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
+        <PlaybackRateSlider.Progress data-testid="progress" />
+      </PlaybackRateSlider>,
+      { element: { playbackRate: 1.5 } },
+    );
+
+    // Half way between 0.5 and 2.5.
+    expect(screen.getByTestId("progress")).toHaveStyle({
+      transform: "scaleX(0.5)",
+      transformOrigin: "left",
     });
   });
 
-  describe("PlaybackRateSlider.Set", () => {
-    it("should render and pass props to SetSliderValue", () => {
-      const testContextValue: SliderContextType = {
-        ...mockContextValue,
-        component: "playbackRate" as const,
-        handleSliderAction: vi.fn(),
-      };
+  it("renders Background with the progress styles", () => {
+    renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Background data-testid="background" />
+      </PlaybackRateSlider>,
+    );
 
-      vi.spyOn(React, "useContext").mockReturnValue(testContextValue);
-
-      render(
-        <PlaybackRateSlider.Set data-testid="set-button">
-          1.5x
-        </PlaybackRateSlider.Set>,
-      );
-
-      expect(screen.getByTestId("set-button")).toBeInTheDocument();
-      expect(screen.getByText("1.5x")).toBeInTheDocument();
+    expect(screen.getByTestId("background")).toHaveStyle({
+      gridColumn: "1 / 1",
+      gridRow: "1 / 1",
+      width: "100%",
+      height: "100%",
     });
   });
 
-  describe("PlaybackRateSlider.Drag", () => {
-    it("should render and pass context to DragButton", () => {
-      vi.spyOn(React, "useContext").mockReturnValue(mockContextValue);
+  it("renders Drag out of the tab order", () => {
+    renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Thumb data-testid="drag" />
+      </PlaybackRateSlider>,
+    );
 
-      render(<PlaybackRateSlider.Drag data-testid="drag-button" />);
+    const drag = screen.getByTestId("drag");
+    expect(drag).toHaveAttribute("aria-hidden", "true");
+    expect(drag).toHaveAttribute("tabindex", "-1");
+  });
 
-      expect(screen.getByTestId("drag-button")).toBeInTheDocument();
-      expect(screen.getByTestId("drag-button")).toHaveAttribute(
-        "aria-label",
-        "Drag or use > and < and ] and [ keys to adjust playback rate",
-      );
-    });
+  it("snaps a press on the track to the step", () => {
+    const { element } = renderInPlayer(
+      <PlaybackRateSlider minValue={0.5} maxValue={2} step={0.1}>
+        <PlaybackRateSlider.Control data-testid="set">
+          track
+        </PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+      { element: { playbackRate: 1 } },
+    );
+
+    fireEvent(
+      screen.getByTestId("set"),
+      pointerEventAt("pointerdown", alongTrack(0.5)),
+    );
+
+    expect(element.playbackRate).toBeCloseTo(1.3, 5);
   });
 
   it("should integrate all components together", () => {
-    const initialValue = 1;
-    const mockContext = createSliderContext({
-      value: initialValue,
-      minValue: 0.5,
-      maxValue: 4,
-      step: 0.1,
-      component: "playbackRate" as const,
-    });
-
-    vi.spyOn(React, "useContext").mockReturnValue(mockContext);
-
-    render(
-      <PlaybackRateSlider data-testid="slider">
-        <PlaybackRateSlider.Background data-testid="background" />
-        <PlaybackRateSlider.Set data-testid="set">1.0x</PlaybackRateSlider.Set>
-        <PlaybackRateSlider.Drag data-testid="drag" />
+    renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Control data-testid="set">
+          <PlaybackRateSlider.Progress data-testid="progress" />
+          <PlaybackRateSlider.Background data-testid="background" />
+        </PlaybackRateSlider.Control>
+        <PlaybackRateSlider.Thumb data-testid="drag" />
       </PlaybackRateSlider>,
     );
 
-    const slider = screen.getByRole("slider");
-    expect(slider).toBeInTheDocument();
-    expect(slider).toHaveAttribute("aria-label", "Playback rate slider");
-    expect(slider).toHaveAttribute("aria-orientation", "horizontal");
-
-    expect(screen.getByTestId("background")).toBeInTheDocument();
     expect(screen.getByTestId("set")).toBeInTheDocument();
+    expect(screen.getByTestId("progress")).toBeInTheDocument();
+    expect(screen.getByTestId("background")).toBeInTheDocument();
     expect(screen.getByTestId("drag")).toBeInTheDocument();
-    expect(screen.getByText("1.0x")).toBeInTheDocument();
-
-    expect(slider).toHaveAttribute("aria-valuemin");
-    expect(slider).toHaveAttribute("aria-valuemax");
-    expect(slider).toHaveAttribute("aria-valuenow");
-    expect(slider).toHaveAttribute("aria-valuetext");
   });
 });

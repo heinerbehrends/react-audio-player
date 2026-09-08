@@ -1,18 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { PlaybackRate } from "../../src/PlaybackRate/PlaybackRate";
-import { createPlayerContext } from "../testUtils";
-import { renderWithPlayerContext } from "../testComponents";
-
-const mockPlayerContext = createPlayerContext();
-
-const mockAudioElement = {
-  playbackRate: 1.5,
-} as unknown as HTMLAudioElement;
-
-vi.mock("../../src/AudioElement/useAudioElement", () => ({
-  useAudioElement: () => mockAudioElement,
-}));
+import { TestProviders } from "../testComponents";
 
 describe("PlaybackRate", () => {
   it("should export all subcomponents", () => {
@@ -24,14 +13,15 @@ describe("PlaybackRate", () => {
 
   describe("Subcomponents render correctly", () => {
     it("should render PlaybackRate.Set with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext: mockPlayerContext,
-        component: (
+      render(
+        <TestProviders>
+          (
           <PlaybackRate.Set rate={1.5} data-testid="set-button">
             1.5x
           </PlaybackRate.Set>
-        ),
-      });
+          )
+        </TestProviders>,
+      );
 
       const button = screen.getByTestId("set-button");
       expect(button).toBeInTheDocument();
@@ -40,34 +30,50 @@ describe("PlaybackRate", () => {
     });
 
     it("should render PlaybackRate.Change with expected attributes", () => {
-      renderWithPlayerContext({
-        playerContext: mockPlayerContext,
-        component: (
+      render(
+        <TestProviders>
+          (
           <PlaybackRate.Change amount={0.25} data-testid="change-button">
             Faster
           </PlaybackRate.Change>
-        ),
-      });
+          )
+        </TestProviders>,
+      );
 
       const button = screen.getByTestId("change-button");
       expect(button).toBeInTheDocument();
       expect(button).toHaveTextContent("Faster");
     });
 
-    it("should render PlaybackRate.Current with current rate", () => {
-      renderWithPlayerContext({
-        playerContext: mockPlayerContext,
-        component: <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>,
-      });
+    /**
+     * `.Current` renders its children in **both** branches — the non-current one
+     * is a `visibility: hidden` span — so presence in the document says nothing.
+     * Visibility is the discriminant (T5).
+     */
+    it("should show PlaybackRate.Current only at the element's rate", () => {
+      const { unmount } = render(
+        <TestProviders element={{ playbackRate: 1.5 }}>
+          <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
+        </TestProviders>,
+      );
 
-      expect(screen.getByText("*")).toBeInTheDocument();
+      expect(screen.getByText("*")).toBeVisible();
+      unmount();
+
+      render(
+        <TestProviders element={{ playbackRate: 1 }}>
+          <PlaybackRate.Current rate={1.5}>*</PlaybackRate.Current>
+        </TestProviders>,
+      );
+
+      expect(screen.getByText("*")).not.toBeVisible();
     });
   });
 
   it("should support composition of components", () => {
-    renderWithPlayerContext({
-      playerContext: mockPlayerContext,
-      component: (
+    render(
+      <TestProviders>
+        (
         <PlaybackRate>
           <PlaybackRate.Set rate={2.0} data-testid="set-button">
             2.0x
@@ -77,8 +83,9 @@ describe("PlaybackRate", () => {
           </PlaybackRate.Set>
           <PlaybackRate.Display />
         </PlaybackRate>
-      ),
-    });
+        )
+      </TestProviders>,
+    );
 
     const button = screen.getByLabelText("Set playback rate to 2x");
     expect(button).toBeInTheDocument();
@@ -102,5 +109,24 @@ describe("PlaybackRate", () => {
     expect(container).toContainElement(
       screen.getByTestId("playback-rate-child"),
     );
+  });
+
+  /** S16: the root took no props, so it could not be styled or targeted. */
+  it("takes props, and keeps its role while letting the label be replaced", () => {
+    render(
+      <PlaybackRate
+        className="rates"
+        aria-label="Abspielgeschwindigkeit"
+        data-testid="rate-group"
+      >
+        <span>1x</span>
+      </PlaybackRate>,
+    );
+
+    const group = screen.getByRole("group");
+    expect(group).toHaveClass("rates");
+    expect(group).toHaveAttribute("data-testid", "rate-group");
+    // Overridable, because it is the only way to localise the group name.
+    expect(group).toHaveAttribute("aria-label", "Abspielgeschwindigkeit");
   });
 });

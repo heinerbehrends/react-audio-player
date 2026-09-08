@@ -1,5 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
-import { waitForAudio, resetAudioState, labels } from "../test-utils";
+import {
+  labels,
+  resetAudioState,
+  waitForAudio,
+  waitForPlaying,
+} from "../test-utils";
 
 let page: Page;
 
@@ -22,9 +27,7 @@ test("toggle play button has correct name and aria attributes and works", async 
   await expect(playButton).toHaveAttribute("aria-label", labels.playAudio);
 
   await playButton.click();
-
-  // Wait for audio to start playing
-  await page.waitForTimeout(100);
+  await waitForPlaying(page);
 
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeVisible();
@@ -34,12 +37,10 @@ test("toggle play button has correct name and aria attributes and works", async 
     const audio = document.querySelector("audio");
     return audio && !audio.paused;
   });
-  await expect(isPlaying).toBe(true);
+  expect(isPlaying).toBe(true);
 
   await pauseButton.click();
-
-  // Wait for audio to pause
-  await page.waitForTimeout(100);
+  await waitForPlaying(page, false);
 
   await expect(playButton).toBeVisible();
   await expect(playButton).toBeEnabled();
@@ -48,7 +49,7 @@ test("toggle play button has correct name and aria attributes and works", async 
     const audio = document.querySelector("audio");
     return audio && audio.paused;
   });
-  await expect(isPaused).toBe(true);
+  expect(isPaused).toBe(true);
 });
 
 test("The play button receives focus and can be used with keyboard", async () => {
@@ -65,16 +66,12 @@ test("The play button receives focus and can be used with keyboard", async () =>
   const playButton = page.getByRole("button", { name: /Play/ });
   await expect(playButton).toBeFocused();
   await page.keyboard.press("Enter");
-
-  // Wait for audio to start playing
-  await page.waitForTimeout(100);
+  await waitForPlaying(page);
 
   const pauseButton = page.getByRole("button", { name: /Pause/ });
   await expect(pauseButton).toBeFocused();
   await page.keyboard.press("Space");
-
-  // Wait for audio to pause
-  await page.waitForTimeout(100);
+  await waitForPlaying(page, false);
 
   await expect(playButton).toBeFocused();
 });

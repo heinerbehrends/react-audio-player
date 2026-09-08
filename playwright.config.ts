@@ -1,30 +1,21 @@
 import { defineConfig, devices } from "@playwright/test";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+// https://playwright.dev/docs/test-configuration
 export default defineConfig({
   testDir: "./testE2E",
-  /* Run tests in files in parallel */
+  // The specs share one page and one audio element, so they run serially.
   fullyParallel: false,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: 2,
-  /* Opt out of parallel tests on CI. */
   workers: 1,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  forbidOnly: !!process.env.CI,
+  // Locally a retry hides the flake from the only person positioned to fix it:
+  // a row that fails then passes is reported green, and the run before a push is
+  // where that matters. CI keeps two, where the noise is the machine's.
+  retries: process.env.CI ? 2 : 0,
   reporter: [["html"], ["list"]],
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "http://localhost:5173",
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    // https://playwright.dev/docs/trace-viewer
     trace: "on-first-retry",
 
     viewport: { width: 1280, height: 720 },
@@ -35,15 +26,20 @@ export default defineConfig({
     colorScheme: "light",
   },
 
-  /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    // The two engines behave differently in ways this suite can see: Firefox
+    // fires `ended` on a paused seek to `duration` where Chrome fires nothing,
+    // and parks `currentTime` exactly on it rather than past it.
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
   ],
 
-  /* Run your local dev server before starting the tests */
   webServer: {
     command: "pnpm run vite",
     url: "http://localhost:5173",

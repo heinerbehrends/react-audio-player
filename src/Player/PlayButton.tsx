@@ -1,11 +1,14 @@
-import { usePlayerContext } from "./PlayerContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
+import { usePlayerState } from "../store/derived";
+import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlayButtonProps = {
   children: React.ReactNode;
-} & React.HTMLAttributes<HTMLButtonElement>;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+// Four names, not a play/pause pair: the name is the button's only state
+// channel, so it has to carry `loading` and `error` too (A4).
 const ariaLabelMap = {
   playing: "Pause audio",
   paused: "Play audio",
@@ -14,51 +17,45 @@ const ariaLabelMap = {
 };
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  const { isPlaying, isDisabled, ariaLabel } = usePlayButtonProps();
+  const ariaLabel = useAriaLabel();
   const handleKeyDown = useHandleMediaKeys();
   const handleClick = useHandleClick();
+  const disabled = useDisabledButtonProps(handleClick, props.onClick);
 
   return (
     <button
-      onClick={handleClick}
+      type="button"
       onKeyDown={handleKeyDown}
-      disabled={isDisabled}
       aria-label={ariaLabel}
-      aria-pressed={isPlaying}
       {...props}
+      // Last, so the gate cannot be spread away.
+      {...disabled}
     >
       {children}
     </button>
   );
 }
 
+/**
+ * Reads no state: `TOGGLE_PLAY` already branches on `el.paused`, so a
+ * `playerState` check here would be a second, staler copy of that decision.
+ */
 function useHandleClick() {
-  const { playerState } = usePlayerContext();
-  const handleSideEffect = useHandleSideEffect();
-  return () => {
-    if (playerState === "playing") {
-      handleSideEffect({ type: "PAUSE" });
-      return;
-    }
-    handleSideEffect({ type: "PLAY" });
-  };
+  const { send } = usePlayerStore();
+  return () => send({ type: "TOGGLE_PLAY" });
 }
 
-function usePlayButtonProps() {
-  const { playerState } = usePlayerContext();
-  const isPlaying = playerState === "playing";
-  const isDisabled = playerState === "loading" || playerState === "error";
-  const ariaLabel = ariaLabelMap[playerState];
-  return { isPlaying, isDisabled, ariaLabel };
+function useAriaLabel() {
+  return ariaLabelMap[usePlayerState()];
 }
 
+/** Renders `children` only while the element is playing. */
 function Playing({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement | null {
-  const { playerState } = usePlayerContext();
-  const isPlaying = playerState === "playing";
+  const isPlaying = usePlayerState() === "playing";
   if (!isPlaying) {
     return null;
   }
@@ -66,13 +63,18 @@ function Playing({
   return <>{children}</>;
 }
 
+/**
+ * Renders `children` whenever the element is **not** playing — including loading
+ * and errored, not only paused. The pair is exhaustive, so a button using both
+ * always shows an icon. To tell the other states apart, read
+ * `useAudioPlayer().playerState`.
+ */
 function Paused({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement | null {
-  const { playerState } = usePlayerContext();
-  const isPlaying = playerState === "playing";
+  const isPlaying = usePlayerState() === "playing";
   if (isPlaying) {
     return null;
   }
@@ -86,6 +88,18 @@ type PlayButtonComponent = React.FC<PlayButtonProps> & {
 
 PlayButtonComponent.Playing = Playing;
 PlayButtonComponent.Paused = Paused;
-PlayButtonComponent.PlayButton = PlayButtonComponent;
 
+/**
+ * Play/pause, as one button.
+ *
+ * The accessible name is the only place its state appears — "Play audio", "Pause
+ * audio", "Loading audio" or "Error loading audio". It sets no `aria-pressed`;
+ * pass your own `aria-label` to override.
+ *
+ * Pressable while loading: `play()` before metadata is legal and the browser
+ * queues it. Only an error disables it, with `aria-disabled` rather than the
+ * native attribute — so style it from `[aria-disabled="true"]`, not
+ * `:disabled`. An autoplay refusal does not disable it; read that with
+ * `useAudioError()`.
+ */
 export const PlayButton = PlayButtonComponent;

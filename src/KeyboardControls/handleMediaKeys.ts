@@ -1,20 +1,18 @@
-import { useCallback } from "react";
-import { usePlayerContext } from "../Player/PlayerContext";
-import type { PlayerContextAction } from "../Player/PlayerContext";
-import type { SideEffectAction } from "../AudioElement/sideEffectActions";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-
-type ActionHandler<Action> = (action: Action) => void;
+import { usePlayerConfig } from "../Player/PlayerConfigContext";
+import type {
+  KeyboardAction,
+  SideEffectAction,
+} from "../AudioElement/sideEffectActions";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
-  handleSideEffect: ActionHandler<SideEffectAction>;
-  handlePlayerAction: ActionHandler<PlayerContextAction>;
+  handleSideEffect: (action: SideEffectAction) => void;
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
 export type KeyToActionMap = {
-  [key: string]: SideEffectAction;
+  [key: string]: KeyboardAction;
 };
 
 export const defaultKeyToActionMap: KeyToActionMap = {
@@ -23,7 +21,11 @@ export const defaultKeyToActionMap: KeyToActionMap = {
   k: { type: "TOGGLE_PLAY" },
   K: { type: "TOGGLE_PLAY" },
   MediaPlayPause: { type: "TOGGLE_PLAY" },
-  " ": { type: "TOGGLE_PLAY" },
+  // Space is deliberately absent. Every control this handler is attached to is
+  // a <button>, and mapping Space here would `preventDefault()` its native
+  // activation, so Space would start playback instead of pressing the focused
+  // button. `p` and `k` cover play/pause, and a consumer who wants Space can
+  // add it through `customKeyboardShortcuts`.
   s: { type: "STOP_AUDIO" },
   S: { type: "STOP_AUDIO" },
   MediaStop: { type: "STOP_AUDIO" },
@@ -59,6 +61,15 @@ export const defaultKeyToActionMap: KeyToActionMap = {
 
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
   const { event, handleSideEffect, customKeyboardShortcuts } = args;
+
+  // Modifier combinations belong to the browser and to assistive technology:
+  // `Ctrl+Option+Arrow` is VoiceOver's own navigation, and swallowing it makes
+  // the player unusable with a screen reader. Shift is not checked, because
+  // `<` and `>` in the default map are shifted keys.
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return false;
+  }
+
   const keyToActionMap = {
     ...defaultKeyToActionMap,
     ...customKeyboardShortcuts,
@@ -72,24 +83,23 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
   return true;
 }
 
+// `store.send` has a permanent identity, so the returned handler needs no
+// `useCallback`.
 export function useHandleMediaKeys() {
-  const { handlePlayerAction, customKeyboardShortcuts } = usePlayerContext();
-  const handleSideEffect = useHandleSideEffect();
-  return useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      const result = handleMediaKeys({
-        event,
-        handleSideEffect,
-        handlePlayerAction,
-        customKeyboardShortcuts,
-      });
+  const { customKeyboardShortcuts } = usePlayerConfig();
+  const { send } = usePlayerStore();
 
-      if (result) {
-        event.stopPropagation();
-      }
+  return (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const result = handleMediaKeys({
+      event,
+      handleSideEffect: send,
+      customKeyboardShortcuts,
+    });
 
-      return result;
-    },
-    [handleSideEffect, handlePlayerAction, customKeyboardShortcuts],
-  );
+    if (result) {
+      event.stopPropagation();
+    }
+
+    return result;
+  };
 }

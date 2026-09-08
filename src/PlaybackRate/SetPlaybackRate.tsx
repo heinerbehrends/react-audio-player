@@ -1,15 +1,33 @@
-import { useCallback } from "react";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { areNumbersClose } from "../Shared/sharedFunctions";
-import { useIsDisabled } from "../Shared/useIsDisabled";
-import { useHandleSideEffect } from "../AudioElement/useHandleSideEffect";
-import { usePlayerContext } from "../Player/PlayerContext";
+import { areNumbersClose } from "../Shared/areNumbersClose";
+import { useStore } from "../store/atom";
+import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SetPlaybackRateProps = {
+  /**
+   * The rate to set — `1` is normal speed, `2` is double.
+   *
+   * **Not clamped to the slider's range.** This names an explicit rate, so
+   * `rate={8}` sets 8 where `PlaybackRateSlider` would stop at 4. The write path
+   * clamps to the element's own 0–16, so nothing throws.
+   */
   rate: number;
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+/**
+ * Sets one specific rate — the "1x / 1.5x / 2x" row of buttons. Named "Set
+ * playback rate to {rate}x".
+ *
+ * A toggle button: `aria-pressed` is `"true"` on the rate in effect, within
+ * 0.001, and `"false"` on the others, so the row announces as a set of choices.
+ * The library's other buttons carry no `aria-pressed` — their names change with
+ * their state, and a pressed state on top announces the same fact twice (A4).
+ * This one's name is fixed, so `aria-pressed` is the only channel it has.
+ *
+ * Live while loading; only an error disables it.
+ */
 export function SetPlaybackRate({
   rate,
   children,
@@ -17,17 +35,22 @@ export function SetPlaybackRate({
 }: SetPlaybackRateProps) {
   const setPlaybackRate = useSetPlaybackRate(rate);
   const handleKeyDown = useHandleMediaKeys();
-  const isDisabled = useIsDisabled();
   const isCurrent = useIsCurrent(rate);
+  const disabled = useDisabledButtonProps(setPlaybackRate, props.onClick);
 
   return (
     <button
-      onClick={setPlaybackRate}
+      type="button"
       onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
-      aria-current={isCurrent ? "true" : undefined}
-      disabled={isDisabled}
+      // Written on every button, `"false"` included — unlike `aria-disabled`,
+      // which is absent when false. Omitting it would leave the inactive rates
+      // announcing as plain buttons, so a listener could not tell the row is a
+      // set of choices or how many there are (A9).
+      aria-pressed={isCurrent}
       {...props}
+      // Last, so the gate cannot be spread away.
+      {...disabled}
     >
       {children}
     </button>
@@ -35,26 +58,48 @@ export function SetPlaybackRate({
 }
 
 type CurrentIndicatorProps = {
+  /** The rate to compare against, matched within 0.001. */
   rate: number;
   children: React.ReactNode;
 };
 
+/**
+ * A marker for the rate in effect — a tick or dot beside a `.Set` button.
+ *
+ * Always renders `children`, in a wrapper span that is `visibility: hidden` when
+ * the rate does not match, so the marker keeps its box and the row does not
+ * reflow as it moves. **The wrapper is unconditional for that same reason**: a
+ * fragment in one state and a span in the other would change which element is
+ * the flex or grid item, reflowing the row on every rate change — the very thing
+ * the hidden span exists to prevent (S17).
+ *
+ * The content is therefore in the DOM in both states, and reserves space in
+ * both: a presence check cannot tell the two apart, and nothing unreachable
+ * should go in it. `visibility: hidden` also keeps the hidden marker out of the
+ * accessibility tree, leaving `.Set`'s `aria-pressed` as the announced signal.
+ */
 export function CurrentIndicator({
   rate,
   children,
-}: CurrentIndicatorProps): React.ReactElement | null {
+}: CurrentIndicatorProps): React.ReactElement {
   const isCurrent = useIsCurrent(rate);
-  if (isCurrent) {
-    return <>{children}</>;
-  }
-  return <span style={{ visibility: "hidden" }}>{children}</span>;
+  return (
+    <span style={isCurrent ? undefined : { visibility: "hidden" }}>
+      {children}
+    </span>
+  );
 }
 
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
+/**
+ * The current rate as text, rounded to two decimals and suffixed with `x` —
+ * "1x", "1.76x". Named "Current playback rate" for assistive technology.
+ */
 export function RateDisplay({ ...props }: RateDisplayProps) {
-  const { playbackRate } = usePlayerContext();
-  const roundedRate = Math.round(playbackRate * 100) / 100;
+  const store = usePlayerStore();
+  const rate = useStore(store.rate);
+  const roundedRate = Math.round(rate * 100) / 100;
   return (
     <span aria-label="Current playback rate" {...props}>
       {roundedRate}x
@@ -63,14 +108,12 @@ export function RateDisplay({ ...props }: RateDisplayProps) {
 }
 
 function useSetPlaybackRate(rate: number) {
-  const handleSideEffect = useHandleSideEffect();
-  const setPlaybackRate = useCallback(() => {
-    handleSideEffect({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
-  }, [handleSideEffect, rate]);
-  return setPlaybackRate;
+  const { send } = usePlayerStore();
+  return () => send({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
 }
 
 function useIsCurrent(rate: number) {
-  const { playbackRate } = usePlayerContext();
-  return areNumbersClose(rate, playbackRate);
+  const store = usePlayerStore();
+  const currentRate = useStore(store.rate);
+  return areNumbersClose(rate, currentRate);
 }

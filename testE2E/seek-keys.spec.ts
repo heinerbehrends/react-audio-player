@@ -1,8 +1,11 @@
 import { test, expect, Page } from "@playwright/test";
-import { getAudioState, resetAudioState, waitForAudio } from "./test-utils";
-import { labels } from "./test-utils";
-
-const PRECISION = 0.25;
+import {
+  expectNear,
+  getAudioState,
+  labels,
+  resetAudioState,
+  waitForAudio,
+} from "./test-utils";
 
 let page: Page;
 
@@ -20,7 +23,7 @@ test("seek to 10% of the timeline when 1 is pressed", async () => {
   await page.getByLabel(labels.seekForward).focus();
   await page.keyboard.press("1");
   const { currentTime, duration } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(duration * 0.1, PRECISION);
+  expectNear(currentTime, duration * 0.1);
 });
 
 test("seek 5 seconds forward when right arrow is pressed", async ({ page }) => {
@@ -31,7 +34,7 @@ test("seek 5 seconds forward when right arrow is pressed", async ({ page }) => {
   await page.keyboard.press("ArrowRight");
   const { currentTime } = await getAudioState(page);
 
-  expect(currentTime).toBeCloseTo(5, PRECISION);
+  expectNear(currentTime, 5);
 });
 
 test("seek 5 seconds backward when left arrow is pressed", async () => {
@@ -46,7 +49,7 @@ test("seek 5 seconds backward when left arrow is pressed", async () => {
 
   const { currentTime } = await getAudioState(page);
 
-  expect(currentTime).toBeCloseTo(5, PRECISION);
+  expectNear(currentTime, 5);
 });
 
 test("seek 10 seconds forward when L key is pressed", async () => {
@@ -57,7 +60,7 @@ test("seek 10 seconds forward when L key is pressed", async () => {
   await page.keyboard.press("l");
 
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(10, PRECISION);
+  expectNear(currentTime, 10);
 });
 
 test("seek 10 seconds backward when J key is pressed", async () => {
@@ -71,7 +74,7 @@ test("seek 10 seconds backward when J key is pressed", async () => {
   await page.keyboard.press("j");
 
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(10, PRECISION);
+  expectNear(currentTime, 10);
 });
 
 test("progress indicator initial state", async () => {
@@ -80,4 +83,39 @@ test("progress indicator initial state", async () => {
   await expect(progressIndicator).toHaveAttribute("role", "slider");
   await expect(progressIndicator).toHaveAttribute("aria-valuemin", "0");
   await expect(progressIndicator).toHaveAttribute("aria-valuenow", "0");
+});
+
+/**
+ * A6. Home and End are slider keys, not global ones: they reach the timeline
+ * only through the `role="slider"` element, and the browser keeps them
+ * everywhere else.
+ */
+test("End jumps to the end of the track and Home back to the start", async () => {
+  await page.goto("/");
+  await waitForAudio(page);
+
+  const timeline = page.getByLabel(labels.timeline);
+
+  await timeline.focus();
+  await page.keyboard.press("End");
+  const atEnd = await getAudioState(page);
+  expectNear(atEnd.currentTime, atEnd.duration);
+
+  await page.keyboard.press("Home");
+  const atStart = await getAudioState(page);
+  expectNear(atStart.currentTime, 0);
+});
+
+test("Home on a button is left to the browser", async () => {
+  await page.goto("/");
+  await waitForAudio(page);
+
+  await page.getByLabel(labels.seekForward).click();
+  await page.getByLabel(labels.seekForward).focus();
+  const before = (await getAudioState(page)).currentTime;
+  expect(before).toBeGreaterThan(0);
+
+  await page.keyboard.press("Home");
+
+  expectNear((await getAudioState(page)).currentTime, before);
 });

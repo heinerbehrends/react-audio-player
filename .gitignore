@@ -28,3 +28,6 @@ playwright-report/*
 test-results.json
 
 dist/
+
+# Local-only Playwright config (points e2e at a system-installed browser)
+playwright.local.config.ts

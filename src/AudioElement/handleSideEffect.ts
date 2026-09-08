@@ -1,18 +1,71 @@
-import {
-  areNumbersClose,
-  calculateSliderValue,
-} from "../Shared/sharedFunctions";
-import type { SideEffectAction } from "./sideEffectActions";
+import { areNumbersClose } from "../Shared/areNumbersClose";
+import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
 
+/**
+ * Media properties throw on an out-of-range write rather than clamping, and
+ * each accepts a different range:
+ *
+ * - `volume` — [0, 1]; outside throws `IndexSizeError`
+ * - `playbackRate` — [0, 16] in Chrome; outside throws `NotSupportedError`
+ * - `currentTime` — any finite number, clamped to [0, duration] by the browser;
+ *   `NaN` throws `TypeError`
+ *
+ * Sliders clamp by construction, so only consumer input arrives unguarded.
+ * Non-finite values are dropped rather than clamped: `NaN` has no meaningful
+ * target, and usually means `duration` was read before metadata.
+ */
+const MAX_PLAYBACK_RATE = 16;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+function writeVolume(audioElement: HTMLAudioElement, value: number) {
+  if (!Number.isFinite(value)) return;
+  audioElement.volume = clamp(value, 0, 1);
+}
+
+function writeRate(audioElement: HTMLAudioElement, value: number) {
+  if (!Number.isFinite(value)) return;
+  audioElement.playbackRate = clamp(value, 0, MAX_PLAYBACK_RATE);
+}
+
+function writeTime(audioElement: HTMLAudioElement, value: number) {
+  if (!Number.isFinite(value)) return;
+  audioElement.currentTime = value;
+}
+
+/**
+ * The store state the write path needs. A snapshot rather than an accessor:
+ * only `TOGGLE_MUTE` and `UNMUTE` read it.
+ */
+export type SideEffectContext = {
+  lastAudibleVolume: number;
+};
+
+/**
+ * `play()` resolves once playback starts and rejects when the browser refuses —
+ * `NotAllowedError` under autoplay policy, `AbortError` when a `pause()` or a
+ * `src` change interrupts it. It returns `undefined` rather than a promise in
+ * jsdom and in browsers predating the promise form, so the result is normalised
+ * before being handed to the caller.
+ */
+function play(audioElement: HTMLAudioElement): Promise<void> {
+  return Promise.resolve(audioElement.play());
+}
+
+/**
+ * Returns the pending `play()` promise for the two actions that start playback,
+ * so the store can record a refusal. Every other action returns `undefined`.
+ */
 export function handleSideEffect(
   action: SideEffectAction,
   audioElement: HTMLAudioElement | null,
-) {
-  if (!audioElement) return;
+  context: SideEffectContext,
+): Promise<void> | undefined {
+  if (!audioElement) return undefined;
   switch (action.type) {
     case "PLAY": {
-      audioElement.play();
-      break;
+      return play(audioElement);
     }
     case "PAUSE": {
       audioElement.pause();
@@ -20,8 +73,7 @@ export function handleSideEffect(
     }
     case "TOGGLE_PLAY": {
       if (audioElement.paused) {
-        audioElement.play();
-        break;
+        return play(audioElement);
       }
       audioElement.pause();
       break;
@@ -33,79 +85,21 @@ export function handleSideEffect(
       break;
     }
     case "TOGGLE_MUTE": {
-      const dragStartVolume = audioElement.dataset?.["dragStartVolume"];
-      if (dragStartVolume && audioElement.muted) {
-        audioElement.volume = Number(dragStartVolume);
+      if (audioElement.muted) {
+        unmute(audioElement, context);
+        break;
       }
-      audioElement.muted = !audioElement.muted;
-      delete audioElement.dataset?.["dragStartVolume"];
+      audioElement.muted = true;
       break;
     }
     case "UNMUTE": {
-      const dragStartVolume = audioElement.dataset?.["dragStartVolume"];
-      if (dragStartVolume && audioElement.muted) {
-        audioElement.volume = Number(dragStartVolume);
-      }
-      audioElement.muted = false;
-      delete audioElement.dataset?.["dragStartVolume"];
-      break;
-    }
-    case "SET_SLIDER_VALUE": {
-      switch (action.component) {
-        case "timeline": {
-          const time = calculateSliderValue(action);
-          audioElement.currentTime = time;
-          break;
-        }
-        case "volume": {
-          const volume = calculateSliderValue(action);
-          audioElement.volume = volume;
-          break;
-        }
-        case "playbackRate": {
-          const playbackRate = calculateSliderValue(action);
-          audioElement.playbackRate = playbackRate;
-          break;
-        }
-      }
-      break;
-    }
-    case "DRAG_START": {
-      switch (action.component) {
-        case "volume": {
-          audioElement.dataset["dragStartVolume"] =
-            audioElement.volume.toString();
-          break;
-        }
-      }
-      break;
-    }
-    case "DRAG_END": {
-      switch (action.component) {
-        case "timeline": {
-          const time = calculateSliderValue({
-            ...action,
-            clientXY: action.clientXY - action.offsetFromMiddle,
-          });
-          audioElement.currentTime = time;
-          break;
-        }
-        case "volume": {
-          if (areNumbersClose(audioElement.volume, 0)) {
-            audioElement.muted = true;
-          }
-          break;
-        }
-        case "playbackRate": {
-          return;
-        }
-      }
+      unmute(audioElement, context);
       break;
     }
     case "CHANGE_VALUE": {
       switch (action.component) {
         case "timeline": {
-          audioElement.currentTime = action.value;
+          writeTime(audioElement, action.value);
           break;
         }
         case "volume": {
@@ -116,70 +110,51 @@ export function handleSideEffect(
           if (isCloseToZero) {
             audioElement.muted = true;
           }
-          audioElement.volume = action.value;
+          writeVolume(audioElement, action.value);
           break;
         }
         case "playbackRate": {
-          audioElement.playbackRate = action.value;
-          break;
-        }
-      }
-      break;
-    }
-    case "DRAG": {
-      switch (action.component) {
-        case "timeline": {
-          return;
-        }
-        case "volume": {
-          const volume = calculateSliderValue(action);
-          audioElement.muted = false;
-          audioElement.volume = volume;
-          break;
-        }
-        case "playbackRate": {
-          const step = action.step || 0.25;
-          const minValue = action.minValue || 0.5;
-          const maxValue = action.maxValue || 4;
-          const playbackRate = calculateSliderValue({
-            ...action,
-            minValue,
-            maxValue,
-            step,
-          });
-          audioElement.playbackRate = playbackRate;
+          writeRate(audioElement, action.value);
           break;
         }
       }
       break;
     }
     case "SET_PLAYBACK_RATE": {
-      audioElement.playbackRate = action.playbackRate;
+      writeRate(audioElement, action.playbackRate);
       break;
     }
     case "INCREASE_VOLUME": {
-      const newVolume = Math.min(audioElement.volume + action.value, 1);
-      audioElement.volume = newVolume;
+      writeVolume(audioElement, audioElement.volume + action.value);
       break;
     }
     case "DECREASE_VOLUME": {
       const newVolume = Math.max(audioElement.volume - action.value, 0);
-      const isCloseToZero = areNumbersClose(newVolume, 0);
-      if (isCloseToZero) {
+      if (areNumbersClose(newVolume, 0)) {
         audioElement.muted = true;
-        return;
+        return undefined;
       }
-      audioElement.volume = newVolume;
+      writeVolume(audioElement, newVolume);
       break;
     }
     case "INCREASE_PLAYBACK_RATE": {
-      const newRate = Math.min(audioElement.playbackRate + action.value, 4);
-      audioElement.playbackRate = newRate;
+      writeRate(
+        audioElement,
+        Math.min(
+          audioElement.playbackRate + action.value,
+          action.maxValue ?? RATE_BOUNDS.maxValue,
+        ),
+      );
       break;
     }
     case "DECREASE_PLAYBACK_RATE": {
-      const newRate = Math.max(audioElement.playbackRate - action.value, 0.5);
-      audioElement.playbackRate = newRate;
+      writeRate(
+        audioElement,
+        Math.max(
+          audioElement.playbackRate - action.value,
+          action.minValue ?? RATE_BOUNDS.minValue,
+        ),
+      );
       break;
     }
     case "RESET_PLAYBACK_RATE": {
@@ -187,16 +162,20 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_FORWARD": {
-      const newTime = Math.min(
-        audioElement.currentTime + action.value,
-        audioElement.duration,
+      writeTime(
+        audioElement,
+        Math.min(
+          audioElement.currentTime + action.value,
+          audioElement.duration,
+        ),
       );
-      audioElement.currentTime = newTime;
       break;
     }
     case "SET_TIME_BACKWARD": {
-      const newTime = Math.max(audioElement.currentTime - action.value, 0);
-      audioElement.currentTime = newTime;
+      writeTime(
+        audioElement,
+        Math.max(audioElement.currentTime - action.value, 0),
+      );
       break;
     }
     case "SET_TIME_TO_START": {
@@ -204,9 +183,24 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_TO_PERCENT": {
-      const newTime = audioElement.duration * action.percent;
-      audioElement.currentTime = newTime;
+      writeTime(audioElement, audioElement.duration * action.percent);
       break;
     }
   }
+  return undefined;
+}
+
+/**
+ * Unmuting a player whose volume is zero has to restore a volume too, or it
+ * stays silent. `lastAudibleVolume` covers every path that got it there: drag,
+ * click, keyboard, or a consumer's `CHANGE_VALUE`.
+ */
+function unmute(
+  audioElement: HTMLAudioElement,
+  { lastAudibleVolume }: SideEffectContext,
+) {
+  if (areNumbersClose(audioElement.volume, 0)) {
+    writeVolume(audioElement, lastAudibleVolume);
+  }
+  audioElement.muted = false;
 }

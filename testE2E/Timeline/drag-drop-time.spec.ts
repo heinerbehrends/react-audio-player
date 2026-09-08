@@ -1,15 +1,19 @@
 import { test, expect } from "@playwright/test";
-import { waitForAudio, getTimelineState, getAudioState } from "../test-utils";
-
-const PRECISION = 0.25;
+import {
+  insideViewport,
+  LAYOUT_TOLERANCE_PX,
+  expectNear,
+  getAudioState,
+  getTimelineState,
+  testIds,
+  waitForAudio,
+} from "../test-utils";
 
 test("drag timeline button to seek when paused", async ({ page }) => {
   await page.goto("/");
   await waitForAudio(page);
 
-  const dragButton = await page.getByLabel(
-    "Drag or use left and right arrow keys to seek",
-  );
+  const dragButton = await page.getByTestId(testIds.timelineDragThumb);
 
   const { sliderLength, duration } = await getTimelineState(page);
 
@@ -21,7 +25,7 @@ test("drag timeline button to seek when paused", async ({ page }) => {
   await page.mouse.up();
 
   const { currentTime } = await getAudioState(page);
-  expect(currentTime).toBeCloseTo(duration / 2, PRECISION);
+  expectNear(currentTime, duration / 2);
 });
 
 test("drag timeline button to seek while playing", async ({ page }) => {
@@ -37,7 +41,7 @@ test("drag timeline button to seek while playing", async ({ page }) => {
   const buttonX = sliderStart + currentOffset;
   const buttonY = await page.evaluate(() => {
     const button = document.querySelector(
-      "[aria-label='Drag or use left and right arrow keys to seek']",
+      '[data-testid="timeline-drag-thumb"]',
     );
     return button?.getBoundingClientRect().top ?? 0;
   });
@@ -47,44 +51,45 @@ test("drag timeline button to seek while playing", async ({ page }) => {
 
   const { currentTime: currentTimeUpdated } = await getAudioState(page);
 
-  expect(currentTimeUpdated).toBeCloseTo(currentTime, PRECISION);
+  expectNear(currentTimeUpdated, currentTime);
 
   const { isPlaying } = await getAudioState(page);
   expect(isPlaying).toBe(true);
 });
 
-test("drag button cannot move beyond timeline bounds", async ({
-  page,
-  browserName,
-}) => {
+test("drag button cannot move beyond timeline bounds", async ({ page }) => {
   const BUTTON_OFFSET = 20;
   await page.goto("/");
   await waitForAudio(page);
 
   const { sliderStart, sliderLength } = await getTimelineState(page);
 
-  const dragButton = page.getByLabel(
-    "Drag or use left and right arrow keys to seek",
-  );
+  const dragButton = page.getByTestId(testIds.timelineDragThumb);
   const initialBox = await dragButton.boundingBox();
 
   await dragButton.hover();
   await page.mouse.down();
-  await page.mouse.move(sliderStart - 100, initialBox?.y ?? 0);
+  await page.mouse.move(
+    insideViewport(page, sliderStart - 100),
+    initialBox?.y ?? 0,
+  );
 
   let buttonBox = await dragButton.boundingBox();
 
-  expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
+  expectNear(
+    buttonBox?.x ?? 0,
+    sliderStart - BUTTON_OFFSET,
+    LAYOUT_TOLERANCE_PX,
+  );
 
-  // Firefox triggers onEnded, which resets the time to 0
-  await page.mouse.move(sliderStart + sliderLength + 100, initialBox?.y ?? 0);
+  await page.mouse.move(
+    insideViewport(page, sliderStart + sliderLength + 100),
+    initialBox?.y ?? 0,
+  );
   buttonBox = await dragButton.boundingBox();
-  if (browserName === "firefox") {
-    expect(buttonBox?.x).toBeCloseTo(sliderStart - BUTTON_OFFSET, 1);
-  } else {
-    expect(buttonBox?.x).toBeCloseTo(
-      sliderStart + sliderLength - BUTTON_OFFSET,
-      1,
-    );
-  }
+  expectNear(
+    buttonBox?.x ?? 0,
+    sliderStart + sliderLength - BUTTON_OFFSET,
+    LAYOUT_TOLERANCE_PX,
+  );
 });

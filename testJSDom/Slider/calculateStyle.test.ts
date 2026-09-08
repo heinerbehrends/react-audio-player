@@ -4,19 +4,18 @@ import {
   calculateProgressStyle,
   progressStyles,
   containerStyles,
-  buttonStyles,
+  rootStyles,
+  type StyleContext,
 } from "../../src/Slider/calculateStyle";
-import { createSliderContext } from "../testUtils";
 
 describe("calculateStyle", () => {
-  const defaultContext = createSliderContext({
+  const defaultContext: StyleContext = {
     value: 0.5,
-    sliderStart: 0,
     minValue: 0,
     maxValue: 1,
-    step: 0.1,
     sliderLength: 100,
-  });
+    orientation: "horizontal",
+  };
   describe("calculateDragStyle", () => {
     it("calculates horizontal drag style correctly", () => {
       const style = calculateDragStyle(defaultContext);
@@ -25,8 +24,7 @@ describe("calculateStyle", () => {
         position: "absolute",
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
-        cursor: "grab",
-        transform: "translate(calc(50px - 20px), 0)",
+        transform: "translate(calc(50px - 50%), 0)",
         touchAction: "none",
       });
     });
@@ -42,22 +40,17 @@ describe("calculateStyle", () => {
         position: "absolute",
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
-        cursor: "grab",
-        transform: "translate(0, calc(50px - 20px))",
+        transform: "translate(0, calc(50px - 50%))",
         touchAction: "none",
       });
     });
 
-    it("handles dragging state", () => {
-      const context = {
-        ...defaultContext,
-        dragState: "dragging" as const,
-        clientXY: 75,
-        step: 0,
-      };
-      const style = calculateDragStyle(context);
+    // `calculateDragStyle` positions the thumb from `value` through
+    // `getOffset`, so `StyleContext` carries no pointer position.
+    it("positions from the value alone", () => {
+      const style = calculateDragStyle({ ...defaultContext, value: 0.75 });
 
-      expect(style.transform).toBe("translate(calc(50px - 20px), 0)");
+      expect(style.transform).toBe("translate(calc(75px - 50%), 0)");
     });
   });
 
@@ -84,19 +77,42 @@ describe("calculateStyle", () => {
       });
     });
 
-    it("handles vertical volume component", () => {
-      const context = {
+    /**
+     * The vertical cases above all sit at `value: 0.5`, the fixed point of
+     * `x -> 1 - x`, where an inverted and a non-inverted rule agree exactly. The
+     * rows below sit away from it, so they are the ones that pin the direction.
+     */
+    it.each([
+      [0.25, "scaleY(0.25)"],
+      [0.8, "scaleY(0.8)"],
+    ])("tracks the value for a vertical slider at %f", (value, expected) => {
+      const style = calculateProgressStyle({
         ...defaultContext,
         orientation: "vertical" as const,
-        component: "volume" as const,
-        value: 0.5,
-      };
-      const style = calculateProgressStyle(context);
-
-      expect(style).toEqual({
-        transform: "scaleY(0.5)",
-        transformOrigin: "bottom",
+        value,
       });
+
+      expect(style.transform).toBe(expected);
+    });
+
+    it.each([
+      [0.25, "scaleX(0.25)"],
+      [0.8, "scaleX(0.8)"],
+    ])("tracks the value for a horizontal slider at %f", (value, expected) => {
+      const style = calculateProgressStyle({ ...defaultContext, value });
+
+      expect(style.transform).toBe(expected);
+    });
+
+    it("maps the value through its own range, not through 0 to 1", () => {
+      const style = calculateProgressStyle({
+        ...defaultContext,
+        minValue: 0.5,
+        maxValue: 2.5,
+        value: 1.5,
+      });
+
+      expect(style.transform).toBe("scaleX(0.5)");
     });
 
     it("handles edge cases", () => {
@@ -129,18 +145,46 @@ describe("calculateStyle", () => {
         display: "grid",
         gridTemplateColumns: "1fr",
         gridTemplateRows: "1fr",
-        width: "100%",
         height: "100%",
         position: "relative",
       });
     });
 
-    it("has correct button styles", () => {
-      expect(buttonStyles).toEqual({
-        border: "none",
-        background: "none",
-        padding: 0,
-      });
+    /**
+     * S8. These live in `styles.css` so a consumer's class can beat them. Put
+     * any of them back inline and the stylesheet is silently outranked again,
+     * which is the regression this pins.
+     */
+    it.each(["border", "background", "padding", "cursor", "width"])(
+      "keeps %s out of the root's inline styles",
+      (property) => {
+        expect(rootStyles).not.toHaveProperty(property);
+      },
+    );
+
+    it("keeps cursor out of the thumb's inline styles", () => {
+      expect(
+        calculateDragStyle({ ...defaultContext, value: 0.5 }),
+      ).not.toHaveProperty("cursor");
     });
+  });
+});
+
+/**
+ * F12, one layer up: an invalid `translate()` makes the browser discard the
+ * whole transform, so the thumb does not move at all.
+ */
+describe("a zero range", () => {
+  it("emits a usable transform rather than NaN", () => {
+    const style = calculateDragStyle({
+      value: 0,
+      minValue: 0,
+      maxValue: 0,
+      sliderLength: 200,
+      orientation: "horizontal",
+    });
+
+    expect(style.transform).not.toContain("NaN");
+    expect(style.transform).toBe("translate(calc(0px - 50%), 0)");
   });
 });
