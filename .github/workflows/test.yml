@@ -113,3 +113,21 @@ jobs:
 
       - name: Run E2E tests
         run: pnpm testE2E
+
+      # `always()`, because the run that matters is the one that just failed —
+      # `test-results/` holds the ARIA snapshot (`error-context.md`) and, for a
+      # retried spec, the trace that says what the page was doing. Without this
+      # both are deleted with the runner and a CI failure can only be guessed at.
+      #
+      # Named per matrix leg: upload-artifact@v4 rejects a second upload under a
+      # name already used in the same run.
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-react-${{ matrix.react-version }}
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
