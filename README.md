@@ -160,7 +160,7 @@ HLS.js/dash.js, or the Media Session API. Prefer a stable ref — an inline
 callback re-runs the forwarding effect on every render.
 
 One format is loaded per track; `<source>` fallback is not supported yet (see
-`BACKLOG.md`).
+`issues/`).
 
 #### Playlists
 

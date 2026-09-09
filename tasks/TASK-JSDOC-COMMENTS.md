@@ -49,7 +49,7 @@ MDN tone: factual, direct, present tense, no storytelling
 Lead with what the symbol is or does, in one sentence, then constraints
 Shorter is better, but never drop the why to save a line
 Match the file's existing conventions — dash style, backtick usage, reference format
-Keep A4 / S9 / T1 style refs to REVIEW-FINDINGS.md intact; they point at reasoning instead of duplicating it
+Keep A4 / S9 / T1 style refs to the tickets in issues/ intact; they point at reasoning instead of duplicating it
 Report
 Added — symbol, and the contract fact it now carries
 Rewritten — before/after, one line on what the old one padded or omitted

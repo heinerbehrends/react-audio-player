@@ -6,7 +6,7 @@
        `baseUrl`, which TypeScript 6 deprecates and 7 removes. Without this the
        dts build fails with TS5101 and ships no types at all. It buys TS 6 and
        defers the problem — TS 7 breaks the build regardless of the flag, so it
-       comes off when tsup stops injecting `baseUrl`. See BACKLOG.md. */
+       comes off when tsup stops injecting `baseUrl`. See issues/. */
     "ignoreDeprecations": "6.0",
     "module": "ESNext",
     "moduleResolution": "bundler",

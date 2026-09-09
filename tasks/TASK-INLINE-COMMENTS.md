@@ -47,7 +47,7 @@ Shorter is better — but never at the cost of the reason. A comment that keeps 
 Do not add comments where none existed unless the fact fits a category above and is genuinely not inferable
 Match each file's existing conventions: dash style, backtick usage, reference format, line width
 Preserve cross-references
-Refs like A4, S9, T1 point at REVIEW-FINDINGS.md and BACKLOG.md. They are load-bearing — they point at reasoning rather than duplicating it. Keep them, keep their format, and do not inline the reasoning they point to.
+Refs like A4, S9, T1 point at the tickets in issues/. They are load-bearing — they point at reasoning rather than duplicating it. Keep them, keep their format, and do not inline the reasoning they point to.
 
 Report, don't just edit
 A comment audit is unreviewable without this, because a diff shows what remains, not what was judged:

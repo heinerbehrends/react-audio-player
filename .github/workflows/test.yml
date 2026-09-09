@@ -92,10 +92,10 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
-      # Every finding is either resolved with evidence in REVIEW-FINDINGS.md or
-      # open with a reason in BACKLOG.md.
-      - name: Check docs
-        run: pnpm check-docs
+      # Every ticket in issues/ matches the frontmatter contract, sits in the
+      # folder its status calls for, and is listed in the generated index.
+      - name: Check issues
+        run: pnpm issues:check
 
       # Before check-exports, which reads dist/. Without it `attw` reports
       # "This package does not contain types" and exits 0 — a green no-op.
