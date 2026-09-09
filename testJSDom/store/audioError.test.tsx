@@ -24,6 +24,17 @@ const setup = (fields: Partial<MediaFields> = {}) => {
 /** `MediaError.code` is a numeric enum; the store projects the number. */
 const mediaError = (code: number) => ({ code }) as MediaError;
 
+/**
+ * A failed element: the code, and the `HAVE_NOTHING` that a browser reports
+ * alongside it for a source it cannot play. The store requires both before it
+ * calls a resource unusable, since an `error` on an element that still holds
+ * data is one it can play through.
+ */
+const failedWith = (code: number) => ({
+  readyState: 0,
+  error: mediaError(code),
+});
+
 describe("useAudioError — media errors (F8)", () => {
   it("is null for a healthy element", () => {
     expect(setup().result.current).toBeNull();
@@ -35,13 +46,13 @@ describe("useAudioError — media errors (F8)", () => {
     [3, "decode"],
     [4, "unsupported"],
   ])("maps MediaError code %i to %s", (code, reason) => {
-    const { result } = setup({ error: mediaError(code) });
+    const { result } = setup(failedWith(code));
 
     expect(result.current).toEqual({ kind: "media", reason });
   });
 
   it("falls back to 'unknown' for a code it does not recognise", () => {
-    const { result } = setup({ error: mediaError(99) });
+    const { result } = setup(failedWith(99));
 
     expect(result.current).toEqual({ kind: "media", reason: "unknown" });
   });
@@ -52,18 +63,18 @@ describe("useAudioError — media errors (F8)", () => {
    * error from a source the browser will never play.
    */
   it("distinguishes a retryable network error from an unusable source", () => {
-    expect(setup({ error: mediaError(2) }).result.current).toEqual({
+    expect(setup(failedWith(2)).result.current).toEqual({
       kind: "media",
       reason: "network",
     });
-    expect(setup({ error: mediaError(4) }).result.current).toEqual({
+    expect(setup(failedWith(4)).result.current).toEqual({
       kind: "media",
       reason: "unsupported",
     });
   });
 
   it("clears when a new source loads", () => {
-    const { result, harness } = setup({ error: mediaError(2) });
+    const { result, harness } = setup(failedWith(2));
     expect(result.current).not.toBeNull();
 
     act(() => {
@@ -172,6 +183,7 @@ describe("useAudioError — precedence", () => {
     await waitFor(() => expect(result.current?.kind).toBe("playback"));
 
     act(() => {
+      harness.element.readyState = 0;
       harness.element.error = mediaError(2);
       harness.element.emit("error");
     });

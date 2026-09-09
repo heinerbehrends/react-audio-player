@@ -45,7 +45,9 @@ const seekName = /^Seek forward/;
 
 describe("the error gate", () => {
   it("marks all six aria-disabled", () => {
-    renderWithStore(renderAll(), { element: { error: {} as MediaError } });
+    renderWithStore(renderAll(), {
+      element: { readyState: 0, error: {} as MediaError },
+    });
 
     const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(expectedCount);
@@ -251,6 +253,7 @@ describe("focus survives a state change", () => {
     const play = screen.getByRole("button", { name: "Play audio" });
     play.focus();
 
+    element.readyState = 0;
     element.error = {} as MediaError;
     emit("error");
 

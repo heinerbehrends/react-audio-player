@@ -90,7 +90,7 @@ describe("ChangePlaybackRate", () => {
   it("is aria-disabled on an error, and does not activate", () => {
     const { element } = renderChange(
       <ChangePlaybackRate amount={0.25}>Test</ChangePlaybackRate>,
-      { error: {} as MediaError },
+      { readyState: 0, error: {} as MediaError },
     );
     const button = screen.getByRole("button");
 

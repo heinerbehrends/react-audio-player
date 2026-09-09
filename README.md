@@ -360,6 +360,12 @@ type AudioError =
 unusable, and only a retry or a different `src` will help. `"network"` is worth
 retrying; `"unsupported"` is not.
 
+Reported only when the element also has no data to play, which is what a browser
+reports for a source it cannot use. An `error` raised by an element that still
+holds a buffer is ignored, because such an element can and does keep playing:
+Firefox on a machine with no audio output device raises `MEDIA_ERR_DECODE`
+milliseconds after `play()` and then plays the track to the end.
+
 `kind: "playback"` means the resource is fine and the browser refused the
 command. `reason` is the `DOMException` name, almost always
 `"NotAllowedError"` — autoplay policy, which any user gesture lifts:

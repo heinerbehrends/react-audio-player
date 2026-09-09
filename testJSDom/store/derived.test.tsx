@@ -49,6 +49,7 @@ describe("usePlayerState", () => {
 
   it("reports 'error' when the element carries one", () => {
     const { result } = renderDerived(usePlayerState, {
+      readyState: 0,
       error: {} as MediaError,
     });
     expect(result.current).toBe("error");
@@ -111,6 +112,7 @@ describe("useVolumeState", () => {
 describe("useIsDisabled", () => {
   it("is true on an error and false once the element recovers", () => {
     const harness = renderDerived(useIsDisabled, {
+      readyState: 0,
       error: {} as MediaError,
     });
     expect(harness.result.current).toBe(true);
@@ -194,6 +196,7 @@ describe("useIsSeekable", () => {
     expect(streaming.result.current).toBe(false);
 
     const errored = renderDerived(useIsSeekable, {
+      readyState: 0,
       error: {} as MediaError,
       duration: 100,
     });
@@ -246,7 +249,7 @@ describe("useIsBuffering", () => {
 
   it("stays false for an errored element", () => {
     const { result } = renderDerived(useIsBuffering, {
-      readyState: 1,
+      readyState: 0,
       paused: false,
       error: {} as MediaError,
     });

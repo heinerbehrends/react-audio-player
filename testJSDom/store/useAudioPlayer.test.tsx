@@ -51,7 +51,10 @@ describe("useAudioPlayer", () => {
     const loading = setup(useAudioPlayer, { readyState: 0 });
     expect(loading.result.current.playerState).toBe("loading");
 
-    const errored = setup(useAudioPlayer, { error: {} as MediaError });
+    const errored = setup(useAudioPlayer, {
+      readyState: 0,
+      error: {} as MediaError,
+    });
     expect(errored.result.current.playerState).toBe("error");
   });
 
@@ -68,8 +71,8 @@ describe("useAudioPlayer", () => {
     ).toBe(false);
 
     expect(
-      setup(useAudioPlayer, { error: {} as MediaError }).result.current
-        .isDisabled,
+      setup(useAudioPlayer, { readyState: 0, error: {} as MediaError }).result
+        .current.isDisabled,
     ).toBe(true);
   });
 
