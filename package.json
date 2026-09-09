@@ -40,7 +40,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-exports": "attw --pack . --profile esm-only --exclude-entrypoints styles.css",
-    "check-docs": "node scripts/check-docs.mjs"
+    "issues": "node scripts/issues.mjs",
+    "issues:check": "node scripts/issues.mjs --check"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
