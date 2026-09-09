@@ -1,13 +1,21 @@
 name: Tests
 
+# Only what gates or records a merge: the pull request into main, and main
+# itself afterwards. A bare `push:` ran the full gauntlet on every commit of
+# every branch, which is most of the cost for none of the decisions.
+#
+# The trade is no feedback on a branch until its PR is open, so
+# `workflow_dispatch` keeps a manual run available from the Actions tab.
 on:
-  push:
   pull_request:
-    branches: [main, master]
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-# Pushing to a branch with an open PR fires both events, and the E2E specs run
-# serially. Supersede the older run instead of queueing it — except on main,
-# where the run is the record of the merge.
+# The E2E specs run serially, so a PR pushed twice in quick succession should
+# supersede its own older run rather than queue behind it. Not on main, where
+# the run is the record of the merge and has to finish.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
