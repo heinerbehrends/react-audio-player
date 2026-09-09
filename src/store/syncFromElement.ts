@@ -8,6 +8,9 @@ export type LoadState = "loading" | "ready" | "error";
  */
 export const HAVE_FUTURE_DATA = 3;
 
+/** `HTMLMediaElement.HAVE_NOTHING`: no data at all, so nothing can play. */
+export const HAVE_NOTHING = 0;
+
 /**
  * The write side of the projection atoms. Only `createPlayerStore` holds this
  * bundle, and it reaches `syncFromElement` only through `attach`.
@@ -100,6 +103,25 @@ const projectReadyState: SyncHandler = (element, atoms) => {
 };
 
 /**
+ * Whether a `MediaError` actually means the resource is unusable.
+ *
+ * The event alone does not say so. Firefox on a machine that cannot open an
+ * audio output device fires `error` with `MEDIA_ERR_DECODE` a few milliseconds
+ * after `play()`, and then plays the track through to the end with `readyState`
+ * at `HAVE_ENOUGH_DATA` and `currentTime` advancing in real time. Trusting the
+ * event disabled every control while audio was still coming out.
+ *
+ * `HAVE_NOTHING` is the test instead: an element holding no data cannot play
+ * whatever the code says, and one holding data can still play what it has —
+ * which is also the right answer for a network failure part-way through a
+ * download. A genuine load failure — a 404, an unsupported format — reports
+ * `HAVE_NOTHING`, so the case that has to disable the controls still does.
+ */
+function isUnusable(element: SyncableMediaElement): boolean {
+  return element.error !== null && element.readyState === HAVE_NOTHING;
+}
+
+/**
  * Reads the whole projection off the element in one pass. Used by `attach`,
  * which runs in an effect and can miss a `loadedmetadata` or `error` that
  * already fired, and by the `emptied` / `loadstart` reset, where a `src` swap
@@ -127,9 +149,12 @@ export function prime(
   atoms.currentSecond.set(Math.floor(element.currentTime));
   atoms.duration.set(finite(element.duration));
   atoms.readyState.set(element.readyState);
-  atoms.mediaErrorCode.set(element.error?.code ?? null);
+  const unusable = isUnusable(element);
+  // Cleared when the element is usable, so a `src` swap away from a broken
+  // track leaves no stale code behind for `useAudioError` to report.
+  atoms.mediaErrorCode.set(unusable ? (element.error?.code ?? null) : null);
   atoms.loadState.set(
-    element.error ? "error" : element.readyState >= 1 ? "ready" : "loading",
+    unusable ? "error" : element.readyState >= 1 ? "ready" : "loading",
   );
 }
 
@@ -180,7 +205,10 @@ export const HANDLERS = {
     projectPaused(element, atoms, pinned);
     projectTime(element, atoms, pinned);
   },
+  // Corroborated against the element rather than trusted: see `isUnusable`.
+  // An error the element plays through is left to it, so nothing latches.
   error: (element, atoms) => {
+    if (!isUnusable(element)) return;
     atoms.mediaErrorCode.set(element.error?.code ?? null);
     atoms.loadState.set("error");
   },

@@ -3,7 +3,10 @@ import { screen } from "@testing-library/react";
 import { ErrorMessage } from "../../src/Player/ErrorMessage";
 import { renderWithStore } from "../store/renderWithStore";
 
-const errored = { error: {} as MediaError };
+// `HAVE_NOTHING` alongside the code, which is what a browser reports for a
+// source it cannot play — and what the store now requires before it treats the
+// resource as unusable.
+const errored = { readyState: 0, error: {} as MediaError };
 
 describe("ErrorMessage", () => {
   it("renders when the element carries an error", () => {

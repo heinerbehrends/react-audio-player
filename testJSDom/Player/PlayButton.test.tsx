@@ -10,7 +10,7 @@ const states: Record<string, Partial<MediaFields>> = {
   paused: { readyState: 1, paused: true },
   playing: { readyState: 1, paused: false },
   loading: { readyState: 0 },
-  error: { error: {} as MediaError },
+  error: { readyState: 0, error: {} as MediaError },
 };
 
 describe("PlayButton", () => {

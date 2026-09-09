@@ -78,7 +78,7 @@ describe("Seek", () => {
     });
 
     it("is aria-disabled on error", () => {
-      renderSeek(10, { error: {} as MediaError });
+      renderSeek(10, { readyState: 0, error: {} as MediaError });
       const button = screen.getByLabelText(labels.seekForward);
       expect(button).toHaveAttribute("aria-disabled", "true");
       expect(button).not.toBeDisabled();

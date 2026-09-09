@@ -635,7 +635,8 @@ describe("the disabled slider", () => {
     "marks the %s slider aria-disabled on an error",
     (mode) => {
       expect(
-        renderSlider({ mode }, { error: {} as MediaError }).result.current.aria,
+        renderSlider({ mode }, { readyState: 0, error: {} as MediaError })
+          .result.current.aria,
       ).toMatchObject({ "aria-disabled": true });
     },
   );
@@ -695,7 +696,7 @@ describe("the disabled slider", () => {
   it("ignores its arrow keys without falling through to the media map", () => {
     const harness = renderSlider(
       { mode: "volume" },
-      { error: {} as MediaError, volume: 0.5, currentTime: 20 },
+      { readyState: 0, error: {} as MediaError, volume: 0.5, currentTime: 20 },
     );
     const event = keyDown("ArrowRight");
 
@@ -714,7 +715,7 @@ describe("the disabled slider", () => {
   it("still passes the global media shortcuts through", () => {
     const harness = renderSlider(
       { mode: "volume" },
-      { error: {} as MediaError, paused: true },
+      { readyState: 0, error: {} as MediaError, paused: true },
     );
 
     act(() => harness.result.current.onKeyDown(keyDown("p")));

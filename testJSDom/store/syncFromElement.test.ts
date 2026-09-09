@@ -402,14 +402,45 @@ describe("syncFromElement", () => {
   });
 
   describe("error", () => {
-    it("moves loadState to error", () => {
+    it("moves loadState to error when the element has no data", () => {
+      const element = createMediaElementFake();
+      const atoms = createAtoms();
+      syncFromElement(element, atoms);
+
+      element.error = { code: 4 } as MediaError;
+      element.emit("error");
+
+      expect(atoms.loadState.get()).toBe("error");
+      expect(atoms.mediaErrorCode.get()).toBe(4);
+    });
+
+    /**
+     * Firefox on a machine that cannot open an audio output device fires this a
+     * few milliseconds after `play()`, then plays the track to the end with a
+     * full buffer. Latching on the event disabled every control while audio was
+     * still coming out, so the element has to be asked whether it agrees.
+     */
+    it("leaves a playing element alone when it still holds data", () => {
+      const element = createMediaElementFake({ readyState: 4, paused: false });
+      const atoms = createAtoms();
+      syncFromElement(element, atoms);
+
+      element.error = { code: 3 } as MediaError;
+      element.emit("error");
+
+      expect(atoms.loadState.get()).toBe("ready");
+      expect(atoms.mediaErrorCode.get()).toBeNull();
+    });
+
+    /** The event carries nothing on its own; the element's `error` is the fact. */
+    it("ignores an error event the element does not corroborate", () => {
       const element = createMediaElementFake();
       const atoms = createAtoms();
       syncFromElement(element, atoms);
 
       element.emit("error");
 
-      expect(atoms.loadState.get()).toBe("error");
+      expect(atoms.loadState.get()).toBe("loading");
     });
   });
 
@@ -458,6 +489,7 @@ describe("syncFromElement", () => {
       element.emit("loadedmetadata");
       expect(atoms.loadState.get()).toBe("ready");
 
+      element.readyState = 0;
       element.error = {} as MediaError;
       element.emit("error");
       expect(atoms.loadState.get()).toBe("error");
@@ -519,7 +551,13 @@ describe("prime", () => {
     expect(atoms.loadState.get()).toBe("error");
   });
 
-  it("prefers error over readyState", () => {
+  /**
+   * An element holding a full buffer can play what it has, whatever its `error`
+   * says. Firefox on a machine with no audio output sets `MEDIA_ERR_DECODE` and
+   * then plays the track to the end, and reading the code alone left every
+   * control disabled over audible playback.
+   */
+  it("stays ready when the element has data despite an error", () => {
     const atoms = createAtoms();
 
     prime(
@@ -527,7 +565,8 @@ describe("prime", () => {
       atoms,
     );
 
-    expect(atoms.loadState.get()).toBe("error");
+    expect(atoms.loadState.get()).toBe("ready");
+    expect(atoms.mediaErrorCode.get()).toBeNull();
   });
 
   it("lands loading before metadata", () => {
