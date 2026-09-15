@@ -6,7 +6,10 @@
 import { formatTime } from "../Shared/formatTime";
 import { useStore } from "../store/atom";
 import { usePlayerState, useTimeDisplay } from "../store/derived";
-import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
+import {
+  useComposedButtonProps,
+  type ButtonPropsBag,
+} from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ChildrenProps = {
@@ -24,28 +27,37 @@ type TimeProps = React.TimeHTMLAttributes<HTMLTimeElement>;
  * `Time.Remaining` in the tree follows it.
  */
 function Toggle({ children, ...props }: ChildrenProps) {
+  return <button {...useTimeToggleProps(props)}>{children}</button>;
+}
+
+/**
+ * `Time.Toggle`'s props, for a `<button>` of your own: the flipping "Show time
+ * elapsed"/"Show time remaining" name, the toggle, the error gate and the media
+ * keys.
+ *
+ * Spread it last, onto a `<button>` or a component that renders one. Pass your
+ * handlers in rather than adding them after the spread, where the library
+ * cannot compose them.
+ */
+export function useTimeToggleProps<
+  P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+>(props?: P): ButtonPropsBag<P> {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
 
   const handleClick = useToggleTimeDisplay();
-  const composed = useComposedButtonProps(handleClick, props);
+  const composed = useComposedButtonProps(handleClick, props ?? {});
 
-  return (
-    <button
-      type="button"
-      // A4: the name is this button's only state channel, so it flips.
-      aria-label={
-        timeDisplay === "remaining"
-          ? "Show time elapsed"
-          : "Show time remaining"
-      }
-      {...props}
-      // Last, so the gate and the shortcuts cannot be spread away.
-      {...composed}
-    >
-      {children}
-    </button>
-  );
+  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  return {
+    type: "button",
+    // A4: the name is this button's only state channel, so it flips.
+    "aria-label":
+      timeDisplay === "remaining" ? "Show time elapsed" : "Show time remaining",
+    ...props,
+    // Last, so the gate and the shortcuts cannot be spread away.
+    ...composed,
+  } as ButtonPropsBag<P>;
 }
 
 /** `timeDisplay` is the one writable atom, so the toggle writes it directly. */

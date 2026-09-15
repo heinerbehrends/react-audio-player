@@ -37,7 +37,12 @@ export function PlayerStoreProvider({
 export function usePlayerStore(): PlayerStore {
   const store = useContext(PlayerStoreContext);
   if (!store) {
-    throw new Error("usePlayerStore must be used within a PlayerStoreProvider");
+    // Names the public root, not the internal provider: the props hooks make
+    // this error far easier to reach than rendering a part in the wrong place
+    // ever did.
+    throw new Error(
+      "This hook or component must be rendered inside an <AudioPlayer>.",
+    );
   }
   return store;
 }

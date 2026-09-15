@@ -73,3 +73,20 @@ export function useComposedButtonProps(
     onKeyDown: composeEventHandlers(props.onKeyDown, handleMediaKeys),
   };
 }
+
+/** Always present in a props hook's result: the consumer's, or the library's. */
+export type ButtonBagBase = ComposedButtonProps & {
+  readonly type: React.ButtonHTMLAttributes<HTMLButtonElement>["type"];
+  readonly "aria-label": string;
+};
+
+/**
+ * What the button props hooks return: the consumer's props with the library's
+ * on top.
+ *
+ * Generic in `P`, because a plain `ButtonHTMLAttributes` parameter rejects
+ * `data-*` with TS2353 — JSX exempts those attributes, a function argument does
+ * not. `P` also keeps the consumer's keys in the result, so `bag["data-testid"]`
+ * still reads as `string`.
+ */
+export type ButtonPropsBag<P> = Omit<P, keyof ButtonBagBase> & ButtonBagBase;

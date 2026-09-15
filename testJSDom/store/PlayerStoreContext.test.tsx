@@ -16,7 +16,7 @@ describe("usePlayerStore", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => renderHook(() => usePlayerStore())).toThrow(
-      /must be used within a PlayerStoreProvider/,
+      /must be rendered inside an <AudioPlayer>/,
     );
   });
 

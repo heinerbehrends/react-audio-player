@@ -1,34 +1,50 @@
+/* eslint-disable react-refresh/only-export-components --
+   The hook below is what the component is made of; splitting them to keep fast
+   refresh would let the two drift. */
 import { useVolumeState } from "../store/derived";
-import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
+import {
+  useComposedButtonProps,
+  type ButtonPropsBag,
+} from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+/**
+ * `MuteButton`'s props, for a `<button>` of your own: the "Mute"/"Unmute" name,
+ * the toggle, the error gate and the media keys.
+ *
+ * Spread it last, onto a `<button>` or a component that renders one. Pass your
+ * handlers in rather than adding them after the spread, where the library
+ * cannot compose them.
+ */
+export function useMuteButtonProps<
+  P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+>(props?: P): ButtonPropsBag<P> {
+  const volumeState = useVolumeState();
+  const toggleMute = useToggleMute();
+  const composed = useComposedButtonProps(toggleMute, props ?? {});
+
+  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  return {
+    type: "button",
+    // No `aria-pressed` beside this, deliberately: with both, a screen reader
+    // announced "Unmute, toggle button, pressed" — the name says the button
+    // will unmute, the state says it already has (A4).
+    "aria-label": volumeState === "muted" ? "Unmute" : "Mute",
+    ...props,
+    // Last, so the gate and the shortcuts cannot be spread away.
+    ...composed,
+  } as ButtonPropsBag<P>;
+}
+
 export function MuteButtonComponent({
   children,
   ...props
 }: MuteButtonComponentProps) {
-  const volumeState = useVolumeState();
-  const toggleMute = useToggleMute();
-  const composed = useComposedButtonProps(toggleMute, props);
-
-  return (
-    <button
-      type="button"
-      // No `aria-pressed` beside this, deliberately: with both, a screen
-      // reader announced "Unmute, toggle button, pressed" — the name says the
-      // button will unmute, the state says it already has (A4). `PlaybackRate.Set`
-      // does carry it, because its name does not move.
-      aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
-      {...props}
-      // Last, so the gate and the shortcuts cannot be spread away.
-      {...composed}
-    >
-      {children}
-    </button>
-  );
+  return <button {...useMuteButtonProps(props)}>{children}</button>;
 }
 
 type MutedProps = {

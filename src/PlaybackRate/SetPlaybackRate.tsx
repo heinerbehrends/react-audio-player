@@ -1,6 +1,12 @@
+/* eslint-disable react-refresh/only-export-components --
+   The hook below is what the component is made of; splitting them to keep fast
+   refresh would let the two drift. */
 import { areNumbersClose } from "../Shared/areNumbersClose";
 import { useStore } from "../store/atom";
-import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
+import {
+  useComposedButtonProps,
+  type ButtonPropsBag,
+} from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SetPlaybackRateProps = {
@@ -32,26 +38,47 @@ export function SetPlaybackRate({
   children,
   ...props
 }: SetPlaybackRateProps) {
+  return <button {...usePlaybackRateSetProps(rate, props)}>{children}</button>;
+}
+
+/** `aria-pressed` is always present too — the library's, or the consumer's. */
+type SetPlaybackRateBag<P> = ButtonPropsBag<P> & {
+  readonly "aria-pressed": React.AriaAttributes["aria-pressed"];
+};
+
+/**
+ * `PlaybackRate.Set`'s props, for a `<button>` of your own: the "Set playback
+ * rate to {rate}x" name, `aria-pressed`, the write, the error gate and the
+ * media keys.
+ *
+ * `rate` is a leading argument rather than a key of `props` because a key would
+ * flow into the bag, and React passes an unrecognised lowercase attribute
+ * through to the DOM — `<button rate="1.5">` in the page source.
+ *
+ * Spread it last, onto a `<button>` or a component that renders one. Pass your
+ * handlers in rather than adding them after the spread, where the library
+ * cannot compose them.
+ */
+export function usePlaybackRateSetProps<
+  P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+>(rate: number, props?: P): SetPlaybackRateBag<P> {
   const setPlaybackRate = useSetPlaybackRate(rate);
   const isCurrent = useIsCurrent(rate);
-  const composed = useComposedButtonProps(setPlaybackRate, props);
+  const composed = useComposedButtonProps(setPlaybackRate, props ?? {});
 
-  return (
-    <button
-      type="button"
-      aria-label={`Set playback rate to ${rate}x`}
-      // Written on every button, `"false"` included — unlike `aria-disabled`,
-      // which is absent when false. Omitting it would leave the inactive rates
-      // announcing as plain buttons, so a listener could not tell the row is a
-      // set of choices or how many there are (A9).
-      aria-pressed={isCurrent}
-      {...props}
-      // Last, so the gate and the shortcuts cannot be spread away.
-      {...composed}
-    >
-      {children}
-    </button>
-  );
+  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  return {
+    type: "button",
+    "aria-label": `Set playback rate to ${rate}x`,
+    // Written on every button, `false` included — unlike `aria-disabled`, which
+    // is absent when false. Omitting it would leave the inactive rates
+    // announcing as plain buttons, so a listener could not tell the row is a set
+    // of choices or how many there are (A9).
+    "aria-pressed": isCurrent,
+    ...props,
+    // Last, so the gate and the shortcuts cannot be spread away.
+    ...composed,
+  } as SetPlaybackRateBag<P>;
 }
 
 type CurrentIndicatorProps = {

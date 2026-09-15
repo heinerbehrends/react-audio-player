@@ -1,5 +1,11 @@
+/* eslint-disable react-refresh/only-export-components --
+   The hook below is what the component is made of; splitting them to keep fast
+   refresh would let the two drift. */
 import { usePlayerState } from "../store/derived";
-import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
+import {
+  useComposedButtonProps,
+  type ButtonPropsBag,
+} from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlayButtonProps = {
@@ -15,22 +21,33 @@ const ariaLabelMap = {
   error: "Error loading audio",
 };
 
-function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
+/**
+ * `PlayButton`'s props, for a `<button>` of your own: the four-name label (A4),
+ * play/pause, the error gate and the media keys.
+ *
+ * Spread it last, onto a `<button>` or a component that renders one. Pass your
+ * handlers in rather than adding them after the spread, where the library
+ * cannot compose them.
+ */
+export function usePlayButtonProps<
+  P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+>(props?: P): ButtonPropsBag<P> {
   const ariaLabel = useAriaLabel();
   const handleClick = useHandleClick();
-  const composed = useComposedButtonProps(handleClick, props);
+  const composed = useComposedButtonProps(handleClick, props ?? {});
 
-  return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      {...props}
-      // Last, so the gate and the shortcuts cannot be spread away.
-      {...composed}
-    >
-      {children}
-    </button>
-  );
+  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  return {
+    type: "button",
+    "aria-label": ariaLabel,
+    ...props,
+    // Last, so the gate and the shortcuts cannot be spread away.
+    ...composed,
+  } as ButtonPropsBag<P>;
+}
+
+function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
+  return <button {...usePlayButtonProps(props)}>{children}</button>;
 }
 
 /**

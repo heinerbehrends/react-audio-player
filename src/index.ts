@@ -8,6 +8,14 @@ export { Volume } from "./Volume/Volume";
 export { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 export { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 export { Time } from "./TimeDisplay/TimeDisplay";
+// Individually, not through a barrel: a module importing from every part is the
+// aggregated surface that cost 4,025 B → 1,137 B gzipped in P1-a.
+export { usePlayButtonProps } from "./Player/PlayButton";
+export { useMuteButtonProps } from "./Player/MuteButton";
+export { useSeekButtonProps } from "./Player/SeekButton";
+export { useTimeToggleProps } from "./TimeDisplay/TimeDisplay";
+export { usePlaybackRateSetProps } from "./PlaybackRate/SetPlaybackRate";
+export { usePlaybackRateChangeProps } from "./PlaybackRate/ChangePlaybackRate";
 export {
   useAudioPlayer,
   useCurrentSecond,
