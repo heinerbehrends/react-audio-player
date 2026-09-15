@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
 import {
+  backgroundStyles,
   calculateProgressStyle,
   progressStyles,
   rootStyles,
@@ -27,7 +28,7 @@ function VolumeBackground(props: HTMLAttributes<HTMLDivElement>) {
     <div
       data-part="background"
       {...props}
-      style={{ ...progressStyles, ...props.style }}
+      style={{ ...backgroundStyles, ...props.style }}
     />
   );
 }

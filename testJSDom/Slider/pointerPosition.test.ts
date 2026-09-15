@@ -37,4 +37,28 @@ describe("positionOf", () => {
     expect(positionOf(touchEvent, "horizontal")).toBe(0);
     expect(positionOf(touchEvent, "vertical")).toBe(0);
   });
+
+  /**
+   * C11. A lifted finger is gone from `touches` and left only in
+   * `changedTouches`, so `touchend` — which ends a drag on a touch-only
+   * browser — read as position 0, the far end of the track.
+   */
+  it("reads the lifted finger on touchend", () => {
+    const touchEnd = {
+      touches: [],
+      changedTouches: [{ clientX: 100, clientY: 200 }],
+    } as unknown as PositionEvent;
+
+    expect(positionOf(touchEnd, "horizontal")).toBe(100);
+    expect(positionOf(touchEnd, "vertical")).toBe(200);
+  });
+
+  it("prefers a finger still down to one that has lifted", () => {
+    const secondFingerLifted = {
+      touches: [{ clientX: 100, clientY: 200 }],
+      changedTouches: [{ clientX: 999, clientY: 999 }],
+    } as unknown as PositionEvent;
+
+    expect(positionOf(secondFingerLifted, "horizontal")).toBe(100);
+  });
 });

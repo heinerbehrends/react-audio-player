@@ -367,11 +367,16 @@ structural output below — which is the point of it being optional.
 
 ### What stays inline
 
-`transform`, `transform-origin`, grid placement, `position` and
-`touch-action` — plus the width and height that make the progress fill's
-`scaleX()` mean anything. These are computed from the current value, so they are
-output rather than opinion. Inline styles beat any stylesheet rule, so override
-these through the `style` prop, which is merged last and wins.
+`transform`, `transform-origin`, grid placement, `position`, `touch-action` and
+`z-index` — plus the width and height that make the progress fill's `scaleX()`
+mean anything. These are computed from the current value, so they are output
+rather than opinion. Inline styles beat any stylesheet rule, so override these
+through the `style` prop, which is merged last and wins.
+
+The three slider layers stack in one order: `.Background` at `z-index: 0`,
+`.Progress` at `1`, `.Thumb` at `2`, whatever order you write them in. It is
+declared rather than left to the fill's `transform`, so overriding that
+transform does not put the background on top.
 
 **A slider root needs a height.** It has none of its own, and a zero-height
 track measures zero, which leaves the slider silently inert. Each slider's own
@@ -646,6 +651,9 @@ pnpm testE2E
 - React 18 or later, for `useSyncExternalStore` — CI runs the whole suite
   against React 18 and React 19
 - Chrome, Firefox, Safari, Edge
+- **ESM only.** There is no CommonJS build, so `require("react-headless-audio-player")`
+  fails with `ERR_REQUIRE_ESM` — a message that names Node rather than this
+  package. Use `import`, or `await import()` from CommonJS. Node 18 or later.
 
 Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer. Live
 streams are not supported: an unbounded duration reads as `0`, so gate any UI

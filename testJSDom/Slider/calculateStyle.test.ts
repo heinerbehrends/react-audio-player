@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  backgroundStyles,
   calculateDragStyle,
   calculateProgressStyle,
   progressStyles,
@@ -26,6 +27,7 @@ describe("calculateStyle", () => {
         gridRow: "1 / 1",
         transform: "translate(calc(50px - 50%), 0)",
         touchAction: "none",
+        zIndex: 2,
       });
     });
 
@@ -42,6 +44,7 @@ describe("calculateStyle", () => {
         gridRow: "1 / 1",
         transform: "translate(0, calc(50px - 50%))",
         touchAction: "none",
+        zIndex: 2,
       });
     });
 
@@ -61,6 +64,7 @@ describe("calculateStyle", () => {
       expect(style).toEqual({
         transform: "scaleX(0.5)",
         transformOrigin: "left",
+        zIndex: 1,
       });
     });
 
@@ -74,6 +78,7 @@ describe("calculateStyle", () => {
       expect(style).toEqual({
         transform: "scaleY(0.5)",
         transformOrigin: "bottom",
+        zIndex: 1,
       });
     });
 
@@ -126,6 +131,7 @@ describe("calculateStyle", () => {
       expect(style).toEqual({
         transform: "scaleX(0)",
         transformOrigin: "left",
+        zIndex: 1,
       });
     });
   });
@@ -186,5 +192,66 @@ describe("a zero range", () => {
 
     expect(style.transform).not.toContain("NaN");
     expect(style.transform).toBe("translate(calc(0px - 50%), 0)");
+  });
+});
+
+/**
+ * S22. The fill used to sit above the background only because its `transform`
+ * makes a stacking context. A consumer overriding `transform` — which the
+ * custom-properties work invites — swapped the two with nothing to point at.
+ */
+describe("the layer stack", () => {
+  const context: StyleContext = {
+    value: 0.5,
+    minValue: 0,
+    maxValue: 1,
+    sliderLength: 100,
+    orientation: "horizontal",
+  };
+
+  it("orders background, fill and thumb", () => {
+    expect(backgroundStyles.zIndex).toBe(0);
+    expect(calculateProgressStyle(context).zIndex).toBe(1);
+    expect(calculateDragStyle(context).zIndex).toBe(2);
+  });
+
+  it("holds the order when the fill's transform is overridden", () => {
+    const fill = { ...calculateProgressStyle(context), transform: "none" };
+
+    expect(Number(fill.zIndex)).toBeGreaterThan(
+      Number(backgroundStyles.zIndex),
+    );
+  });
+
+  it("leaves the background a full-size grid layer", () => {
+    expect(backgroundStyles).toEqual({ ...progressStyles, zIndex: 0 });
+  });
+});
+
+/**
+ * C10. `getProgress` used to take `sliderLength` and never use it in the
+ * arithmetic — it was a proxy for "not measured yet". The guard is now its own
+ * step, so the two questions cannot be confused again.
+ */
+describe("an unmeasured track", () => {
+  const context: StyleContext = {
+    value: 30,
+    minValue: 0,
+    maxValue: 100,
+    sliderLength: 0,
+    orientation: "horizontal",
+  };
+
+  it("draws no fill before the track has been measured", () => {
+    expect(calculateProgressStyle(context).transform).toBe("scaleX(0)");
+  });
+
+  it("draws the same fraction at every length once it has", () => {
+    expect(
+      calculateProgressStyle({ ...context, sliderLength: 1 }).transform,
+    ).toBe("scaleX(0.3)");
+    expect(
+      calculateProgressStyle({ ...context, sliderLength: 1000 }).transform,
+    ).toBe("scaleX(0.3)");
   });
 });

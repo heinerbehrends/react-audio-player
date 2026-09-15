@@ -33,3 +33,16 @@ value. _(Same code the architecture review flags as **C4**.)_
 ## Where it stands
 
 The mode discriminant is re-derived six times; `useSlider` subscribes to the same atom twice in volume/rate mode.
+
+## The free win is taken (2026-09-15)
+
+The double subscription this ticket identified — 12.5 % of the volume drag's
+notification traffic, returning an identical value — is gone with **C4**. The
+mode is resolved once, and only `"seek"` subscribes to a second atom. Volume and
+rate also stopped subscribing to `duration` entirely, which this ticket did not
+count because it is not on the drag path.
+
+The measured finding stands: a volume drag still writes the element per
+pointermove and takes a second render from the echo. Recorded, not actioned —
+the 8 `volume` subscribers each genuinely need the value, and 143 uncoalesced
+events/s is a desktop-mouse rate.

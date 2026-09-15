@@ -5,17 +5,16 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**33 open · 1 part-done · 59 resolved · 2 rejected**
+**23 open · 1 part-done · 70 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Accessibility
 
-3 open of 15.
+2 open of 15.
 
 - [ ] [A10](accessibility/A10-nothing-names-or-bounds-the-widget.md) Nothing names or bounds the widget — P2
-- [ ] [A13](accessibility/A13-float-noise-in-aria-valuenow.md) Float noise in `aria-valuenow` — P2
 - [ ] [A15](accessibility/A15-every-string-is-hardcoded-english.md) Every string is hardcoded English — P2
 - [x] [A1](resolved/accessibility/A1-space-activates-nothing-it-starts-playback-instead.md) Space activates nothing — it starts playback instead — P0
 - [x] [A2](resolved/accessibility/A2-no-modifier-key-guard-voiceover-navigation-drives.md) No modifier-key guard — VoiceOver navigation drives the player — P0
@@ -28,17 +27,15 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 - [x] [A9](resolved/accessibility/A9-aria-current-is-the-wrong-property-for.md) `aria-current` is the wrong property for rate options — P2, **breaking**
 - [x] [A11](resolved/accessibility/A11-role-group-is-inconsistent-across-the-three.md) '`role="group"` is inconsistent across the three sliders' — P2, **breaking**
 - [x] [A12](resolved/accessibility/A12-the-time-display-reads-as-bare-numbers.md) The time display reads as bare numbers — P2, **breaking**
+- [x] [A13](resolved/accessibility/A13-float-noise-in-aria-valuenow.md) Float noise in `aria-valuenow` — P2
 - [x] [A14](resolved/accessibility/A14-prop-spread-order-can-disable-keyboard-support.md) Prop-spread order can disable keyboard support — P2
 
 ## Public surface & DX
 
-5 open of 24.
+2 open of 24.
 
 - [ ] [S14](surface/S14-missing-mis-nested-children-fail-silently.md) Missing/mis-nested children fail silently — P1
 - [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
-- [ ] [S21](surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
-- [ ] [S22](surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
-- [ ] [S23](surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
 - [x] [S3](resolved/surface/S3-no-use-client-directive-breaks-the-next.md) 'No `"use client"` directive — breaks the Next.js App Router' — P0
@@ -58,6 +55,9 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 - [x] [S17](resolved/surface/S17-playbackrate-current-contradicts-its-own-type.md) `PlaybackRate.Current` contradicts its own type — P2, **breaking**
 - [x] [S18](resolved/surface/S18-react-dom-is-an-unnecessary-peer-dependency.md) `react-dom` is an unnecessary peer dependency — P2
 - [x] [S19](resolved/surface/S19-react-19-untested.md) React 19 untested — P2
+- [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
+- [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
+- [x] [S23](resolved/surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
 
 ## Features
 
@@ -93,18 +93,19 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Architecture & style
 
-7 open of 12.
+1 open of 13.
 
-- [ ] [C2](architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1
-- [ ] [C3](architecture/C3-valuefromstoreref-its-effect-mirror-a-value-the.md) `valueFromStoreRef` + its effect mirror a value the store gives free — P1
-- [ ] [C4](architecture/C4-the-mode-discriminant-is-re-derived-by.md) The mode discriminant is re-derived by hand six times — P1
-- [ ] [C5](architecture/C5-the-resizeobserver-effect-binds-a-node-it.md) The ResizeObserver effect binds a node it can never re-bind — P1
-- [ ] [C9](architecture/C9-the-drag-effect-registers-touchcancel-but-not.md) The drag effect registers `touchcancel` but not `touchend` — P2
-- [ ] [C10](architecture/C10-getprogress-takes-sliderlength-and-never-uses-it.md) `getProgress` takes `sliderLength` and never uses it arithmetically — P3
 - [~] [C8](architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2, part-done
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
+- [x] [C2](resolved/architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1
+- [x] [C3](resolved/architecture/C3-valuefromstoreref-its-effect-mirror-a-value-the.md) `valueFromStoreRef` + its effect mirror a value the store gives free — P1
+- [x] [C4](resolved/architecture/C4-the-mode-discriminant-is-re-derived-by.md) The mode discriminant is re-derived by hand six times — P1
+- [x] [C5](resolved/architecture/C5-the-resizeobserver-effect-binds-a-node-it.md) The ResizeObserver effect binds a node it can never re-bind — P1
 - [x] [C6](resolved/architecture/C6-time-is-typed-as-a-component-and.md) `Time` is typed as a component and is not one — P1
 - [x] [C7](resolved/architecture/C7-positionof-duplicates-getclientxy-byte-for-byte.md) `positionOf` duplicates `getClientXY` byte-for-byte — P2
+- [x] [C9](resolved/architecture/C9-the-drag-effect-registers-touchcancel-but-not.md) The drag effect registers `touchcancel` but not `touchend` — P2
+- [x] [C11](resolved/architecture/C11-positionof-reads-an-empty-touches-list-on.md) `positionOf` reads an empty `touches` list on `touchend` — P2
+- [x] [C10](resolved/architecture/C10-getprogress-takes-sliderlength-and-never-uses-it.md) `getProgress` takes `sliderLength` and never uses it arithmetically — P3
 - [-] [R1](architecture/R1-a-projected-ended-atom.md) A projected `ended` atom — rejected
 - [-] [R2](architecture/R2-a-volume-track-click-never-updates-lastaudiblevolume.md) A volume track click never updates `lastAudibleVolume`. — rejected
 

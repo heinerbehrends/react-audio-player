@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { calculateSliderValue, type Orientation } from "./sliderMath";
-import { useStore } from "../store/atom";
+import { constant, useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useIsDisabled, useIsSeekable } from "../store/derived";
+import { useIsDisabled } from "../store/derived";
 import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 import {
   ARROW_KEYS,
@@ -58,6 +58,9 @@ export type UseSliderOptions = {
 
 const IDLE = { state: "idle" } as const;
 
+/** Stands in for the atoms a mode does not read. */
+const NEVER = constant(0);
+
 type DragState = typeof IDLE | { state: "dragging"; value: number };
 
 /**
@@ -88,39 +91,36 @@ export function useSlider({
   const store = usePlayerStore();
   const handleMediaKeys = useHandleMediaKeys();
   const isErrored = useIsDisabled();
-  const isSeekable = useIsSeekable();
-  // Only the seek slider needs a duration: its `maxValue` *is* the duration, so
-  // without one it announces `min=0 max=0 now=0` (A5). Volume and rate have
-  // fixed ranges and write properties the element accepts before metadata.
-  const isDisabled = isErrored || (mode === "seek" && !isSeekable);
 
-  const valueFromStore = useStore(
-    mode === "seek"
-      ? store.currentTime
-      : mode === "volume"
-        ? store.volume
-        : store.rate,
-  );
+  const isSeek = mode === "seek";
+  // The one place the mode picks its atoms (C4). Only `"seek"` announces
+  // something other than its own value, and only `"seek"` reads the duration.
+  const valueAtom = isSeek
+    ? store.currentTime
+    : mode === "volume"
+      ? store.volume
+      : store.rate;
+  const valueFromStore = useStore(valueAtom);
+  const secondFromStore = useStore(isSeek ? store.currentSecond : NEVER);
+  const duration = useStore(isSeek ? store.duration : NEVER);
+  const ariaValueFromStore = isSeek ? secondFromStore : valueFromStore;
 
-  const ariaValueFromStore = useStore(
-    mode === "seek"
-      ? store.currentSecond
-      : mode === "volume"
-        ? store.volume
-        : store.rate,
-  );
-
-  const duration = useStore(store.duration);
-  // Every mode subscribes, though only `"volume"` announces it: a hook call
-  // cannot be gated on the mode, and this is one rarely-changing boolean.
+  // Every mode subscribes, though only `"volume"` announces it: one
+  // rarely-changing boolean is not worth a branch.
   const muted = useStore(store.muted);
+
+  // `useIsSeekable()` is this same test, inlined so that the duration is read
+  // once. Only the seek slider needs it: its range *is* the duration, so
+  // without one it announces `min=0 max=0 now=0` (A5).
+  const isDisabled = isErrored || (isSeek && !(duration > 0));
 
   const minValue =
     minValueOption ?? (mode === "rate" ? RATE_BOUNDS.minValue : 0);
+  // In `"seek"` the duration is the default, not the rule: a caller's
+  // `maxValue` wins in every mode. `<Timeline>` passes none.
   const maxValue =
-    mode === "seek"
-      ? duration
-      : (maxValueOption ?? (mode === "rate" ? RATE_BOUNDS.maxValue : 1));
+    maxValueOption ??
+    (isSeek ? duration : mode === "rate" ? RATE_BOUNDS.maxValue : 1);
   const step = stepOption ?? 0;
 
   const [geometry, setGeometry] = useState({ sliderStart: 0, sliderLength: 0 });
@@ -134,12 +134,8 @@ export function useSlider({
   // them, so a change here does not force a re-attach.
   const grabOffsetRef = useRef(0);
   const releaseHoldRef = useRef<(() => void) | null>(null);
-  const valueFromStoreRef = useRef(valueFromStore);
-  useEffect(() => {
-    valueFromStoreRef.current = valueFromStore;
-  }, [valueFromStore]);
 
-  const elementRef = useRef<HTMLButtonElement | null>(null);
+  const [element, setElement] = useState<HTMLButtonElement | null>(null);
   const measure = useCallback(
     (element: HTMLButtonElement) => {
       const rect = element.getBoundingClientRect();
@@ -160,20 +156,21 @@ export function useSlider({
   );
 
   const setSliderRef = useCallback(
-    (element: HTMLButtonElement | null) => {
-      elementRef.current = element;
-      if (element) measure(element);
+    (node: HTMLButtonElement | null) => {
+      setElement(node);
+      if (node) measure(node);
     },
     [measure],
   );
 
+  // The node is state, not a ref, because a ref cannot re-run an effect: a
+  // remounted `.Control` used to leave the observer on the old node (C5).
   useEffect(() => {
-    const element = elementRef.current;
     if (!element) return;
     const observer = new ResizeObserver(() => measure(element));
     observer.observe(element);
     return () => observer.disconnect();
-  }, [measure]);
+  }, [element, measure]);
 
   /**
    * Dropping the local value the instant a drag ends causes a visible
@@ -236,12 +233,14 @@ export function useSlider({
     [store, config],
   );
 
+  // `get()`, not the rendered value: `commit` runs from a window `pointerup`
+  // listener, which can land before React has re-rendered (C3).
   const commit = useCallback(
     (value: number) => {
-      setCommitted({ value, storeValue: valueFromStoreRef.current });
+      setCommitted({ value, storeValue: valueAtom.get() });
       send(value);
     },
-    [send],
+    [send, valueAtom],
   );
 
   const beginDrag = useCallback((value: number, grabOffset: number) => {
@@ -250,7 +249,7 @@ export function useSlider({
   }, []);
 
   const holdAudibleVolume = useCallback(() => {
-    if (!config.mutesAtZero) return;
+    if (!config.unmutesOnGrab) return;
     releaseHoldRef.current?.();
     releaseHoldRef.current = store.holdAudibleVolume();
   }, [config, store]);
@@ -276,7 +275,7 @@ export function useSlider({
           ? clientXY - rect.left - rect.width / 2
           : clientXY - rect.top - rect.height / 2;
 
-      if (config.mutesAtZero) {
+      if (config.unmutesOnGrab) {
         // Grabbing the thumb of a silenced player makes it audible again, at the
         // remembered volume — which is why the hold can come after.
         store.send({ type: "UNMUTE" });
@@ -398,13 +397,21 @@ export function useSlider({
       }
     }
 
+    // One finger fires both `pointerup` and `touchend`, before React can
+    // re-render and remove these listeners.
+    let finished = false;
+
     function end(event: PointerEvent | TouchEvent) {
+      if (finished) return;
+      finished = true;
       commit(valueFor(event));
       releaseAudibleVolume();
       setDrag(IDLE);
     }
 
     function cancel() {
+      if (finished) return;
+      finished = true;
       releaseAudibleVolume();
       setDrag(IDLE);
     }
@@ -412,6 +419,7 @@ export function useSlider({
     window.addEventListener("pointermove", move);
     window.addEventListener("touchmove", move);
     window.addEventListener("pointerup", end);
+    window.addEventListener("touchend", end);
     window.addEventListener("pointercancel", cancel);
     window.addEventListener("touchcancel", cancel);
 
@@ -419,6 +427,7 @@ export function useSlider({
       window.removeEventListener("pointermove", move);
       window.removeEventListener("touchmove", move);
       window.removeEventListener("pointerup", end);
+      window.removeEventListener("touchend", end);
       window.removeEventListener("pointercancel", cancel);
       window.removeEventListener("touchcancel", cancel);
     };

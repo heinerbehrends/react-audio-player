@@ -32,6 +32,17 @@ export function atom<T>(initial: T): Atom<T> {
   };
 }
 
+/**
+ * An atom holding one value that never changes, and so never notifies.
+ *
+ * `useStore` cannot be called conditionally, so a hook that needs a store value
+ * in one mode and not another passes this in the others, instead of subscribing
+ * to an atom whose value it ignores.
+ */
+export function constant<T>(value: T): ReadableAtom<T> {
+  return { get: () => value, subscribe: () => () => {} };
+}
+
 /** Strips the `set` handle, so a projection cannot be written from outside. */
 export function readable<T>(source: Atom<T>): ReadableAtom<T> {
   return { get: source.get, subscribe: source.subscribe };

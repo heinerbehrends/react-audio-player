@@ -2,7 +2,7 @@
 id: C5
 title: "The ResizeObserver effect binds a node it can never re-bind"
 epic: architecture
-status: open
+status: resolved
 severity: P1
 origin: review
 breaking: false
@@ -18,3 +18,9 @@ node in `useState` for exactly this reason.
 ## Where it stands
 
 The `ResizeObserver` effect binds a node it can never re-bind — hold it in `useState` like `AudioElement` does.
+
+## Resolution
+
+**Shipped** — The node is `useState`, not a ref, and the effect depends on it — the pattern `AudioElement` already used for the same reason. A remounted `.Control` now re-binds the observer and re-measures.
+
+**Verified by** — 2 rows: the observer watches the node it was last given, and a resize of _that_ node updates `sliderLength`. Mutation-proven: pinning the deps back to `[measure]` fails both.

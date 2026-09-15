@@ -19,6 +19,17 @@ describe("AudioElement", () => {
     );
   });
 
+  /**
+   * A15. The label sat after the spread, so it was the one English string in
+   * the library a consumer could not replace.
+   */
+  it("lets audioProps replace the label", () => {
+    renderInPlayer(<AudioElement aria-label="Hörbuch" />);
+
+    expect(screen.getByLabelText("Hörbuch")).toBeInTheDocument();
+    expect(screen.queryByLabelText("audio player")).not.toBeInTheDocument();
+  });
+
   it("sets the src from the config's audio file", () => {
     renderInPlayer(<AudioElement />, {
       audioFile: { src: "test-audio.mp3" },

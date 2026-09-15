@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
 import {
+  backgroundStyles,
   calculateProgressStyle,
   progressStyles,
   containerStyles,
@@ -43,7 +44,7 @@ function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
       data-part="background"
       {...props}
       style={{
-        ...progressStyles,
+        ...backgroundStyles,
         ...props.style,
       }}
     />

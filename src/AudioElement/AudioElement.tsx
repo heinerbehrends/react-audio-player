@@ -62,9 +62,10 @@ export function AudioElement({
 
   return (
     <audio
+      // Before the spread, so `audioProps` can replace it (A15).
+      aria-label="audio player"
       {...props}
       src={src}
-      aria-label="audio player"
       ref={ref}
       /**
        * Passed straight through. The element parks at the end, so a consumer's

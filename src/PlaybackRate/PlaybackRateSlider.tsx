@@ -1,4 +1,5 @@
 import {
+  backgroundStyles,
   progressStyles,
   calculateProgressStyle,
   rootStyles,
@@ -37,7 +38,7 @@ function PlaybackRateBackground({
       data-part="background"
       {...props}
       style={{
-        ...progressStyles,
+        ...backgroundStyles,
         ...style,
       }}
     />

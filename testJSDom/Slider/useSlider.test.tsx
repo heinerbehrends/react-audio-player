@@ -38,6 +38,8 @@ function sliderElement(rect = stubRect()) {
 type Harness = {
   result: { current: ReturnType<typeof useSlider> };
   store: TestStore;
+  /** How many times the hook has rendered, for the subscription tests. */
+  renders: () => number;
 };
 
 function renderSlider(
@@ -45,23 +47,30 @@ function renderSlider(
   element: Partial<MediaFields> = {},
 ): Harness {
   const store = createTestStore({ readyState: 1, duration: 100, ...element });
-  const { result } = renderHook(() => useSlider(options), {
-    wrapper: ({ children }: { children: React.ReactNode }) => (
-      <PlayerStoreProvider store={store.store}>
-        <PlayerConfigProvider
-          audioFile={{ src: "test-audio.mp3" }}
-          customKeyboardShortcuts={undefined}
-        >
-          {children}
-        </PlayerConfigProvider>
-      </PlayerStoreProvider>
-    ),
-  });
+  let renders = 0;
+  const { result } = renderHook(
+    () => {
+      renders += 1;
+      return useSlider(options);
+    },
+    {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <PlayerStoreProvider store={store.store}>
+          <PlayerConfigProvider
+            audioFile={{ src: "test-audio.mp3" }}
+            customKeyboardShortcuts={undefined}
+          >
+            {children}
+          </PlayerConfigProvider>
+        </PlayerStoreProvider>
+      ),
+    },
+  );
 
   // Measure, as the semantic element's ref callback does on mount.
   act(() => result.current.setSliderRef(sliderElement()));
 
-  return { result, store };
+  return { result, store, renders: () => renders };
 }
 
 /** A pointer event on the track, at a fraction along it. */
@@ -946,5 +955,232 @@ describe("configured bounds reach the arrow keys", () => {
     act(() => harness.result.current.onKeyDown(keyDown(">")));
 
     expect(harness.store.element.playbackRate).toBeCloseTo(4, 5);
+  });
+});
+
+/** A touch event, in the shape the browser gives each phase of a gesture. */
+function touchEvent(type: string, position: number) {
+  const event = new Event(type);
+  const point = [{ clientX: position, clientY: position }];
+  return Object.assign(event, {
+    // A finger that has lifted is gone from `touches` and left in
+    // `changedTouches`.
+    touches: type === "touchend" || type === "touchcancel" ? [] : point,
+    changedTouches: point,
+  });
+}
+
+function touchEnd(position: number) {
+  act(() => void window.dispatchEvent(touchEvent("touchend", position)));
+}
+
+/**
+ * A13. The two identity quantizers announced the float they were handed:
+ * `aria-valuenow="0.8999999999999999"` for a volume of 90 %.
+ */
+describe("the announced value is rounded", () => {
+  it("rounds the volume to hundredths", () => {
+    const { result } = renderSlider(
+      { mode: "volume" },
+      { volume: 0.8999999999999999 },
+    );
+
+    expect(result.current.aria["aria-valuenow"]).toBe(0.9);
+    expect(result.current.aria["aria-valuetext"]).toBe("90%");
+  });
+
+  it("rounds the rate to hundredths, and agrees with the text", () => {
+    const { result } = renderSlider(
+      { mode: "rate" },
+      { playbackRate: 1.2000000000000002 },
+    );
+
+    expect(result.current.aria["aria-valuenow"]).toBe(1.2);
+    expect(result.current.aria["aria-valuetext"]).toBe("1.2x");
+  });
+
+  it("leaves the value itself alone — the thumb is drawn from it", () => {
+    const { result } = renderSlider(
+      { mode: "volume" },
+      { volume: 0.8999999999999999 },
+    );
+
+    expect(result.current.value).toBe(0.8999999999999999);
+  });
+
+  /** Two decimals is 1 % of the volume range, so no arrow step rounds away. */
+  it("still moves on the smallest arrow step in each mode", () => {
+    const volume = renderSlider({ mode: "volume" }, { volume: 0.5 });
+    act(() => volume.result.current.onKeyDown(keyDown("ArrowUp")));
+    echo(volume.store, "volumechange", { volume: volume.store.element.volume });
+
+    expect(volume.result.current.aria["aria-valuenow"]).toBe(0.55);
+
+    const rate = renderSlider({ mode: "rate" }, { playbackRate: 1 });
+    act(() => rate.result.current.onKeyDown(keyDown("ArrowUp")));
+    echo(rate.store, "ratechange", {
+      playbackRate: rate.store.element.playbackRate,
+    });
+
+    expect(rate.result.current.aria["aria-valuenow"]).toBe(1.1);
+  });
+});
+
+/**
+ * C4. The mode was re-derived by hand six times, and `duration` was subscribed
+ * in every mode — so a volume slider re-rendered on `durationchange` for a
+ * number it never reads.
+ */
+describe("what each mode subscribes to", () => {
+  it.each(["volume", "rate"] as const)(
+    "does not re-render a %s slider on durationchange",
+    (mode) => {
+      const harness = renderSlider({ mode });
+      const before = harness.renders();
+
+      echo(harness.store, "durationchange", { duration: 300 });
+
+      expect(harness.renders()).toBe(before);
+    },
+  );
+
+  it("does re-render the seek slider, whose range is the duration", () => {
+    const harness = renderSlider({ mode: "seek" });
+
+    echo(harness.store, "durationchange", { duration: 300 });
+
+    expect(harness.result.current.maxValue).toBe(300);
+  });
+
+  /** `UseSliderOptions` advertises `maxValue` for every mode; seek dropped it. */
+  it("honours a maxValue in seek mode", () => {
+    const harness = renderSlider({ mode: "seek", maxValue: 30 });
+
+    expect(harness.result.current.maxValue).toBe(30);
+    expect(harness.result.current.aria["aria-valuemax"]).toBe(30);
+
+    act(() => harness.result.current.onKeyDown(keyDown("End")));
+
+    expect(harness.store.element.currentTime).toBe(30);
+  });
+
+  it("falls back to the duration when no maxValue is given", () => {
+    expect(renderSlider({ mode: "seek" }).result.current.maxValue).toBe(100);
+  });
+});
+
+/**
+ * C5. The observer bound whatever the ref held on mount and could never re-bind,
+ * because a ref cannot re-run an effect. A remounted `.Control` left it attached
+ * to a detached node, and the slider never measured again.
+ */
+describe("re-measuring a remounted control", () => {
+  type Observed = { target: Element; resize: () => void };
+
+  function recordingObserver(observed: Observed[]) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private callback: () => void) {}
+        observe(target: Element) {
+          observed.push({ target, resize: () => this.callback() });
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+  }
+
+  it("observes the node it was last given", () => {
+    const observed: Observed[] = [];
+    recordingObserver(observed);
+    const harness = renderSlider({ mode: "seek" });
+
+    const remounted = sliderElement(stubRect({ width: 500 }));
+    act(() => harness.result.current.setSliderRef(null));
+    act(() => harness.result.current.setSliderRef(remounted));
+
+    expect(observed.at(-1)?.target).toBe(remounted);
+  });
+
+  it("re-measures when the new node resizes", () => {
+    const observed: Observed[] = [];
+    recordingObserver(observed);
+    const harness = renderSlider({ mode: "seek" });
+
+    const remounted = sliderElement(stubRect({ width: 500 }));
+    act(() => harness.result.current.setSliderRef(remounted));
+    // A resize of the node the observer is actually watching.
+    act(() => observed.at(-1)?.resize());
+
+    expect(harness.result.current.sliderLength).toBe(500);
+  });
+});
+
+/**
+ * C9. The drag effect listened for `touchcancel` but not `touchend`, while the
+ * press-wait block in `onTrackPointerDown` registered both.
+ */
+describe("a drag ended by touch", () => {
+  it("commits on touchend", () => {
+    const harness = renderSlider({ mode: "seek" }, { currentTime: 10 });
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(120, 0)));
+    pointerMove(TRACK_START + TRACK_LENGTH * 0.75);
+    touchEnd(TRACK_START + TRACK_LENGTH * 0.75);
+
+    expect(harness.store.element.currentTime).toBe(75);
+    expect(harness.result.current.dragState).toBe("idle");
+  });
+
+  it("commits at the lifted finger, not at position zero", () => {
+    const harness = renderSlider({ mode: "volume" }, { volume: 0.2 });
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(120, 0)));
+    touchEnd(TRACK_START + TRACK_LENGTH * 0.6);
+
+    expect(harness.store.element.volume).toBeCloseTo(0.6, 5);
+  });
+
+  it("commits once when pointerup and touchend both fire", () => {
+    const harness = renderSlider({ mode: "seek" }, { currentTime: 10 });
+    const send = vi.spyOn(harness.store.store, "send");
+
+    act(() => harness.result.current.onThumbPointerDown(thumbPointer(120, 0)));
+    pointerMove(TRACK_START + TRACK_LENGTH * 0.75);
+    // Both in one flush: a browser fires them in the same task, before React
+    // can re-render and take the listeners down.
+    act(() => {
+      const at = TRACK_START + TRACK_LENGTH * 0.75;
+      window.dispatchEvent(pointerEvent("pointerup", at));
+      window.dispatchEvent(touchEvent("touchend", at));
+    });
+
+    expect(
+      send.mock.calls.filter(([action]) => action.type === "CHANGE_VALUE"),
+    ).toHaveLength(1);
+  });
+});
+
+/**
+ * C3. `commit` ran from a window `pointerup` listener, which can land before
+ * React has flushed the effect that mirrored the store value into a ref — so
+ * the commit was compared against a value the element had already left, and the
+ * display snapped back to the echo instead of holding.
+ */
+describe("committing against the store's current value", () => {
+  it("holds the committed value when the store moved before React rendered", () => {
+    const harness = renderSlider({ mode: "seek" }, { currentTime: 10 });
+    // Deliberately outside `act`: the element echoes, and React has not yet
+    // re-rendered the hook. That is the window the mirror ref was stale in.
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {});
+    harness.store.element.currentTime = 20;
+    harness.store.element.emit("timeupdate");
+
+    act(() => harness.result.current.onTrackPointerDown(trackPointer(0.5)));
+    warn.mockRestore();
+
+    expect(harness.store.element.currentTime).toBe(50);
+    expect(harness.result.current.value).toBe(50);
   });
 });

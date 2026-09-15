@@ -27,20 +27,23 @@ export function calculateDragStyle(context: StyleContext): React.CSSProperties {
         ? `translate(calc(${offset}px - 50%), 0)`
         : `translate(0, calc(${offset}px - 50%))`,
     touchAction: "none",
+    zIndex: 2,
   };
 }
 
 export function calculateProgressStyle(
   context: StyleContext,
 ): React.CSSProperties {
-  const { orientation } = context;
-  const progress = getProgress(context);
+  const { orientation, sliderLength } = context;
+  // Zero length means the track has not been measured yet (C10).
+  const progress = sliderLength === 0 ? 0 : getProgress(context);
   return {
     transform:
       orientation === "vertical"
         ? `scaleY(${progress})`
         : `scaleX(${progress})`,
     transformOrigin: orientation === "vertical" ? "bottom" : "left",
+    zIndex: 1,
   };
 }
 
@@ -53,11 +56,7 @@ function getProgress({
   value,
   minValue,
   maxValue,
-  sliderLength,
-}: StyleContext): number {
-  if (sliderLength === 0) {
-    return 0;
-  }
+}: Omit<StyleContext, "sliderLength" | "orientation">): number {
   const range = maxValue - minValue;
   if (range === 0) {
     return 0;
@@ -74,6 +73,17 @@ export const progressStyles = {
   gridRow: "1 / 1",
   width: "100%",
   height: "100%",
+} satisfies React.CSSProperties;
+
+/**
+ * The layers stack in one order: background `0`, fill `1`, thumb `2`. Grid
+ * items take a `z-index` without being positioned, so the order is stated here
+ * rather than left to whichever layer makes a stacking context — the fill used
+ * to win only because of its `transform` (S22).
+ */
+export const backgroundStyles = {
+  ...progressStyles,
+  zIndex: 0,
 } satisfies React.CSSProperties;
 
 /**

@@ -19,16 +19,24 @@ export type SliderAriaState = {
  * - **`writesDuringDrag`** — `"seek"` keeps a local value to display, because
  *   nothing echoes back mid-drag; `"volume"` and `"rate"` write the element and
  *   read their value back from the `volumechange` / `ratechange` projection.
- * - **`mutesAtZero`** — the mute coupling: unmute on grab, remember the audible
- *   volume, mute on release at zero. Volume only.
+ * - **`unmutesOnGrab`** — the gesture half of the mute coupling: unmute on grab,
+ *   and pin the audible-volume memory for the length of the gesture. Volume
+ *   only.
+ *
+ * Mute-at-zero is not here. That rule lives in `handleSideEffect`, because it
+ * also has to hold for a consumer's own `CHANGE_VALUE`, which never passes
+ * through this table (C2).
  */
 export type SliderModeConfig = {
   /** The legacy `component` name the public `SideEffectAction` union carries. */
   component: SliderComponent;
   writesDuringDrag: boolean;
-  mutesAtZero: boolean;
+  unmutesOnGrab: boolean;
   ariaLabel: string;
-  /** Whole seconds for `"seek"`, so the aria surface cannot churn above 1 Hz. */
+  /**
+   * What `aria-valuenow` announces: whole seconds for `"seek"`, so the aria
+   * surface cannot churn above 1 Hz, and two decimals for the other two.
+   */
   quantizeAriaValue: (value: number) => number;
   ariaValueText: (state: SliderAriaState) => string;
   /**
@@ -51,11 +59,18 @@ export type SliderBounds = { minValue: number; maxValue: number };
 
 const percent = (value: number) => `${Math.round(value * 100)}%`;
 
+/**
+ * Two decimals is 1 % of the volume range, and the precision `"1.25x"` already
+ * shows: enough to hide float noise, fine enough that every arrow step still
+ * moves the number (A13).
+ */
+const hundredths = (value: number) => Math.round(value * 100) / 100;
+
 export const SLIDER_MODES = {
   seek: {
     component: "timeline",
     writesDuringDrag: false,
-    mutesAtZero: false,
+    unmutesOnGrab: false,
     ariaLabel: "Timeline slider",
     quantizeAriaValue: Math.floor,
     ariaValueText: ({ value, maxValue }) =>
@@ -67,9 +82,9 @@ export const SLIDER_MODES = {
   volume: {
     component: "volume",
     writesDuringDrag: true,
-    mutesAtZero: true,
+    unmutesOnGrab: true,
     ariaLabel: "Volume slider",
-    quantizeAriaValue: (value) => value,
+    quantizeAriaValue: hundredths,
     // `muted` is its own element flag, so the volume alone announced "100%" on
     // a silent player. Adjusting the volume does not unmute, so "Muted, 5%" is
     // a reachable state rather than a contradiction.
@@ -84,10 +99,11 @@ export const SLIDER_MODES = {
   rate: {
     component: "playbackRate",
     writesDuringDrag: true,
-    mutesAtZero: false,
+    unmutesOnGrab: false,
     ariaLabel: "Playback rate slider",
-    quantizeAriaValue: (value) => value,
-    ariaValueText: ({ value }) => `${Math.round(value * 100) / 100}x`,
+    quantizeAriaValue: hundredths,
+    // Already rounded: it is handed the quantized value.
+    ariaValueText: ({ value }) => `${value}x`,
     defaultArrowStep: 0.1,
     increase: (amount, { maxValue }) => ({
       type: "INCREASE_PLAYBACK_RATE",
