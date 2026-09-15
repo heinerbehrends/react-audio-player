@@ -1,10 +1,10 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
-import { usePlayerState } from "../store/derived";
+import { usePlayerState, type PlayerState } from "../store/derived";
 import {
   useComposedButtonProps,
-  type ButtonPropsBag,
+  type StatefulButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
@@ -31,19 +31,22 @@ const ariaLabelMap = {
  */
 export function usePlayButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
->(props?: P): ButtonPropsBag<P> {
-  const ariaLabel = useAriaLabel();
+>(props?: P): StatefulButtonPropsBag<P, PlayerState> {
+  const playerState = usePlayerState();
   const handleClick = useHandleClick();
   const composed = useComposedButtonProps(handleClick, props ?? {});
 
   // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
   return {
     type: "button",
-    "aria-label": ariaLabel,
+    "data-part": "play",
+    // In the defaults tier: information, not a lock, so it is overridable.
+    "data-state": playerState,
+    "aria-label": ariaLabelMap[playerState],
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
-  } as ButtonPropsBag<P>;
+  } as StatefulButtonPropsBag<P, PlayerState>;
 }
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
@@ -57,10 +60,6 @@ function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
 function useHandleClick() {
   const { send } = usePlayerStore();
   return () => send({ type: "TOGGLE_PLAY" });
-}
-
-function useAriaLabel() {
-  return ariaLabelMap[usePlayerState()];
 }
 
 /** Renders `children` only while the element is playing. */
@@ -115,5 +114,7 @@ PlayButtonComponent.Paused = Paused;
  * native attribute — so style it from `[aria-disabled="true"]`, not
  * `:disabled`. An autoplay refusal does not disable it; read that with
  * `useAudioError()`.
+ *
+ * Carries `data-part="play"` and `data-state="playing|paused|loading|error"`.
  */
 export const PlayButton = PlayButtonComponent;

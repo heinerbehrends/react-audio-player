@@ -8,6 +8,7 @@ import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
+import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -52,7 +53,7 @@ function VolumeContainer({
   return (
     <SliderProvider value={slider}>
       <div
-        data-part="root"
+        {...sliderRootAttributes(slider)}
         {...props}
         style={{
           ...rootStyles,
@@ -90,7 +91,10 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * label announced a group with one member and a second name for it (A11). Add
  * your own `role`/`aria-label` if you compose more controls in.
  *
- * Parts carry `data-part`, shared with the other sliders, so scope your CSS.
+ * Parts carry `data-part`, shared with the other sliders, so scope your CSS. The
+ * root also carries `data-state="idle|dragging"` and
+ * `data-orientation="horizontal|vertical"`, which is where a layout rule can
+ * read the axis — `aria-orientation` is on `.Control`, a child.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got

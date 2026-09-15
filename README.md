@@ -1,13 +1,22 @@
 # React Headless Audio Player (in development)
 
-A headless, accessible audio player for React, composed the way Radix UI
-components are: you get behaviour, semantics and state, and you supply all of
-the markup and styling.
+A headless, accessible audio player for React: compound components that give you
+behaviour, semantics and state, while you supply all of the markup and styling.
+For the parts you would rather build yourself, each button also ships as a props
+hook.
+
+There is no `asChild`. Radix's merge rule is child-props-win, which would invert
+every lock this library spreads last — `role="slider"`, `tabIndex={-1}`,
+`aria-hidden`, the `aria-disabled` click gate — and naming a `Slot` would cost
+bundle size for consumers who never use it. The [props hooks](#props-hooks) cover
+the same ground without either.
 
 ## Features
 
 - 🎨 Unstyled — every part takes your own `className` and `style`
 - 🧩 Compound components, placed anywhere in your own layout
+- 🪝 A props hook behind every button, for markup you already own
+- 🎯 `data-part` on every part, and `data-state` where the DOM does not say it
 - 🎛️ Play/pause, mute, seek, volume and playback rate
 - ⌨️ Keyboard shortcuts, ARIA slider semantics and screen reader announcements
 - ✔️ No dependencies beyond React 18
@@ -107,6 +116,12 @@ Errors render into a live region. Every control also accepts the global media
 shortcuts while focused, whether or not it is disabled: the shortcuts belong to
 the player, not to the control. A slider's own arrow keys are the exception —
 those stop while it is disabled.
+
+**These promises hold for the components.** The [props hooks](#props-hooks) hand
+you the same attributes and let you decide where they go, so spreading the bag
+before your own props — or onto something that is not a `<button>` — can defeat
+the disabled gate or the semantics. Spread it last, onto a `<button>`, and you
+get everything above.
 
 ## Components
 
@@ -260,17 +275,29 @@ are the defaults; pass `step={0}` for a continuous slider.
 
 ## Styling
 
-Every part takes `className` and `style`. Each slider part also carries a
-`data-part` attribute, so you can style them from plain CSS without threading a
-class through every element:
+Every part takes `className` and `style`. Every part also carries a `data-part`
+attribute, so you can style from plain CSS without threading a class through
+every element:
 
-| Part          | `data-part`  |
-| ------------- | ------------ |
-| the root      | `root`       |
-| `.Control`    | `control`    |
-| `.Progress`   | `progress`   |
-| `.Background` | `background` |
-| `.Thumb`      | `thumb`      |
+| Part                     | `data-part`    |
+| ------------------------ | -------------- |
+| `<PlayButton>`           | `play`         |
+| `<MuteButton>`           | `mute`         |
+| `<SeekButton>`           | `seek`         |
+| `<Time.Toggle>`          | `time-toggle`  |
+| `<Time.Elapsed>`         | `elapsed`      |
+| `<Time.Remaining>`       | `remaining`    |
+| `<Time.Duration>`        | `duration`     |
+| `<PlaybackRate>`         | `root`         |
+| `<PlaybackRate.Set>`     | `rate-set`     |
+| `<PlaybackRate.Change>`  | `rate-change`  |
+| `<PlaybackRate.Display>` | `rate-display` |
+| `<ErrorMessage>`         | `error`        |
+| a slider root            | `root`         |
+| `.Control`               | `control`      |
+| `.Progress`              | `progress`     |
+| `.Background`            | `background`   |
+| `.Thumb`                 | `thumb`        |
 
 ```css
 /* Scope to your own container: all three sliders share these part names. */
@@ -278,6 +305,49 @@ class through every element:
   background: rebeccapurple;
 }
 ```
+
+`data-part` is what `aria-label` cannot be. The label is the documented way to
+localise a control, so `button[aria-label="Play audio"]` is a selector that
+breaks the day you ship in German. A part name does not move.
+
+### State attributes
+
+**An attribute exists where the element does not already carry the
+information.** That rule is why the list is this short, and why some states you
+might look for are spelled in ARIA instead:
+
+| State                         | Read it from                                                        |
+| ----------------------------- | ------------------------------------------------------------------- |
+| play/pause/loading/error      | `[data-part="play"][data-state="playing"]`                          |
+| muted/low/high volume         | `[data-part="mute"][data-state="muted"]`                            |
+| which time readout is showing | `[data-part="time-toggle"][data-state="elapsed"]`                   |
+| a slider being dragged        | `[data-part="root"][data-state="dragging"]`                         |
+| a slider's axis               | `[data-part="root"][data-orientation="vertical"]`                   |
+| **unavailable**               | `[aria-disabled="true"]` — not `data-disabled`, and not `:disabled` |
+| **the rate in effect**        | `[aria-pressed="true"]` on `.Set` — not `data-state`                |
+
+There is deliberately no `data-disabled`: every button and `.Control` already
+renders `aria-disabled`, and a second spelling of one state is one more thing to
+keep in agreement. A slider root carries no disabled signal of its own, and
+still does not need one — `[data-part="root"]:has([aria-disabled="true"])`
+reaches it from the control inside.
+
+Drag state lives on the slider **root**, not on the thumb: it is a property of
+the slider, and every part is a descendant, so one attribute reaches all of
+them.
+
+```css
+[data-part="root"][data-state="dragging"] [data-part="thumb"] {
+  transform: scale(1.2);
+}
+```
+
+`data-orientation` is on the root for the reason that makes it worth having at
+all: `aria-orientation` sits on `.Control`, a child, where a root-level layout
+rule cannot see it.
+
+The state values are API — renaming `loading` would break your stylesheet — so
+they are named in the props hooks' return types as well.
 
 ### The optional stylesheet
 
@@ -307,11 +377,65 @@ these through the `style` prop, which is merged last and wins.
 track measures zero, which leaves the slider silently inert. Each slider's own
 tooltip repeats this, since it is the mistake that produces no error at all.
 
+## Props hooks
+
+For when you already have a styled `<button>` of your own and want this
+library's behaviour on it rather than its markup. Each of the six buttons is a
+one-liner over its hook, so the hook gives you exactly what the component
+renders:
+
+```jsx
+import { usePlayButtonProps } from "react-headless-audio-player";
+
+function PlayPause() {
+  return <MyButton {...usePlayButtonProps()}>▶</MyButton>;
+}
+```
+
+| Hook                         | Component               | Extra argument |
+| ---------------------------- | ----------------------- | -------------- |
+| `usePlayButtonProps`         | `<PlayButton>`          | —              |
+| `useMuteButtonProps`         | `<MuteButton>`          | —              |
+| `useSeekButtonProps`         | `<SeekButton>`          | `amount`       |
+| `useTimeToggleProps`         | `<Time.Toggle>`         | —              |
+| `usePlaybackRateSetProps`    | `<PlaybackRate.Set>`    | `rate`         |
+| `usePlaybackRateChangeProps` | `<PlaybackRate.Change>` | `amount`       |
+
+Each returns the accessible name, `type`, `data-part`, the click handler, the
+media-key handler and the `aria-disabled` gate — plus `data-state` on the three
+that have one, and `aria-pressed` on `.Set`.
+
+**Pass your props in, don't add them after.** The bag composes them:
+
+```jsx
+<MyButton {...usePlayButtonProps({ onClick: track, className: "btn" })} />
+```
+
+Your handlers run first and the library's second, and `preventDefault()` in
+yours opts out of ours. Adding `onClick` after the spread replaces the library's
+instead, which silently breaks playback; passing it in is the only spelling that
+composes. Where `amount` or `rate` is needed it is a leading argument rather than
+a key of the bag, because React would pass an unrecognised lowercase attribute
+through to the DOM — `<button rate="1.5">` in your page source.
+
+**Spread the bag last.** The gate, the handlers and `type` are the library's and
+cannot be overridden; the name, `data-part` and `data-state` sit in front of your
+props, so you can replace those. Spread the bag first and your own props can
+spread the gate away — which is the one way to defeat the accessibility
+guarantees below.
+
+There are no slider hooks, and there will not be. A design system has a button;
+none has an audio scrubber, so there is no existing element to spread onto. The
+bag would have to return a `ref` — spreading a `ref` onto a function component on
+React 18 warns and drops it, leaving an unmeasured track that renders normally
+and ignores every click. Use `<Timeline>` and `<Volume>`, whose `.Control` takes
+`children`, `className` and `style` and composes handlers the same way.
+
 ## Hooks
 
 For UI the components do not cover: a mini-player in a nav bar, a waveform,
-analytics, resuming where the listener left off. All three must be called inside
-an `<AudioPlayer>`.
+analytics, resuming where the listener left off. All of these must be called
+inside an `<AudioPlayer>`.
 
 ### `useAudioPlayer()`
 

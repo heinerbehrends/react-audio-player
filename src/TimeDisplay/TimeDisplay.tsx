@@ -8,9 +8,10 @@ import { useStore } from "../store/atom";
 import { usePlayerState, useTimeDisplay } from "../store/derived";
 import {
   useComposedButtonProps,
-  type ButtonPropsBag,
+  type StatefulButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import type { TimeDisplay as TimeDisplayState } from "../store/createPlayerStore";
 
 type ChildrenProps = {
   children: React.ReactNode;
@@ -25,6 +26,9 @@ type TimeProps = React.TimeHTMLAttributes<HTMLTimeElement>;
  *
  * The choice is player state, not this button's, so every `Time.Elapsed` and
  * `Time.Remaining` in the tree follows it.
+ *
+ * Carries `data-part="time-toggle"` and `data-state="elapsed|remaining"` — the
+ * readout showing, not the one pressing will show.
  */
 function Toggle({ children, ...props }: ChildrenProps) {
   return <button {...useTimeToggleProps(props)}>{children}</button>;
@@ -41,7 +45,7 @@ function Toggle({ children, ...props }: ChildrenProps) {
  */
 export function useTimeToggleProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
->(props?: P): ButtonPropsBag<P> {
+>(props?: P): StatefulButtonPropsBag<P, TimeDisplayState> {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
 
@@ -51,13 +55,16 @@ export function useTimeToggleProps<
   // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
   return {
     type: "button",
+    "data-part": "time-toggle",
+    // The readout in effect, not the one pressing will show — unlike the name.
+    "data-state": timeDisplay,
     // A4: the name is this button's only state channel, so it flips.
     "aria-label":
       timeDisplay === "remaining" ? "Show time elapsed" : "Show time remaining",
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
-  } as ButtonPropsBag<P>;
+  } as StatefulButtonPropsBag<P, TimeDisplayState>;
 }
 
 /** `timeDisplay` is the one writable atom, so the toggle writes it directly. */

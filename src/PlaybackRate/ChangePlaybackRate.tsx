@@ -20,6 +20,8 @@ type IncreaseDecreaseProps = {
  *
  * Clamped to the library's 0.5–4 range, so holding it down stops at the ends.
  * Live while loading; only an error disables it.
+ *
+ * Carries `data-part="rate-change"`, and no `data-state`: a step has none.
  */
 export function ChangePlaybackRate({
   amount,
@@ -56,6 +58,7 @@ export function usePlaybackRateChangeProps<
   // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
   return {
     type: "button",
+    "data-part": "rate-change",
     "aria-label":
       amount > 0
         ? `Increase playback rate by ${Math.abs(amount)}x`

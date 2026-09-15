@@ -7,6 +7,7 @@ import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
+import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 
 function PlaybackRateProgress({
@@ -71,7 +72,6 @@ function PlaybackRateSliderRoot({
   maxValue = RATE_BOUNDS.maxValue,
   minValue = RATE_BOUNDS.minValue,
   step = 0.1,
-  style,
   ...props
 }: PlaybackRateSliderProps) {
   const slider = useSlider({ mode: "rate", minValue, maxValue, step });
@@ -79,12 +79,14 @@ function PlaybackRateSliderRoot({
   return (
     <SliderProvider value={slider}>
       <div
-        data-part="root"
+        {...sliderRootAttributes(slider)}
+        {...props}
+        // After the spread, and merged: `rootStyles` carries `position:
+        // relative`, which the thumb's `transform` is placed against.
         style={{
           ...rootStyles,
-          ...style,
+          ...props.style,
         }}
-        {...props}
       >
         {children}
       </div>
@@ -112,6 +114,10 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  *
  * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
  * semantics are on `.Control` (A11).
+ *
+ * Parts carry `data-part`, shared with the other sliders, so scope your CSS. The
+ * root also carries `data-state="idle|dragging"` and
+ * `data-orientation="horizontal"`.
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;

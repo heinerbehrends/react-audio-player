@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**35 open · 2 part-done · 56 resolved · 2 rejected**
+**33 open · 1 part-done · 59 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `backlog` is everything raised during the work itself.
@@ -32,15 +32,13 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Public surface & DX
 
-7 open of 24.
+5 open of 24.
 
 - [ ] [S14](surface/S14-missing-mis-nested-children-fail-silently.md) Missing/mis-nested children fail silently — P1
-- [ ] [S24](surface/S24-a-consumers-onclick-onkeydown-silently-kills-every.md) A consumer's `onClick`/`onKeyDown` silently kills every button — P1, **breaking**
 - [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [ ] [S21](surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [ ] [S22](surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
 - [ ] [S23](surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
-- [~] [S9](surface/S9-no-data-state-attributes.md) No `data-*` state attributes — P1, part-done
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
 - [x] [S3](resolved/surface/S3-no-use-client-directive-breaks-the-next.md) 'No `"use client"` directive — breaks the Next.js App Router' — P0
@@ -49,11 +47,13 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 - [x] [S6](resolved/surface/S6-audiofiles-array-shape-audiofile-missing-type.md) `audioFiles` array shape + `AudioFile` missing `type` — P0
 - [x] [S7](resolved/surface/S7-timeline-seek-is-the-wrong-name-and.md) `Timeline.Seek` is the wrong name and collides with the top-level `Seek` — P0, **breaking**
 - [x] [S8](resolved/surface/S8-inline-styles-mean-classname-alone-can-never.md) Inline styles mean `className` alone can never size anything — P1, **breaking**
+- [x] [S9](resolved/surface/S9-no-data-state-attributes.md) No `data-*` state attributes — P1
 - [x] [S10](resolved/surface/S10-no-escape-hatch-to-the-audio-element.md) No escape hatch to the `<audio>` element — P1
 - [x] [S11](resolved/surface/S11-translate-calc-offset-px-20px-0-hardcodes.md) `translate(calc(${offset}px - 20px), 0)` hardcodes a 40px thumb — P1
 - [x] [S12](resolved/surface/S12-volume-and-playbackrateslider-roots-lack-position-relative.md) Volume and PlaybackRateSlider roots lack `position: relative` — P1
 - [x] [S13](resolved/surface/S13-no-hook-level-api.md) No hook-level API — P1
 - [x] [S15](resolved/surface/S15-sideeffectaction-is-too-broad-for-its-one.md) `SideEffectAction` is too broad for its one public use — P1, **breaking**
+- [x] [S24](resolved/surface/S24-a-consumers-onclick-onkeydown-silently-kills-every.md) A consumer's `onClick`/`onKeyDown` silently kills every button — P1, **breaking**
 - [x] [S16](resolved/surface/S16-three-components-accept-no-props-and-cannot.md) Three components accept no props and cannot be styled — P2, **breaking**
 - [x] [S17](resolved/surface/S17-playbackrate-current-contradicts-its-own-type.md) `PlaybackRate.Current` contradicts its own type — P2, **breaking**
 - [x] [S18](resolved/surface/S18-react-dom-is-an-unnecessary-peer-dependency.md) `react-dom` is an unnecessary peer dependency — P2
@@ -61,7 +61,7 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Features
 
-17 open of 27.
+16 open of 27.
 
 - [ ] [F6](features/F6-media-session-api-entirely-absent.md) Media Session API entirely absent — P1
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
@@ -71,7 +71,6 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 - [ ] [B4](features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation
 - [ ] [B8](features/B8-codec-fallback-via-source.md) Codec fallback via `<source>` — **breaking**
 - [ ] [B9](features/B9-buffered-ranges.md) Buffered ranges
-- [ ] [D1](features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism: `asChild`, or a `render` prop
 - [ ] [D2](features/D2-refs-on-the-parts-additive-but-it.md) Refs on the parts. — additive, but it touches every public prop type
 - [ ] [D3](features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [ ] [D4](features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
@@ -90,6 +89,7 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 - [x] [F9](resolved/features/F9-element-config-unreachable.md) Element config unreachable — P2
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
+- [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop
 
 ## Architecture & style
 

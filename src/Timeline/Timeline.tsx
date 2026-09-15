@@ -8,6 +8,7 @@ import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
+import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
@@ -73,7 +74,7 @@ const TimelineRoot: React.FC<TimelineProps> = ({
   return (
     <SliderProvider value={slider}>
       <div
-        data-part="root"
+        {...sliderRootAttributes(slider)}
         {...props}
         style={{
           ...containerStyles,
@@ -110,7 +111,11 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * own `role="group"` and `aria-label` — props are spread through.
  *
  * Parts carry `data-part` for CSS (`root`, `control`, `progress`, `background`,
- * `thumb`). All three sliders share those names, so scope your selectors.
+ * `thumb`). All three sliders share those names, so scope your selectors. The
+ * root also carries `data-state="idle|dragging"` and
+ * `data-orientation="horizontal"` — drag state belongs to the slider, so style
+ * the thumb through the root:
+ * `[data-part="root"][data-state="dragging"] [data-part="thumb"]`.
  *
  * @example
  * ```jsx

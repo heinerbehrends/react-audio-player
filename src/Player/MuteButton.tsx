@@ -1,10 +1,10 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
-import { useVolumeState } from "../store/derived";
+import { useVolumeState, type VolumeState } from "../store/derived";
 import {
   useComposedButtonProps,
-  type ButtonPropsBag,
+  type StatefulButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
@@ -22,7 +22,7 @@ type MuteButtonComponentProps = {
  */
 export function useMuteButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
->(props?: P): ButtonPropsBag<P> {
+>(props?: P): StatefulButtonPropsBag<P, VolumeState> {
   const volumeState = useVolumeState();
   const toggleMute = useToggleMute();
   const composed = useComposedButtonProps(toggleMute, props ?? {});
@@ -30,6 +30,9 @@ export function useMuteButtonProps<
   // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
   return {
     type: "button",
+    "data-part": "mute",
+    // In the defaults tier: information, not a lock, so it is overridable.
+    "data-state": volumeState,
     // No `aria-pressed` beside this, deliberately: with both, a screen reader
     // announced "Unmute, toggle button, pressed" — the name says the button
     // will unmute, the state says it already has (A4).
@@ -37,7 +40,7 @@ export function useMuteButtonProps<
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
-  } as ButtonPropsBag<P>;
+  } as StatefulButtonPropsBag<P, VolumeState>;
 }
 
 export function MuteButtonComponent({
@@ -111,5 +114,7 @@ MuteButtonComponent.HighVolume = HighVolume;
  *
  * Live while loading — `muted` is settable before metadata. Only an error
  * disables it, via `aria-disabled`.
+ *
+ * Carries `data-part="mute"` and `data-state="muted|low|high"`.
  */
 export const MuteButton = MuteButtonComponent as MuteButtonComponent;

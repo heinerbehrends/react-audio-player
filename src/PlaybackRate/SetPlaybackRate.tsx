@@ -32,6 +32,9 @@ type SetPlaybackRateProps = {
  * This one's name is fixed, so `aria-pressed` is the only channel it has.
  *
  * Live while loading; only an error disables it.
+ *
+ * Carries `data-part="rate-set"`, and no `data-state`: style the current rate
+ * from `[aria-pressed="true"]`, which already says it.
  */
 export function SetPlaybackRate({
   rate,
@@ -69,6 +72,7 @@ export function usePlaybackRateSetProps<
   // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
   return {
     type: "button",
+    "data-part": "rate-set",
     "aria-label": `Set playback rate to ${rate}x`,
     // Written on every button, `false` included — unlike `aria-disabled`, which
     // is absent when false. Omitting it would leave the inactive rates
@@ -118,14 +122,19 @@ type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 /**
  * The current rate as text, rounded to two decimals and suffixed with `x` —
- * "1x", "1.76x". Named "Current playback rate" for assistive technology.
+ * "1x", "1.76x". Named "Current playback rate" for assistive technology, and
+ * selectable as `[data-part="rate-display"]`.
  */
 export function RateDisplay({ ...props }: RateDisplayProps) {
   const store = usePlayerStore();
   const rate = useStore(store.rate);
   const roundedRate = Math.round(rate * 100) / 100;
   return (
-    <span aria-label="Current playback rate" {...props}>
+    <span
+      data-part="rate-display"
+      aria-label="Current playback rate"
+      {...props}
+    >
       {roundedRate}x
     </span>
   );

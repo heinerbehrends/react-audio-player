@@ -23,6 +23,8 @@ type SeekButtonComponentProps = {
  * computed against the duration too. So it is `aria-disabled` before metadata
  * and on a live stream, where there is no end to jump towards.
  * `useIsSeekable()` is the same test.
+ *
+ * Carries `data-part="seek"`, and no `data-state`: a jump has none.
  */
 export function SeekButton({
   children,
@@ -57,6 +59,7 @@ export function useSeekButtonProps<
   // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
   return {
     type: "button",
+    "data-part": "seek",
     "aria-label": `Seek ${amount > 0 ? "forward" : "backward"} by ${Math.abs(
       amount,
     )} seconds`,

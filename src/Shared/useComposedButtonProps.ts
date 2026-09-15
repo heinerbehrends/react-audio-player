@@ -78,6 +78,12 @@ export function useComposedButtonProps(
 export type ButtonBagBase = ComposedButtonProps & {
   readonly type: React.ButtonHTMLAttributes<HTMLButtonElement>["type"];
   readonly "aria-label": string;
+  /**
+   * A stable selector, because `aria-label` is not one: the label is the
+   * documented way to localise a control (A15), so
+   * `button[aria-label="Play audio"]` breaks the day the app ships in German.
+   */
+  readonly "data-part": string;
 };
 
 /**
@@ -90,3 +96,19 @@ export type ButtonBagBase = ComposedButtonProps & {
  * still reads as `string`.
  */
 export type ButtonPropsBag<P> = Omit<P, keyof ButtonBagBase> & ButtonBagBase;
+
+/**
+ * The bag of a button whose state the DOM does not already carry — play/pause,
+ * mute and the time toggle. The other three have no state, or announce it with
+ * `aria-pressed`, and a second spelling of a state already in the DOM is what
+ * S9's rule refuses.
+ *
+ * `State` is public API: once a hook hands out `data-state="loading"`, renaming
+ * that value breaks a consumer's stylesheet.
+ */
+export type StatefulButtonPropsBag<
+  P,
+  State extends string,
+> = ButtonPropsBag<P> & {
+  readonly "data-state": State;
+};

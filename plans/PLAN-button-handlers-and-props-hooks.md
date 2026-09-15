@@ -1,9 +1,73 @@
-# Plan: compose the button handlers (S24), then expose props hooks (D1)
+# Plan: compose the button handlers (S24), expose props hooks (D1), then the `data-*` vocabulary (S9)
 
 Two tickets, one sequence, one release. **S24** is breaking and **D1** is additive, but
 both land before the first public beta — so there is no clock on either, and no window in
 which S24's breaking change is visible to anyone. The order is a code dependency, not a
 schedule.
+
+## Status: shipped (2026-09-15)
+
+All four phases are in. **S24**, **D1** and **S9** are resolved and moved to
+`issues/resolved/`; the refusals are recorded in **D9** for the README's
+"deliberately not included" section.
+
+| Phase                       | Landed in                |
+| --------------------------- | ------------------------ |
+| 1 — compose the handlers    | `c34d59d`                |
+| 2 — the six props hooks     | `d9ad935`                |
+| 3 — the `data-*` vocabulary | with phase 4, one commit |
+| 4 — docs and ticket hygiene | with phase 3, one commit |
+
+**Tests** — 571 unit (up from 542; +29 in phase 3) and 124 E2E across Chromium and
+Firefox, all passing. The new drag-state spec is `testE2E/Timeline/drag-state.spec.ts`;
+`data-part` and the slider attributes are `testJSDom/Shared/dataAttributes.test.tsx`.
+
+**Packaging** — `dist/index.mjs` still opens with `"use client"` (**S3**), and `attw`
+is green on `node16 (from ESM)` and `bundler`.
+
+**Bundle, measured the same way before and after phase 3** — rollup tree-shake of
+`dist/index.mjs`, esbuild minify, gzip level 9:
+
+| Import                     | after phase 2 | after phase 3 | delta |
+| -------------------------- | ------------- | ------------- | ----- |
+| `PlayButton` only          | 1,236 B       | 1,246 B       | +10 B |
+| `usePlayButtonProps` only  | 1,149 B       | 1,157 B       | +8 B  |
+| `Timeline` + `AudioPlayer` | 5,308 B       | 5,339 B       | +31 B |
+
+Against **P1-a**'s recorded 1,137 B, a `PlayButton`-only import is now 1,246 B. The
+whole +109 B is phases 1–3: `composeEventHandlers` entering a button's graph, then the
+`data-*` strings. Phase 3's own share is the +10 B above — the attribute values, and
+nothing else. The hooks themselves cost nothing, as predicted: the code moved rather than
+grew.
+
+**Deviations from the plan as written.** Three, all small:
+
+- `ErrorMessage` already carried `data-part="error"`, so only `PlaybackRate.Display`
+  needed adding — the sweep was one part, not two.
+- `data-part` went into `ButtonBagBase` rather than each hook's own return type, since it
+  is present on every bag. `data-state` got its own `StatefulButtonPropsBag<P, State>`,
+  following the `SetPlaybackRateBag` precedent already in `SetPlaybackRate.tsx`.
+- No E2E for `data-orientation` on a vertical `<Volume>`: jsdom observes an attribute
+  perfectly well, and only the drag transient needed a real pointer. It is covered in
+  `dataAttributes.test.tsx`.
+
+**Answers to the questions in `## Report`.**
+
+_Could the six buttons collapse to one-liners?_ Yes, all six, and they still are after
+phase 3 — which is the argument that put `data-state` in the hook rather than the JSX.
+
+_Did the generic return type need an assertion?_ Yes, in all six hooks: TypeScript cannot
+prove a spread of a generic `P` produces the bag. Each is a single `as` at the return,
+commented.
+
+_Anything in E2E that depended on the replace behaviour?_ No. The suite never passed a
+handler to a button.
+
+_Did the seek guard change any existing test's expectations?_ Yes — `loadingState`'s
+"runs the consumer's handler in place of ours once seekable" inverted, which phase 1
+handled.
+
+---
 
 ## Why this order
 
@@ -355,8 +419,7 @@ docs. `useSetRateProps` and `useChangeRateProps` are dropped: they shorten
 | `usePlaybackRateSetProps(rate, props?)`      | `aria-pressed` on every button, false ones included (A9) |
 | `usePlaybackRateChangeProps(amount, props?)` | "Increase/Decrease playback rate by {n}x"                |
 
-Phase 3's `useSliderControlProps` / `useSliderThumbProps` already obey the same
-rule.
+The sliders get no hooks at all — see Phase 3.
 
 ### `<button>` hosts only
 
@@ -378,9 +441,8 @@ decision `handleMediaKeys` settled on purpose. It is also more than **D1** asked
 for: its own sentence is "`PlayButton` renders a `<button>` they already have a
 styled version of."
 
-This holds for all eight hooks. `SliderControl` renders a `<button>` too
-(`type="button"`, `role="slider"`, `tabIndex={0}`), so the rule is uniform across
-Phase 2 and Phase 3 rather than a button-only exception.
+This holds for all six hooks, which are all there are: Phase 3 no longer ships
+slider hooks, so the rule has no exception to be uniform across.
 
 ### The footgun this phase adds
 
@@ -407,11 +469,13 @@ the rendered DOM of all six components, which E2E can see.
 
 And **S9**'s open half is mostly not about buttons. It names slider `data-state`
 (idle/dragging) and `data-orientation`, and singles out drag state as reachable
-from neither CSS nor JS with **no workaround**. That is `SliderContext`, so Phase
-3 at the earliest. No amount of button work closes the ticket.
+from neither CSS nor JS with **no workaround**. That is `SliderContext`. No
+amount of button work closes the ticket.
 
-Do the whole attribute vocabulary as one pass after Phase 3 — buttons and sliders
-together, `data-part` included, which no button carries today either.
+Do the whole attribute vocabulary as one pass, buttons and sliders together —
+which is what **Phase 3** now is. The verdict above still holds in it: three of
+the six buttons get `data-state` and none gets `data-disabled`, but for a stated
+rule rather than by default.
 
 ### Bundle constraint
 
@@ -461,25 +525,227 @@ Deliberately **not** done: re-testing composition through each of the six.
 `useComposedButtonProps.test.tsx` owns the merge rule and
 `buttonHandlers.test.tsx` owns the wiring; a third pass per hook is ceremony.
 
-## Phase 3 — the two slider hooks (D1)
+## Phase 3 — the `data-*` vocabulary (S9)
 
-`useSliderControlProps(props?)` and `useSliderThumbProps(props?)`. Same one-liner refactor
-of `SliderControl` and `SliderThumb`.
+### The slider hooks are dropped
 
-Both read `SliderContext`, so both require a `<Timeline>` / `<Volume>` /
-`<PlaybackRateSlider>` root. Reuse the existing provider guard — `SliderContext.tsx:31-33`
-is the standard the rest of the library is measured against.
+Phase 3 was `useSliderControlProps` / `useSliderThumbProps`. It is now the **S9**
+attribute pass instead, and the slider hooks are not deferred — they are refused.
 
-Two notes for the JSDoc:
+**D1's own sentence does not extend to sliders.** "`PlayButton` renders a
+`<button>` they already have a styled version of" is the whole case for a props
+hook, and it is true of a button. A team with a design system has a button. None
+of them has an audio scrubber or a vertical volume slider, so there is no existing
+element for the bag to be spread onto.
 
-- `useSliderControlProps` returns `ref` (the track measurement callback). On React 18,
-  spreading that into a component that is not `forwardRef` warns. Document it. It overlaps
-  **D2**, which is the ticket that makes the library's own parts ref-forwarding.
-- The bag is DOM attributes, which is what makes this safe to expose while **C2**–**C5**
-  are open. `role`, `aria-valuenow`, `onKeyDown` and a ref do not change when the mode
-  discriminant or the ResizeObserver binding get reworked. Do **not** export `useSlider`
-  itself, or its return shape becomes public API and those four tickets get much more
-  expensive.
+**The bag's main use is the one that breaks.** `useSliderControlProps` must return
+`ref` — `setSliderRef` measures the track, and an unmeasured track is
+`sliderLength: 0`, which renders normally and ignores every click. On React 18,
+spreading a `ref` onto a function component warns and drops it, so
+`<MyStyledButton {...useSliderControlProps()} />` — the reason to want the hook —
+produces a silently dead slider. The case that does work, a plain `<button>`, is
+already served by `.Control`, which takes `children`, `className`, `style` and
+composes handlers.
+
+**And it could not be standalone anyway.** The hook reads `SliderContext`, which
+only the three roots publish, so the consumer still renders `<Timeline>`. That is
+strictly less than the button hooks give, which work anywhere under
+`<AudioPlayer>`.
+
+**C5** is the confirmation: its fix moves the node out of a ref and into
+`useState`, so `setSliderRef` — the exact value the bag would have exposed — is
+about to change shape. The instinct not to make `useSlider`'s internals public was
+right; dropping the hooks means never having to hold that line.
+
+What consumers have actually asked for on the slider is **S9**, severity P1: drag
+state is reachable from neither CSS nor JS, with no workaround. A props hook does
+not give them that. `data-state="dragging"` does.
+
+### The rule
+
+**A `data-*` attribute earns its place when that element does not already carry
+the information.** Everything below follows from it, and it is the sentence to put
+in the README.
+
+That rule kills `data-disabled` outright. All six buttons and `.Control` already
+render `aria-disabled="true"` when unavailable, and the library already documents
+styling from it — `PlayButton`'s JSDoc says to style from `[aria-disabled="true"]`
+rather than `:disabled`. A second attribute would be a second spelling of a state
+already in the DOM.
+
+The slider **root** carries no disabled signal, and still does not need its own
+attribute: `[data-part="root"]:has([aria-disabled="true"])` reaches it, and
+`:has()` is available everywhere this library runs. One state, one spelling.
+
+### `data-state`, on three of the six buttons
+
+| part                  | state                              | already exposed? | `data-state` |
+| --------------------- | ---------------------------------- | ---------------- | ------------ |
+| `PlayButton`          | playing / paused / loading / error | no               | **yes**      |
+| `MuteButton`          | muted / low / high                 | no               | **yes**      |
+| `Time.Toggle`         | elapsed / remaining                | no               | **yes**      |
+| `PlaybackRate.Set`    | current or not                     | `aria-pressed`   | no           |
+| `SeekButton`          | none                               | —                | no           |
+| `PlaybackRate.Change` | none                               | —                | no           |
+
+Phase 2 declined this partly because four-and-two looked arbitrary. It looked
+arbitrary because there was no rule; with one, every row has a reason and the
+split is three-and-three. The alternative — inventing `data-state="idle"` for the
+two buttons that have no states — manufactures state to make a table look full.
+
+The consequence, stated plainly: `PlaybackRate.Set` is styled from
+`[aria-pressed="true"]` and disabled from `[aria-disabled="true"]`, so a consumer
+writes three selector shapes depending on the button. That is the price of not
+duplicating, and it is the right one.
+
+### `data-state` goes in the props bag, not the component
+
+Phase 2 made the six components one-liners over their hooks, so a `data-state`
+written in the JSX would be an attribute the hook does not know about:
+`<PlayButton>` would carry it and `<button {...usePlayButtonProps()}>` would not.
+That is exactly the drift Phases 1 and 2 existed to remove.
+
+So three of the six hooks grow one key. `usePlaybackRateSetProps` already returns
+`aria-pressed` on top of the standard bag, so the shape is established.
+
+It goes in the **defaults** tier, before the consumer's props — the library locks
+only what it depends on (the gate, the handlers, `role`, `tabIndex`), and
+`data-state` is information rather than a lock. A consumer who overrides it is
+choosing to, and only their own CSS is affected.
+
+This makes the value names public API. Once `usePlayButtonProps()` hands out
+`data-state="loading"`, renaming `loading` breaks stylesheets. Putting it in the
+hook at least makes that visible in the type.
+
+### `data-part` everywhere, for i18n
+
+The slider parts carry `data-part` because they are anonymous `<div>`s. The
+buttons all have accessible names, so on the face of it they do not need one.
+
+They do, and `aria-label` is the reason. It is **deliberately overridable** — the
+documented way to localise a control (**A15**), stated on all six. So
+`button[aria-label="Play audio"]` is a selector the library invites consumers to
+break the day they ship in German. `data-part="play"` does not move when the label
+does.
+
+The full set, and after this pass every part in the library has a stable selector:
+
+| part                   | `data-part`    |
+| ---------------------- | -------------- |
+| `PlayButton`           | `play`         |
+| `MuteButton`           | `mute`         |
+| `SeekButton`           | `seek`         |
+| `Time.Toggle`          | `time-toggle`  |
+| `PlaybackRate.Set`     | `rate-set`     |
+| `PlaybackRate.Change`  | `rate-change`  |
+| `ErrorMessage`         | `error`        |
+| `PlaybackRate.Display` | `rate-display` |
+
+The last two are the sweep — they carry nothing today. `rate-display` is long
+beside `play` and `thumb`, and it stays long: `rate` alone would collide with the
+reading of `rate-set` / `rate-change` as a family, and `display` alone says
+nothing about which value it displays.
+
+**Before** the spread, where `data-part` already sits on every existing part.
+Locking it would be a behaviour change to shipped parts and buys nothing: nobody
+overrides a part name by accident, and stability comes from the value not moving.
+
+### The slider: root only
+
+- root: `data-part="root"`, `data-state="idle|dragging"`,
+  `data-orientation="horizontal|vertical"`
+- `control`, `thumb`, `progress`, `background`: `data-part` only
+
+Drag is a property of the slider, not of the thumb, and all four parts are
+descendants of the root — so one attribute reaches all of them:
+
+```css
+[data-part="root"][data-state="dragging"] [data-part="thumb"] {
+  transform: scale(1.2);
+}
+```
+
+Writing it on four parts means four chances to disagree about a value that is
+identical every time. A consumer who renders the thumb outside the root gets no
+drag state, which is already unsupported.
+
+`data-orientation` belongs on the root for the reason that makes it non-redundant
+at all: `aria-orientation` is on `.Control`, a child, where a root-level layout
+rule cannot see it.
+
+### One helper, because the three roots have already drifted
+
+`Timeline`, `Volume` and `PlaybackRateSlider` each hand-write their root `<div>`,
+and they do not agree today:
+
+| root                 | styles            | order                     |
+| -------------------- | ----------------- | ------------------------- |
+| `Timeline`           | `containerStyles` | `{...props}` then `style` |
+| `Volume`             | `rootStyles`      | `{...props}` then `style` |
+| `PlaybackRateSlider` | `rootStyles`      | `style` then `{...props}` |
+
+Adding two attributes by hand to three places that have already disagreed once is
+three chances to disagree again. So:
+
+```ts
+// src/Slider/sliderRootAttributes.ts
+export function sliderRootAttributes(slider: SliderValue) {
+  return {
+    "data-part": "root",
+    "data-state": slider.dragState,
+    "data-orientation": slider.orientation,
+  };
+}
+```
+
+The values come off `slider`, so they cannot be wrong. Hand-writing
+`data-orientation` in `Timeline` would mean hardcoding `"horizontal"` — it has no
+orientation prop — and that string becomes a lie the day timelines become
+orientable.
+
+It is data, not behaviour, and only the three roots import it, so it adds nothing
+to a `PlayButton`-only graph.
+
+### Normalise the spread order while there
+
+All three roots become `{...props}` then `style`, merging
+`...rootStyles, ...props.style`.
+
+Cosmetic today: `PlaybackRateSlider` destructures `style` out, so `{...props}`
+cannot carry one to clobber with. It is a loaded gun rather than a live bug — stop
+destructuring `style` there and the consumer's `style` lands on top of `rootStyles`
+and takes `position: relative` with it. That is load-bearing, and this exact bug
+has already happened here once; `calculateStyle.ts` records it:
+
+> The volume and rate roots inlined a copy of this without it, and their thumbs
+> landed correctly only by luck.
+
+### Not in this pass: consolidating the roots themselves
+
+They would factor to something thin — call `useSlider`, wrap in `SliderProvider`,
+render a `<div>` — parameterised by the `useSlider` options and by
+`containerStyles` vs `rootStyles`. Perhaps ten lines, three times.
+
+Leave it. It changes the render output of three public components with no
+user-visible payoff, in the commit that closes a P1 — and if something regresses
+you cannot tell which half did it, or revert one without the other. The helper
+above already removes the drift risk that motivates the question; what stays
+duplicated is a `<div>` and a style merge.
+
+This is **not** blocked on **C2**–**C5**, which all live inside `useSlider.ts` and
+touch no root's JSX. If the roots should merge, it is its own ticket on its own
+argument.
+
+### Tests
+
+- `data-state` on the three hooks that gain it, through `renderHook` — extend the
+  six-row file Phase 2 added rather than duplicating it.
+- One assertion per part that `data-part` is present and correct, including
+  `ErrorMessage` and `PlaybackRate.Display`.
+- Drag state end to end: the root reads `data-state="idle"`, goes to `"dragging"`
+  during a pointer drag, and returns. This is the P1, and the one that needs a real
+  pointer sequence — E2E, beside the existing `no-snap-back.spec.ts`.
+- `data-orientation` on a vertical `<Volume>` and a horizontal one.
 
 ---
 
@@ -492,8 +758,19 @@ Two notes for the JSDoc:
 - Scope the accessibility promises. They hold for the components. The hooks hand you the
   props and you decide where they go, so a consumer who spreads badly can defeat the
   disabled gate. Say so plainly rather than leaving the section reading as unconditional.
+- README: the `data-*` table from Phase 3, with the rule above it — an attribute exists
+  where the element does not already carry the information. Say that disabled is
+  `[aria-disabled="true"]` and pressed is `[aria-pressed="true"]`, so nobody looks for a
+  `data-` spelling that was deliberately not written.
 - **D1**: resolve. Record the `asChild` refusal and its two reasons — inverted locks,
-  unavoidable bundle cost — as a **D9** entry.
+  unavoidable bundle cost — as a **D9** entry, and the slider-hook refusal beside it:
+  no design system owns an audio scrubber, the bag's `ref` is dead on a React 18
+  component host, and the hook could not be standalone while `SliderContext` is private.
+  Scope the ticket to buttons in the title as well as the body.
+- **S9**: resolve. Every part carries `data-part`, the slider root carries `data-state`
+  and `data-orientation`, and drag state is reachable from CSS and JS — which is the half
+  this ticket calls unworkaroundable. Record `data-disabled` as declined, with the reason,
+  so it is not re-proposed as an oversight.
 - **D1**, one correction to carry across: its premise is wrong. "Deciding after publish is
   not [defensible] — it means shipping both, or breaking the prop type of all ten roots"
   is true of `asChild` only. Hooks first makes `render` additive forever. And the ticket's
