@@ -6,6 +6,10 @@ import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { useAudioError } from "./derived";
 import type { AudioError, PlayerState, VolumeState } from "./derived";
 
+/**
+ * The write half of `useAudioPlayer()`. Every method keeps its identity for the
+ * lifetime of the player, so they are safe in a dependency array.
+ */
 export type AudioPlayerControls = {
   play: () => void;
   pause: () => void;
@@ -20,6 +24,10 @@ export type AudioPlayerControls = {
   setRate: (rate: number) => void;
 };
 
+/**
+ * The read half of `useAudioPlayer()`. The playback position is deliberately
+ * absent — see `useCurrentSecond()`.
+ */
 export type AudioPlayerState = {
   duration: number;
   paused: boolean;
@@ -49,6 +57,24 @@ export type AudioPlayerState = {
   error: AudioError | null;
 };
 
+/**
+ * The player's state and its controls, in one flat object. For UI the
+ * components do not cover: a mini-player, a waveform, analytics.
+ *
+ * Must be called inside an `<AudioPlayer>`; it throws outside one. The control
+ * methods keep their identity for the lifetime of the player, so they are safe
+ * in a dependency array.
+ *
+ * The playback position is deliberately absent — it changes about four times a
+ * second and would re-render every caller at that rate. Use `useCurrentSecond()`
+ * or `useCurrentTime()`.
+ *
+ * @example
+ * ```jsx
+ * const { paused, play, pause } = useAudioPlayer();
+ * <button onClick={paused ? play : pause}>{paused ? "Play" : "Pause"}</button>
+ * ```
+ */
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const store = usePlayerStore();
 

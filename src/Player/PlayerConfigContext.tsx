@@ -4,6 +4,10 @@
 import { createContext, useContext } from "react";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 
+/**
+ * The track `<AudioPlayer>` plays. Changing `src` swaps it and returns the
+ * player to loading.
+ */
 export type AudioFile = {
   src: string;
   /**

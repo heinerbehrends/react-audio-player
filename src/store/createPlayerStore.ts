@@ -28,10 +28,9 @@ export type PlayerStore = {
    * The name of the `DOMException` from the last refused `play()`, or `null`.
    *
    * Not a projection — there is no element property for "the browser said no" —
-   * so `send` writes it, making it the second writable atom after
-   * `timeDisplay`. It clears when a `play()` finally succeeds, and deliberately
-   * not on a `src` change: an autoplay block outlives the track that revealed
-   * it, and is only lifted by a user gesture.
+   * so `send` writes it. It clears when a `play()` finally succeeds, and
+   * deliberately not on a `src` change: an autoplay block outlives the track
+   * that revealed it.
    */
   playbackError: ReadableAtom<string | null>;
 
@@ -108,9 +107,9 @@ export function createPlayerStore(): PlayerStore {
         const name =
           (rejection as { name?: string } | null | undefined)?.name ??
           "UnknownError";
-        // `AbortError` means a `pause()` or `src` change overtook the request,
-        // which is what a double-click or a held key produces. The user's
-        // intent was honoured, so there is nothing to report.
+        // A `pause()` or `src` change overtook the request — a double-click or a
+        // held key. The user's intent was honoured, so there is nothing to
+        // report.
         if (name === "AbortError") return;
         playbackError.set(name);
       },

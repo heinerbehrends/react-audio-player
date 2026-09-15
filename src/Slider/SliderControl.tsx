@@ -39,10 +39,9 @@ export function SliderControl({ children, ...props }: SliderControlProps) {
       ref={setSliderRef}
       {...aria}
       {...props}
-      // After the spread, and composed rather than replaced: these carry the
-      // operability that `role` is locked for — exactly one focusable,
-      // arrow-driven element per slider. `aria` stays *before* the
-      // spread, so a consumer can still override `aria-label`.
+      // After the spread and composed rather than replaced: these carry the
+      // operability `role` is locked for. `aria` stays *before* the spread, so a
+      // consumer can still override `aria-label` (S5, A14).
       onPointerDown={composeEventHandlers(
         props.onPointerDown,
         onTrackPointerDown,

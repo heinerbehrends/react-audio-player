@@ -5,21 +5,21 @@ import {
   RateDisplay,
 } from "./SetPlaybackRate";
 
+type PlaybackRateProps = {
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLSpanElement>;
+
 /**
  * A labelled group for a set of rate controls — an inline `<span role="group">`,
  * nothing more. Optional; `.Set`, `.Change`, `.Current` and `.Display` all work
  * outside it.
  *
  * Use it when the buttons form one cluster, so assistive technology announces
- * them as a set.
+ * them as a set. The one `role="group"` in the library: the slider roots each
+ * wrap a single control that is already named, and this wraps several (A11).
  *
- * The one `role="group"` in the library. The slider roots have none, because
- * each wraps a single control that is already named; this wraps several (A11).
+ * Pass your own `aria-label` to override the group name.
  */
-type PlaybackRateProps = {
-  children: React.ReactNode;
-} & React.HTMLAttributes<HTMLSpanElement>;
-
 export function PlaybackRate({ children, ...props }: PlaybackRateProps) {
   return (
     <span

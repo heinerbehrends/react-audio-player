@@ -114,11 +114,8 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  * loading; only an error disables it.
  *
  * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
- * semantics are on `.Control` (A11).
- *
- * Parts carry `data-part`, shared with the other sliders, so scope your CSS. The
- * root also carries `data-state="idle|dragging"` and
- * `data-orientation="horizontal"`.
+ * semantics are on `.Control` (A11). Carries `data-part="root"`,
+ * `data-state="idle|dragging"` and `data-orientation="horizontal"`.
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;

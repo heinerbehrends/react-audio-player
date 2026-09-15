@@ -65,19 +65,16 @@ type DragState = typeof IDLE | { state: "dragging"; value: number };
 
 /**
  * Drives one slider of any kind. Owns drag state and geometry, and returns the
- * whole `SliderContext` value: the display value, the aria surface, a ref
- * callback and the pointer and keyboard handlers. `Timeline`, `Volume` and
- * `PlaybackRateSlider` are configuration over this.
+ * whole `SliderContext` value. `Timeline`, `Volume` and `PlaybackRateSlider` are
+ * configuration over this.
  *
- * Call it once, at the slider root. A slider is three sibling components — the
- * element carrying the semantics measures the track while the progress bar and
- * the thumb consume that measurement — and consumers place all three freely in
- * their own markup, so there is no prop-drilling path between them.
+ * Call it once, at the slider root: the parts are siblings placed freely in the
+ * consumer's markup, so there is no prop-drilling path between them.
  *
  * The `useCallback`s below are for effect-dependency stability, not render
  * memoization. `valueAt`, `commit`, `send` and `releaseAudibleVolume` feed the
  * drag effect, which would otherwise re-attach five window listeners on every
- * pointermove; `measure` feeds the ResizeObserver; `setSliderRef` is a ref
+ * pointermove; `measure` feeds the `ResizeObserver`; `setSliderRef` is a ref
  * callback, and an unstable one re-attaches the node.
  */
 export function useSlider({
@@ -93,8 +90,7 @@ export function useSlider({
   const isErrored = useIsDisabled();
 
   const isSeek = mode === "seek";
-  // The one place the mode picks its atoms (C4). Only `"seek"` announces
-  // something other than its own value, and only `"seek"` reads the duration.
+  // The one place the mode picks its atoms (C4).
   const valueAtom = isSeek
     ? store.currentTime
     : mode === "volume"
@@ -173,17 +169,15 @@ export function useSlider({
   }, [element, measure]);
 
   /**
-   * Dropping the local value the instant a drag ends causes a visible
-   * snap-back: the commit writes the element, but the atom still holds the
-   * pre-drag value until the element echoes back — up to ~250 ms in `"seek"`
-   * mode. So the committed value is retained until the store moves off what it
-   * held when the commit went out.
+   * Dropping the local value the instant a drag ends causes a visible snap-back:
+   * the commit writes the element, but the atom holds the pre-drag value until
+   * the element echoes back — up to ~250 ms in `"seek"` mode (T1). So the
+   * committed value is retained until the store moves off what it held when the
+   * commit went out.
    *
-   * Compared against the store value *at commit time*, not against the
-   * committed value: an element may echo back a slightly different time than
-   * the one it was given, which would freeze the display for good.
-   * Click-to-set has the same gap, so this lives here rather than in one commit
-   * handler.
+   * Compared against the store value *at commit time*, not against the committed
+   * value: an element may echo back a slightly different time than the one it
+   * was given, which would freeze the display for good.
    */
   const displayValue =
     drag.state === "dragging"
@@ -194,11 +188,7 @@ export function useSlider({
 
   // Load-bearing, not housekeeping: an entry left in place matches again
   // whenever the store returns to the value the commit was made against, and
-  // re-applies the old value. A test pins that.
-  //
-  // `react-hooks/set-state-in-effect` wants this out of an effect, but React's
-  // documented render-phase alternative does not take effect here — the test
-  // fails — so the effect stays.
+  // re-applies the old value. A test pins that. The suppression below is C12.
   useEffect(() => {
     if (committed && committed.storeValue !== valueFromStore) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -220,12 +210,9 @@ export function useSlider({
     [geometry, minValue, maxValue, orientation, step],
   );
 
-  /**
-   * `CHANGE_VALUE` carries the value rather than the geometry, so the value is
-   * computed once, here, where the geometry lives. It also owns the mute
-   * coupling: for the volume component, zero mutes and anything above it
-   * unmutes, so that is one rule in one place rather than one per gesture.
-   */
+  // `CHANGE_VALUE` carries the value rather than the geometry, so it is computed
+  // once, here, where the geometry lives. The mute-at-zero coupling rides on it
+  // — one rule in `handleSideEffect` rather than one per gesture (C2).
   const send = useCallback(
     (value: number) => {
       store.send({ type: "CHANGE_VALUE", component: config.component, value });

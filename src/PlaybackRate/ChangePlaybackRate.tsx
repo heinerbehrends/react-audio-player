@@ -38,13 +38,8 @@ export function ChangePlaybackRate({
  * "Increase/Decrease playback rate by {n}x" name, the step, the error gate and
  * the media keys.
  *
- * `amount` is a leading argument rather than a key of `props` because a key
- * would flow into the bag, and React passes an unrecognised lowercase attribute
- * through to the DOM — `<button amount="0.25">` in the page source.
- *
- * Spread it last, onto a `<button>` or a component that renders one. Pass your
- * handlers in rather than adding them after the spread, where the library
- * cannot compose them.
+ * Spread it last, onto a `<button>`, and pass your own handlers in the call —
+ * after the spread they replace the library's rather than composing with it.
  */
 export function usePlaybackRateChangeProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -55,7 +50,7 @@ export function usePlaybackRateChangeProps<
     props ?? {},
   );
 
-  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
     type: "button",
     "data-part": "rate-change",
@@ -69,8 +64,9 @@ export function usePlaybackRateChangeProps<
   } as ButtonPropsBag<P>;
 }
 
-// Subscribes to `rate` rather than reading `el.playbackRate` during render,
-// which would tear.
+// Subscribes to `rate` only to supply a value at click time, so every
+// `ratechange` re-renders the button. `store.rate.get()` in the handler would do
+// the same with no subscription (C8).
 function useChangePlaybackRate(amount: number) {
   const store = usePlayerStore();
   const rate = useStore(store.rate);

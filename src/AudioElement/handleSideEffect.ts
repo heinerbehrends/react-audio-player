@@ -1,9 +1,9 @@
 import { areNumbersClose } from "../Shared/areNumbersClose";
 import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
 
-/**
- * Media properties throw on an out-of-range write rather than clamping, and
- * each accepts a different range:
+/*
+ * Media properties throw on an out-of-range write rather than clamping, so each
+ * write below is guarded to its own range:
  *
  * - `volume` — [0, 1]; outside throws `IndexSizeError`
  * - `playbackRate` — [0, 16] in Chrome; outside throws `NotSupportedError`
@@ -14,6 +14,7 @@ import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
  * Non-finite values are dropped rather than clamped: `NaN` has no meaningful
  * target, and usually means `duration` was read before metadata.
  */
+
 const MAX_PLAYBACK_RATE = 16;
 
 const clamp = (value: number, min: number, max: number) =>

@@ -22,10 +22,10 @@ type TimeProps = React.TimeHTMLAttributes<HTMLTimeElement>;
 /**
  * Switches `Time.Elapsed` and `Time.Remaining`. Named for what pressing it will
  * do — "Show time elapsed" / "Show time remaining" — and that name is the only
- * place the state appears; no `aria-pressed`.
+ * place the state appears; no `aria-pressed` (A4).
  *
- * The choice is player state, not this button's, so every `Time.Elapsed` and
- * `Time.Remaining` in the tree follows it.
+ * The choice is player state, so every `Time.Elapsed` and `Time.Remaining` in
+ * the tree follows it.
  *
  * Carries `data-part="time-toggle"` and `data-state="elapsed|remaining"` — the
  * readout showing, not the one pressing will show.
@@ -39,9 +39,8 @@ function Toggle({ children, ...props }: ChildrenProps) {
  * elapsed"/"Show time remaining" name, the toggle, the error gate and the media
  * keys.
  *
- * Spread it last, onto a `<button>` or a component that renders one. Pass your
- * handlers in rather than adding them after the spread, where the library
- * cannot compose them.
+ * Spread it last, onto a `<button>`, and pass your own handlers in the call —
+ * after the spread they replace the library's rather than composing with it.
  */
 export function useTimeToggleProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -52,13 +51,11 @@ export function useTimeToggleProps<
   const handleClick = useToggleTimeDisplay();
   const composed = useComposedButtonProps(handleClick, props ?? {});
 
-  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
     type: "button",
     "data-part": "time-toggle",
-    // The readout in effect, not the one pressing will show — unlike the name.
     "data-state": timeDisplay,
-    // A4: the name is this button's only state channel, so it flips.
     "aria-label":
       timeDisplay === "remaining" ? "Show time elapsed" : "Show time remaining",
     ...props,
@@ -84,8 +81,8 @@ function useToggleTimeDisplay() {
  * shows. Updates once a second, not at the element's ~4 Hz.
  *
  * The time is its own accessible name. No `aria-label`: on a `<time>` one
- * replaces the value rather than adding to it, and `<time>` has no ARIA role to
- * hang a name on (A12). Pass your own if the context needs spelling out.
+ * replaces the value rather than adding to it (A12). Pass your own if the
+ * context needs spelling out.
  */
 function Elapsed(props: TimeProps) {
   const store = usePlayerStore();
@@ -151,10 +148,9 @@ function Duration(props: TimeProps) {
  * The time readouts and the toggle between them.
  *
  * A namespace object, not a component: there is no `<Time>` to render, only
- * `Time.Elapsed`, `Time.Remaining`, `Time.Duration` and `Time.Toggle`.
- *
+ * `Time.Elapsed`, `Time.Remaining`, `Time.Duration` and `Time.Toggle` (S2).
  * `Elapsed` and `Remaining` are two views of one piece of state — render both
- * and exactly one shows, with `Toggle` switching which.
+ * and exactly one shows.
  *
  * @example
  * ```jsx

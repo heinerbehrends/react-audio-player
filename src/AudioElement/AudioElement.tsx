@@ -34,9 +34,6 @@ export function AudioElement({
   const { audioFile } = usePlayerConfig();
   const { src } = audioFile ?? {};
 
-  // This component renders the `<audio>` tag, so it can attach the store
-  // directly. Passing a setter down through context would be a second way to
-  // write a store designed to have exactly one.
   const store = usePlayerStore();
   const [element, setElement] = useState<HTMLAudioElement | null>(null);
 
@@ -45,9 +42,8 @@ export function AudioElement({
     [element, store],
   );
 
-  // Not render memoization: React re-invokes a ref callback whose identity
-  // changed, so an inline arrow would detach and reattach the store every
-  // render.
+  // React re-invokes a ref callback whose identity changed, so an inline arrow
+  // would detach and reattach the store on every render.
   const ref = useCallback((node: HTMLAudioElement | null) => {
     setElement(node);
   }, []);
@@ -67,16 +63,11 @@ export function AudioElement({
       {...props}
       src={src}
       ref={ref}
-      /**
-       * Passed straight through. The element parks at the end, so a consumer's
-       * handler can read where playback stopped; `play()` on an ended element
-       * seeks to 0 by itself, measured in Chrome, so rewinding here bought no
-       * replay and only destroyed that.
-       *
-       * Not the same event in every browser: Firefox also fires `ended` on a
-       * *paused* seek to `duration`, where Chrome fires nothing — so a drag to
-       * the end of the timeline calls this in Firefox only.
-       */
+      // Passed straight through: the element parks at the end, and `play()` on
+      // an ended element seeks to 0 by itself (measured in Chrome), so rewinding
+      // here bought no replay and destroyed the stop position. Firefox also
+      // fires `ended` on a *paused* seek to `duration`, where Chrome fires
+      // nothing (B4).
       onEnded={onEnded}
     >
       {children ? children : undefined}

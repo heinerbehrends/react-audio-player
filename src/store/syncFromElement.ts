@@ -94,28 +94,24 @@ const projectPaused: SyncHandler = (element, atoms) => {
 };
 
 /**
- * Shared by every event that can move the rung; they differ only in when that
- * happens. `Object.is` drops the writes that did not move it, so `progress`
- * firing every few hundred milliseconds during a download wakes nobody.
+ * Shared by every event that can move the rung. `Object.is` drops the writes
+ * that did not move it, so `progress` firing every few hundred milliseconds
+ * during a download wakes nobody.
  */
 const projectReadyState: SyncHandler = (element, atoms) => {
   atoms.readyState.set(element.readyState);
 };
 
 /**
- * Whether a `MediaError` actually means the resource is unusable.
+ * Whether a `MediaError` actually means the resource is unusable. The event
+ * alone does not say so: Firefox on a machine that cannot open an audio output
+ * device fires `error` with `MEDIA_ERR_DECODE` milliseconds after `play()`, then
+ * plays the track to the end with `readyState` at `HAVE_ENOUGH_DATA`.
  *
- * The event alone does not say so. Firefox on a machine that cannot open an
- * audio output device fires `error` with `MEDIA_ERR_DECODE` a few milliseconds
- * after `play()`, and then plays the track through to the end with `readyState`
- * at `HAVE_ENOUGH_DATA` and `currentTime` advancing in real time. Trusting the
- * event disabled every control while audio was still coming out.
- *
- * `HAVE_NOTHING` is the test instead: an element holding no data cannot play
- * whatever the code says, and one holding data can still play what it has —
- * which is also the right answer for a network failure part-way through a
- * download. A genuine load failure — a 404, an unsupported format — reports
- * `HAVE_NOTHING`, so the case that has to disable the controls still does.
+ * `HAVE_NOTHING` is the test instead — an element holding data can still play
+ * what it has, which is also the right answer for a network failure part-way
+ * through. A 404 or an unsupported format reports `HAVE_NOTHING`, so the case
+ * that must disable the controls still does.
  */
 function isUnusable(element: SyncableMediaElement): boolean {
   return element.error !== null && element.readyState === HAVE_NOTHING;
@@ -124,14 +120,11 @@ function isUnusable(element: SyncableMediaElement): boolean {
 /**
  * Reads the whole projection off the element in one pass. Used by `attach`,
  * which runs in an effect and can miss a `loadedmetadata` or `error` that
- * already fired, and by the `emptied` / `loadstart` reset, where a `src` swap
- * may have changed anything.
+ * already fired, and by the `emptied` / `loadstart` reset.
  *
- * `lastAudibleVolume` is seeded rather than projected: an element that is
- * audible now *is* the last audible volume, and if it is silent the existing
- * memory is the better answer. Without the seed, a `volumechange` missed before
- * `attach` leaves the memory at 1, and a click to zero would restore full
- * volume instead of what was playing.
+ * `lastAudibleVolume` is seeded rather than projected: without it, a
+ * `volumechange` missed before `attach` leaves the memory at 1, and a click to
+ * zero would restore full volume instead of what was playing.
  */
 export function prime(
   element: SyncableMediaElement,
@@ -187,8 +180,7 @@ export const HANDLERS = {
     atoms.muted.set(element.muted);
     // Exact zero, not the approximate rule `useVolumeState` applies: a tiny but
     // audible volume is still worth remembering. Skipped while a drag holds the
-    // pin, since a drag emits a `volumechange` per sample and the memory would
-    // erode to the last value it happened to pass through.
+    // pin, which emits a `volumechange` per sample and would erode the memory.
     if (!pinned && !element.muted && element.volume > 0) {
       atoms.lastAudibleVolume.set(element.volume);
     }

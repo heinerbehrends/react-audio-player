@@ -27,9 +27,8 @@ type SetPlaybackRateProps = {
  *
  * A toggle button: `aria-pressed` is `"true"` on the rate in effect, within
  * 0.001, and `"false"` on the others, so the row announces as a set of choices.
- * The library's other buttons carry no `aria-pressed` — their names change with
- * their state, and a pressed state on top announces the same fact twice (A4).
- * This one's name is fixed, so `aria-pressed` is the only channel it has.
+ * The only button here with one — its name is fixed, so it has no other state
+ * channel, while the rest carry theirs in a changing name (A4).
  *
  * Live while loading; only an error disables it.
  *
@@ -54,13 +53,8 @@ type SetPlaybackRateBag<P> = ButtonPropsBag<P> & {
  * rate to {rate}x" name, `aria-pressed`, the write, the error gate and the
  * media keys.
  *
- * `rate` is a leading argument rather than a key of `props` because a key would
- * flow into the bag, and React passes an unrecognised lowercase attribute
- * through to the DOM — `<button rate="1.5">` in the page source.
- *
- * Spread it last, onto a `<button>` or a component that renders one. Pass your
- * handlers in rather than adding them after the spread, where the library
- * cannot compose them.
+ * Spread it last, onto a `<button>`, and pass your own handlers in the call —
+ * after the spread they replace the library's rather than composing with it.
  */
 export function usePlaybackRateSetProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -69,15 +63,14 @@ export function usePlaybackRateSetProps<
   const isCurrent = useIsCurrent(rate);
   const composed = useComposedButtonProps(setPlaybackRate, props ?? {});
 
-  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
     type: "button",
     "data-part": "rate-set",
     "aria-label": `Set playback rate to ${rate}x`,
-    // Written on every button, `false` included — unlike `aria-disabled`, which
-    // is absent when false. Omitting it would leave the inactive rates
-    // announcing as plain buttons, so a listener could not tell the row is a set
-    // of choices or how many there are (A9).
+    // Written on every button, `false` included: omitting it leaves the inactive
+    // rates announcing as plain buttons, so a listener cannot tell the row is a
+    // set of choices or how many there are (A9).
     "aria-pressed": isCurrent,
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
@@ -96,15 +89,12 @@ type CurrentIndicatorProps = {
  *
  * Always renders `children`, in a wrapper span that is `visibility: hidden` when
  * the rate does not match, so the marker keeps its box and the row does not
- * reflow as it moves. **The wrapper is unconditional for that same reason**: a
- * fragment in one state and a span in the other would change which element is
- * the flex or grid item, reflowing the row on every rate change — the very thing
- * the hidden span exists to prevent (S17).
+ * reflow as it moves. The wrapper is unconditional for that same reason (S17).
  *
- * The content is therefore in the DOM in both states, and reserves space in
- * both: a presence check cannot tell the two apart, and nothing unreachable
- * should go in it. `visibility: hidden` also keeps the hidden marker out of the
- * accessibility tree, leaving `.Set`'s `aria-pressed` as the announced signal.
+ * The content is therefore in the DOM in both states: a presence check cannot
+ * tell them apart, and nothing unreachable should go in it. `visibility: hidden`
+ * keeps the hidden marker out of the accessibility tree, leaving `.Set`'s
+ * `aria-pressed` as the announced signal.
  */
 export function CurrentIndicator({
   rate,

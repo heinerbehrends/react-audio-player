@@ -4,9 +4,9 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 type ErrorMessageProps = {
   /**
    * The message. It becomes the live region's content, so it has to be visible
-   * text. Do not pass an `aria-label`: it would replace the announced name
-   * rather than adding to it, and a name is not reliably announced on insertion,
-   * so the message would go unread.
+   * text. Do not pass an `aria-label`: a name replaces the content rather than
+   * adding to it, and is not reliably announced on insertion, so the message
+   * would go unread (A3).
    */
   children: React.ReactNode;
 } & React.HTMLAttributes<HTMLDivElement>;
@@ -28,10 +28,6 @@ export function ErrorMessage({ children, ...props }: ErrorMessageProps) {
 
   if (loadState === "error") {
     return (
-      // A live region is announced from its content, so the children must stay
-      // visible and the region must carry no `aria-label`: a label replaces the
-      // accessible name without being reliably announced on insertion, which
-      // leaves the consumer's message unread.
       <div
         data-part="error"
         {...props}

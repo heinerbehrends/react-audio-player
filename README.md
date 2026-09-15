@@ -258,6 +258,11 @@ Unmuting restores the volume the player was last audible at.
   the row does not reflow as it moves
 - `<PlaybackRate.Change amount={0.1}>` — adjusts the rate by `amount`
 
+`<PlaybackRate.Set>` is **not** clamped to the slider's range: it names an
+explicit rate, so `rate={8}` sets 8 where `<PlaybackRateSlider>` stops at 4. The
+write path clamps to the element's own 0–16, so nothing throws. `.Change` and the
+`<` `>` keys clamp to the library's 0.5–4.
+
 ### Playback rate slider
 
 `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` is the root. Those
@@ -572,6 +577,46 @@ still works. `playerState === "loading"` means the track has not loaded yet;
 `isBuffering` means it loaded and then ran out of data.
 
 Seeking into unbuffered audio while paused does not report as buffering.
+
+### `useIsAtEnd()`
+
+Whether the position is the end of the track — for an end-of-track card, a
+Replay button, or greying out "next".
+
+```jsx
+function Replay() {
+  const { seek, play } = useAudioPlayer();
+
+  if (!useIsAtEnd()) return null;
+
+  return (
+    <button
+      onClick={() => {
+        seek(0);
+        play();
+      }}
+    >
+      Replay
+    </button>
+  );
+}
+```
+
+**A statement about position, not about history.** Dragging to the end reports
+`true` with nothing having played, and it clears as soon as the position moves.
+Use `onEnded` for the edge — "the track just finished, advance now" — and this
+for the level.
+
+Derived from the position rather than tracked, like `useIsBuffering()`: there is
+no flag to get stuck on, and nothing to go stale across a `src` change. The test
+is `currentTime >= duration` rather than an approximate match, because a browser
+parks slightly _past_ the duration when playback ends — Chrome reports about
+0.5 s beyond it — so a tolerance-based comparison reads false at exactly the
+moment the track finishes.
+
+It stays `false` under `audioProps={{ loop: true }}`. A looping element wraps to
+0 rather than resting at the end, and does so without a `timeupdate` ever
+reporting the end.
 
 ### `useCurrentSecond()` and `useCurrentTime()`
 

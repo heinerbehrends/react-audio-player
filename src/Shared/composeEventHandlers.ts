@@ -1,10 +1,9 @@
 /**
  * Calls `theirs`, then `ours` — unless `theirs` called `preventDefault()`.
  *
- * A spread prop replaces a handler rather than adding to it, and does so
- * silently: `<Timeline.Control onKeyDown={…}>` would drop arrow-key adjustment and
- * every media shortcut, leaving an element that still renders and announces a
- * value but no longer responds.
+ * A spread prop replaces a handler silently: `<Timeline.Control onKeyDown={…}>`
+ * would drop arrow-key adjustment and every media shortcut, leaving an element
+ * that still announces a value but no longer responds (S5).
  *
  * Consumer-first ordering is what makes `preventDefault()` an opt-out. The cost
  * is that one called for an unrelated reason cancels `ours` too.

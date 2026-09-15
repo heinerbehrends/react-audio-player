@@ -25,9 +25,8 @@ const ariaLabelMap = {
  * `PlayButton`'s props, for a `<button>` of your own: the four-name label (A4),
  * play/pause, the error gate and the media keys.
  *
- * Spread it last, onto a `<button>` or a component that renders one. Pass your
- * handlers in rather than adding them after the spread, where the library
- * cannot compose them.
+ * Spread it last, onto a `<button>`, and pass your own handlers in the call —
+ * after the spread they replace the library's rather than composing with it.
  */
 export function usePlayButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -36,11 +35,10 @@ export function usePlayButtonProps<
   const handleClick = useHandleClick();
   const composed = useComposedButtonProps(handleClick, props ?? {});
 
-  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
     type: "button",
     "data-part": "play",
-    // In the defaults tier: information, not a lock, so it is overridable.
     "data-state": playerState,
     "aria-label": ariaLabelMap[playerState],
     ...props,
@@ -106,13 +104,13 @@ PlayButtonComponent.Paused = Paused;
  * Play/pause, as one button.
  *
  * The accessible name is the only place its state appears — "Play audio", "Pause
- * audio", "Loading audio" or "Error loading audio". It sets no `aria-pressed`;
- * pass your own `aria-label` to override.
+ * audio", "Loading audio" or "Error loading audio". No `aria-pressed` (A4); pass
+ * your own `aria-label` to override.
  *
  * Pressable while loading: `play()` before metadata is legal and the browser
  * queues it. Only an error disables it, with `aria-disabled` rather than the
- * native attribute — so style it from `[aria-disabled="true"]`, not
- * `:disabled`. An autoplay refusal does not disable it; read that with
+ * native attribute — so style that from `[aria-disabled="true"]`, not
+ * `:disabled`. An autoplay refusal does not disable it; read it with
  * `useAudioError()`.
  *
  * Carries `data-part="play"` and `data-state="playing|paused|loading|error"`.

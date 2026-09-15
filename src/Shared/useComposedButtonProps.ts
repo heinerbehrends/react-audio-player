@@ -21,34 +21,16 @@ type ComposedOptions = {
 
 /**
  * The three props every button in this library controls: the availability gate,
- * the click that performs its action, and the media-key shortcuts.
+ * the click that performs its action, and the media-key shortcuts. Spread the
+ * result after the consumer's props, or the gate can be spread away.
  *
- * Unavailability is marked with `aria-disabled` rather than the native
- * `disabled` attribute, which takes the element out of the tab order and so
- * drops focus to `<body>` on a load-state change under a focused control. Both
- * predicates are composed in one place, so a control cannot announce one and
- * enforce the other.
+ * Unavailability is `aria-disabled`, not the native `disabled` attribute, which
+ * takes the element out of the tab order and so drops focus to `<body>` on a
+ * load-state change under a focused control (A7). Because the attribute is only
+ * advisory, activation is blocked here rather than by the browser.
  *
- * Spread the result after the consumer's props, or the gate can be spread away.
- *
- * **Your handlers run alongside the library's rather than replacing them** —
- * yours first, ours second, and `preventDefault()` in yours opts out of ours.
- * This is the rule `SliderControl` and `SliderThumb` already follow.
- *
- * **The gate covers activation, not the shortcuts.** While `aria-disabled` no
- * `onClick` runs at all, the consumer's included — `aria-disabled` is advisory,
- * so activation is blocked here instead of by the browser. The media keys keep
- * firing, because the keymap is player-wide: `p` toggles play from every
- * control, and gating it on *this* button's state would mean `p` working from
- * five buttons and not from `SeekButton` on an unseekable track, when
- * seekability has nothing to do with play/pause.
- *
- * **`preventDefault()` costs more on keydown than on click.** On a `<button>`
- * it is also how `Enter` and `Space` activation is cancelled, so one called
- * unconditionally in your `onKeyDown` silently removes keyboard activation.
- * Scope it to the key you are handling. It is not the way to turn the shortcuts
- * off — pass `{ p: null }` in `customKeyboardShortcuts` to unbind a key and let
- * it through to the browser.
+ * The gate covers activation, not the shortcuts: the keymap is player-wide, so
+ * `p` toggles play from every control whatever that control's own state.
  */
 export function useComposedButtonProps(
   ours: ClickHandler,
@@ -60,16 +42,11 @@ export function useComposedButtonProps(
   // rarely-changing atom, too cheap to branch on.
   const isSeekable = useIsSeekable();
   const isDisabled = isErrored || (requiresSeekable && !isSeekable);
-  // Called here rather than in each of the six: `ours` was identical in all of
-  // them.
   const handleMediaKeys = useHandleMediaKeys();
 
   return {
     "aria-disabled": isDisabled || undefined,
     onClick: isDisabled ? undefined : composeEventHandlers(props.onClick, ours),
-    // `handleMediaKeys` returns a boolean where `composeEventHandlers` types
-    // `ours` as returning void. That is assignable, and React ignores a
-    // handler's return value, so the boolean simply goes nowhere.
     onKeyDown: composeEventHandlers(props.onKeyDown, handleMediaKeys),
   };
 }
@@ -99,9 +76,8 @@ export type ButtonPropsBag<P> = Omit<P, keyof ButtonBagBase> & ButtonBagBase;
 
 /**
  * The bag of a button whose state the DOM does not already carry — play/pause,
- * mute and the time toggle. The other three have no state, or announce it with
- * `aria-pressed`, and a second spelling of a state already in the DOM is what
- * S9's rule refuses.
+ * mute and the time toggle. The other three have no state or announce it with
+ * `aria-pressed`, and S9's rule refuses a second spelling of either.
  *
  * `State` is public API: once a hook hands out `data-state="loading"`, renaming
  * that value breaks a consumer's stylesheet.

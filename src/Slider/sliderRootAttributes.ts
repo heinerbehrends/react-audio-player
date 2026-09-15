@@ -7,19 +7,15 @@ export type SliderRootAttributes = {
 };
 
 /**
- * The attributes every slider root carries, read off the slider itself so they
- * cannot drift from it or from each other — `Timeline`, `Volume` and
- * `PlaybackRateSlider` each hand-write their root `<div>`, and have disagreed
- * about it before.
+ * The attributes every slider root carries, read off the slider itself so the
+ * three hand-written root `<div>`s cannot drift apart, as they have before.
  *
- * Drag state lives here rather than on the thumb: it is a property of the
- * slider, and all four parts are descendants, so
- * `[data-part="root"][data-state="dragging"] [data-part="thumb"]` reaches them
- * (S9). `data-orientation` is here for the reason that makes it non-redundant —
+ * Drag state lives here rather than on the thumb: every part is a descendant, so
+ * one attribute reaches all of them (S9). `data-orientation` is here because
  * `aria-orientation` sits on `.Control`, a child, where a root-level layout rule
  * cannot see it.
  *
- * There is no `data-disabled`: `.Control` already renders `aria-disabled`, and
+ * No `data-disabled`: `.Control` already renders `aria-disabled`, and
  * `[data-part="root"]:has([aria-disabled="true"])` reaches the root from it.
  */
 export function sliderRootAttributes(

@@ -6,9 +6,8 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 type AudioPlayerProps = {
   children: React.ReactNode;
   /**
-   * The track. Changing `src` swaps it — the browser re-runs resource selection
-   * and the player returns to loading — so a playlist is your own state driving
-   * this prop, advanced from {@link onEnded}.
+   * The track. Changing `src` swaps it and returns the player to loading, so a
+   * playlist is your own state driving this prop, advanced from `onEnded`.
    *
    * Safe to pass as an inline literal; nothing memoises on its identity.
    */
@@ -20,13 +19,12 @@ type AudioPlayerProps = {
    */
   customKeyboardShortcuts?: KeyToActionMap;
   /**
-   * Fired once when the track finishes. The element is left parked at the end,
-   * so a handler can read where playback stopped.
+   * Fired once when the track finishes, with the element parked at the end.
    *
-   * The hook for a playlist: hold the index in your own state and advance it
-   * here. Nothing resumes playback on its own — a `src` change arrives loaded
-   * and paused — so call `play()` after the new track reports metadata, or pass
-   * `audioProps={{ autoPlay: true }}` and handle a possible autoplay refusal.
+   * The hook for a playlist. Nothing resumes playback on its own — a `src`
+   * change arrives loaded and paused — so call `play()` once the new track
+   * reports metadata, or pass `audioProps={{ autoPlay: true }}` and handle a
+   * possible autoplay refusal.
    *
    * This is the edge, "the track just finished". For the level, "the position is
    * the end", use `useIsAtEnd()`.
@@ -34,13 +32,10 @@ type AudioPlayerProps = {
   onEnded?: () => void;
   /**
    * Forwarded to the underlying `<audio>`: `preload`, `loop`, `controlsList`,
-   * `crossOrigin`, and anything else the library does not model.
+   * `crossOrigin`, and anything else the library does not model. `<track>`
+   * captions go through its `children`.
    *
-   * `<track>` captions go through `children`:
-   * `audioProps={{ children: <track kind="captions" src="…" default /> }}`.
-   *
-   * `src` and `onEnded` are excluded — both have dedicated props, and a second
-   * way to set either would be two sources of truth.
+   * `src` and `onEnded` are excluded — both have dedicated props.
    */
   audioProps?: Omit<
     React.AudioHTMLAttributes<HTMLAudioElement>,
@@ -58,11 +53,8 @@ type AudioPlayerProps = {
  * The player root: the store, the config, and the `<audio>` element. Renders no
  * controls and no wrapper beyond that element — layout is entirely `children`.
  *
- * **Every other export must be rendered inside one**, hooks included. They read
- * the store through context and throw a named error outside it rather than
- * falling back to dead state.
- *
- * Several players on a page are independent, each with its own store and element.
+ * **Every other export must be rendered inside one**, hooks included; they throw
+ * outside it. Several players on a page are independent.
  *
  * @example
  * ```jsx

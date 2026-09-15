@@ -88,19 +88,16 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * Live while loading; only an error disables it.
  *
  * The root is a plain `<div>` with no ARIA role: the slider semantics are on
- * `.Control`, which is already named "Volume slider", so a wrapper role and
- * label announced a group with one member and a second name for it (A11). Add
- * your own `role`/`aria-label` if you compose more controls in.
+ * `.Control`, which is already named "Volume slider" (A11). Add your own
+ * `role`/`aria-label` if you compose more controls in.
  *
- * Parts carry `data-part`, shared with the other sliders, so scope your CSS. The
- * root also carries `data-state="idle|dragging"` and
- * `data-orientation="horizontal|vertical"`, which is where a layout rule can
- * read the axis — `aria-orientation` is on `.Control`, a child.
+ * Carries `data-part="root"`, `data-state="idle|dragging"` and
+ * `data-orientation="horizontal|vertical"` — the axis, where a root-level layout
+ * rule can read it; `aria-orientation` is on `.Control`, a child.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got
-// the whole library. Measured under P1-a; the same pattern is used for every
-// compound root here.
+// the whole library (P1-a). Used for every compound root here.
 export const Volume = VolumeContainer as VolumeComponent;
 Volume.Progress = VolumeProgress;
 Volume.Background = VolumeBackground;

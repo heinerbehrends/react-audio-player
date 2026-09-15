@@ -38,13 +38,8 @@ export function SeekButton({
  * `SeekButton`'s props, for a `<button>` of your own: the name following the
  * sign of `amount`, the jump, the seekable gate and the media keys.
  *
- * `amount` is a leading argument rather than a key of `props` because a key
- * would flow into the bag, and React passes an unrecognised lowercase attribute
- * through to the DOM — `<button amount="-10">` in the page source.
- *
- * Spread it last, onto a `<button>` or a component that renders one. Pass your
- * handlers in rather than adding them after the spread, where the library
- * cannot compose them.
+ * Spread it last, onto a `<button>`, and pass your own handlers in the call —
+ * after the spread they replace the library's rather than composing with it.
  */
 export function useSeekButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -56,7 +51,7 @@ export function useSeekButtonProps<
     requiresSeekable: true,
   });
 
-  // Asserted: TypeScript cannot prove a spread of a generic `P` is the bag.
+  // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
     type: "button",
     "data-part": "seek",

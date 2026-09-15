@@ -14,23 +14,21 @@ export type SliderAriaState = {
 };
 
 /**
- * The three sliders differ on two axes, resolved from one table:
+ * Everything the three sliders differ on, in one table.
  *
- * - **`writesDuringDrag`** — `"seek"` keeps a local value to display, because
- *   nothing echoes back mid-drag; `"volume"` and `"rate"` write the element and
- *   read their value back from the `volumechange` / `ratechange` projection.
- * - **`unmutesOnGrab`** — the gesture half of the mute coupling: unmute on grab,
- *   and pin the audible-volume memory for the length of the gesture. Volume
- *   only.
- *
- * Mute-at-zero is not here. That rule lives in `handleSideEffect`, because it
- * also has to hold for a consumer's own `CHANGE_VALUE`, which never passes
- * through this table (C2).
+ * Mute-at-zero is deliberately not here: it lives in `handleSideEffect`, which a
+ * consumer's own `CHANGE_VALUE` also passes through (C2).
  */
 export type SliderModeConfig = {
-  /** The legacy `component` name the public `SideEffectAction` union carries. */
+  /** Which component a `CHANGE_VALUE` names. Internal since S15. */
   component: SliderComponent;
+  /**
+   * `"seek"` keeps a local value to display, since nothing echoes back
+   * mid-drag. `"volume"` and `"rate"` write the element and read back from the
+   * `volumechange` / `ratechange` projection.
+   */
   writesDuringDrag: boolean;
+  /** Volume only: unmute on grab, and pin `lastAudibleVolume` for the gesture. */
   unmutesOnGrab: boolean;
   ariaLabel: string;
   /**
@@ -46,10 +44,10 @@ export type SliderModeConfig = {
    */
   defaultArrowStep: number;
   /**
-   * `bounds` are the slider's own, not the mode's defaults. Under
-   * `<PlaybackRateSlider maxValue={2}>` an arrow press that clamped at the
-   * library ceiling pushed the element past the end of its own track. Only
-   * `"rate"` needs them — see `RATE_BOUNDS`.
+   * `bounds` are the slider's own, not the mode's defaults: under
+   * `<PlaybackRateSlider maxValue={2}>` an arrow press clamping at the library
+   * ceiling pushed the element past the end of its own track. Only `"rate"` uses
+   * them (C1).
    */
   increase: (amount: number, bounds: SliderBounds) => SideEffectAction;
   decrease: (amount: number, bounds: SliderBounds) => SideEffectAction;
@@ -60,9 +58,8 @@ export type SliderBounds = { minValue: number; maxValue: number };
 const percent = (value: number) => `${Math.round(value * 100)}%`;
 
 /**
- * Two decimals is 1 % of the volume range, and the precision `"1.25x"` already
- * shows: enough to hide float noise, fine enough that every arrow step still
- * moves the number (A13).
+ * Two decimals: enough to hide float noise, fine enough that every arrow step
+ * still moves the number (A13).
  */
 const hundredths = (value: number) => Math.round(value * 100) / 100;
 
@@ -120,8 +117,7 @@ export const SLIDER_MODES = {
 
 /**
  * ARIA's slider keys: Up and Right increase, Down and Left decrease, whatever
- * the orientation. Each mode adjusts its own value; the global media shortcuts
- * stay available on every other control.
+ * the orientation.
  */
 export const ARROW_KEYS = {
   ArrowUp: "increase",

@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**23 open · 1 part-done · 70 resolved · 2 rejected**
+**25 open · 1 part-done · 70 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `backlog` is everything raised during the work itself.
@@ -93,8 +93,9 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Architecture & style
 
-1 open of 13.
+2 open of 14.
 
+- [ ] [C12](architecture/C12-the-committed-value-reset-needs-an-effect.md) The committed-value reset needs an effect and a lint suppression — P3
 - [~] [C8](architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2, part-done
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
 - [x] [C2](resolved/architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1
@@ -136,7 +137,8 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Packaging
 
-1 open of 2.
+2 open of 3.
 
+- [ ] [B10](packaging/B10-nothing-checks-that-doc-comments-reach-the.md) Nothing checks that doc comments reach the published `.d.ts` — P2
 - [ ] [B6](packaging/B6-typescript-eslint-8-68-declares-typescript.md) `typescript-eslint` 8.68 declares `typescript
 - [x] [B7](resolved/packaging/B7-extend-type-check-to-cover-tsconfig-node.md) Extend `type-check` to cover `tsconfig.node.json` as well as `tsconfig.app.json`

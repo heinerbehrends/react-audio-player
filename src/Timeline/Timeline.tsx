@@ -106,17 +106,13 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * Until one is known, before metadata or on a live stream, the slider is
  * `aria-disabled` and ignores input. `useIsSeekable()` is the same test.
  *
- * The root is a plain `<div>` with no ARIA role of its own: the slider
- * semantics live on `.Control`, so a wrapper role would announce a group with
- * one member (A11). If you compose other controls in beside the slider, add your
- * own `role="group"` and `aria-label` — props are spread through.
+ * The root is a plain `<div>` with no ARIA role: the slider semantics live on
+ * `.Control` (A11). Add your own `role="group"` and `aria-label` if you compose
+ * other controls in beside it.
  *
- * Parts carry `data-part` for CSS (`root`, `control`, `progress`, `background`,
- * `thumb`). All three sliders share those names, so scope your selectors. The
- * root also carries `data-state="idle|dragging"` and
- * `data-orientation="horizontal"` — drag state belongs to the slider, so style
- * the thumb through the root:
- * `[data-part="root"][data-state="dragging"] [data-part="thumb"]`.
+ * Carries `data-part="root"`, `data-state="idle|dragging"` and
+ * `data-orientation="horizontal"`. All three sliders share their part names, so
+ * scope your selectors.
  *
  * @example
  * ```jsx
