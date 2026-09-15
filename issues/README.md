@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**34 open · 2 part-done · 56 resolved · 2 rejected**
+**35 open · 2 part-done · 56 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `backlog` is everything raised during the work itself.
@@ -32,9 +32,10 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Public surface & DX
 
-6 open of 23.
+7 open of 24.
 
 - [ ] [S14](surface/S14-missing-mis-nested-children-fail-silently.md) Missing/mis-nested children fail silently — P1
+- [ ] [S24](surface/S24-a-consumers-onclick-onkeydown-silently-kills-every.md) A consumer's `onClick`/`onKeyDown` silently kills every button — P1, **breaking**
 - [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [ ] [S21](surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [ ] [S22](surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3

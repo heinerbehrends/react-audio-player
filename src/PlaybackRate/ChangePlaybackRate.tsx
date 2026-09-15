@@ -1,6 +1,5 @@
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useStore } from "../store/atom";
-import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type IncreaseDecreaseProps = {
@@ -22,24 +21,19 @@ export function ChangePlaybackRate({
   ...props
 }: IncreaseDecreaseProps) {
   const handleChangePlaybackRate = useChangePlaybackRate(amount);
-  const handleMediaKeys = useHandleMediaKeys();
-  const disabled = useDisabledButtonProps(
-    handleChangePlaybackRate,
-    props.onClick,
-  );
+  const composed = useComposedButtonProps(handleChangePlaybackRate, props);
 
   return (
     <button
       type="button"
-      onKeyDown={handleMediaKeys}
       aria-label={
         amount > 0
           ? `Increase playback rate by ${Math.abs(amount)}x`
           : `Decrease playback rate by ${Math.abs(amount)}x`
       }
       {...props}
-      // Last, so the gate cannot be spread away.
-      {...disabled}
+      // Last, so the gate and the shortcuts cannot be spread away.
+      {...composed}
     >
       {children}
     </button>

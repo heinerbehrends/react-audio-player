@@ -1,4 +1,4 @@
-import { composeEventHandlers } from "./composeEventHandlers";
+import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { calculateDragStyle } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
 

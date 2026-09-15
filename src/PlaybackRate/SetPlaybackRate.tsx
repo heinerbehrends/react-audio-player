@@ -1,7 +1,6 @@
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { areNumbersClose } from "../Shared/areNumbersClose";
 import { useStore } from "../store/atom";
-import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SetPlaybackRateProps = {
@@ -34,14 +33,12 @@ export function SetPlaybackRate({
   ...props
 }: SetPlaybackRateProps) {
   const setPlaybackRate = useSetPlaybackRate(rate);
-  const handleKeyDown = useHandleMediaKeys();
   const isCurrent = useIsCurrent(rate);
-  const disabled = useDisabledButtonProps(setPlaybackRate, props.onClick);
+  const composed = useComposedButtonProps(setPlaybackRate, props);
 
   return (
     <button
       type="button"
-      onKeyDown={handleKeyDown}
       aria-label={`Set playback rate to ${rate}x`}
       // Written on every button, `"false"` included — unlike `aria-disabled`,
       // which is absent when false. Omitting it would leave the inactive rates
@@ -49,8 +46,8 @@ export function SetPlaybackRate({
       // set of choices or how many there are (A9).
       aria-pressed={isCurrent}
       {...props}
-      // Last, so the gate cannot be spread away.
-      {...disabled}
+      // Last, so the gate and the shortcuts cannot be spread away.
+      {...composed}
     >
       {children}
     </button>

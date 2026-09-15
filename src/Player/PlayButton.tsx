@@ -1,6 +1,5 @@
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { usePlayerState } from "../store/derived";
-import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlayButtonProps = {
@@ -18,18 +17,16 @@ const ariaLabelMap = {
 
 function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
   const ariaLabel = useAriaLabel();
-  const handleKeyDown = useHandleMediaKeys();
   const handleClick = useHandleClick();
-  const disabled = useDisabledButtonProps(handleClick, props.onClick);
+  const composed = useComposedButtonProps(handleClick, props);
 
   return (
     <button
       type="button"
-      onKeyDown={handleKeyDown}
       aria-label={ariaLabel}
       {...props}
-      // Last, so the gate cannot be spread away.
-      {...disabled}
+      // Last, so the gate and the shortcuts cannot be spread away.
+      {...composed}
     >
       {children}
     </button>

@@ -1,6 +1,5 @@
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useVolumeState } from "../store/derived";
-import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type MuteButtonComponentProps = {
@@ -13,8 +12,7 @@ export function MuteButtonComponent({
 }: MuteButtonComponentProps) {
   const volumeState = useVolumeState();
   const toggleMute = useToggleMute();
-  const handleMediaKeys = useHandleMediaKeys();
-  const disabled = useDisabledButtonProps(toggleMute, props.onClick);
+  const composed = useComposedButtonProps(toggleMute, props);
 
   return (
     <button
@@ -24,10 +22,9 @@ export function MuteButtonComponent({
       // button will unmute, the state says it already has (A4). `PlaybackRate.Set`
       // does carry it, because its name does not move.
       aria-label={volumeState === "muted" ? "Unmute" : "Mute"}
-      onKeyDown={handleMediaKeys}
       {...props}
-      // Last, so the gate cannot be spread away.
-      {...disabled}
+      // Last, so the gate and the shortcuts cannot be spread away.
+      {...composed}
     >
       {children}
     </button>

@@ -29,6 +29,17 @@ function writeRate(audioElement: HTMLAudioElement, value: number) {
   audioElement.playbackRate = clamp(value, 0, MAX_PLAYBACK_RATE);
 }
 
+/**
+ * A finite duration is what makes a position on the track meaningful: it is
+ * `NaN` before metadata and `Infinity` on a live stream. `useIsSeekable()` is
+ * the same test, so `SeekButton` is already `aria-disabled` whenever this is
+ * false — but the media keys are player-wide and reach these actions from any
+ * button, so the guard belongs here too.
+ */
+function isSeekable(audioElement: HTMLAudioElement) {
+  return Number.isFinite(audioElement.duration);
+}
+
 function writeTime(audioElement: HTMLAudioElement, value: number) {
   if (!Number.isFinite(value)) return;
   audioElement.currentTime = value;
@@ -162,6 +173,9 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_FORWARD": {
+      // Guarding the result is not enough: `Math.min(currentTime + 5, Infinity)`
+      // is finite, so `writeTime` would let a live stream seek.
+      if (!isSeekable(audioElement)) break;
       writeTime(
         audioElement,
         Math.min(
@@ -172,6 +186,9 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_BACKWARD": {
+      // A rewind names a position on the track just as much as a jump forward,
+      // and `SeekButton` is disabled in both directions for that reason.
+      if (!isSeekable(audioElement)) break;
       writeTime(
         audioElement,
         Math.max(audioElement.currentTime - action.value, 0),

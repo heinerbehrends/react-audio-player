@@ -3,11 +3,10 @@
    consumers through it rather than being exported individually. Fast refresh
    degrades for this file; a call signature that type-checks and then throws at
    runtime is the worse trade. */
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { formatTime } from "../Shared/formatTime";
 import { useStore } from "../store/atom";
 import { usePlayerState, useTimeDisplay } from "../store/derived";
-import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type ChildrenProps = {
@@ -29,8 +28,7 @@ function Toggle({ children, ...props }: ChildrenProps) {
   const timeDisplay = useStore(store.timeDisplay);
 
   const handleClick = useToggleTimeDisplay();
-  const handleMediaKeys = useHandleMediaKeys();
-  const disabled = useDisabledButtonProps(handleClick, props.onClick);
+  const composed = useComposedButtonProps(handleClick, props);
 
   return (
     <button
@@ -41,10 +39,9 @@ function Toggle({ children, ...props }: ChildrenProps) {
           ? "Show time elapsed"
           : "Show time remaining"
       }
-      onKeyDown={handleMediaKeys}
       {...props}
-      // Last, so the gate cannot be spread away.
-      {...disabled}
+      // Last, so the gate and the shortcuts cannot be spread away.
+      {...composed}
     >
       {children}
     </button>

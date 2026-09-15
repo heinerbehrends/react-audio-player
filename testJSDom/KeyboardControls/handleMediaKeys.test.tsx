@@ -301,6 +301,35 @@ describe("handleMediaKeys", () => {
       expect(mockHandleSideEffect).toHaveBeenCalledWith({ type: "STOP_AUDIO" });
     });
 
+    /**
+     * The escape hatch S24 owes the consumer: composing `onKeyDown` means a
+     * spread handler no longer replaces the library's, so `null` is the only
+     * way left to turn a shortcut off.
+     */
+    it("unbinds a default and lets the key through", () => {
+      defaultArgs.customKeyboardShortcuts = { p: null };
+
+      defaultArgs.event.key = "p";
+      const result = handleMediaKeys(defaultArgs);
+
+      expect(result).toBe(false);
+      expect(mockHandleSideEffect).not.toHaveBeenCalled();
+      // Neither call is made, so the key reaches the browser untouched.
+      expect(defaultArgs.event.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it("unbinds one key without disturbing its neighbours", () => {
+      defaultArgs.customKeyboardShortcuts = { p: null };
+
+      defaultArgs.event.key = "k";
+      const result = handleMediaKeys(defaultArgs);
+
+      expect(result).toBe(true);
+      expect(mockHandleSideEffect).toHaveBeenCalledWith({
+        type: "TOGGLE_PLAY",
+      });
+    });
+
     it("should handle custom shortcuts with different actions", () => {
       defaultArgs.customKeyboardShortcuts = {
         z: { type: "SET_TIME_FORWARD", value: 30 },
@@ -407,9 +436,11 @@ describe("what a key can be bound to", () => {
       b: { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
       c: { type: "INCREASE_PLAYBACK_RATE", value: 0.1, maxValue: 2 },
       d: { type: "STOP_AUDIO" },
+      // `null` unbinds — see `KeyToActionMap`.
+      e: null,
     };
 
-    expect(Object.keys(map)).toHaveLength(4);
+    expect(Object.keys(map)).toHaveLength(5);
   });
 
   it("rejects the slider commit and the end-of-track signal", () => {

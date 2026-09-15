@@ -84,6 +84,12 @@ row announces as a set of choices rather than as unrelated buttons.
 
 Pass your own `aria-label` to override any of them.
 
+Your handlers run alongside the library's rather than replacing them — yours
+first, ours second, and `preventDefault()` in yours opts out of ours. On a
+`<button>` that also cancels `Enter` and `Space` activation, so scope it to the
+key you are handling; to turn a media shortcut off, unbind it with
+`customKeyboardShortcuts` instead.
+
 An unavailable control is marked `aria-disabled` and does nothing when
 activated, your own `onClick` included — so style that state from
 `[aria-disabled="true"]`, never `:disabled`. The native attribute is deliberately
@@ -115,13 +121,13 @@ everything below it.
 </AudioPlayer>
 ```
 
-| Prop                      | Type                    | Description                                                                                      |
-| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
-| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                     |
-| `onEnded`                 | `() => void`            | Called once when the track finishes, after the element has been returned to the start.           |
-| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding.                    |
-| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props. |
-| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                           |
+| Prop                      | Type                    | Description                                                                                       |
+| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                      |
+| `onEnded`                 | `() => void`            | Called once when the track finishes, after the element has been returned to the start.            |
+| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding; `null` unbinds one. |
+| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props.  |
+| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                            |
 
 ```ts
 type AudioFile = {
@@ -481,7 +487,12 @@ are left to the browser and to assistive technology.
 `Space` is not bound, so it keeps activating the focused button. Pass
 `customKeyboardShortcuts={{ " ": { type: "TOGGLE_PLAY" } }}` if you want it.
 
-A binding is a `KeyboardAction` — `KeyToActionMap` is `Record<string, KeyboardAction>`.
+A binding is a `KeyboardAction`, or `null` to unbind — `KeyToActionMap` is
+`Record<string, KeyboardAction | null>`. `customKeyboardShortcuts={{ p: null }}`
+drops the default play/pause binding and lets `p` reach the browser. It is
+player-wide rather than per-control: a key that works on one button and not its
+neighbour is a bug report, not a feature.
+
 Two of the player's internal actions are deliberately not bindable: the slider
 commit, which carries a value in one component's units and means nothing without
 the gesture that produced it, and the end-of-track signal, which would fake a

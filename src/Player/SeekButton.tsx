@@ -1,5 +1,4 @@
-import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
-import { useDisabledButtonProps } from "../Shared/useDisabledButtonProps";
+import { useComposedButtonProps } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type SeekButtonComponentProps = {
@@ -25,10 +24,9 @@ export function SeekButton({
   ...props
 }: SeekButtonComponentProps) {
   const seekAmount = useSeek(amount);
-  const handleMediaKeys = useHandleMediaKeys();
   // `useSeek` sends `SET_TIME_FORWARD` whichever way `amount` points, and that
   // action reads `el.duration` — so a rewind needs one too.
-  const disabled = useDisabledButtonProps(seekAmount, props.onClick, {
+  const composed = useComposedButtonProps(seekAmount, props, {
     requiresSeekable: true,
   });
 
@@ -38,10 +36,9 @@ export function SeekButton({
       aria-label={`Seek ${amount > 0 ? "forward" : "backward"} by ${Math.abs(
         amount,
       )} seconds`}
-      onKeyDown={handleMediaKeys}
       {...props}
-      // Last, so the gate cannot be spread away.
-      {...disabled}
+      // Last, so the gate and the shortcuts cannot be spread away.
+      {...composed}
     >
       {children}
     </button>

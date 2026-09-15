@@ -1,4 +1,4 @@
-import { composeEventHandlers } from "./composeEventHandlers";
+import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { useSliderContext } from "./SliderContext";
 import { progressStyles, containerStyles } from "./calculateStyle";
 

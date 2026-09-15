@@ -11,8 +11,14 @@ export type HandleMediaKeysArgs = {
   customKeyboardShortcuts: KeyToActionMap | undefined;
 };
 
+/**
+ * Keys to the action they perform, merged over `defaultKeyToActionMap`.
+ *
+ * `null` unbinds: `{ p: null }` drops the default binding and lets `p` through
+ * to the browser. That is how a shortcut is turned off, player-wide.
+ */
 export type KeyToActionMap = {
-  [key: string]: KeyboardAction;
+  [key: string]: KeyboardAction | null;
 };
 
 export const defaultKeyToActionMap: KeyToActionMap = {

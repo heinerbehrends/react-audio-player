@@ -204,7 +204,7 @@ describe("the seekable gate", () => {
     expect(element.currentTime).toBe(10);
   });
 
-  it("runs the consumer's handler in place of ours once seekable", () => {
+  it("runs the consumer's handler alongside ours once seekable", () => {
     let theirs = 0;
     const { element } = renderWithStore(
       <SeekButton amount={10} onClick={() => theirs++}>
@@ -215,9 +215,11 @@ describe("the seekable gate", () => {
 
     fireEvent.click(screen.getByRole("button"));
 
+    // Two independent halves, so a failure says which one broke.
     expect(theirs).toBe(1);
-    // A spread `onClick` replaces the library's, as it did before the gate.
-    expect(element.currentTime).toBe(0);
+    // S24: a spread `onClick` composes with the library's rather than
+    // replacing it, so the seek happens too.
+    expect(element.currentTime).toBe(10);
   });
 });
 
