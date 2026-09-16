@@ -115,7 +115,12 @@ function Elapsed(props: TimeProps) {
   }
   // The loading branch picks the number, not the format: the entry still runs,
   // with `seconds: 0`, so a locale with its own digits gets them.
-  const seconds = playerState === "loading" ? 0 : elapsed;
+  //
+  // Rounded, like the other two: `formatTime` rounds, so an entry handed the
+  // float would disagree with the fallback it replaces. `elapsed` is already
+  // whole — it comes off the 1 Hz clock — and this says so rather than relying
+  // on it.
+  const seconds = playerState === "loading" ? 0 : Math.round(elapsed);
   return (
     <time data-part="elapsed" {...props}>
       {labels?.time?.({ seconds, part: "elapsed" }) ?? formatTime(seconds)}
@@ -145,11 +150,16 @@ function Remaining(props: TimeProps) {
   if (timeDisplay === "elapsed") {
     return null;
   }
-  // A magnitude, never a negative: the library owns which number, the entry owns
-  // the sign. Zero both before the duration is known and once the track has
-  // finished — the entry sees which case it is and can skip its own "-".
-  const seconds =
-    playerState === "loading" || Math.round(remaining) === 0 ? 0 : remaining;
+  // A magnitude, never a negative, and **whole seconds**: `duration -
+  // currentSecond` is fractional on most tracks, and `formatTime` rounds — so
+  // handing the entry the float made an entry that floors render a second below
+  // the fallback, and turned the last half-second into the `-0:00` this
+  // component exists to avoid. What the entry is given is what the fallback
+  // would render, the same rule the sliders and `rateDisplay` follow.
+  //
+  // Zero both before the duration is known and once the track has finished — the
+  // entry sees which case it is and can skip its own "-".
+  const seconds = playerState === "loading" ? 0 : Math.round(remaining);
   return (
     <time data-part="remaining" {...props}>
       {labels?.time?.({ seconds, part: "remaining" }) ??
@@ -169,12 +179,14 @@ function Duration(props: TimeProps) {
   const store = usePlayerStore();
   const duration = useStore(store.duration);
   const labels = useLabels();
-  // Straight through: the store normalises on write, so this is finite and ≥ 0
-  // even before metadata and on a live stream (`finite()`, `syncFromElement`).
+  // Finite and ≥ 0 without a guard: `duration` is `finite()`-wrapped at every
+  // write, so neither `NaN` before metadata nor a live stream's `Infinity`
+  // reaches here (`syncFromElement`). Rounded for the reason given on
+  // `Time.Remaining`.
+  const seconds = Math.round(duration);
   return (
     <time data-part="duration" {...props}>
-      {labels?.time?.({ seconds: duration, part: "duration" }) ??
-        formatTime(duration)}
+      {labels?.time?.({ seconds, part: "duration" }) ?? formatTime(seconds)}
     </time>
   );
 }

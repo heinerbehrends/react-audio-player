@@ -175,24 +175,24 @@ raw values, `Intl` is yours.
 
 ### The table
 
-| Entry            | Type                                 | Default                                                                |
-| ---------------- | ------------------------------------ | ---------------------------------------------------------------------- |
-| `player`         | `string`                             | `"audio player"`                                                       |
-| `play`           | `Record<PlayerState, string>`        | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio" |
-| `mute`           | `Record<VolumeState, string>`        | "Unmute" when muted, "Mute" otherwise                                  |
-| `timeToggle`     | `Record<TimeDisplayState, string>`   | "Show time remaining" / "Show time elapsed"                            |
-| `seek`           | `({ amount }) => string`             | `"Seek forward by 10 seconds"`                                         |
-| `rateSet`        | `({ rate }) => string`               | `"Set playback rate to 1.5x"`                                          |
-| `rateChange`     | `({ amount }) => string`             | `"Increase playback rate by 0.1x"`                                     |
-| `rateGroup`      | `string`                             | `"Playback rate options"`                                              |
-| `timelineSlider` | `string`                             | `"Timeline slider"`                                                    |
-| `volumeSlider`   | `string`                             | `"Volume slider"`                                                      |
-| `rateSlider`     | `string`                             | `"Playback rate slider"`                                               |
-| `timelineValue`  | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"`                                              |
-| `volumeValue`    | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"`                                               |
-| `rateValue`      | `(state: SliderAriaState) => string` | `"1.5x"`                                                               |
-| `time`           | `({ seconds, part }) => string`      | `"1:30"`, `"-1:30"`                                                    |
-| `rateDisplay`    | `({ rate }) => string`               | `"1.5x"`                                                               |
+| Entry            | Type                                 | Default                                                                 |
+| ---------------- | ------------------------------------ | ----------------------------------------------------------------------- |
+| `player`         | `string`                             | `"audio player"`                                                        |
+| `play`           | `Record<PlayerState, string>`        | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio"  |
+| `mute`           | `Record<VolumeState, string>`        | "Unmute" when muted, "Mute" otherwise                                   |
+| `timeToggle`     | `Record<TimeDisplayState, string>`   | "Show time remaining" / "Show time elapsed"                             |
+| `seek`           | `({ amount }) => string`             | `"Seek forward by 10 seconds"`                                          |
+| `rateSet`        | `({ rate }) => string`               | `"Set playback rate to 1.5x"`                                           |
+| `rateChange`     | `({ amount }) => string`             | `"Increase playback rate by 0.25x"`                                     |
+| `rateGroup`      | `string`                             | `"Playback rate options"`                                               |
+| `timelineSlider` | `string`                             | `"Timeline slider"`                                                     |
+| `volumeSlider`   | `string`                             | `"Volume slider"`                                                       |
+| `rateSlider`     | `string`                             | `"Playback rate slider"`                                                |
+| `timelineValue`  | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"`                                               |
+| `volumeValue`    | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"`                                                |
+| `rateValue`      | `(state: SliderAriaState) => string` | `"1.5x"`                                                                |
+| `time`           | `({ seconds, part }) => string`      | `"1:30"`, `"-1:30"` — see [what `time` cannot do](#what-time-cannot-do) |
+| `rateDisplay`    | `({ rate }) => string`               | `"1.5x"`                                                                |
 
 `SliderAriaState` is `{ value, maxValue, muted }` — one payload for all three
 sliders, so each uses what it needs. The timeline reads `value` and `maxValue` as
@@ -258,6 +258,30 @@ An entry that ignores `part` type-checks and renders a plausible clock, but
 `<Time.Elapsed>` and `<Time.Remaining>` render into the same slot and exactly one
 shows — so you get two identical readouts and a `<Time.Toggle>` that looks dead.
 The only symptom is a missing hyphen.
+
+### What `time` cannot do
+
+It is keyed by `part`, not by instance, so the three readouts get three
+renderings per player. Two `<Time.Duration>` in one player cannot differ, and
+formatting one readout means writing an entry that handles all three — there is
+no "format the duration, leave the rest alone".
+
+The readouts also do not take `children`. The text is what they render, so
+passing your own is a compile error rather than something silently dropped.
+
+For those cases, render your own `<time>`. `useTimeDisplay()` and `formatTime`
+are exported so you do not have to re-derive the remaining clamp or reimplement
+the default clock:
+
+```jsx
+import { useTimeDisplay, formatTime } from "react-headless-audio-player";
+
+function LongDuration() {
+  const { remaining } = useTimeDisplay();
+  // `remaining` is a magnitude, clamped at 0 — the sign is yours, as in `time`.
+  return <time>{remaining > 0 ? `-${formatTime(remaining)}` : "0:00"}</time>;
+}
+```
 
 Overriding `time` does not change the timeline's `aria-valuetext`:
 `timelineValue` formats its own two clocks from raw seconds. Keep one local
@@ -420,7 +444,9 @@ all three at once and receives raw seconds. See
 
 ### Playback rate
 
-- `<PlaybackRate>` — groups the rate controls
+- `<PlaybackRate>` — groups the rate controls. Like every other export it must
+  be rendered inside an `<AudioPlayer>`, and throws outside one — worth knowing
+  if you render it bare in a story or a snapshot test
 - `<PlaybackRate.Display>` — the current rate
 - `<PlaybackRate.Set rate={1.5}>` — sets that rate
 - `<PlaybackRate.Current rate={1.5}>` — marks that rate as the current one. Its

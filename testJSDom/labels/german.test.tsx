@@ -75,7 +75,7 @@ describe("numbers inside a translated sentence", () => {
 
     expect(screen.getByRole("slider")).toHaveAttribute(
       "aria-valuetext",
-      "Stumm, 80 %",
+      "Stumm, 80\u00A0%",
     );
   });
 

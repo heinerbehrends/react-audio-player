@@ -102,11 +102,12 @@ export type PlayerLabels = {
   /**
    * The text in `Time.Elapsed`, `Time.Remaining` and `Time.Duration`.
    *
-   * `seconds` is a **magnitude** — finite, never negative, `0` while loading and
-   * at the end. The library owns which number; you own how it reads, **sign
-   * included**, so a `remaining` part has to write its own `-`. An entry
-   * ignoring `part` renders two identical readouts and a `Time.Toggle` that
-   * looks dead.
+   * `seconds` is a **magnitude in whole seconds** — finite, never negative, `0`
+   * while loading and at the end, and always the number the default clock would
+   * render, so flooring and rounding agree. The library owns which number; you
+   * own how it reads, **sign included**, so a `remaining` part has to write its
+   * own `-`. An entry ignoring `part` renders two identical readouts and a
+   * `Time.Toggle` that looks dead.
    */
   time?: (state: { seconds: number; part: TimePart }) => string;
   /**

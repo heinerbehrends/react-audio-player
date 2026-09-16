@@ -80,6 +80,46 @@ describe("labels.time", () => {
     expect(part("remaining")).toHaveTextContent("remaining@0");
   });
 
+  /**
+   * The drift guard for the clocks. `duration - currentSecond` is fractional on
+   * most real tracks and `formatTime` rounds, so an entry handed the float
+   * rendered a second below the fallback wherever it floored — and the last
+   * half-second of a track reached the entry as `0.6`, where the documented
+   * `remaining` example writes `-0:00`, the exact glitch the component avoids.
+   *
+   * Fractional fixtures on purpose: with integer ones this passes against the
+   * bug.
+   */
+  it.each([
+    ["remaining", <Time.Remaining key="r" />, "remaining@158"],
+    ["duration", <Time.Duration key="d" />, "duration@188"],
+  ])("hands %s whole seconds, not the float behind it", (name, ui, text) => {
+    renderWithStore(ui, {
+      testStore: withTimeDisplay("remaining", {
+        duration: 187.6,
+        currentTime: 30,
+      }),
+      labels: { time: marker },
+    });
+
+    expect(part(name)).toHaveTextContent(text);
+  });
+
+  it("never hands the entry a value that would render -0:00", () => {
+    // 0.6 s left — from a fractional *duration*, since `currentSecond` is
+    // floored and cannot contribute one. Rounds to 1, so the entry says
+    // "-0:01" like the fallback rather than flooring to a signed zero.
+    renderWithStore(<Time.Remaining />, {
+      testStore: withTimeDisplay("remaining", {
+        duration: 119.6,
+        currentTime: 119,
+      }),
+      labels: { time: marker },
+    });
+
+    expect(part("remaining")).toHaveTextContent("remaining@1");
+  });
+
   it("falls back to today's English clocks with no entry", () => {
     renderWithStore(
       <>

@@ -167,10 +167,14 @@ describe("labels.seek", () => {
 });
 
 /**
- * The property the no-merge design buys: each component keeps its own English
- * literal, so translating one control cannot reach another. A refactor to a
- * shared defaults table would break this silently — and take the P1-a
- * tree-shaking win with it.
+ * Partial override: naming one control leaves the others English.
+ *
+ * This pins the **behaviour**, not the design that produces it — a shared
+ * defaults table merged as `{...defaults, ...labels}` renders identically, so
+ * this test would not notice one. The structural property it protects (each
+ * component holding its own literal, so a `PlayButton` bundle carries no slider
+ * strings) has no automated guard; it is a manual bundle measurement, recorded
+ * in A15's resolution.
  */
 it("leaves the entries a partial bag does not name in English", () => {
   renderWithStore(

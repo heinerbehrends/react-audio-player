@@ -270,23 +270,48 @@ through `SLIDER_MODES`, which is the payoff for giving all three value entries o
 and the renamed `TimeDisplayState`.
 
 **No merge step, and the bundle proves it.** Each component keeps its own English literal as
-the `??` fallback, so there is no defaults module to drag strings into bundles that do not
-use them. A `PlayButton`-only import measured **1,242 B → 1,267 B gzipped**, +25 B for the
-optional read, and held flat at 1,267 B across phases 2 and 3 — a `PlayButton` bundle still
-contains none of the slider, rate or time vocabulary. That is the property **P1-a** paid for
-and the one a shared `defaultLabels` object would have undone.
+the `??` fallback, so no new defaults module was added for anything to drag into bundles
+that do not use it. A `PlayButton`-only import measured **1,242 B → 1,267 B gzipped**, +25 B
+for the optional read, and held flat at 1,267 B across phases 2 and 3 — a `PlayButton`
+bundle still contains none of the slider, rate or time vocabulary. That is the property
+**P1-a** paid for and the one a shared `defaultLabels` object would have undone.
 
-**`RateDisplay`'s `aria-label="Current playback rate"` is deleted, not translated** — the
-one breaking change here, in the same sense **A12** was. A `<span>` is `role="generic"`, so
+Stated precisely, because the looser version is false: `SLIDER_MODES` **is** a shared table
+and does hold all three sliders' English strings, so a `Timeline`-only bundle carries the
+volume and rate slider names. That predates this work, and routing the six slider entries
+through the table is what avoids a three-way `switch` in `useSlider`. The claim that holds is
+the narrow one — importing one _button_ pulls in no other component's vocabulary.
+
+Neither property is guarded by a test. The partial-bag test in `buttonLabels.test.tsx` pins
+the behaviour, not the module structure: a `{...defaults, ...labels}` merge renders
+identically and would pass. The guard is the manual measurement recorded here, and it has to
+be re-run by hand.
+
+**Two breaking changes, not one.**
+
+**`RateDisplay`'s `aria-label="Current playback rate"` is deleted, not translated** — in the
+same sense **A12** was. A `<span>` is `role="generic"`, so
 the attribute was either dropped or replacing "1.5x" with a phrase that names the widget and
 withholds the number. The text is the name now, exactly as A12 concluded for the clocks, and
 `data-part="rate-display"` remains the query hook. Four jsdom assertions and one E2E spec
 located the span by that label and now locate it by `data-part`.
 
-**`PlaybackRate` no longer renders outside a player.** It reads `labels.rateGroup`, so it
-throws like every other export does — the contract `AudioPlayer`'s JSDoc already stated. One
-jsdom test rendered it bare and now renders it in the providers, with a row pinning the
-throw.
+**`PlaybackRate` no longer renders outside a player** — the second one, and it was
+originally filed here as if it were a footnote. It was a pure presentational span with no
+hooks at all; reading `labels.rateGroup` routes it through `usePlayerConfig`, which throws
+outside a provider, and it throws even when the consumer passed their own `aria-label` and
+the entry is discarded. That matches the contract `AudioPlayer`'s JSDoc already stated —
+every export must be rendered inside one — but a Storybook story or a snapshot test
+rendering the group bare was legal before and is a runtime throw now. Two jsdom renders in
+our own suite had to be wrapped, which is the same breakage. Recorded in the README's
+`PlaybackRate` entry rather than only here.
+
+**Time readouts take no `children`.** Found in review, after the above shipped:
+`TimeHTMLAttributes` carries `children`, nothing destructured it, and JSX children win over
+the props bag — so `<Time.Duration>{mine}</Time.Duration>` type-checked and rendered the
+library's clock. `TimeProps` now omits `children` and `dangerouslySetInnerHTML`. Type-level
+breaking, deliberately: the code it breaks was already not doing what it said. See **S16**,
+whose props bag it arrived with.
 
 ### The German fixture
 

@@ -99,6 +99,25 @@ describe("Time", () => {
   });
 
   /**
+   * A type-level assertion, checked by `tsc` rather than at runtime: the
+   * readout's own text occupies the children slot, so `children` was accepted
+   * and silently discarded until it was omitted from `TimeProps`. Drop that
+   * `Omit` and these `@ts-expect-error`s go unused, which fails the type-check.
+   */
+  it("rejects children at the type level", () => {
+    const rejected = (
+      <>
+        {/* @ts-expect-error children belong to the readout, not the caller */}
+        <Time.Elapsed>12:00</Time.Elapsed>
+        {/* @ts-expect-error — and it collides with the text at runtime */}
+        <Time.Duration dangerouslySetInnerHTML={{ __html: "12:00" }} />
+      </>
+    );
+
+    expect(rejected).toBeTruthy();
+  });
+
+  /**
    * The resting state after a track finishes, now that the element parks at the
    * end instead of being rewound. A signed "-0:00" reads as a glitch.
    */
