@@ -6,6 +6,15 @@ export type SliderMode = "seek" | "volume" | "rate";
 /**
  * What `aria-valuetext` is composed from: the announced value, plus the element
  * state it has to reflect.
+ *
+ * One payload for all three sliders, so `labels.timelineValue`,
+ * `labels.volumeValue` and `labels.rateValue` can be indexed by mode. Each uses
+ * what it needs — the timeline reads `value` and `maxValue` as seconds, volume
+ * reads `value` as 0–1 and `muted`, rate reads `value` alone.
+ *
+ * `value` is **quantized** — whole seconds for the timeline, hundredths for the
+ * other two — and is the same number as `aria-valuenow`. Handing an entry the
+ * raw float is how the two drift apart (A13).
  */
 export type SliderAriaState = {
   value: number;
@@ -31,6 +40,14 @@ export type SliderModeConfig = {
   /** Volume only: unmute on grab, and pin `lastAudibleVolume` for the gesture. */
   unmutesOnGrab: boolean;
   ariaLabel: string;
+  /**
+   * Which `PlayerLabels` entries override `ariaLabel` and `ariaValueText`.
+   * Keys rather than a lookup, so `useSlider` stays one branchless read — it
+   * does not know which of the three sliders it is, which is the point of the
+   * table.
+   */
+  labelKey: "timelineSlider" | "volumeSlider" | "rateSlider";
+  valueKey: "timelineValue" | "volumeValue" | "rateValue";
   /**
    * What `aria-valuenow` announces: whole seconds for `"seek"`, so the aria
    * surface cannot churn above 1 Hz, and two decimals for the other two.
@@ -69,6 +86,8 @@ export const SLIDER_MODES = {
     writesDuringDrag: false,
     unmutesOnGrab: false,
     ariaLabel: "Timeline slider",
+    labelKey: "timelineSlider",
+    valueKey: "timelineValue",
     quantizeAriaValue: Math.floor,
     ariaValueText: ({ value, maxValue }) =>
       `Position ${formatTime(value)} of ${formatTime(maxValue)}`,
@@ -81,6 +100,8 @@ export const SLIDER_MODES = {
     writesDuringDrag: true,
     unmutesOnGrab: true,
     ariaLabel: "Volume slider",
+    labelKey: "volumeSlider",
+    valueKey: "volumeValue",
     quantizeAriaValue: hundredths,
     // `muted` is its own element flag, so the volume alone announced "100%" on
     // a silent player. Adjusting the volume does not unmute, so "Muted, 5%" is
@@ -98,6 +119,8 @@ export const SLIDER_MODES = {
     writesDuringDrag: true,
     unmutesOnGrab: false,
     ariaLabel: "Playback rate slider",
+    labelKey: "rateSlider",
+    valueKey: "rateValue",
     quantizeAriaValue: hundredths,
     // Already rounded: it is handed the quantized value.
     ariaValueText: ({ value }) => `${value}x`,

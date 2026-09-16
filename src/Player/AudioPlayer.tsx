@@ -2,6 +2,7 @@ import { AudioElement } from "../AudioElement/AudioElement";
 import { PlayerStoreProvider } from "../store/PlayerStoreContext";
 import { PlayerConfigProvider, type AudioFile } from "./PlayerConfigContext";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
+import type { PlayerLabels } from "../Shared/playerLabels";
 
 type AudioPlayerProps = {
   children: React.ReactNode;
@@ -18,6 +19,17 @@ type AudioPlayerProps = {
    * Bound to any focused library control, not to the document.
    */
   customKeyboardShortcuts?: KeyToActionMap;
+  /**
+   * Your own strings, for every name and readout the library writes. Every entry
+   * is optional and falls back to the English default, so a partial bag is fine
+   * and passing none changes nothing.
+   *
+   * A per-instance `aria-label` still wins over the entry for that control.
+   *
+   * Safe to pass as an inline literal; nothing memoises on its identity, and
+   * swapping it re-renders every control — which is how a locale switch works.
+   */
+  labels?: PlayerLabels;
   /**
    * Fired once when the track finishes, with the element parked at the end.
    *
@@ -70,6 +82,7 @@ export function AudioPlayer({
   children,
   audioFile,
   customKeyboardShortcuts,
+  labels,
   onEnded,
   audioProps,
   audioRef,
@@ -79,6 +92,7 @@ export function AudioPlayer({
       <PlayerConfigProvider
         audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
+        labels={labels}
       >
         <AudioElement {...audioProps} onEnded={onEnded} audioRef={audioRef} />
         {children}

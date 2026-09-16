@@ -7,7 +7,12 @@ import {
   type ProjectionAtoms,
 } from "./syncFromElement";
 
-export type TimeDisplay = "elapsed" | "remaining";
+/**
+ * Which readout is on screen — the one `Time.Elapsed` / `Time.Remaining` show,
+ * not the one `Time.Toggle` will switch to. Player state, so every readout in
+ * the tree follows it.
+ */
+export type TimeDisplayState = "elapsed" | "remaining";
 
 export type PlayerStore = {
   // Read-only projections of the audio element. Only `syncFromElement` writes
@@ -35,7 +40,7 @@ export type PlayerStore = {
   playbackError: ReadableAtom<string | null>;
 
   /** The one writable atom: UI state with no counterpart on the element. */
-  timeDisplay: Atom<TimeDisplay>;
+  timeDisplay: Atom<TimeDisplayState>;
 
   send: (action: SideEffectAction) => void;
   /**
@@ -63,7 +68,7 @@ export function createPlayerStore(): PlayerStore {
     loadState: atom<LoadState>("loading"),
   };
 
-  const timeDisplay = atom<TimeDisplay>("elapsed");
+  const timeDisplay = atom<TimeDisplayState>("elapsed");
 
   // Not atoms: nothing subscribes to either, and an atom would come with a
   // `set` handle that the read-only projections then have to forbid.

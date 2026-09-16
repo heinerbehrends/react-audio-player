@@ -18,9 +18,12 @@ type SliderControlProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
  * One focusable, value-announcing element per slider is deliberate, and differs
  * from the APG/Radix arrangement where the thumb carries the role.
  *
- * `aria-label` is overridable, and the only way to localise a slider. `role`,
- * `tabIndex` and the handlers are not: your `onPointerDown` and `onKeyDown` run
- * alongside the library's rather than replacing them.
+ * `aria-label` and `aria-valuetext` are overridable here, per instance. To
+ * translate every slider at once use `AudioPlayer`'s `labels` —
+ * `timelineSlider` / `volumeSlider` / `rateSlider` for the name, and
+ * `timelineValue` / `volumeValue` / `rateValue` for the spoken value. `role`,
+ * `tabIndex` and the handlers are not overridable: your `onPointerDown` and
+ * `onKeyDown` run alongside the library's rather than replacing them.
  */
 export function SliderControl({ children, ...props }: SliderControlProps) {
   const { setSliderRef, aria, onTrackPointerDown, onKeyDown } =

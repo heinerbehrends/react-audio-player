@@ -14,6 +14,7 @@ import {
   type SliderMode,
 } from "./sliderModes";
 import { positionOf } from "./pointerPosition";
+import { useLabels } from "../Player/PlayerConfigContext";
 
 export type SliderAriaAttributes = {
   /**
@@ -86,6 +87,7 @@ export function useSlider({
 }: UseSliderOptions): SliderValue {
   const config = SLIDER_MODES[mode];
   const store = usePlayerStore();
+  const labels = useLabels();
   const handleMediaKeys = useHandleMediaKeys();
   const isErrored = useIsDisabled();
 
@@ -431,6 +433,10 @@ export function useSlider({
   const ariaValue = config.quantizeAriaValue(
     displayValue === valueFromStore ? ariaValueFromStore : displayValue,
   );
+  // The quantized value, not `displayValue`: `aria-valuetext` and
+  // `aria-valuenow` have to describe the same number, and handing an entry the
+  // raw float is how the two drift (A13).
+  const ariaState = { value: ariaValue, maxValue, muted };
 
   return {
     mode,
@@ -444,15 +450,15 @@ export function useSlider({
     dragState: drag.state,
     aria: {
       "aria-disabled": isDisabled || undefined,
-      "aria-label": config.ariaLabel,
+      // Through the mode table, so this stays one read: at this line `useSlider`
+      // does not know which of the three sliders it is.
+      "aria-label": labels?.[config.labelKey] ?? config.ariaLabel,
       "aria-valuemin": minValue,
       "aria-valuemax": maxValue,
       "aria-valuenow": ariaValue,
-      "aria-valuetext": config.ariaValueText({
-        value: ariaValue,
-        maxValue,
-        muted,
-      }),
+      "aria-valuetext":
+        labels?.[config.valueKey]?.(ariaState) ??
+        config.ariaValueText(ariaState),
       "aria-orientation": orientation,
     },
     setSliderRef,

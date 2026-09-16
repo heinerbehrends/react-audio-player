@@ -69,6 +69,7 @@ describe("usePlayerConfig", () => {
         <PlayerConfigProvider
           audioFile={{ src: "test-audio.mp3" }}
           customKeyboardShortcuts={{ x: { type: "TOGGLE_PLAY" } }}
+          labels={undefined}
         >
           {children}
         </PlayerConfigProvider>

@@ -95,9 +95,11 @@ describe("PlaybackRate", () => {
 
   it("should render a container with proper accessibility attributes", () => {
     render(
-      <PlaybackRate>
-        <div data-testid="playback-rate-child">Content</div>
-      </PlaybackRate>,
+      <TestProviders>
+        <PlaybackRate>
+          <div data-testid="playback-rate-child">Content</div>
+        </PlaybackRate>
+      </TestProviders>,
     );
 
     expect(screen.getByTestId("playback-rate-child")).toBeInTheDocument();
@@ -111,22 +113,38 @@ describe("PlaybackRate", () => {
     );
   });
 
+  /**
+   * Inside a player like every other export: the group reads `labels.rateGroup`
+   * since A15, so it no longer renders standalone.
+   */
+  it("throws outside a player", () => {
+    expect(() =>
+      render(
+        <PlaybackRate>
+          <span>1x</span>
+        </PlaybackRate>,
+      ),
+    ).toThrow(/must be used within a PlayerConfigProvider/);
+  });
+
   /** S16: the root took no props, so it could not be styled or targeted. */
   it("takes props, and keeps its role while letting the label be replaced", () => {
     render(
-      <PlaybackRate
-        className="rates"
-        aria-label="Abspielgeschwindigkeit"
-        data-testid="rate-group"
-      >
-        <span>1x</span>
-      </PlaybackRate>,
+      <TestProviders>
+        <PlaybackRate
+          className="rates"
+          aria-label="Abspielgeschwindigkeit"
+          data-testid="rate-group"
+        >
+          <span>1x</span>
+        </PlaybackRate>
+      </TestProviders>,
     );
 
     const group = screen.getByRole("group");
     expect(group).toHaveClass("rates");
     expect(group).toHaveAttribute("data-testid", "rate-group");
-    // Overridable, because it is the only way to localise the group name.
+    // Overridable per instance, on top of `labels.rateGroup` (A15).
     expect(group).toHaveAttribute("aria-label", "Abspielgeschwindigkeit");
   });
 });

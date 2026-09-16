@@ -11,7 +11,8 @@ import {
   type StatefulButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
-import type { TimeDisplay as TimeDisplayState } from "../store/createPlayerStore";
+import { useLabels } from "../Player/PlayerConfigContext";
+import type { TimeDisplayState } from "../store/createPlayerStore";
 
 type ChildrenProps = {
   children: React.ReactNode;
@@ -22,7 +23,8 @@ type TimeProps = React.TimeHTMLAttributes<HTMLTimeElement>;
 /**
  * Switches `Time.Elapsed` and `Time.Remaining`. Named for what pressing it will
  * do — "Show time elapsed" / "Show time remaining" — and that name is the only
- * place the state appears; no `aria-pressed` (A4).
+ * place the state appears; no `aria-pressed` (A4). Translate both with
+ * `AudioPlayer`'s `labels.timeToggle`.
  *
  * The choice is player state, so every `Time.Elapsed` and `Time.Remaining` in
  * the tree follows it.
@@ -47,6 +49,7 @@ export function useTimeToggleProps<
 >(props?: P): StatefulButtonPropsBag<P, TimeDisplayState> {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
+  const labels = useLabels();
 
   const handleClick = useToggleTimeDisplay();
   const composed = useComposedButtonProps(handleClick, props ?? {});
@@ -57,7 +60,10 @@ export function useTimeToggleProps<
     "data-part": "time-toggle",
     "data-state": timeDisplay,
     "aria-label":
-      timeDisplay === "remaining" ? "Show time elapsed" : "Show time remaining",
+      labels?.timeToggle?.[timeDisplay] ??
+      (timeDisplay === "remaining"
+        ? "Show time elapsed"
+        : "Show time remaining"),
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
@@ -83,19 +89,26 @@ function useToggleTimeDisplay() {
  * The time is its own accessible name. No `aria-label`: on a `<time>` one
  * replaces the value rather than adding to it (A12). Pass your own if the
  * context needs spelling out.
+ *
+ * No `format` prop: the formatting is `AudioPlayer`'s `labels.time`, which names
+ * all three readouts at once and is handed raw seconds (S16).
  */
 function Elapsed(props: TimeProps) {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
   const playerState = usePlayerState();
   const { elapsed } = useTimeDisplay();
+  const labels = useLabels();
 
   if (timeDisplay === "remaining") {
     return null;
   }
+  // The loading branch picks the number, not the format: the entry still runs,
+  // with `seconds: 0`, so a locale with its own digits gets them.
+  const seconds = playerState === "loading" ? 0 : elapsed;
   return (
     <time data-part="elapsed" {...props}>
-      {playerState === "loading" ? "0:00" : formatTime(elapsed)}
+      {labels?.time?.({ seconds, part: "elapsed" }) ?? formatTime(seconds)}
     </time>
   );
 }
@@ -108,21 +121,29 @@ function Elapsed(props: TimeProps) {
  * reads `0:00` — unsigned — both before the duration is known and once the track
  * has finished, where a "-0:00" would read as a glitch. No `aria-label`, for the
  * reason given on `Time.Elapsed`.
+ *
+ * A `labels.time` entry receives the **magnitude** here, with `part:
+ * "remaining"` — it writes its own `-`, and the zero cases arrive as `0`.
  */
 function Remaining(props: TimeProps) {
   const store = usePlayerStore();
   const timeDisplay = useStore(store.timeDisplay);
   const playerState = usePlayerState();
   const { remaining } = useTimeDisplay();
+  const labels = useLabels();
 
   if (timeDisplay === "elapsed") {
     return null;
   }
+  // A magnitude, never a negative: the library owns which number, the entry owns
+  // the sign. Zero both before the duration is known and once the track has
+  // finished — the entry sees which case it is and can skip its own "-".
+  const seconds =
+    playerState === "loading" || Math.round(remaining) === 0 ? 0 : remaining;
   return (
     <time data-part="remaining" {...props}>
-      {playerState === "loading" || Math.round(remaining) === 0
-        ? "0:00"
-        : `-${formatTime(remaining)}`}
+      {labels?.time?.({ seconds, part: "remaining" }) ??
+        (seconds === 0 ? "0:00" : `-${formatTime(seconds)}`)}
     </time>
   );
 }
@@ -137,9 +158,13 @@ function Remaining(props: TimeProps) {
 function Duration(props: TimeProps) {
   const store = usePlayerStore();
   const duration = useStore(store.duration);
+  const labels = useLabels();
+  // Straight through: the store normalises on write, so this is finite and ≥ 0
+  // even before metadata and on a live stream (`finite()`, `syncFromElement`).
   return (
     <time data-part="duration" {...props}>
-      {formatTime(duration)}
+      {labels?.time?.({ seconds: duration, part: "duration" }) ??
+        formatTime(duration)}
     </time>
   );
 }

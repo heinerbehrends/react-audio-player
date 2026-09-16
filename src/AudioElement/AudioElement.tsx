@@ -31,7 +31,7 @@ export function AudioElement({
   audioRef,
   ...props
 }: AudioElementProps) {
-  const { audioFile } = usePlayerConfig();
+  const { audioFile, labels } = usePlayerConfig();
   const { src } = audioFile ?? {};
 
   const store = usePlayerStore();
@@ -58,8 +58,8 @@ export function AudioElement({
 
   return (
     <audio
-      // Before the spread, so `audioProps` can replace it (A15).
-      aria-label="audio player"
+      // Before the spread, so `audioProps` can replace it per instance (A15).
+      aria-label={labels?.player ?? "audio player"}
       {...props}
       src={src}
       ref={ref}

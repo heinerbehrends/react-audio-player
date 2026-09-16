@@ -4,10 +4,10 @@ import { Time } from "../../src/TimeDisplay/TimeDisplay";
 import "@testing-library/jest-dom";
 import { createTestStore } from "../store/createTestStore";
 import { renderWithStore } from "../store/renderWithStore";
-import type { TimeDisplay } from "../../src/store/createPlayerStore";
+import type { TimeDisplayState } from "../../src/store/createPlayerStore";
 
 /** `timeDisplay` is the one writable atom, so a test sets it directly. */
-function withTimeDisplay(timeDisplay: TimeDisplay) {
+function withTimeDisplay(timeDisplay: TimeDisplayState) {
   const harness = createTestStore({ readyState: 1, duration: 120 });
   harness.store.timeDisplay.set(timeDisplay);
   return harness;
@@ -37,7 +37,7 @@ describe("Time", () => {
     ["elapsed", "Show time remaining"],
   ])("is named for what it will do while showing %s", (shown, name) => {
     renderWithStore(<Time.Toggle>Toggle</Time.Toggle>, {
-      testStore: withTimeDisplay(shown as TimeDisplay),
+      testStore: withTimeDisplay(shown as TimeDisplayState),
     });
     const button = screen.getByRole("button");
     expect(button).toHaveAccessibleName(name);

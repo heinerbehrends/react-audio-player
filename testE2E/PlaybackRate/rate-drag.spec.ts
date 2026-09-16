@@ -75,5 +75,5 @@ test("PlaybackRate.Display follows the element", async () => {
     .click();
   await waitForAudioField(page, "playbackRate", { differsFrom: 1 });
 
-  await expect(page.getByLabel("Current playback rate")).toHaveText("1.1x");
+  await expect(page.locator('[data-part="rate-display"]')).toHaveText("1.1x");
 });

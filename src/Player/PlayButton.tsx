@@ -7,6 +7,7 @@ import {
   type StatefulButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import { useLabels } from "./PlayerConfigContext";
 
 type PlayButtonProps = {
   children: React.ReactNode;
@@ -32,6 +33,7 @@ export function usePlayButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
 >(props?: P): StatefulButtonPropsBag<P, PlayerState> {
   const playerState = usePlayerState();
+  const labels = useLabels();
   const handleClick = useHandleClick();
   const composed = useComposedButtonProps(handleClick, props ?? {});
 
@@ -40,7 +42,7 @@ export function usePlayButtonProps<
     type: "button",
     "data-part": "play",
     "data-state": playerState,
-    "aria-label": ariaLabelMap[playerState],
+    "aria-label": labels?.play?.[playerState] ?? ariaLabelMap[playerState],
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
@@ -104,8 +106,9 @@ PlayButtonComponent.Paused = Paused;
  * Play/pause, as one button.
  *
  * The accessible name is the only place its state appears — "Play audio", "Pause
- * audio", "Loading audio" or "Error loading audio". No `aria-pressed` (A4); pass
- * your own `aria-label` to override.
+ * audio", "Loading audio" or "Error loading audio". No `aria-pressed` (A4).
+ * Translate all four with `AudioPlayer`'s `labels.play`, or override this one
+ * button with your own `aria-label`.
  *
  * Pressable while loading: `play()` before metadata is legal and the browser
  * queues it. Only an error disables it, with `aria-disabled` rather than the

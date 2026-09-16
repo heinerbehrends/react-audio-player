@@ -1,4 +1,5 @@
 import { ChangePlaybackRate } from "./ChangePlaybackRate";
+import { useLabels } from "../Player/PlayerConfigContext";
 import {
   SetPlaybackRate,
   CurrentIndicator,
@@ -18,15 +19,17 @@ type PlaybackRateProps = {
  * them as a set. The one `role="group"` in the library: the slider roots each
  * wrap a single control that is already named, and this wraps several (A11).
  *
- * Pass your own `aria-label` to override the group name.
+ * Translate the group name with `AudioPlayer`'s `labels.rateGroup`, or pass your
+ * own `aria-label` to override this one group.
  */
 export function PlaybackRate({ children, ...props }: PlaybackRateProps) {
+  const labels = useLabels();
   return (
     <span
       data-part="root"
-      // Before the spread, so a consumer can replace it — the only way to
-      // localise the group name. `role` is after, and cannot be replaced.
-      aria-label="Playback rate options"
+      // Before the spread, so a consumer can still replace it per instance.
+      // `role` is after, and cannot be replaced.
+      aria-label={labels?.rateGroup ?? "Playback rate options"}
       {...props}
       role="group"
     >

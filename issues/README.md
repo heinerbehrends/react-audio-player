@@ -5,17 +5,16 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**25 open · 1 part-done · 70 resolved · 2 rejected**
+**25 open · 1 part-done · 71 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Accessibility
 
-2 open of 15.
+1 open of 15.
 
 - [ ] [A10](accessibility/A10-nothing-names-or-bounds-the-widget.md) Nothing names or bounds the widget — P2
-- [ ] [A15](accessibility/A15-every-string-is-hardcoded-english.md) Every string is hardcoded English — P2
 - [x] [A1](resolved/accessibility/A1-space-activates-nothing-it-starts-playback-instead.md) Space activates nothing — it starts playback instead — P0
 - [x] [A2](resolved/accessibility/A2-no-modifier-key-guard-voiceover-navigation-drives.md) No modifier-key guard — VoiceOver navigation drives the player — P0
 - [x] [A3](resolved/accessibility/A3-the-error-alert-hides-its-own-message.md) The error alert hides its own message from AT — P0
@@ -29,6 +28,7 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 - [x] [A12](resolved/accessibility/A12-the-time-display-reads-as-bare-numbers.md) The time display reads as bare numbers — P2, **breaking**
 - [x] [A13](resolved/accessibility/A13-float-noise-in-aria-valuenow.md) Float noise in `aria-valuenow` — P2
 - [x] [A14](resolved/accessibility/A14-prop-spread-order-can-disable-keyboard-support.md) Prop-spread order can disable keyboard support — P2
+- [x] [A15](resolved/accessibility/A15-every-string-is-hardcoded-english.md) Every string is hardcoded English — P2, **breaking**
 
 ## Public surface & DX
 
@@ -112,8 +112,9 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Tests
 
-0 open of 12.
+1 open of 13.
 
+- [ ] [T12](tests/T12-e2e-specs-locate-elements-by-english-aria-label.md) E2E specs locate elements by English `aria-label` — P3
 - [x] [T1](resolved/tests/T1-no-snap-back-spec-ts-cannot-detect.md) `no-snap-back.spec.ts` cannot detect a snap-back — P0
 - [x] [T2](resolved/tests/T2-the-progressbar-assertion-is-vacuous.md) The `progressbar` assertion is vacuous — P0
 - [x] [T3](resolved/tests/T3-progress-indicator-updates-on-audio-playback-does.md) '"progress indicator updates on audio playback" does not test that it updates' — P0

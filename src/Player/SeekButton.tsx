@@ -6,6 +6,7 @@ import {
   type ButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import { useLabels } from "./PlayerConfigContext";
 
 type SeekButtonComponentProps = {
   children: React.ReactNode;
@@ -23,6 +24,9 @@ type SeekButtonComponentProps = {
  * computed against the duration too. So it is `aria-disabled` before metadata
  * and on a live stream, where there is no end to jump towards.
  * `useIsSeekable()` is the same test.
+ *
+ * Named "Seek forward by 10 seconds"; translate it with `AudioPlayer`'s
+ * `labels.seek`, which receives the signed `amount`.
  *
  * Carries `data-part="seek"`, and no `data-state`: a jump has none.
  */
@@ -45,6 +49,7 @@ export function useSeekButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
 >(amount: number, props?: P): ButtonPropsBag<P> {
   const seekAmount = useSeek(amount);
+  const labels = useLabels();
   // `useSeek` sends `SET_TIME_FORWARD` whichever way `amount` points, and that
   // action reads `el.duration` — so a rewind needs one too.
   const composed = useComposedButtonProps(seekAmount, props ?? {}, {
@@ -55,9 +60,13 @@ export function useSeekButtonProps<
   return {
     type: "button",
     "data-part": "seek",
-    "aria-label": `Seek ${amount > 0 ? "forward" : "backward"} by ${Math.abs(
-      amount,
-    )} seconds`,
+    // The entry gets the signed `amount`, not "forward"/"backward": German puts
+    // the verb last, which no slot in an English sentence can produce.
+    "aria-label":
+      labels?.seek?.({ amount }) ??
+      `Seek ${amount > 0 ? "forward" : "backward"} by ${Math.abs(
+        amount,
+      )} seconds`,
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,

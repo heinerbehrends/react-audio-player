@@ -91,7 +91,9 @@ effect, so the name has no state to carry. The rate in effect is
 `aria-pressed="true"` and the others are `"false"` rather than absent, so the
 row announces as a set of choices rather than as unrelated buttons.
 
-Pass your own `aria-label` to override any of them.
+Every string quoted above is English only until you say otherwise. Translate the
+lot with [`labels`](#localisation), or one control at a time with your own
+`aria-label`.
 
 Your handlers run alongside the library's rather than replacing them — yours
 first, ours second, and `preventDefault()` in yours opts out of ours. On a
@@ -123,6 +125,170 @@ before your own props — or onto something that is not a `<button>` — can def
 the disabled gate or the semantics. Spread it last, onto a `<button>`, and you
 get everything above.
 
+## Localisation
+
+Every string the library speaks is overridable, through one prop on the root:
+
+```jsx
+<AudioPlayer audioFile={{ src: "audio.mp3" }} labels={german}>
+  {/* Player UI components */}
+</AudioPlayer>
+```
+
+Every entry is optional, and one you leave out keeps its English default — so a
+partial bag is fine, and passing no `labels` at all changes nothing.
+
+### One rule, two shapes
+
+**A fixed set of states takes an object of strings. A number in the text takes a
+function.**
+
+Nothing else decides it. `<PlayButton>` has four states, so `play` is four
+strings; `labels.seek` interpolates a number nobody can write down in advance,
+so it is a function.
+
+Keeping half the surface as plain data buys two things. It survives a **React
+Server Component** boundary — React refuses to pass a function from a server
+component to a client one — so only an app that needs the function entries needs
+a `"use client"` of its own. And it matches how translations are stored: a
+`de.json` drops straight in, where a function is glue you have to write.
+
+The state keys are the same values the components put on `data-state`, so it is
+one vocabulary in two places, and `Record<PlayerState, string>` makes a forgotten
+state a compile error rather than a silently English name.
+
+### Entries get raw numbers
+
+`volumeValue` receives `0.8`, not `"80%"`. `rateDisplay` receives `1.5`, not
+`"1.5x"`. German writes "80 %" with a non-breaking space and "1,5x" with a
+decimal comma, and `Intl` produces both correctly — but only if it is handed the
+number:
+
+```ts
+const pf = new Intl.NumberFormat("de-DE", { style: "percent" });
+volumeValue: ({ value, muted }) =>
+  muted ? `Stumm, ${pf.format(value)}` : pf.format(value);
+```
+
+That is also why there is no separate number-formatting option: one mechanism,
+raw values, `Intl` is yours.
+
+### The table
+
+| Entry            | Type                                 | Default                                                                |
+| ---------------- | ------------------------------------ | ---------------------------------------------------------------------- |
+| `player`         | `string`                             | `"audio player"`                                                       |
+| `play`           | `Record<PlayerState, string>`        | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio" |
+| `mute`           | `Record<VolumeState, string>`        | "Unmute" when muted, "Mute" otherwise                                  |
+| `timeToggle`     | `Record<TimeDisplayState, string>`   | "Show time remaining" / "Show time elapsed"                            |
+| `seek`           | `({ amount }) => string`             | `"Seek forward by 10 seconds"`                                         |
+| `rateSet`        | `({ rate }) => string`               | `"Set playback rate to 1.5x"`                                          |
+| `rateChange`     | `({ amount }) => string`             | `"Increase playback rate by 0.1x"`                                     |
+| `rateGroup`      | `string`                             | `"Playback rate options"`                                              |
+| `timelineSlider` | `string`                             | `"Timeline slider"`                                                    |
+| `volumeSlider`   | `string`                             | `"Volume slider"`                                                      |
+| `rateSlider`     | `string`                             | `"Playback rate slider"`                                               |
+| `timelineValue`  | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"`                                              |
+| `volumeValue`    | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"`                                               |
+| `rateValue`      | `(state: SliderAriaState) => string` | `"1.5x"`                                                               |
+| `time`           | `({ seconds, part }) => string`      | `"1:30"`, `"-1:30"`                                                    |
+| `rateDisplay`    | `({ rate }) => string`               | `"1.5x"`                                                               |
+
+`SliderAriaState` is `{ value, maxValue, muted }` — one payload for all three
+sliders, so each uses what it needs. The timeline reads `value` and `maxValue` as
+seconds, volume reads `value` as 0–1 plus `muted`, and the rate slider reads
+`value` alone. `value` is the same number as `aria-valuenow`: quantized to whole
+seconds for the timeline and to hundredths for the other two, so the announced
+value and the spoken text cannot drift apart.
+
+Function entries return `string`, never `string | undefined`. A half-written
+entry that covers two states and falls off the end is the likeliest bug here, and
+that signature is what makes TypeScript refuse it. At runtime an entry that does
+return `undefined` — a translation library with a missing key — falls back to the
+English default rather than dropping the name.
+
+### Precedence
+
+A per-instance `aria-label` beats the `labels` entry, which beats the English
+default:
+
+```jsx
+{
+  /* "Abspielen", whatever labels.play says */
+}
+<PlayButton aria-label="Abspielen">▶</PlayButton>;
+```
+
+So `labels` is for the whole player and `aria-label` for the one control that
+needs different wording. Both are reasons to select on
+[`data-part`](#styling) rather than on a name.
+
+### Two entries read as inversions
+
+They are not. **The state says what _is_; the name says what _pressing does_.**
+
+```ts
+mute: { muted: "Ton einschalten" },       // state "muted", name "unmute"
+timeToggle: { elapsed: "Restzeit anzeigen" }, // showing elapsed, will show remaining
+```
+
+`mute` also has three states and two names, because `low` and `high` both mean
+"audible, so pressing mutes". That is what the `data-state` attribute has, and
+the keys follow it.
+
+### `time` receives a magnitude, and you write the sign
+
+`seconds` is never negative. It is `0` while loading and `0` at the end, and
+`part` tells you which readout is asking. **The library owns which number; you
+own how it reads, sign included** — so an entry handling `"remaining"` has to
+write its own `-`:
+
+```ts
+const clock = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+};
+
+time: ({ seconds, part }) =>
+  part === "remaining" && seconds > 0 ? `-${clock(seconds)}` : clock(seconds);
+```
+
+An entry that ignores `part` type-checks and renders a plausible clock, but
+`<Time.Elapsed>` and `<Time.Remaining>` render into the same slot and exactly one
+shows — so you get two identical readouts and a `<Time.Toggle>` that looks dead.
+The only symptom is a missing hyphen.
+
+Overriding `time` does not change the timeline's `aria-valuetext`:
+`timelineValue` formats its own two clocks from raw seconds. Keep one local
+`clock()` helper and call it from both.
+
+### With an existing i18n stack
+
+`labels` is read during render and every control subscribes to the player's
+config, so a new object re-renders all of them — which is all a locale switch
+needs:
+
+```jsx
+const { t } = useTranslation();
+
+<AudioPlayer
+  audioFile={{ src: "audio.mp3" }}
+  labels={{
+    play: {
+      playing: t("player.pause"),
+      paused: t("player.play"),
+      loading: t("player.loading"),
+      error: t("player.error"),
+    },
+    volumeValue: ({ value, muted }) =>
+      t(muted ? "player.mutedAt" : "player.volume", { percent: value }),
+  }}
+>
+```
+
+Nothing memoises on the object's identity, so an inline literal is fine.
+
 ## Components
 
 ### `<AudioPlayer>`
@@ -136,13 +302,14 @@ everything below it.
 </AudioPlayer>
 ```
 
-| Prop                      | Type                    | Description                                                                                       |
-| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
-| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                      |
-| `onEnded`                 | `() => void`            | Called once when the track finishes, after the element has been returned to the start.            |
-| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding; `null` unbinds one. |
-| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props.  |
-| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                            |
+| Prop                      | Type                    | Description                                                                                             |
+| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                            |
+| `onEnded`                 | `() => void`            | Called once when the track finishes, after the element has been returned to the start.                  |
+| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding; `null` unbinds one.       |
+| `labels`                  | `PlayerLabels`          | Your own strings, for every name and readout. Every entry optional — see [Localisation](#localisation). |
+| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props.        |
+| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                                  |
 
 ```ts
 type AudioFile = {
@@ -247,6 +414,10 @@ Unmuting restores the volume the player was last audible at.
 - `<Time.Duration>` — track length
 - `<Time.Toggle>` — switches between elapsed and remaining
 
+No `format` prop on the readouts: the formatting is `labels.time`, which names
+all three at once and receives raw seconds. See
+[`time` receives a magnitude](#time-receives-a-magnitude-and-you-write-the-sign).
+
 ### Playback rate
 
 - `<PlaybackRate>` — groups the rate controls
@@ -311,9 +482,9 @@ every element:
 }
 ```
 
-`data-part` is what `aria-label` cannot be. The label is the documented way to
-localise a control, so `button[aria-label="Play audio"]` is a selector that
-breaks the day you ship in German. A part name does not move.
+`data-part` is what `aria-label` cannot be. The label is translatable — that is
+what [`labels`](#localisation) is for — so `button[aria-label="Play audio"]` is a
+selector that breaks the day you ship in German. A part name does not move.
 
 ### State attributes
 
@@ -700,9 +871,10 @@ pnpm testE2E
   fails with `ERR_REQUIRE_ESM` — a message that names Node rather than this
   package. Use `import`, or `await import()` from CommonJS. Node 18 or later.
 
-Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer. Live
-streams are not supported: an unbounded duration reads as `0`, so gate any UI
-that needs a length on `useAudioPlayer().duration > 0`.
+Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer, unless
+you supply a [`labels.time`](#localisation) entry. Live streams are not
+supported: an unbounded duration reads as `0`, so gate any UI that needs a length
+on `useAudioPlayer().duration > 0`.
 
 ## License
 

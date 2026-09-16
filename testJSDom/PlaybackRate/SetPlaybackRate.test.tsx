@@ -222,20 +222,24 @@ describe("CurrentIndicator", () => {
 });
 
 describe("RateDisplay", () => {
+  /**
+   * `data-part`, not the name: the span carries no `aria-label` since A15, for
+   * the reason A12 gave for the clocks — a name on a `role="generic"` element is
+   * as likely to be dropped as to replace the value it hides.
+   */
+  const display = () =>
+    document.querySelector('[data-part="rate-display"]') as HTMLElement;
+
   it("displays the current playback rate with 'x' suffix", () => {
     renderRate(<RateDisplay />, { playbackRate: 1.5 });
 
-    expect(screen.getByLabelText("Current playback rate")).toHaveTextContent(
-      "1.5x",
-    );
+    expect(display()).toHaveTextContent("1.5x");
   });
 
   it("rounds the playback rate to 2 decimal places", () => {
     renderRate(<RateDisplay />, { playbackRate: 1.755 });
 
-    expect(screen.getByLabelText("Current playback rate")).toHaveTextContent(
-      "1.76x",
-    );
+    expect(display()).toHaveTextContent("1.76x");
   });
 
   it("follows a ratechange", () => {
@@ -244,17 +248,20 @@ describe("RateDisplay", () => {
     element.playbackRate = 2;
     emit("ratechange");
 
-    expect(screen.getByLabelText("Current playback rate")).toHaveTextContent(
-      "2x",
-    );
+    expect(display()).toHaveTextContent("2x");
+  });
+
+  it("renders no aria-label of its own", () => {
+    renderRate(<RateDisplay />, { playbackRate: 1.5 });
+
+    expect(display()).not.toHaveAttribute("aria-label");
   });
 
   it("accepts and applies additional props", () => {
     renderRate(
       <RateDisplay data-testid="rate-display" className="custom-display" />,
     );
-    const display = screen.getByLabelText("Current playback rate");
-    expect(display).toHaveAttribute("data-testid", "rate-display");
-    expect(display).toHaveClass("custom-display");
+    expect(display()).toHaveAttribute("data-testid", "rate-display");
+    expect(display()).toHaveClass("custom-display");
   });
 });

@@ -16,6 +16,6 @@ Formatting is locked to `M:SS` with no `format` prop.
 
 ## Resolution
 
-**Shipped** — `ErrorMessage`, the three `Time` parts and the `PlaybackRate` root now take the standard DOM props. `ErrorMessage`'s hardcoded `class="audio-player-error"` is gone — checked against `styles.css`, nothing ever matched it, so it was a name in the consumer's markup that they did not choose and that did nothing. `role`/`aria-live` on the alert and `role` on the group stay locked after the spread; the group's `aria-label` stays overridable, being the only way to localise it. A `format` prop is deliberately **not** part of this — see **A15**
+**Shipped** — `ErrorMessage`, the three `Time` parts and the `PlaybackRate` root now take the standard DOM props. `ErrorMessage`'s hardcoded `class="audio-player-error"` is gone — checked against `styles.css`, nothing ever matched it, so it was a name in the consumer's markup that they did not choose and that did nothing. `role`/`aria-live` on the alert and `role` on the group stay locked after the spread; the group's `aria-label` stays overridable, being the only way to localise it. A `format` prop is deliberately **not** part of this — see **A15**, where it landed as the `labels.time` entry rather than a per-readout prop: it names all three readouts at once, receives raw seconds, and leaves `Intl` to the consumer
 
 **Verified by** —

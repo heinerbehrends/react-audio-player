@@ -4,6 +4,7 @@ import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../src/KeyboardControls/handleMediaKeys";
 import type { AudioFile } from "../src/Player/PlayerConfigContext";
+import type { PlayerLabels } from "../src/Shared/playerLabels";
 import { createTestStore, type TestStore } from "./store/createTestStore";
 import type { MediaFields } from "./store/mediaElementFake";
 
@@ -11,6 +12,7 @@ type TestProvidersProps = {
   children: React.ReactNode;
   audioFile?: AudioFile | undefined;
   customKeyboardShortcuts?: KeyToActionMap | undefined;
+  labels?: PlayerLabels | undefined;
   /** An existing harness, when the test needs the store it renders against. */
   testStore?: TestStore | undefined;
   /** Otherwise: the fields the attached fake is primed from. */
@@ -26,6 +28,7 @@ export function TestProviders({
   children,
   audioFile = { src: "test-audio.mp3" },
   customKeyboardShortcuts,
+  labels,
   testStore,
   element,
 }: TestProvidersProps) {
@@ -38,6 +41,7 @@ export function TestProviders({
       <PlayerConfigProvider
         audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
+        labels={labels}
       >
         {children}
       </PlayerConfigProvider>

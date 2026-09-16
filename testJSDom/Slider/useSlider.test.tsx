@@ -59,6 +59,7 @@ function renderSlider(
           <PlayerConfigProvider
             audioFile={{ src: "test-audio.mp3" }}
             customKeyboardShortcuts={undefined}
+            labels={undefined}
           >
             {children}
           </PlayerConfigProvider>

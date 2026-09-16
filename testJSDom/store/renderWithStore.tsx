@@ -8,6 +8,7 @@ import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
 import type { AudioFile } from "../../src/Player/PlayerConfigContext";
+import type { PlayerLabels } from "../../src/Shared/playerLabels";
 import { createTestStore, type TestStore } from "./createTestStore";
 import type { MediaFields } from "./mediaElementFake";
 
@@ -18,6 +19,7 @@ type RenderWithStoreOptions = Omit<RenderOptions, "wrapper"> & {
   element?: Partial<MediaFields> | undefined;
   audioFile?: AudioFile | undefined;
   customKeyboardShortcuts?: KeyToActionMap | undefined;
+  labels?: PlayerLabels | undefined;
 };
 
 export type RenderWithStoreResult = RenderResult &
@@ -40,6 +42,7 @@ export function renderWithStore(
     element,
     audioFile = defaultAudioFile,
     customKeyboardShortcuts,
+    labels,
     ...renderOptions
   }: RenderWithStoreOptions = {},
 ): RenderWithStoreResult {
@@ -52,6 +55,7 @@ export function renderWithStore(
       <PlayerConfigProvider
         audioFile={audioFile}
         customKeyboardShortcuts={customKeyboardShortcuts}
+        labels={labels}
       >
         {children}
       </PlayerConfigProvider>

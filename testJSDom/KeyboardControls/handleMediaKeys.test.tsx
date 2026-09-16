@@ -26,6 +26,7 @@ function renderMediaKeys(element: Partial<MediaFields> = {}) {
         <PlayerConfigProvider
           audioFile={{ src: "test-audio.mp3" }}
           customKeyboardShortcuts={undefined}
+          labels={undefined}
         >
           {children}
         </PlayerConfigProvider>

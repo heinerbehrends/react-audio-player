@@ -7,6 +7,7 @@ import {
   type StatefulButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import { useLabels } from "./PlayerConfigContext";
 
 type MuteButtonComponentProps = {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ export function useMuteButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
 >(props?: P): StatefulButtonPropsBag<P, VolumeState> {
   const volumeState = useVolumeState();
+  const labels = useLabels();
   const toggleMute = useToggleMute();
   const composed = useComposedButtonProps(toggleMute, props ?? {});
 
@@ -34,7 +36,9 @@ export function useMuteButtonProps<
     // No `aria-pressed` beside this: with both, a screen reader announced
     // "Unmute, toggle button, pressed" — the name says the button will unmute,
     // the state says it already has (A4).
-    "aria-label": volumeState === "muted" ? "Unmute" : "Mute",
+    "aria-label":
+      labels?.mute?.[volumeState] ??
+      (volumeState === "muted" ? "Unmute" : "Mute"),
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
@@ -104,8 +108,9 @@ MuteButtonComponent.LowVolume = LowVolume;
 MuteButtonComponent.HighVolume = HighVolume;
 /**
  * Mute/unmute. Named "Mute" or "Unmute" for what pressing it will do, and that
- * name is the only place the state appears — no `aria-pressed`. Pass your own
- * `aria-label` to override.
+ * name is the only place the state appears — no `aria-pressed`. Translate both
+ * with `AudioPlayer`'s `labels.mute`, or override this one button with your own
+ * `aria-label`.
  *
  * Unmuting restores the volume the player was last audible at: mute at 80 % and
  * unmuting returns to 80 %, not to full.

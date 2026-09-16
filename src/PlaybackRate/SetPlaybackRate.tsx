@@ -8,6 +8,7 @@ import {
   type ButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import { useLabels } from "../Player/PlayerConfigContext";
 
 type SetPlaybackRateProps = {
   /**
@@ -23,7 +24,7 @@ type SetPlaybackRateProps = {
 
 /**
  * Sets one specific rate — the "1x / 1.5x / 2x" row of buttons. Named "Set
- * playback rate to {rate}x".
+ * playback rate to {rate}x"; translate it with `AudioPlayer`'s `labels.rateSet`.
  *
  * A toggle button: `aria-pressed` is `"true"` on the rate in effect, within
  * 0.001, and `"false"` on the others, so the row announces as a set of choices.
@@ -61,13 +62,15 @@ export function usePlaybackRateSetProps<
 >(rate: number, props?: P): SetPlaybackRateBag<P> {
   const setPlaybackRate = useSetPlaybackRate(rate);
   const isCurrent = useIsCurrent(rate);
+  const labels = useLabels();
   const composed = useComposedButtonProps(setPlaybackRate, props ?? {});
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
     type: "button",
     "data-part": "rate-set",
-    "aria-label": `Set playback rate to ${rate}x`,
+    "aria-label":
+      labels?.rateSet?.({ rate }) ?? `Set playback rate to ${rate}x`,
     // Written on every button, `false` included: omitting it leaves the inactive
     // rates announcing as plain buttons, so a listener cannot tell the row is a
     // set of choices or how many there are (A9).
@@ -112,20 +115,26 @@ type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 /**
  * The current rate as text, rounded to two decimals and suffixed with `x` —
- * "1x", "1.76x". Named "Current playback rate" for assistive technology, and
- * selectable as `[data-part="rate-display"]`.
+ * "1x", "1.76x". Selectable as `[data-part="rate-display"]`.
+ *
+ * The text is its own accessible name. No `aria-label`: a `<span>` is
+ * `role="generic"`, where a name is as likely to be dropped as to replace the
+ * value — the same reason `Time.*` carries none (A12). Pass your own if the
+ * context needs spelling out.
+ *
+ * Translate the text with `AudioPlayer`'s `labels.rateDisplay`, which receives
+ * the rounded number.
  */
 export function RateDisplay({ ...props }: RateDisplayProps) {
   const store = usePlayerStore();
   const rate = useStore(store.rate);
+  const labels = useLabels();
+  // Rounded before the entry sees it, so what is announced and what is shown
+  // stay one number.
   const roundedRate = Math.round(rate * 100) / 100;
   return (
-    <span
-      data-part="rate-display"
-      aria-label="Current playback rate"
-      {...props}
-    >
-      {roundedRate}x
+    <span data-part="rate-display" {...props}>
+      {labels?.rateDisplay?.({ rate: roundedRate }) ?? `${roundedRate}x`}
     </span>
   );
 }

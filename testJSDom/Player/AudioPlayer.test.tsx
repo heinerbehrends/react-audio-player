@@ -4,24 +4,31 @@ import { useState } from "react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
 import type { AudioFile } from "../../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
+import type { PlayerLabels } from "../../src/Shared/playerLabels";
 
-// `audioFile` and `customKeyboardShortcuts` are static config, so the assertion
-// is that they reach `PlayerConfigProvider`. `onEnded` is not config — it is a
-// callback bound straight to the element — so it is asserted on `AudioElement`.
+// `audioFile`, `customKeyboardShortcuts` and `labels` are static config, so the
+// assertion is that they reach `PlayerConfigProvider`. `onEnded` is not config —
+// it is a callback bound straight to the element — so it is asserted on
+// `AudioElement`.
 vi.mock("../../src/Player/PlayerConfigContext", () => ({
   PlayerConfigProvider: ({
     children,
     audioFile,
     customKeyboardShortcuts,
+    labels,
   }: {
     children: React.ReactNode;
     audioFile: AudioFile;
     customKeyboardShortcuts?: KeyToActionMap;
+    labels?: PlayerLabels;
   }) => (
     <div
       data-testid="player-config-provider"
       data-audio-src={audioFile.src}
       data-keyboard-shortcuts={JSON.stringify(customKeyboardShortcuts)}
+      // The keys, not the bag: half the entries are functions, which
+      // `JSON.stringify` drops.
+      data-label-keys={Object.keys(labels ?? {}).join(",")}
     >
       {children}
     </div>
@@ -135,6 +142,22 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
     expect(provider).toHaveAttribute(
       "data-keyboard-shortcuts",
       JSON.stringify(customShortcuts),
+    );
+  });
+
+  it("passes labels to PlayerConfigProvider", () => {
+    render(
+      <AudioPlayer
+        audioFile={mockAudioFile}
+        labels={{ player: "Audioplayer", seek: ({ amount }) => `${amount}` }}
+      >
+        <div>Test Content</div>
+      </AudioPlayer>,
+    );
+
+    expect(screen.getByTestId("player-config-provider")).toHaveAttribute(
+      "data-label-keys",
+      "player,seek",
     );
   });
 });

@@ -7,6 +7,7 @@ import {
   type ButtonPropsBag,
 } from "../Shared/useComposedButtonProps";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import { useLabels } from "../Player/PlayerConfigContext";
 
 type IncreaseDecreaseProps = {
   /** How much to add to the current rate. Negative slows down. */
@@ -16,7 +17,8 @@ type IncreaseDecreaseProps = {
 
 /**
  * Steps the rate by a fixed amount, relative to whatever it is now. Named
- * "Increase playback rate by 0.25x" or "Decrease…", following the sign.
+ * "Increase playback rate by 0.25x" or "Decrease…", following the sign;
+ * translate it with `AudioPlayer`'s `labels.rateChange`.
  *
  * Clamped to the library's 0.5–4 range, so holding it down stops at the ends.
  * Live while loading; only an error disables it.
@@ -45,6 +47,7 @@ export function usePlaybackRateChangeProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
 >(amount: number, props?: P): ButtonPropsBag<P> {
   const handleChangePlaybackRate = useChangePlaybackRate(amount);
+  const labels = useLabels();
   const composed = useComposedButtonProps(
     handleChangePlaybackRate,
     props ?? {},
@@ -54,10 +57,12 @@ export function usePlaybackRateChangeProps<
   return {
     type: "button",
     "data-part": "rate-change",
+    // The entry gets the signed `amount`, and decides the direction wording.
     "aria-label":
-      amount > 0
+      labels?.rateChange?.({ amount }) ??
+      (amount > 0
         ? `Increase playback rate by ${Math.abs(amount)}x`
-        : `Decrease playback rate by ${Math.abs(amount)}x`,
+        : `Decrease playback rate by ${Math.abs(amount)}x`),
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
