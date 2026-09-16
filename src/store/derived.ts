@@ -166,8 +166,15 @@ export function useIsAtEnd(): boolean {
 }
 
 /**
- * Both values come off `currentSecond`, the store's 1 Hz clock, so no interval
- * races the ~4 Hz event source.
+ * The two numbers behind `Time.Elapsed` and `Time.Remaining`, in seconds.
+ *
+ * Both come off `currentSecond`, the store's 1 Hz clock, so no interval races
+ * the ~4 Hz event source. `remaining` is clamped at `0` and is a **magnitude** —
+ * render your own `-`, exactly as a `labels.time` entry does.
+ *
+ * Reach for this when `labels.time` cannot express what you need: it is keyed by
+ * `part`, so two readouts of the same part cannot differ. Render your own
+ * `<time>` from these and `formatTime`.
  */
 export function useTimeDisplay(): { elapsed: number; remaining: number } {
   const store = usePlayerStore();

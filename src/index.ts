@@ -26,7 +26,14 @@ export {
   useIsBuffering,
   useIsSeekable,
   useAudioError,
+  useTimeDisplay,
 } from "./store/derived";
+// The default clock and the numbers behind it, for the one case `labels.time`
+// cannot reach: two readouts of the same `part` formatted differently, or
+// formatting one of the three and keeping `M:SS` for the others. Without these
+// a consumer rendering their own `<time>` has to re-derive `remaining` and
+// re-implement the default (S16).
+export { formatTime } from "./Shared/formatTime";
 export type { AudioFile } from "./Player/PlayerConfigContext";
 export type { PlayerLabels, TimePart } from "./Shared/playerLabels";
 export type { SliderAriaState } from "./Slider/sliderModes";

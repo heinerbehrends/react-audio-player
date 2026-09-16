@@ -18,7 +18,17 @@ type ChildrenProps = {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-type TimeProps = React.TimeHTMLAttributes<HTMLTimeElement>;
+/**
+ * `children` and `dangerouslySetInnerHTML` are omitted because the readout's
+ * own text occupies that slot: JSX children are `createElement`'s third
+ * argument, so anything passed through the props bag was silently discarded and
+ * the two together throw. Omitting them turns both into compile errors that
+ * point at `labels.time`, which is where per-readout text belongs (A15, S16).
+ */
+type TimeProps = Omit<
+  React.TimeHTMLAttributes<HTMLTimeElement>,
+  "children" | "dangerouslySetInnerHTML"
+>;
 
 /**
  * Switches `Time.Elapsed` and `Time.Remaining`. Named for what pressing it will
