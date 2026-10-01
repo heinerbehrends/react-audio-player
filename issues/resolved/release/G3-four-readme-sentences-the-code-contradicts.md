@@ -2,7 +2,7 @@
 id: G3
 title: "Four README sentences the code contradicts"
 epic: release
-status: open
+status: resolved
 severity: P1
 origin: assessment
 breaking: false
@@ -32,3 +32,16 @@ Also worth a sentence each while the file is open: **D3** (iOS ignores
 `volume`), **B4** (Firefox fires `ended` on a paused seek to the end) and
 **B1** (a playlist advance arrives paused). All three already contain their
 paragraph.
+
+## Resolution
+
+**Shipped** (2026-10-01) — the title drops "(in development)" and gains a beta
+paragraph pointing at the changelog; the `onEnded` row says the element parks
+at the end; the roadmap lists what is actually ahead (Media Session, `<source>`
+fallback, `isLive`, refs on the parts, a volume signal) and drops the two
+shipped items; the Requirements paragraph says live streams play and names the
+one thing missing. The D3, B4 and B1 paragraphs went in under Volume, the
+`onEnded` row and Playlists.
+
+**Verified by** — reading: each of the four sentences now matches the code it
+describes, and the `onEnded` row matches `testE2E/Timeline/ended.spec.ts`.

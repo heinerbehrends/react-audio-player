@@ -1,9 +1,12 @@
-# React Headless Audio Player (in development)
+# React Headless Audio Player
 
 A headless, accessible audio player for React: compound components that give you
 behaviour, semantics and state, while you supply all of the markup and styling.
 For the parts you would rather build yourself, each button also ships as a props
 hook.
+
+**Beta.** Published under the `beta` dist-tag until 1.0, and the API can change
+between betas. Every change is listed in the [changelog](CHANGELOG.md).
 
 There is no `asChild`. Radix's merge rule is child-props-win, which would invert
 every lock this library spreads last — `role="slider"`, `tabIndex={-1}`,
@@ -70,6 +73,13 @@ wrapper role would announce a group of one. `<PlaybackRate>` is the exception
 and keeps `role="group"`, because it wraps several buttons. If you compose other
 controls into a slider root, add your own `role="group"` and `aria-label`; props
 are spread through.
+
+`<AudioPlayer>` itself renders no element, so nothing names or bounds the
+player as a whole: two players on a page announce identically. Give your own
+container `role="region"` and an `aria-label` — or `aria-labelledby` pointing
+at the track title — and each player becomes a named landmark. The library
+will not add a wrapper later, since one would break every layout composed
+around it rendering nothing.
 
 The volume slider announces the mute as well as the volume — "Muted, 80%" — since
 the two are separate on the element and the arrow keys change the volume without
@@ -175,24 +185,28 @@ raw values, `Intl` is yours.
 
 ### The table
 
-| Entry            | Type                                 | Default                                                                 |
-| ---------------- | ------------------------------------ | ----------------------------------------------------------------------- |
-| `player`         | `string`                             | `"audio player"`                                                        |
-| `play`           | `Record<PlayerState, string>`        | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio"  |
-| `mute`           | `Record<VolumeState, string>`        | "Unmute" when muted, "Mute" otherwise                                   |
-| `timeToggle`     | `Record<TimeDisplayState, string>`   | "Show time remaining" / "Show time elapsed"                             |
-| `seek`           | `({ amount }) => string`             | `"Seek forward by 10 seconds"`                                          |
-| `rateSet`        | `({ rate }) => string`               | `"Set playback rate to 1.5x"`                                           |
-| `rateChange`     | `({ amount }) => string`             | `"Increase playback rate by 0.25x"`                                     |
-| `rateGroup`      | `string`                             | `"Playback rate options"`                                               |
-| `timelineSlider` | `string`                             | `"Timeline slider"`                                                     |
-| `volumeSlider`   | `string`                             | `"Volume slider"`                                                       |
-| `rateSlider`     | `string`                             | `"Playback rate slider"`                                                |
-| `timelineValue`  | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"`                                               |
-| `volumeValue`    | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"`                                                |
-| `rateValue`      | `(state: SliderAriaState) => string` | `"1.5x"`                                                                |
-| `time`           | `({ seconds, part }) => string`      | `"1:30"`, `"-1:30"` — see [what `time` cannot do](#what-time-cannot-do) |
-| `rateDisplay`    | `({ rate }) => string`               | `"1.5x"`                                                                |
+| Entry        | Type                               | Default                                                                |
+| ------------ | ---------------------------------- | ---------------------------------------------------------------------- |
+| `player`     | `string`                           | `"audio player"`                                                       |
+| `play`       | `Record<PlayerState, string>`      | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio" |
+| `mute`       | `Record<VolumeState, string>`      | "Unmute" when muted, "Mute" otherwise                                  |
+| `timeToggle` | `Record<TimeDisplayState, string>` | "Show time remaining" / "Show time elapsed"                            |
+| `seek`       | `({ amount }) => string`           | `"Seek forward by 10 seconds"`                                         |
+| `rateSet`    | `({ rate }) => string`             | `"Set playback rate to 1.5x"`                                          |
+| `rateChange` | `({ amount }) => string`           | `"Increase playback rate by 0.25x"`                                    |
+
+`player` names the `<audio>` element, which has no accessible object without
+`controls`, so Chromium and Firefox never announce it. Name the player on your
+own container instead — see [Accessibility](#accessibility).
+| `rateGroup` | `string` | `"Playback rate options"` |
+| `timelineSlider` | `string` | `"Timeline slider"` |
+| `volumeSlider` | `string` | `"Volume slider"` |
+| `rateSlider` | `string` | `"Playback rate slider"` |
+| `timelineValue` | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"` |
+| `volumeValue` | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"` |
+| `rateValue` | `(state: SliderAriaState) => string` | `"1.5x"` |
+| `time` | `({ seconds, part }) => string` | `"1:30"`, `"-1:30"` — see [what `time` cannot do](#what-time-cannot-do) |
+| `rateDisplay` | `({ rate }) => string` | `"1.5x"` |
 
 `SliderAriaState` is `{ value, maxValue, muted }` — one payload for all three
 sliders, so each uses what it needs. The timeline reads `value` and `maxValue` as
@@ -331,14 +345,14 @@ everything below it.
 </AudioPlayer>
 ```
 
-| Prop                      | Type                    | Description                                                                                             |
-| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                            |
-| `onEnded`                 | `() => void`            | Called once when the track finishes, after the element has been returned to the start.                  |
-| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding; `null` unbinds one.       |
-| `labels`                  | `PlayerLabels`          | Your own strings, for every name and readout. Every entry optional — see [Localisation](#localisation). |
-| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props.        |
-| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                                  |
+| Prop                      | Type                    | Description                                                                                                                      |
+| ------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `audioFile`               | `AudioFile`             | The track to play. Required.                                                                                                     |
+| `onEnded`                 | `() => void`            | Called once when the track finishes, with the element parked at the end. In Firefox only, a paused seek to the end fires it too. |
+| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the defaults, so a key you do not name keeps its default binding; `null` unbinds one.                                |
+| `labels`                  | `PlayerLabels`          | Your own strings, for every name and readout. Every entry optional — see [Localisation](#localisation).                          |
+| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the underlying `<audio>`. Excludes `src` and `onEnded`, which have dedicated props.                                 |
+| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element itself.                                                                                           |
 
 ```ts
 type AudioFile = {
@@ -376,8 +390,15 @@ Use `audioRef` for anything that needs the element itself: Web Audio,
 HLS.js/dash.js, or the Media Session API. Prefer a stable ref — an inline
 callback re-runs the forwarding effect on every render.
 
-One format is loaded per track; `<source>` fallback is not supported yet (see
-`issues/`).
+One format is loaded per track. `<source>` fallback is planned, and will widen
+the type rather than change it:
+
+```ts
+type AudioSource = { src: string; type?: string };
+type AudioFile = AudioSource | { sources: AudioSource[] };
+```
+
+Everything passing `{ src }` today keeps working unchanged.
 
 #### Playlists
 
@@ -401,6 +422,16 @@ function Playlist() {
   );
 }
 ```
+
+As written, this playlist stops after every track: a `src` change arrives
+loaded and paused, and nothing resumes it. Two ways to carry on. Pass
+`audioProps={{ autoPlay: true }}`, which also autoplays the first track and can
+be refused by the browser's autoplay policy — the refusal surfaces through
+`useAudioError()` as `kind: "playback"`. Or keep an effect keyed on the index
+that calls `play()` once the new track reports metadata.
+
+In Firefox, dragging the timeline to the very end while paused also fires
+`onEnded`, so a user can advance this playlist by hand; Chrome does not.
 
 ### Timeline
 
@@ -435,6 +466,12 @@ runs bottom to top.
 
 Reaching zero mutes, by any route — drag, click, keyboard or `setVolume(0)`.
 Unmuting restores the volume the player was last audible at.
+
+**On iOS the slider does nothing.** Apple keeps the level under the hardware
+buttons: `HTMLMediaElement.volume` ignores writes and always reads `1`, so the
+thumb does not move and `setVolume` is a no-op. `muted` still works. Until the
+library exposes a capability signal, drop `<Volume>` on iOS yourself and keep
+`<MuteButton>`.
 
 ### Time display
 
@@ -875,12 +912,20 @@ the gesture that produced it.
 
 ## Roadmap
 
-- Improve testing
-- Initial beta release
+Additive, in the order they are likely to land. None changes what ships today.
+
+- Media Session API — lock screen, media keys and car head units. `AudioFile`
+  already carries `title`, `artist`, `album` and `artwork` for it, and
+  `audioRef` reaches the element for anyone who cannot wait
+- `<source>` fallback, with the `AudioFile` shape shown under
+  [`<AudioPlayer>`](#audioplayer)
+- An `isLive` signal for unbounded durations
+- A `ref` on every part, for focus management and measurement; `audioRef`
+  reaches the `<audio>` element today
+- A volume-availability signal, for iOS
 - Playlist components, skip and loop (`onEnded` already supports a userland
   playlist)
 - Caption and subtitle support
-- Multi-language support
 
 ## Testing
 
@@ -902,9 +947,14 @@ pnpm testE2E
   package. Use `import`, or `await import()` from CommonJS. Node 18 or later.
 
 Times are formatted as `M:SS`, or `H:MM:SS` for content an hour or longer, unless
-you supply a [`labels.time`](#localisation) entry. Live streams are not
-supported: an unbounded duration reads as `0`, so gate any UI that needs a length
-on `useAudioPlayer().duration > 0`.
+you supply a [`labels.time`](#localisation) entry.
+
+Live streams play. Play, pause, volume, mute and rate all work on an unbounded
+duration; only the timeline and the seek buttons are disabled, through
+[`useIsSeekable()`](#useisseekable). What is missing is a name for the state:
+`duration` reads `0` for a live stream exactly as it does before metadata, so
+gate any UI that needs a length on `useAudioPlayer().duration > 0` and hide the
+timeline on `useIsSeekable()`.
 
 ## License
 

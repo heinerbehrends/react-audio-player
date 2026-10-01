@@ -62,3 +62,7 @@ entirely.
 `AudioSource | { sources: AudioSource[] }` is additive for every consumer
 passing `{ src }`, and that is all of them today. Confirm the shape before the
 beta so the README can promise it; implement after. Tracked from **G0**.
+
+**Shape confirmed** (2026-10-01): `AudioFile = AudioSource | { sources: AudioSource[] }`.
+The README promises it under `<AudioPlayer>` and on the roadmap. Implementation
+stays open, with everything above still true.

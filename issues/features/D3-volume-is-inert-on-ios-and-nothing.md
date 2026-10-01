@@ -31,3 +31,6 @@ audio player on iOS devices." This one gets filed.
 
 **Document before the beta, fix after.** The paragraph above is the README
 text; the capability probe can wait. Tracked from **G0** and **G3**.
+
+**README paragraph shipped** (2026-10-01, with G3) under Volume. The
+capability probe stays open.

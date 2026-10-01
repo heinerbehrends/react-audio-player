@@ -24,3 +24,6 @@ Media Session API. The metadata fields on `AudioFile` were added ahead of this s
 `AudioFile` already reserves `title`, `artist`, `album` and `artwork`, and
 `audioRef` reaches the element for anyone who cannot wait. Plan it for a later
 beta and say so in the README's roadmap. Tracked from **G0**.
+
+**Roadmap line shipped** (2026-10-01, with G3); first item on it. Not in
+`0.1.0-beta.0`.

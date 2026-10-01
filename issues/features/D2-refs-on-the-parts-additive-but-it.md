@@ -27,3 +27,7 @@ means dropping React 18, which is its own decision and not part of this.
 today, and focus management on the play button is a day-one need. Additive for
 consumers, but the beta is the cheap moment to change every public prop type at
 once. Tracked from **G0**.
+
+**Deferred past the beta** (decision, 2026-10-01). It is additive, so a later
+release can add it without breaking anyone; the README roadmap lists it and the
+changelog names the gap. Not in `0.1.0-beta.0`.

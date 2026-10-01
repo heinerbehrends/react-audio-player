@@ -15,3 +15,6 @@ a paused seek to `duration` sets `el.ended` and fires the event, where Chrome do
 **Document before the beta, decide after.** One README sentence next to the
 `onEnded` prop: in Firefox a drag to the end of the timeline fires it. Whether
 to paper over the divergence stays open. Tracked from **G0** and **G3**.
+
+**Documented** (2026-10-01, with G3) in the `onEnded` row and the Playlists
+section. Whether to paper over the divergence stays open.

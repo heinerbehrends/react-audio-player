@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**28 open · 1 part-done · 75 resolved · 2 rejected**
+**25 open · 1 part-done · 78 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,19 +13,17 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-2 open of 4.
+1 open of 4.
 
 - [ ] [G0](release/G0-beta-release-checklist.md) Beta release checklist — P0
-- [ ] [G3](release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
+- [x] [G3](resolved/release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
 
 ## Accessibility
 
-2 open of 16.
+0 open of 16.
 
-- [ ] [A10](accessibility/A10-nothing-names-or-bounds-the-widget.md) Nothing names or bounds the widget — P2
-- [ ] [A16](accessibility/A16-labels-player-names-an-element-outside-the-accessibility-tree.md) `labels.player` names an element outside the accessibility tree — P3
 - [x] [A1](resolved/accessibility/A1-space-activates-nothing-it-starts-playback-instead.md) Space activates nothing — it starts playback instead — P0
 - [x] [A2](resolved/accessibility/A2-no-modifier-key-guard-voiceover-navigation-drives.md) No modifier-key guard — VoiceOver navigation drives the player — P0
 - [x] [A3](resolved/accessibility/A3-the-error-alert-hides-its-own-message.md) The error alert hides its own message from AT — P0
@@ -35,11 +33,13 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [A7](resolved/accessibility/A7-focus-is-destroyed-on-load-state-change.md) Focus is destroyed on load-state change — P1, **breaking**
 - [x] [A8](resolved/accessibility/A8-the-volume-slider-does-not-reflect-mute.md) The volume slider does not reflect mute — P1
 - [x] [A9](resolved/accessibility/A9-aria-current-is-the-wrong-property-for.md) `aria-current` is the wrong property for rate options — P2, **breaking**
+- [x] [A10](resolved/accessibility/A10-nothing-names-or-bounds-the-widget.md) Nothing names or bounds the widget — P2
 - [x] [A11](resolved/accessibility/A11-role-group-is-inconsistent-across-the-three.md) '`role="group"` is inconsistent across the three sliders' — P2, **breaking**
 - [x] [A12](resolved/accessibility/A12-the-time-display-reads-as-bare-numbers.md) The time display reads as bare numbers — P2, **breaking**
 - [x] [A13](resolved/accessibility/A13-float-noise-in-aria-valuenow.md) Float noise in `aria-valuenow` — P2
 - [x] [A14](resolved/accessibility/A14-prop-spread-order-can-disable-keyboard-support.md) Prop-spread order can disable keyboard support — P2
 - [x] [A15](resolved/accessibility/A15-every-string-is-hardcoded-english.md) Every string is hardcoded English — P2, **breaking**
+- [x] [A16](resolved/accessibility/A16-labels-player-names-an-element-outside-the-accessibility-tree.md) `labels.player` names an element outside the accessibility tree — P3
 
 ## Public surface & DX
 

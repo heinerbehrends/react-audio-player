@@ -23,27 +23,42 @@ or explicitly deferred past the beta.
 
 - [x] **G1** — version, `prepublishOnly`, a `beta` dist-tag and a CHANGELOG
 - [x] **G2** — the playback-rate write throws in Chromium below 0.0625
-- [ ] **G3** — four README sentences the code contradicts
+- [x] **G3** — four README sentences the code contradicts
 - [ ] **S14** — a dev-only warning for the slider that measures zero: `.Control`
       omitted, `.Thumb` nested inside it, or a root with no height. All three
       fail silently today and are what a beta user hits first
 - [x] **C13** — delete the dead `AUDIO_FILE_ENDED` action
-- [ ] **D3**, **B4**, **B1** — document, do not fix: `volume` is inert on iOS,
+- [x] **D3**, **B4**, **B1** — document, do not fix: `volume` is inert on iOS,
       Firefox fires `ended` on a paused seek to the end, and a playlist advance
       arrives paused. Each is one README paragraph the ticket already contains
 
 ## Decide before the beta, because they are breaking later
 
-- [ ] **A10** — the missing wrapper. Adding an element later breaks every
+- [x] **A10** — the missing wrapper. Adding an element later breaks every
       consumer's layout. Recommendation: keep no wrapper, document
       `role="region"` plus a name on the consumer's container
-- [ ] **D2** — refs on the parts. No part forwards a `ref`; focus management on
+- [x] **D2** — refs on the parts. No part forwards a `ref`; focus management on
       the play button is a day-one need. Additive, but every prop type moves
-- [ ] **F6** — Media Session. The largest missing feature for an audio library.
+- [x] **F6** — Media Session. The largest missing feature for an audio library.
       Additive, since `AudioFile` already reserves the metadata fields, so it can
       land in a later beta — say so in the README
-- [ ] **B8** — codec fallback. Widening `AudioFile` to a union is additive for
+- [x] **B8** — codec fallback. Widening `AudioFile` to a union is additive for
       everyone passing `{ src }`, so it does not block. Confirm the shape
+
+## Decisions taken (2026-10-01)
+
+- **A10**: no wrapper. The consumer names their own container; the README and
+  the `AudioPlayer` JSDoc say so, and A16 closes with it.
+- **D2**: deferred past the beta. On the roadmap and in the changelog's gaps.
+- **F6**: a later beta, as recommended. First roadmap item.
+- **B8**: shape confirmed as `AudioSource | { sources: AudioSource[] }`; the
+  README promises it.
+- **G1**: nobody consumed the package before the beta, so the changelog opens
+  with what ships rather than a migration.
+
+Still open on this list: **S14**, which needs a short plan first — the repo has
+no dev-only stripping mechanism yet, and a measurement-based check fires for a
+legitimately hidden player.
 
 ## Safe to leave open
 

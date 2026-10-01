@@ -29,3 +29,6 @@ README paragraph from a limitation into a branch.
 **The README paragraph goes before the beta, the signal after.** Rewriting the
 Requirements paragraph from a limitation into a branch is part of **G3**; the
 `isLive` projection is not blocking. Tracked from **G0**.
+
+**README paragraph shipped** (2026-10-01, with G3). The `isLive` projection
+stays open and is on the roadmap.

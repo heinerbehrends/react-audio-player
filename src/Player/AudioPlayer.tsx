@@ -63,7 +63,8 @@ type AudioPlayerProps = {
 
 /**
  * The player root: the store, the config, and the `<audio>` element. Renders no
- * controls and no wrapper beyond that element — layout is entirely `children`.
+ * controls and no wrapper beyond that element — layout is entirely `children`,
+ * so name and bound the player with `role="region"` on your own container (A10).
  *
  * **Every other export must be rendered inside one**, hooks included; they throw
  * outside it. Several players on a page are independent.

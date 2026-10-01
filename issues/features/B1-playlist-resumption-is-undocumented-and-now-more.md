@@ -14,3 +14,6 @@ Following `onEnded`'s pattern gives a playlist that stops after every track: a `
 
 **Document before the beta.** The README's playlist section gets the two
 consumer-side fixes the tooltip already names. Tracked from **G0** and **G3**.
+
+**Documented** (2026-10-01, with G3): the Playlists section names both
+consumer-side fixes. Whether the library should resume on its own stays open.

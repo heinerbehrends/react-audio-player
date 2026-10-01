@@ -2,7 +2,7 @@
 id: A16
 title: "`labels.player` names an element outside the accessibility tree"
 epic: accessibility
-status: open
+status: resolved
 severity: P3
 origin: assessment
 breaking: false
@@ -29,3 +29,15 @@ comment, or go. If A10 adds a wrapper, the entry moves to it.
 
 Decide with A10. Until then, note in the `player` doc comment and the README
 table that the name is on the hidden element and is not announced.
+
+## Resolution
+
+**Documented** (2026-10-01) — A10 resolved as no wrapper, so the entry has no
+element to move to. The `player` doc comment and a note under the README's
+labels table both say the name is on the hidden element and is not announced,
+and point at `role="region"` on the consumer's container. The entry stays
+because it is harmless and removing it buys nothing a consumer can observe;
+dropping it before 1.0 remains open to whoever next touches `PlayerLabels`.
+
+**Verified by** — reading the comment in `dist/index.d.ts` after a build; it
+sits on the leaf, where tsup keeps it.
