@@ -48,13 +48,6 @@ describe("handleSideEffect", () => {
     expect(audioElement.pause).toHaveBeenCalled();
   });
 
-  it("should handle AUDIO_FILE_ENDED action", () => {
-    audioElement.currentTime = 42;
-    handleSideEffect({ type: "AUDIO_FILE_ENDED" }, audioElement);
-    expect(audioElement.currentTime).toBe(0);
-    expect(audioElement.pause).toHaveBeenCalled();
-  });
-
   it("should handle TOGGLE_MUTE action", () => {
     handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
     expect(audioElement.muted).toBe(true);

@@ -27,7 +27,7 @@ or explicitly deferred past the beta.
 - [ ] **S14** — a dev-only warning for the slider that measures zero: `.Control`
       omitted, `.Thumb` nested inside it, or a root with no height. All three
       fail silently today and are what a beta user hits first
-- [ ] **C13** — delete the dead `AUDIO_FILE_ENDED` action
+- [x] **C13** — delete the dead `AUDIO_FILE_ENDED` action
 - [ ] **D3**, **B4**, **B1** — document, do not fix: `volume` is inert on iOS,
       Firefox fires `ended` on a paused seek to the end, and a playlist advance
       arrives paused. Each is one README paragraph the ticket already contains

@@ -869,10 +869,9 @@ drops the default play/pause binding and lets `p` reach the browser. It is
 player-wide rather than per-control: a key that works on one button and not its
 neighbour is a bug report, not a feature.
 
-Two of the player's internal actions are deliberately not bindable: the slider
+One of the player's internal actions is deliberately not bindable: the slider
 commit, which carries a value in one component's units and means nothing without
-the gesture that produced it, and the end-of-track signal, which would fake a
-track ending and advance your playlist.
+the gesture that produced it.
 
 ## Roadmap
 

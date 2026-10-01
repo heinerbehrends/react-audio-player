@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**30 open · 1 part-done · 73 resolved · 2 rejected**
+**29 open · 1 part-done · 74 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -104,10 +104,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Architecture & style
 
-3 open of 15.
+2 open of 15.
 
 - [ ] [C12](architecture/C12-the-committed-value-reset-needs-an-effect.md) The committed-value reset needs an effect and a lint suppression — P3
-- [ ] [C13](architecture/C13-audio-file-ended-is-a-dead-action.md) `AUDIO_FILE_ENDED` is a dead action — P3
 - [~] [C8](architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2, part-done
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
 - [x] [C2](resolved/architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1
@@ -119,6 +118,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [C9](resolved/architecture/C9-the-drag-effect-registers-touchcancel-but-not.md) The drag effect registers `touchcancel` but not `touchend` — P2
 - [x] [C11](resolved/architecture/C11-positionof-reads-an-empty-touches-list-on.md) `positionOf` reads an empty `touches` list on `touchend` — P2
 - [x] [C10](resolved/architecture/C10-getprogress-takes-sliderlength-and-never-uses-it.md) `getProgress` takes `sliderLength` and never uses it arithmetically — P3
+- [x] [C13](resolved/architecture/C13-audio-file-ended-is-a-dead-action.md) `AUDIO_FILE_ENDED` is a dead action — P3
 - [-] [R1](architecture/R1-a-projected-ended-atom.md) A projected `ended` atom — rejected
 - [-] [R2](architecture/R2-a-volume-track-click-never-updates-lastaudiblevolume.md) A volume track click never updates `lastAudibleVolume`. — rejected
 

@@ -444,14 +444,12 @@ describe("what a key can be bound to", () => {
     expect(Object.keys(map)).toHaveLength(5);
   });
 
-  it("rejects the slider commit and the end-of-track signal", () => {
+  it("rejects the slider commit", () => {
     const map: KeyToActionMap = {
       // @ts-expect-error the slider commit path — see `KeyboardAction`
       a: { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
-      // @ts-expect-error the end-of-track signal — see `KeyboardAction`
-      b: { type: "AUDIO_FILE_ENDED" },
     };
 
-    expect(Object.keys(map)).toHaveLength(2);
+    expect(Object.keys(map)).toHaveLength(1);
   });
 });

@@ -96,7 +96,6 @@ export function handleSideEffect(
       audioElement.pause();
       break;
     }
-    case "AUDIO_FILE_ENDED":
     case "STOP_AUDIO": {
       audioElement.currentTime = 0;
       audioElement.pause();

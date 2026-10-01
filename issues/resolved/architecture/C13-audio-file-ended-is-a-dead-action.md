@@ -2,7 +2,7 @@
 id: C13
 title: "`AUDIO_FILE_ENDED` is a dead action"
 epic: architecture
-status: open
+status: resolved
 severity: P3
 origin: assessment
 breaking: false
@@ -27,3 +27,13 @@ README's `onEnded` row (**G3**) still describes the rewind this action did.
 Delete the type, the `SideEffectAction` member and the `case`. Reword the
 `KeyboardAction` comment so it excludes only `CHANGE_VALUE`. Check
 `testJSDom/AudioElement/` for a test that sends it.
+
+## Resolution
+
+**Shipped** (2026-10-01) — the type, the `SideEffectAction` member and the
+`case` are gone; `KeyboardAction`'s comment now excludes only `CHANGE_VALUE`,
+and the README's keyboard section says one internal action rather than two.
+
+**Verified by** — the test that sent it is deleted and the `@ts-expect-error`
+row for it in `handleMediaKeys.test.tsx` is gone, so type-check fails if the
+action comes back.

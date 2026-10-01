@@ -30,10 +30,6 @@ export type UnmuteAction = {
   type: "UNMUTE";
 };
 
-export type AudioFileEndedAction = {
-  type: "AUDIO_FILE_ENDED";
-};
-
 type StopAudioAction = {
   type: "STOP_AUDIO";
 };
@@ -100,10 +96,8 @@ type SetTimeToPercentAction = {
 /**
  * What a key may be bound to, and the only action type the package exports.
  *
- * `CHANGE_VALUE` and `AUDIO_FILE_ENDED` are deliberately absent: the first is
- * the slider commit path, a value in one component's units that means nothing
- * without the gesture behind it; the second is the end-of-track signal, so a
- * key bound to it would fake a track ending and advance a playlist.
+ * `CHANGE_VALUE` is deliberately absent: it is the slider commit path, a value
+ * in one component's units that means nothing without the gesture behind it.
  *
  * Listed rather than derived with `Exclude`, so a new internal action cannot
  * widen the public surface by default.
@@ -126,6 +120,5 @@ export type KeyboardAction =
   | SetTimeToStartAction
   | SetTimeToPercentAction;
 
-/** Everything `send` accepts: the bindable actions plus the two internal ones. */
-export type SideEffectAction =
-  KeyboardAction | ChangeValueAction | AudioFileEndedAction;
+/** Everything `send` accepts: the bindable actions plus the slider commit. */
+export type SideEffectAction = KeyboardAction | ChangeValueAction;
