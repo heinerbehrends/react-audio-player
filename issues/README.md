@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**29 open · 1 part-done · 74 resolved · 2 rejected**
+**28 open · 1 part-done · 75 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,11 +13,11 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-3 open of 4.
+2 open of 4.
 
 - [ ] [G0](release/G0-beta-release-checklist.md) Beta release checklist — P0
-- [ ] [G1](release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [ ] [G3](release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
+- [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
 
 ## Accessibility

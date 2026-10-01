@@ -1,6 +1,6 @@
 {
   "name": "react-headless-audio-player",
-  "version": "0.0.0",
+  "version": "0.1.0-beta.0",
   "type": "module",
   "description": "A headless React audio player library",
   "keywords": [
@@ -23,7 +23,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "engines": {
@@ -31,6 +32,7 @@
   },
   "scripts": {
     "dev": "tsup --watch",
+    "prepublishOnly": "pnpm type-check && pnpm build",
     "vite": "vite dev",
     "build": "tsup",
     "lint": "eslint .",

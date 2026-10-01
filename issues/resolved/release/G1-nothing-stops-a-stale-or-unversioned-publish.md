@@ -2,7 +2,7 @@
 id: G1
 title: "Nothing stops a stale or unversioned publish"
 epic: release
-status: open
+status: resolved
 severity: P0
 origin: assessment
 breaking: false
@@ -37,3 +37,19 @@ client"` banner survives the build.
 
 Publish with `pnpm publish --tag beta` so `latest` stays unset until 1.0. Add
 `CHANGELOG.md` with a `0.1.0-beta.0` section seeded from the breaking tickets.
+
+## Resolution
+
+**Shipped** (2026-10-01) — `version` is `0.1.0-beta.0`, `prepublishOnly`
+runs `pnpm type-check && pnpm build` so a publish cannot ship a stale
+`dist/`, and `CHANGELOG.md` opens with the beta section. Nobody consumed the
+package before this version, so the first entry lists what ships and the
+documented gaps rather than a migration; the breaking-change history stays in
+the resolved tickets.
+
+The publish itself is a manual step: `pnpm publish --tag beta`, so `latest`
+stays unset until 1.0.
+
+**Verified by** — `pnpm pack --dry-run` on the new version lists the same 7
+files plus `CHANGELOG.md`, which is in `files` because npm does not include it
+on its own. `pack` does not run `prepublishOnly`; `pnpm publish` does.
