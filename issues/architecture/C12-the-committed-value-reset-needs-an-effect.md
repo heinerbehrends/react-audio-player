@@ -38,3 +38,8 @@ or when the retain-until-changed rule is next touched; the snap-back it prevents
 is **T1** and the echo gap it exists for is **C3**.
 
 Not a correctness risk on its own: if the reset regressed, the pinned test fails.
+
+## Beta assessment (2026-10-01)
+
+**Not blocking.** The suppression is deliberate and pinned by a test. Tracked
+from **G0**.

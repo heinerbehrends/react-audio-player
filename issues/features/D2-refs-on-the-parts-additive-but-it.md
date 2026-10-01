@@ -20,3 +20,10 @@ target. **S19 has landed, and it settles the shape rather than leaving it open:*
 the matrix verifies both ends of `>=18.0.0`, so the types have to keep working
 on 18 and `forwardRef` is still what has to be written. Dropping the ceremony
 means dropping React 18, which is its own decision and not part of this.
+
+## Beta assessment (2026-10-01)
+
+**Decide before the beta — every prop type moves.** No part forwards a `ref`
+today, and focus management on the play button is a day-one need. Additive for
+consumers, but the beta is the cheap moment to change every public prop type at
+once. Tracked from **G0**.

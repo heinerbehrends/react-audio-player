@@ -46,3 +46,9 @@ The measured finding stands: a volume drag still writes the element per
 pointermove and takes a second render from the echo. Recorded, not actioned —
 the 8 `volume` subscribers each genuinely need the value, and 143 uncoalesced
 events/s is a desktop-mouse rate.
+
+## Beta assessment (2026-10-01)
+
+**Not blocking.** Recorded, measured, and the free win is taken; the remaining
+cost only shows at a desktop-mouse event rate under a 6× CPU throttle. Tracked
+from **G0**.

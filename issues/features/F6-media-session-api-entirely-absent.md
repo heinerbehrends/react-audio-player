@@ -17,3 +17,10 @@ by F3 (no metadata fields to publish).
 ## Where it stands
 
 Media Session API. The metadata fields on `AudioFile` were added ahead of this so it is not a breaking change when it lands.
+
+## Beta assessment (2026-10-01)
+
+**Not blocking, but the first thing beta users will ask for.** Additive:
+`AudioFile` already reserves `title`, `artist`, `album` and `artwork`, and
+`audioRef` reaches the element for anyone who cannot wait. Plan it for a later
+beta and say so in the README's roadmap. Tracked from **G0**.

@@ -55,3 +55,10 @@ load-bearing part of the store. It gets its own change and its own tests, not a
 fold-in. Note that `audioFile` would have to become omittable in sources mode,
 since a present `src` attribute makes the browser ignore `<source>` children
 entirely.
+
+## Beta assessment (2026-10-01)
+
+**Not blocking.** The frontmatter says breaking, but widening `AudioFile` to
+`AudioSource | { sources: AudioSource[] }` is additive for every consumer
+passing `{ src }`, and that is all of them today. Confirm the shape before the
+beta so the README can promise it; implement after. Tracked from **G0**.

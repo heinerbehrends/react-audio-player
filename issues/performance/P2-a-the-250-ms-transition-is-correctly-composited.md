@@ -24,3 +24,7 @@ and buys nothing, since the transition is already composited.
 ## Where it stands
 
 The 250 ms progress transition is correctly composited — measured: compositor-run, `LayoutCount` 0, zero `transitioncancel` over 8 s, ≈0.25 % of wall clock. The cost is GPU memory: layers 5 → 10, texture 78.3 → 83.4 MB, and the 4 extra promotions are `Overlap`-driven and include both Volume slider buttons, an unrelated part of the UI. A transition starts every ~256 ms, so those layers persist for all of playback. Recorded rather than actioned; **`will-change: transform` is contraindicated** — it would make the transient 5 MB permanent and buys nothing, since the transition is already composited.
+
+## Beta assessment (2026-10-01)
+
+**Not blocking.** Tracked from **G0**.

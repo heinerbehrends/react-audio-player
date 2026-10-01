@@ -21,6 +21,10 @@ in a handler is neither a render read nor a subscription.
 
 The 0.5–4 playback-rate policy is applied inconsistently: the slider arrows and the `>` key clamp there, `SET_PLAYBACK_RATE` does not. The write path now clamps to the browser's [0, 16] so nothing throws, but the library's own range is still unenforced — deliberately, since `<PlaybackRate.Set rate={8}>` names an explicit rate. Decide whether that is the intended contract.
 
+**Correction (2026-10-01):** "so nothing throws" was measured and is false in
+Chromium, which rejects any non-zero rate below 0.0625. The clamp has to be the
+browser's actual range for the decision above to hold — see **G2**.
+
 ## Resolution
 
 **Shipped** — The write path clamps `playbackRate` to the browser's own range, so no rate write can throw. Verified by 9 clamp tests, including the two `NaN`-before-metadata paths

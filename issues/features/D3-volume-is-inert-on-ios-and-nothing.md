@@ -26,3 +26,8 @@ and still cheaper than the issue it prevents.
 Media Chrome carries an open discussion titled "media-volume-range doesn't work
 in iOS Safari"; react-h5-audio-player has "I can't control volume while using
 audio player on iOS devices." This one gets filed.
+
+## Beta assessment (2026-10-01)
+
+**Document before the beta, fix after.** The paragraph above is the README
+text; the capability probe can wait. Tracked from **G0** and **G3**.

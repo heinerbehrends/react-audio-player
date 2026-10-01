@@ -23,3 +23,9 @@ so by the time a consumer sees it, a live stream and a player before
 `loadedmetadata` are the same number. So: project the distinction (an `isLive`
 boolean, or keep the raw value alongside the flattened one), and rewrite the
 README paragraph from a limitation into a branch.
+
+## Beta assessment (2026-10-01)
+
+**The README paragraph goes before the beta, the signal after.** Rewriting the
+Requirements paragraph from a limitation into a branch is part of **G3**; the
+`isLive` projection is not blocking. Tracked from **G0**.

@@ -5,16 +5,27 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**25 open · 1 part-done · 72 resolved · 2 rejected**
+**31 open · 1 part-done · 72 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
-is the post-publish scan, `backlog` is everything raised during the work itself.
+is the post-publish scan, `assessment` is the pre-beta release assessment of
+2026-10-01, `backlog` is everything raised during the work itself.
+
+## Beta release
+
+4 open of 4.
+
+- [ ] [G0](release/G0-beta-release-checklist.md) Beta release checklist — P0
+- [ ] [G1](release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
+- [ ] [G2](release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
+- [ ] [G3](release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
 
 ## Accessibility
 
-1 open of 15.
+2 open of 16.
 
 - [ ] [A10](accessibility/A10-nothing-names-or-bounds-the-widget.md) Nothing names or bounds the widget — P2
+- [ ] [A16](accessibility/A16-labels-player-names-an-element-outside-the-accessibility-tree.md) `labels.player` names an element outside the accessibility tree — P3
 - [x] [A1](resolved/accessibility/A1-space-activates-nothing-it-starts-playback-instead.md) Space activates nothing — it starts playback instead — P0
 - [x] [A2](resolved/accessibility/A2-no-modifier-key-guard-voiceover-navigation-drives.md) No modifier-key guard — VoiceOver navigation drives the player — P0
 - [x] [A3](resolved/accessibility/A3-the-error-alert-hides-its-own-message.md) The error alert hides its own message from AT — P0
@@ -93,9 +104,10 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Architecture & style
 
-2 open of 14.
+3 open of 15.
 
 - [ ] [C12](architecture/C12-the-committed-value-reset-needs-an-effect.md) The committed-value reset needs an effect and a lint suppression — P3
+- [ ] [C13](architecture/C13-audio-file-ended-is-a-dead-action.md) `AUDIO_FILE_ENDED` is a dead action — P3
 - [~] [C8](architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2, part-done
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
 - [x] [C2](resolved/architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1

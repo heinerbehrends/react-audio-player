@@ -36,3 +36,10 @@ one line and each symbol is a top-level `declare`.
 The same script could carry the narrower rule that catches the `PlaybackRate`
 case at source: a doc block separated from its declaration by a `//` comment or
 an intervening type attaches to the wrong node.
+
+**Checked by hand on 2026-10-01** for the beta assessment (**G0**): all 38
+names in the final `export { … }` list of a fresh `dist/index.d.ts` are
+preceded by a doc comment. The check was the dozen lines described above —
+split on `\r?\n`, since the emitted file has Windows line endings on this
+machine, find each `declare` line, and look back over blank lines for a
+closing `*/`. Not blocking the beta; wiring it into CI still is the ticket.

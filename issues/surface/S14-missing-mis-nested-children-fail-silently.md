@@ -19,3 +19,11 @@ excellent messages.
 ## Where it stands
 
 Missing or mis-nested children fail silently. Omit `.Control` and the geometry stays at `{0, 0}`: no `role="slider"`, no aria, no tab stop, clicks do nothing, no warning. Nest `.Thumb` inside `.Control` and you get a `<button>` inside a `<button>`. Wants dev-only warnings, stripped in production. The existing `SliderContext` provider guards show the standard to match.
+
+## Beta assessment (2026-10-01)
+
+**Fix before the beta.** This is the failure a beta user hits first, and it
+produces no error at all. One dev-only warning when the measured slider length
+is still zero after mount covers all three cases — `.Control` omitted,
+`.Thumb` nested inside it, and a root with no height — and is stripped in
+production. Tracked from **G0**.

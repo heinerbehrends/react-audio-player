@@ -16,8 +16,14 @@ import { join, sep } from "node:path";
 const DIR = "issues";
 const INDEX = join(DIR, "README.md");
 
-/** Ordered: the index renders epics in this order, and it is the reading order. */
+/**
+ * Ordered: the index renders epics in this order, and it is the reading order.
+ * `release` leads because it is the gate: what has to happen before the next
+ * publish, with the findings that are its own and links to the ones that are
+ * not. Everything below it is the backlog.
+ */
 const EPICS = {
+  release: "Beta release",
   accessibility: "Accessibility",
   surface: "Public surface & DX",
   features: "Features",
@@ -29,7 +35,7 @@ const EPICS = {
 
 const STATUSES = ["open", "partial", "resolved", "rejected"];
 const SEVERITIES = ["P0", "P1", "P2", "P3", "none"];
-const ORIGINS = ["review", "backlog", "demand"];
+const ORIGINS = ["review", "backlog", "demand", "assessment"];
 
 const REQUIRED = [
   "id",
@@ -218,7 +224,8 @@ const lines = [
   `**${count("open")} open · ${count("partial")} part-done · ${count("resolved")} resolved · ${count("rejected")} rejected**`,
   "",
   "`origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`",
-  "is the post-publish scan, `backlog` is everything raised during the work itself.",
+  "is the post-publish scan, `assessment` is the pre-beta release assessment of",
+  "2026-10-01, `backlog` is everything raised during the work itself.",
   "",
 ];
 

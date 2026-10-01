@@ -46,3 +46,9 @@ a public-API change under a large test diff.
 Not urgent: nothing is failing. It becomes urgent the first time someone points the E2E app
 at a non-English `labels` bag, which is a plausible way to test A15 end to end and is the
 natural follow-up.
+
+## Beta assessment (2026-10-01)
+
+**Not blocking.** The suite passes on both engines as it stands (124 on
+2026-10-01); the selectors are a maintenance cost, not a defect. Tracked from
+**G0**.
