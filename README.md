@@ -313,6 +313,11 @@ const { t } = useTranslation();
 
 Nothing memoises on the object's identity, so an inline literal is fine.
 
+One TypeScript note if you have `exactOptionalPropertyTypes` on: an entry may be
+absent, but it may not be present-and-`undefined`. So
+`labels={{ play: maybeUndefined }}` is an error — pass `{}`, or leave the key
+out. The same already applies to `customKeyboardShortcuts`.
+
 ## Components
 
 ### `<AudioPlayer>`

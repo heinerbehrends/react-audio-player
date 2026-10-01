@@ -128,9 +128,11 @@ describe("slider labels", () => {
       });
 
       const slider = screen.getByRole("slider");
-      expect(slider.getAttribute("aria-valuetext")).toBe(
-        slider.getAttribute("aria-valuenow"),
-      );
+      const valueText = slider.getAttribute("aria-valuetext");
+      // Not null first: comparing two absent attributes passes vacuously, which
+      // is the one way a guard test can go quiet (T2, T5).
+      expect(valueText).not.toBeNull();
+      expect(valueText).toBe(slider.getAttribute("aria-valuenow"));
     },
   );
 

@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**25 open · 1 part-done · 71 resolved · 2 rejected**
+**25 open · 1 part-done · 72 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `backlog` is everything raised during the work itself.
@@ -130,11 +130,12 @@ is the post-publish scan, `backlog` is everything raised during the work itself.
 
 ## Performance
 
-2 open of 3.
+2 open of 4.
 
 - [ ] [P1-b](performance/P1-b-a-volume-rate-drag-costs-2-4.md) A volume/rate drag costs 2.4× a seek drag — the mode Phase 5 never traced — P1
 - [ ] [P2-a](performance/P2-a-the-250-ms-transition-is-correctly-composited.md) The 250 ms transition is correctly composited, but promotes 4 unrelated elements to their own layers — P2
 - [x] [P1-a](resolved/performance/P1-a-tree-shaking-is-broken-importing-only-playbutton.md) Tree-shaking is broken — importing only `<PlayButton>` costs 66 % of the library — P1
+- [x] [P3](resolved/performance/P3-the-tree-shaking-win-has-no-automated-guard.md) The tree-shaking win has no automated guard — P2
 
 ## Packaging
 

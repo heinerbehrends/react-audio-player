@@ -21,6 +21,55 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  # Its own job, not a step in `test`. It needs `pnpm build` and nothing else —
+  # no browsers, no matrix — so as a step it would have waited behind the E2E
+  # suite to report a number that takes half a second to compute. In parallel it
+  # is the first thing to go red.
+  #
+  # One leg, deliberately. React is external to the bundle, so the byte count is
+  # identical under 18 and 19; running it on both would double the cost to
+  # produce two identical reports to reconcile.
+  size:
+    runs-on: ubuntu-latest
+    name: bundle size
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # Reads dist/, so the build is the whole setup.
+      - name: Build
+        run: pnpm build
+
+      # Guards P1-a's tree-shaking win and the per-component string tables A15
+      # built on it. Over budget means find what got pulled in, not raise the
+      # ceiling — see scripts/bundle-size.mjs.
+      - name: Check bundle size
+        run: pnpm size
+
   test:
     runs-on: ubuntu-latest
 

@@ -43,6 +43,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-exports": "attw --pack . --profile esm-only --exclude-entrypoints styles.css",
+    "size": "node scripts/bundle-size.mjs",
     "issues": "node scripts/issues.mjs",
     "issues:check": "node scripts/issues.mjs --check"
   },
@@ -60,6 +61,7 @@
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.27.7",
     "eslint": "^10.9.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -69,6 +71,7 @@
     "prettier": "^3.9.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "rollup": "^4.44.0",
     "tsup": "^8.5.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.68.0",
