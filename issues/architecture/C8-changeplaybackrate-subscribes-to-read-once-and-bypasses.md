@@ -23,7 +23,8 @@ The 0.5–4 playback-rate policy is applied inconsistently: the slider arrows an
 
 **Correction (2026-10-01):** "so nothing throws" was measured and is false in
 Chromium, which rejects any non-zero rate below 0.0625. The clamp has to be the
-browser's actual range for the decision above to hold — see **G2**.
+browser's actual range for the decision above to hold — see **G2**, shipped
+the same day.
 
 ## Resolution
 

@@ -22,7 +22,7 @@ or explicitly deferred past the beta.
 ## Fix before the beta
 
 - [ ] **G1** — version, `prepublishOnly`, a `beta` dist-tag and a CHANGELOG
-- [ ] **G2** — the playback-rate write throws in Chromium below 0.0625
+- [x] **G2** — the playback-rate write throws in Chromium below 0.0625
 - [ ] **G3** — four README sentences the code contradicts
 - [ ] **S14** — a dev-only warning for the slider that measures zero: `.Control`
       omitted, `.Thumb` nested inside it, or a root with no height. All three

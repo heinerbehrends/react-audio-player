@@ -6,7 +6,9 @@ import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
  * write below is guarded to its own range:
  *
  * - `volume` — [0, 1]; outside throws `IndexSizeError`
- * - `playbackRate` — [0, 16] in Chrome; outside throws `NotSupportedError`
+ * - `playbackRate` — `0` or [0.0625, 16] in Chromium; a non-zero rate below
+ *   1/16, or anything above 16, throws `NotSupportedError`. Firefox clamps
+ *   silently. Measured on both engines, 2026-10-01 (G2)
  * - `currentTime` — any finite number, clamped to [0, duration] by the browser;
  *   `NaN` throws `TypeError`
  *
@@ -15,6 +17,7 @@ import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
  * target, and usually means `duration` was read before metadata.
  */
 
+const MIN_PLAYBACK_RATE = 0.0625;
 const MAX_PLAYBACK_RATE = 16;
 
 const clamp = (value: number, min: number, max: number) =>
@@ -27,7 +30,10 @@ function writeVolume(audioElement: HTMLAudioElement, value: number) {
 
 function writeRate(audioElement: HTMLAudioElement, value: number) {
   if (!Number.isFinite(value)) return;
-  audioElement.playbackRate = clamp(value, 0, MAX_PLAYBACK_RATE);
+  // Zero is the one value below the floor both browsers accept, so a negative
+  // rate lands there rather than at 1/16.
+  audioElement.playbackRate =
+    value <= 0 ? 0 : clamp(value, MIN_PLAYBACK_RATE, MAX_PLAYBACK_RATE);
 }
 
 /**

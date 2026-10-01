@@ -2,7 +2,7 @@
 id: G2
 title: "The playback-rate write throws in Chromium below 0.0625"
 epic: release
-status: open
+status: resolved
 severity: P1
 origin: assessment
 breaking: false
@@ -38,3 +38,14 @@ instead — which only works if the clamp _is_ the browser's range.
 Clamp a non-zero magnitude to `[0.0625, 16]`, keep `0` as the one value below
 it, and fix the comment. Add the three probes above to the clamp tests in
 `testJSDom/AudioElement/`, which already cover the `NaN`-before-metadata paths.
+
+## Resolution
+
+**Shipped** (2026-10-01) — `writeRate` sends `0` through for any rate at or
+below zero and clamps everything else to [0.0625, 16]; the header comment names
+the measured range and the engine it was measured on. `setRate` gained a
+one-line JSDoc with the same range.
+
+**Verified by** — six new rows in `testJSDom/AudioElement/handleSideEffects.test.ts`
+covering `0`, `0.01`, `0.0625`, `16`, `16.01` and a slider commit below
+the floor, alongside the existing `-1` and `100` probes.

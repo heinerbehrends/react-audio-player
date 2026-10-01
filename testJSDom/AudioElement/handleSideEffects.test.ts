@@ -169,9 +169,9 @@ describe("handleSideEffect", () => {
    */
   /**
    * Browsers throw on out-of-range media writes rather than clamping. Measured
-   * in Chrome: `volume` outside [0, 1] raises IndexSizeError, `playbackRate`
-   * outside [0, 16] raises NotSupportedError, and a non-finite `currentTime`
-   * raises TypeError.
+   * in Chromium: `volume` outside [0, 1] raises IndexSizeError, `playbackRate`
+   * other than `0` or [0.0625, 16] raises NotSupportedError, and a non-finite
+   * `currentTime` raises TypeError. Firefox clamps the rate silently (G2).
    *
    * The sliders clamp by construction, so this was unreachable until
    * `useAudioPlayer` exposed `setVolume`, `setRate` and `seek` to arbitrary
@@ -208,6 +208,54 @@ describe("handleSideEffect", () => {
         audioElement,
       );
       expect(audioElement.playbackRate).toBe(16);
+    });
+
+    // The probes from G2: Chromium accepts `0`, `0.0625` and `16`, and throws
+    // on `0.01` and `16.01`.
+    it("clamps a non-zero rate below 1/16 up to Chromium's floor", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 0.01 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(0.0625);
+    });
+
+    it("keeps 0, the one rate below the floor that does not throw", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 0 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(0);
+    });
+
+    it("passes the floor and the ceiling through unchanged", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 0.0625 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(0.0625);
+
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 16 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(16);
+    });
+
+    it("clamps a rate just above the ceiling", () => {
+      handleSideEffect(
+        { type: "SET_PLAYBACK_RATE", playbackRate: 16.01 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(16);
+    });
+
+    it("clamps a slider commit below the floor too", () => {
+      handleSideEffect(
+        { type: "CHANGE_VALUE", component: "playbackRate", value: 0.05 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(0.0625);
     });
 
     /**
