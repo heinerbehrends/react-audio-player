@@ -34,4 +34,7 @@ beta and say so in the README's roadmap. Tracked from **G0**.
 rendered inside the root rather than root behaviour, so the bundle cost is paid
 only by consumers who import it; handlers send the actions the keyboard map
 sends; previous/next register only with their props; one owner per page,
-claimed on play. Two decisions are marked open in the plan.
+claimed on play. Settled in a grill session the same day: component only, claim on mount and on play,
+clear on unmount, no `stop` handler, metadata `null` without fields, position
+state once a second, throws caught and logged in development, and it ships in
+`0.1.0-beta.0` — the publish waits for it.
