@@ -1,0 +1,187 @@
+/* Scoped to `.basic`: on the demo page every example shares one document. */
+
+.basic {
+  --text: #bababa;
+  --controls: #ffffff;
+  --track: #4a4a4a;
+  --focus: #54a3fe;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  container-type: inline-size;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 18px 8px 10px;
+  border-radius: 999px;
+  background: #232323;
+  color: var(--text);
+  color-scheme: dark;
+  font:
+    14px/18px system-ui,
+    sans-serif;
+}
+
+.basic :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.basic-play {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--controls);
+  cursor: pointer;
+}
+
+.basic-play:hover {
+  background: #2e2e2e;
+}
+
+.basic-play svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+/* A slider root has no height of its own; this gives the track something to
+   measure. */
+.basic-slider {
+  height: 20px;
+}
+
+.basic-timeline {
+  flex: 1;
+}
+
+.basic-end {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.basic-mute {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--controls);
+  cursor: pointer;
+}
+
+.basic-mute:hover {
+  background: #2e2e2e;
+}
+
+.basic-mute svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.basic-wave {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+/* Collapsed rather than hidden: `display: none` would take the slider out of
+   the tab order, and Tab from the mute button has to reach it. Zero width
+   keeps it focusable, and focus opens it. */
+.basic-volume-slider {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    width 0.2s,
+    margin 0.2s,
+    opacity 0.2s;
+}
+
+.basic-mute:hover + .basic-volume-slider,
+.basic-volume-slider:hover,
+.basic-volume-slider:focus-within {
+  width: 64px;
+  margin: 0 6px 0 4px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Bridges the gap to the mute button, so the slider stays open while the
+   pointer crosses it. */
+.basic-volume-slider::before {
+  content: "";
+  position: absolute;
+  inset: 0 100% 0 -8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basic-volume-slider {
+    transition: none;
+  }
+}
+
+/* The track and fill fill the control, so its padding is what makes them thin
+   while the whole 20px stays clickable. */
+.basic-control {
+  box-sizing: border-box;
+  padding: 9px 0;
+  cursor: pointer;
+}
+
+.basic-track,
+.basic-fill {
+  border-radius: 1px;
+}
+
+.basic-track {
+  background: var(--track);
+}
+
+.basic-fill {
+  background: var(--controls);
+}
+
+/* The thumb's horizontal position is inline; its vertical one is ours. */
+.basic-thumb {
+  top: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--controls);
+}
+
+.basic-time {
+  flex: none;
+  min-width: 3.5em;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* Phones have hardware volume buttons, and iOS ignores a volume set from
+   script, so a narrow player keeps only mute. Important, because the root's
+   `display: grid` is inline. */
+@container (max-width: 400px) {
+  .basic-volume-slider {
+    display: none !important;
+  }
+}

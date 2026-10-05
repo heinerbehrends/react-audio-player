@@ -1,7 +1,7 @@
 import { useState } from "react";
-import MinimalApp from "../../examples/minimal/src/App";
-import minimalApp from "../../examples/minimal/src/App.tsx?raw";
-import minimalCss from "../../examples/minimal/src/App.css?raw";
+import BasicApp from "../../examples/basic/src/App";
+import basicApp from "../../examples/basic/src/App.tsx?raw";
+import basicCss from "../../examples/basic/src/App.css?raw";
 import PlaylistApp from "../../examples/playlist/src/App";
 import playlistApp from "../../examples/playlist/src/App.tsx?raw";
 import playlistCss from "../../examples/playlist/src/App.css?raw";
@@ -20,14 +20,14 @@ type Example = {
 // `App` and shows the files it is made of.
 const EXAMPLES: Example[] = [
   {
-    id: "minimal",
-    title: "Minimal",
+    id: "basic",
+    title: "Basic player",
     summary:
-      "A compact bar: play, a timeline, the time and volume. The optional stylesheet and one CSS file.",
-    App: MinimalApp,
+      "A compact bar: play, a timeline, the time, and a mute button that opens the volume slider on hover or focus. The optional stylesheet and one CSS file.",
+    App: BasicApp,
     files: [
-      { name: "App.tsx", code: minimalApp },
-      { name: "App.css", code: minimalCss },
+      { name: "App.tsx", code: basicApp },
+      { name: "App.css", code: basicCss },
     ],
   },
   {

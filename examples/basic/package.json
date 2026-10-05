@@ -1,5 +1,5 @@
 {
-  "name": "react-headless-audio-player-example-minimal",
+  "name": "react-headless-audio-player-example-basic",
   "private": true,
   "type": "module",
   "scripts": {

@@ -6,7 +6,7 @@ import { labels } from "../test-utils";
  * missing track or an API change an example was not updated for fails here
  * instead of on the deployed site.
  */
-for (const name of ["Minimal", "Playlist"]) {
+for (const name of ["Basic player", "Playlist"]) {
   test(`${name} plays`, async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name });
@@ -59,5 +59,36 @@ test.describe("Playlist", () => {
       example.getByRole("button", { name: /The Pool of Tears/ }),
     ).toHaveAttribute("aria-current", "true");
     await expect.poll(() => isPlaying(example)).toBe(true);
+  });
+});
+
+test.describe("Basic player", () => {
+  const volumeWidth = (example: Locator) =>
+    example
+      .getByRole("slider", { name: labels.volume })
+      .evaluate((control) => control.getBoundingClientRect().width);
+
+  test("Tab from mute opens and focuses the volume slider", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Basic player" });
+    const volume = example.getByRole("slider", { name: labels.volume });
+    expect(await volumeWidth(example)).toBe(0);
+
+    await example.getByRole("button", { name: labels.mute }).focus();
+    await page.keyboard.press("Tab");
+
+    await expect(volume).toBeFocused();
+    await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
+  });
+
+  test("hovering mute opens the volume slider", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Basic player" });
+
+    await example.getByRole("button", { name: labels.mute }).hover();
+
+    await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
   });
 });

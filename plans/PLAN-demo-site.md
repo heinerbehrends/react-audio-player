@@ -34,7 +34,7 @@ opposite direction. The demo gets its own entry point and its own deploy.
 
 ```text
 examples/
-  minimal/      package.json · index.html · vite.config.ts · src/{main,App}.tsx · src/App.css · src/audio.ts
+  basic/        package.json · index.html · vite.config.ts · src/{main,App}.tsx · src/App.css · src/audio.ts
   playlist/
   podcast/
   waveform/     … plus src/peaks.json
@@ -64,7 +64,7 @@ demo/
   the package; without one it reaches `tsconfig.demo.json` through the root's
   references. Vite needs none to run, and `@vitejs/plugin-react` in each
   example's `vite.config.ts` handles JSX.
-- **Each example's CSS is scoped to its own root class** (`.minimal`, …): on
+- **Each example's CSS is scoped to its own root class** (`.basic`, …): on
   the demo page every example shares one document. `styles.css` is global
   there too, so the custom examples reset what they rely on rather than assume
   its absence.
@@ -73,12 +73,12 @@ demo/
 
 | example      | shows                                                                                                                                                       | styling                    |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| **minimal**  | A compact dark bar after a news-site podcast player: play, timeline, time, volume. The "it is this small" pitch                                             | `styles.css` + a few lines |
+| **basic**    | A compact dark bar after a news-site podcast player: play, timeline, time, mute that opens volume on hover or focus                                         | `styles.css` + a few lines |
 | **playlist** | A track list in consumer state, `onEnded` advance with the resume effect from the README, `<MediaSession>` with previous/next — the lock screen is the demo | custom                     |
 | **podcast**  | Rate options, ±15/30 s `<SeekButton>`s, chapters as a userland list that seeks and highlights the current one, `<MediaSession>` with artwork                | custom                     |
 | **waveform** | Precomputed peaks as SVG bars inside `<Timeline>`, the played part highlighted, the bar beneath. D5 with no library change                                  | custom                     |
 
-Minimal is the one on `styles.css`: it shows what the optional stylesheet
+Basic is the one on `styles.css`: it shows what the optional stylesheet
 gives, and the three custom ones show the parts take any markup.
 
 **Chapters stay userland in the podcast example** — a sorted list,
@@ -131,7 +131,7 @@ that should install nothing but React and the library.
 
 ## Audio
 
-- **`The-Race.mp3`** (6.8 MB, 4:43, free to distribute) for minimal and
+- **`The-Race.mp3`** (6.8 MB, 4:43, free to distribute) for basic and
   waveform.
 - **LibriVox's _Alice's Adventures in Wonderland (version 2)_**, read by Kara
   Shallenberg, for playlist and podcast.
@@ -195,10 +195,10 @@ host-agnostic, so moving later is a `netlify.toml` and a changed fallback URL.
 
 Each phase is one commit with its checks, in this order.
 
-### Phase 1 — scaffold, minimal, deploy
+### Phase 1 — scaffold, basic, deploy
 
 - `demo/` with the aliasing config, a page shell and one example slot;
-  `examples/minimal/` complete.
+  `examples/basic/` complete (named `minimal` until 2026-10-05).
 - `tsconfig.demo.json`, wired into `type-check` and ESLint.
 - `.github/workflows/demo.yml`, deploying to GitHub Pages.
 - E2E: a `demo` Playwright project, Chromium only, against the demo's dev
@@ -208,8 +208,9 @@ Each phase is one commit with its checks, in this order.
   covers: only that the example still runs.
 - Found on the way: a class could not size the `<Timeline>` root, which kept an
   inline `height: 100%` the other roots dropped in S8. **S25**, fixed the same
-  day. Also: a root's inline `display: grid` outranks a class that hides it, so
-  the minimal example hides its volume slider through a wrapper.
+  day. Also: a root's inline `display: grid` outranks a class that hides it,
+  and the `hidden` attribute with it — **S26**, fixed the same day; the README
+  says to hide one from CSS with `!important`, as the basic example does.
 
 ### Phase 2 — playlist
 
