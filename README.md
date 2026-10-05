@@ -122,7 +122,8 @@ and the rate all work before metadata arrives, and a track change re-enters
 loading, so disabling there would swallow the first press on every playlist
 advance. An error disables everything; missing a duration disables only the
 timeline and the seek buttons, which are the two things that have to name a
-position on the track.
+position on the track; and a browser that ignores `volume` writes, which is
+iOS, disables only the volume slider.
 
 Errors render into a live region. Every control also accepts the global media
 shortcuts while focused, whether or not it is disabled: the shortcuts belong to
@@ -475,11 +476,11 @@ runs bottom to top.
 Reaching zero mutes, by any route — drag, click, keyboard or `setVolume(0)`.
 Unmuting restores the volume the player was last audible at.
 
-**On iOS the slider does nothing.** Apple keeps the level under the hardware
+**On iOS the slider is disabled.** Apple keeps the level under the hardware
 buttons: `HTMLMediaElement.volume` ignores writes and always reads `1`, so the
-thumb does not move and `setVolume` is a no-op. `muted` still works. Until the
-library exposes a capability signal, drop `<Volume>` on iOS yourself and keep
-`<MuteButton>`.
+slider would move nothing. `<Volume.Control>` renders `aria-disabled` there,
+and [`useIsVolumeAvailable()`](#useisvolumeavailable) lets you leave `<Volume>`
+out and keep `<MuteButton>`, which still works.
 
 ### Time display
 
@@ -807,6 +808,34 @@ Two things this catches that a load-state check does not:
 The loading state is still announced — on the accessible name, which reads
 "Loading audio" — rather than by making the button unavailable.
 
+### `useIsVolumeAvailable()`
+
+Whether this browser lets a page set the volume. `false` on iOS, where Apple
+keeps the level under the hardware buttons: `HTMLMediaElement.volume` accepts a
+write and ignores it, and always reads `1`. `muted` is unaffected.
+
+`<Volume.Control>` is already `aria-disabled` there, so nothing breaks if you
+ignore this. Use it to leave the slider out altogether and keep `<MuteButton>`:
+
+```jsx
+function VolumeControls() {
+  const available = useIsVolumeAvailable();
+
+  return (
+    <>
+      <MuteButton>🔇</MuteButton>
+      {available && <VolumeSlider />}
+    </>
+  );
+}
+```
+
+Probed once per page on a detached element, so the player's own element is
+never written to. It is the one hook that works outside `<AudioPlayer>`: it
+asks the browser, not the player. On the server it reads `true`, and a hydrating
+client renders that first and then corrects itself, so rendering on it does not
+mismatch.
+
 ### `useIsBuffering()`
 
 `isBuffering` on its own, for a spinner that has no reason to subscribe to the
@@ -930,7 +959,6 @@ Additive, in the order they are likely to land. None changes what ships today.
 - An `isLive` signal for unbounded durations
 - A `ref` on every part, for focus management and measurement; `audioRef`
   reaches the `<audio>` element today
-- A volume-availability signal, for iOS
 - Playlist components, skip and loop (`onEnded` already supports a userland
   playlist)
 - Caption and subtitle support

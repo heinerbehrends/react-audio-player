@@ -15,6 +15,7 @@ import {
 } from "./sliderModes";
 import { positionOf } from "./pointerPosition";
 import { useLabels } from "../Player/PlayerConfigContext";
+import { useIsVolumeAvailable } from "../store/volumeAvailable";
 
 declare const process: { env: { NODE_ENV?: string } };
 
@@ -92,6 +93,8 @@ export function useSlider({
   const labels = useLabels();
   const handleMediaKeys = useHandleMediaKeys();
   const isErrored = useIsDisabled();
+  // iOS accepts the write and ignores it, so the slider would move nothing (D3).
+  const isVolumeInert = !useIsVolumeAvailable() && mode === "volume";
 
   const isSeek = mode === "seek";
   // The one place the mode picks its atoms (C4).
@@ -112,7 +115,7 @@ export function useSlider({
   // `useIsSeekable()` is this same test, inlined so that the duration is read
   // once. Only the seek slider needs it: its range *is* the duration, so
   // without one it announces `min=0 max=0 now=0` (A5).
-  const isDisabled = isErrored || (isSeek && !(duration > 0));
+  const isDisabled = isErrored || (isSeek && !(duration > 0)) || isVolumeInert;
 
   const minValue =
     minValueOption ?? (mode === "rate" ? RATE_BOUNDS.minValue : 0);

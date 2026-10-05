@@ -28,6 +28,7 @@ export {
   useAudioError,
   useTimeDisplay,
 } from "./store/derived";
+export { useIsVolumeAvailable } from "./store/volumeAvailable";
 // The default clock and the numbers behind it, for the one case `labels.time`
 // cannot reach: two readouts of the same `part` formatted differently, or
 // formatting one of the three and keeping `M:SS` for the others. Without these

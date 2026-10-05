@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**23 open · 1 part-done · 80 resolved · 2 rejected**
+**22 open · 1 part-done · 81 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -72,7 +72,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-16 open of 27.
+15 open of 27.
 
 - [ ] [F6](features/F6-media-session-api-entirely-absent.md) Media Session API entirely absent — P1
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
@@ -83,7 +83,6 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [ ] [B8](features/B8-codec-fallback-via-source.md) Codec fallback via `<source>` — **breaking**
 - [ ] [B9](features/B9-buffered-ranges.md) Buffered ranges
 - [ ] [D2](features/D2-refs-on-the-parts-additive-but-it.md) Refs on the parts. — additive, but it touches every public prop type
-- [ ] [D3](features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [ ] [D4](features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
 - [ ] [D5](features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one
 - [ ] [D6](features/D6-the-podcast-surface-chapters-and-markers-first.md) The podcast surface: chapters and markers first, transcript sync second
@@ -101,6 +100,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop
+- [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 
 ## Architecture & style
 

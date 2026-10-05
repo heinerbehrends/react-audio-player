@@ -67,7 +67,8 @@ type AudioPlayerProps = {
  * so name and bound the player with `role="region"` on your own container (A10).
  *
  * **Every other export must be rendered inside one**, hooks included; they throw
- * outside it. Several players on a page are independent.
+ * outside it. The one exception is `useIsVolumeAvailable()`, which asks the
+ * browser rather than the player. Several players on a page are independent.
  *
  * @example
  * ```jsx

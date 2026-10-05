@@ -4,6 +4,7 @@ import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
 import { Volume } from "../../src/Volume/Volume";
 import { renderInPlayer } from "../testComponents";
+import { resetVolumeProbe } from "../../src/store/volumeAvailable";
 import {
   alongTrack,
   pointerEventAt,
@@ -61,6 +62,56 @@ describe("SliderControl", () => {
 
       expect(error).not.toHaveBeenCalled();
       error.mockRestore();
+    });
+  });
+
+  /**
+   * D3. iOS accepts a `volume` write and ignores it, so the slider would move
+   * nothing. The probe asks a detached element, stubbed here on the prototype;
+   * the store's fake is untouched by it.
+   */
+  describe("where volume cannot be set", () => {
+    const volume = Object.getOwnPropertyDescriptor(
+      HTMLMediaElement.prototype,
+      "volume",
+    )!;
+
+    beforeEach(() => {
+      resetVolumeProbe();
+      Object.defineProperty(HTMLMediaElement.prototype, "volume", {
+        configurable: true,
+        get: () => 1,
+        set() {},
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(HTMLMediaElement.prototype, "volume", volume);
+      resetVolumeProbe();
+    });
+
+    it("disables Volume.Control", () => {
+      const { container } = renderInPlayer(
+        <Volume>
+          <Volume.Control />
+        </Volume>,
+      );
+      expect(getByRole(container, "slider")).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+    });
+
+    it("leaves the other sliders alone", () => {
+      const { container } = renderInPlayer(
+        <Timeline>
+          <Timeline.Control />
+        </Timeline>,
+        { element: { duration: 100 } },
+      );
+      expect(getByRole(container, "slider")).not.toHaveAttribute(
+        "aria-disabled",
+      );
     });
   });
 

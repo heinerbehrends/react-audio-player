@@ -23,6 +23,8 @@ nothing to migrate from.
 - A props hook behind every button, for markup you already own
 - `useAudioPlayer()`, `useAudioError()`, `useIsSeekable()`, `useIsBuffering()`,
   `useIsAtEnd()`, `useCurrentSecond()` and `useCurrentTime()`
+- `useIsVolumeAvailable()`, and a volume slider that disables itself where the
+  browser ignores `volume` writes
 - Keyboard shortcuts bound to every focused control, with `KeyToActionMap` to
   rebind or unbind them
 - `labels` for every name and readout the library writes, with
@@ -38,8 +40,9 @@ nothing to migrate from.
 
 Documented in the README; each has a ticket under `issues/`.
 
-- `volume` is inert on iOS, where the level is under the hardware buttons.
-  `muted` still works
+- `volume` is inert on iOS, where the level is under the hardware buttons. The
+  slider disables itself there and `useIsVolumeAvailable()` reports it; `muted`
+  still works
 - In Firefox a paused seek to the end of the track fires `onEnded`
 - A playlist advance arrives paused; nothing resumes playback on its own
 - No Media Session integration yet. `AudioFile` already carries `title`,

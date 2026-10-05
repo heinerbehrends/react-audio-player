@@ -2,7 +2,7 @@
 id: D3
 title: "`volume` is inert on iOS, and nothing says so"
 epic: features
-status: open
+status: resolved
 severity: none
 origin: demand
 breaking: false
@@ -34,3 +34,20 @@ text; the capability probe can wait. Tracked from **G0** and **G3**.
 
 **README paragraph shipped** (2026-10-01, with G3) under Volume. The
 capability probe stays open.
+
+## Resolution
+
+**Shipped** (2026-10-05) — `useIsVolumeAvailable()`, exported, plus
+`<Volume.Control>` rendering `aria-disabled` where the probe says no. The
+probe is not the one proposed above: instead of writing to the player's own
+element at attach and restoring, it assigns a volume to a detached `<audio>`
+once per page and reads it back, as Plyr does — nothing is written to the real
+element and no `volumechange` fires. The hook is `useSyncExternalStore` with a
+server snapshot of `true`, so hiding `<Volume>` on it hydrates cleanly. It is
+the one hook that works outside `<AudioPlayer>`, and the root's JSDoc says so.
+
+**Verified by** — `testJSDom/store/volumeAvailable.test.tsx` (true by default,
+false with the prototype setter stubbed to ignore writes, probed once) and two
+rows in `SliderControl.test.tsx` (the volume control is disabled under the
+stub, the timeline is not). Playwright's WebKit is desktop WebKit, where volume
+is writable, so the real behaviour still wants one look on an iPhone.
