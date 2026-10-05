@@ -52,3 +52,9 @@ this section is where someone will look for the reason.
 `render` is **not** on this list: it is deferred, not refused. Once the props bag is
 public it is three lines on top of it and purely additive, so it waits for evidence that
 wrapper-component fatigue is real.
+
+## From F6 (2026-10-05)
+
+**No playlist, so previous/next are yours.** `<MediaSession>` shows the
+previous- and next-track buttons only when `onPreviousTrack` / `onNextTrack` are
+passed; the library holds one track and has nothing to derive them from (B2).

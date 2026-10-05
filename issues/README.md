@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**22 open · 1 part-done · 81 resolved · 2 rejected**
+**21 open · 1 part-done · 82 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -72,9 +72,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-15 open of 27.
+14 open of 27.
 
-- [ ] [F6](features/F6-media-session-api-entirely-absent.md) Media Session API entirely absent — P1
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
 - [ ] [B1](features/B1-playlist-resumption-is-undocumented-and-now-more.md) Playlist resumption is undocumented, and now more visible
@@ -94,6 +93,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F3](resolved/features/F3-audiofile-is-src-and-the-readme-example.md) `AudioFile` is `{src}` and the README example does not compile — P0
 - [x] [F4](resolved/features/F4-play-rejection-is-dropped.md) `play()` rejection is dropped — P0
 - [x] [F5](resolved/features/F5-no-buffering-state-at-all.md) No buffering state at all — P1
+- [x] [F6](resolved/features/F6-media-session-api-entirely-absent.md) Media Session API entirely absent — P1
 - [x] [F7](resolved/features/F7-ended-is-unobservable-and-actively-erased.md) `ended` is unobservable and actively erased — P2
 - [x] [F8](resolved/features/F8-mediaerror-code-is-thrown-away.md) `MediaError.code` is thrown away — P2
 - [x] [F9](resolved/features/F9-element-config-unreachable.md) Element config unreachable — P2

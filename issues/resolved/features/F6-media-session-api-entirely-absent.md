@@ -2,7 +2,7 @@
 id: F6
 title: "Media Session API entirely absent"
 epic: features
-status: open
+status: resolved
 severity: P1
 origin: review
 breaking: false
@@ -90,5 +90,25 @@ clearing the session with the other waiting until it plays;
 `multi-instance.spec.ts` reads the title after playing each in turn, against
 numbered demo titles. ~935 B gzipped over the root in all.
 
-**Remaining to close:** the README section, roadmap and CHANGELOG entries from
-the plan's Documentation list.
+## Resolution
+
+**Shipped** (2026-10-05) — `<MediaSession />`, an opt-in part rendered inside
+`<AudioPlayer>`, exported as a component with no hook, per
+`plans/PLAN-media-session.md`, in four phases recorded above. Metadata from the
+four `AudioFile` fields; play, pause, both skips and `seekto` through the
+keyboard map's actions; previous/next only with their props; position and
+playback state from the atoms; one owner per page, claimed on mount when free
+and on play. Beyond the plan: each `setActionHandler` is wrapped, since an
+unknown action throws; position state is also skipped at rate `0` and cleared
+rather than left behind when the duration goes away. Documented in the README
+(`### <MediaSession>`, the `AudioFile` block, Features), the roadmap item
+removed, and a CHANGELOG Added entry replacing the Known gaps line. ~935 B
+gzipped over the root, paid only by consumers who import it.
+
+**Verified by** — `testJSDom/MediaSession/MediaSession.test.tsx` (34 cases:
+metadata, handlers, position and playback state, two-player ownership),
+`testE2E/Player/media-session.spec.ts` (metadata and playback state on both
+engines) and the ownership case in `multi-instance.spec.ts`; the
+"AudioPlayer only" bundle row fails if `mediaSession` reaches the root. Handlers
+cannot be triggered from page script, and the lock screen itself wants one look
+on a locked phone.

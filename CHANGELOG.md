@@ -30,6 +30,10 @@ nothing to migrate from.
 - `labels` for every name and readout the library writes, with
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part and `data-state` where the DOM does not say it
+- `<MediaSession>`: the lock screen, media keys and system media controls, with
+  metadata from `audioFile`, play, pause, skip and seek, a live scrubber, and
+  `onPreviousTrack` / `onNextTrack`. Opt-in, so a player without it pays none of
+  its bundle cost
 - An optional stylesheet at `react-headless-audio-player/styles.css`
 - A development-only error when a slider root is rendered without its
   `.Control`, stripped from production builds through `process.env.NODE_ENV`
@@ -45,8 +49,6 @@ Documented in the README; each has a ticket under `issues/`.
   still works
 - In Firefox a paused seek to the end of the track fires `onEnded`
 - A playlist advance arrives paused; nothing resumes playback on its own
-- No Media Session integration yet. `AudioFile` already carries `title`,
-  `artist`, `album` and `artwork` so adding it will not be a breaking change
 - No `<source>` fallback yet; one format is loaded per track
 - No part forwards a `ref`; `audioRef` reaches the `<audio>` element
 - Live streams play, but there is no `isLive` signal; `duration` reads `0`

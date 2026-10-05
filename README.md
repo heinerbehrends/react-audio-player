@@ -22,6 +22,7 @@ the same ground without either.
 - 🎯 `data-part` on every part, and `data-state` where the DOM does not say it
 - 🎛️ Play/pause, mute, seek, volume and playback rate
 - ⌨️ Keyboard shortcuts, ARIA slider semantics and screen reader announcements
+- 🔒 Lock screen, media keys and notification controls through `<MediaSession>`
 - ✔️ No dependencies beyond React 18
 
 ## Basic usage
@@ -358,8 +359,7 @@ everything below it.
 ```ts
 type AudioFile = {
   src: string;
-  // Metadata is accepted but not read yet. It is declared now so that adding
-  // Media Session support later is not a breaking change.
+  // Shown on the lock screen and the system media controls by <MediaSession>.
   title?: string;
   artist?: string;
   album?: string;
@@ -387,8 +387,8 @@ captions through its `children`:
 </AudioPlayer>
 ```
 
-Use `audioRef` for anything that needs the element itself: Web Audio,
-HLS.js/dash.js, or the Media Session API. Prefer a stable ref — an inline
+Use `audioRef` for anything that needs the element itself: Web Audio or
+HLS.js/dash.js. Prefer a stable ref — an inline
 callback re-runs the forwarding effect on every render.
 
 One format is loaded per track. `<source>` fallback is planned, and will widen
@@ -525,6 +525,53 @@ are the defaults; pass `step={0}` for a continuous slider.
 
 - `<ErrorMessage>` — renders its children in a live region while the track has
   failed to load, and nothing otherwise
+
+### `<MediaSession>`
+
+Publishes the player to the operating system's media controls: the lock screen,
+the notification shade, the desktop media overlay, headphone buttons and car
+head units. It renders nothing. Leave it out for a sound effect, a preview clip
+or a notification chime, which should not take over the lock screen.
+
+```jsx
+<AudioPlayer audioFile={{ src, title, artist, album, artwork }}>
+  <MediaSession
+    onPreviousTrack={() => setIndex((i) => i - 1)}
+    onNextTrack={() => setIndex((i) => i + 1)}
+  />
+  {/* the rest of the UI */}
+</AudioPlayer>
+```
+
+| Prop              | Type         | Description                                                                                                         |
+| ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `onPreviousTrack` | `() => void` | Shows a previous-track button and runs when it is pressed. Without it, there is no button.                          |
+| `onNextTrack`     | `() => void` | Shows a next-track button and runs when it is pressed. Without it, there is no button.                              |
+| `seekOffset`      | `number`     | Seconds the system's skip buttons move, in both directions, when the system does not name a distance. Default `10`. |
+
+The card shows `title`, `artist`, `album` and `artwork` from `audioFile`. With
+none of them set there is no card text at all, rather than "Untitled". An
+artwork `src` the browser rejects as a URL drops the card and logs an error in
+development; the player keeps working.
+
+Play, pause, the skip buttons and the scrubber drive the player through the
+same actions as the keyboard shortcuts, so a live stream ignores the skips as it
+ignores `<SeekButton>`. The scrubber follows the position, duration and rate.
+
+Previous and next are yours to handle, since the player holds one track (see
+[Playlists](#playlists)). On iOS the lock screen shows either track or time
+skips, not both, so passing `onNextTrack` replaces the skip-time buttons there;
+Chrome on Android shows both. There is no stop action: the close button on
+Chrome's desktop media controls pauses, as on other sites.
+
+The browser has one media session per page. With several `<MediaSession>`
+parts, the session belongs to the player that most recently started playing,
+and stays with it while paused; before anything plays, the first one mounted
+holds it. When the owner unmounts the session is cleared, and the others wait
+until one of them plays — so if another player is still playing at that moment,
+its card stays blank until it is paused and played again.
+
+Where the browser has no Media Session API, it does nothing.
 
 ## Styling
 
@@ -951,9 +998,6 @@ the gesture that produced it.
 
 Additive, in the order they are likely to land. None changes what ships today.
 
-- Media Session API — lock screen, media keys and car head units. `AudioFile`
-  already carries `title`, `artist`, `album` and `artwork` for it, and
-  `audioRef` reaches the element for anyone who cannot wait
 - `<source>` fallback, with the `AudioFile` shape shown under
   [`<AudioPlayer>`](#audioplayer)
 - An `isLive` signal for unbounded durations

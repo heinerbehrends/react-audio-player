@@ -7,7 +7,7 @@ there is, and the one beta users will ask for first. `AudioFile` has carried
 here is breaking. This plan settles where the code lives, which is the whole
 decision, then lands it in four phases.
 
-## Status: settled 2026-10-05 after a grill session — ready to build. Ships in `0.1.0-beta.0`; the publish waits for it.
+## Status: shipped 2026-10-05 — all four phases, in `0.1.0-beta.0`. See the resolution on F6.
 
 ---
 
