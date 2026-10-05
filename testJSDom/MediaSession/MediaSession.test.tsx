@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from "vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { MediaSession } from "../../src/MediaSession/MediaSession";
 import { PlayButton } from "../../src/Player/PlayButton";
@@ -6,13 +14,16 @@ import type { AudioFile } from "../../src/Player/PlayerConfigContext";
 import { renderWithStore } from "../store/renderWithStore";
 import { TestProviders } from "../testComponents";
 
-// jsdom has no Media Session API. The fake holds the metadata and the
-// registered handlers by name; the constructor records its argument and, as
+// jsdom has no Media Session API. The fake holds the metadata, the playback
+// state and the registered handlers by name, and records position writes; the constructor records its argument and, as
 // Chrome does, rejects an artwork `src` that is not a URL.
 const handlers = new Map<MediaSessionAction, MediaSessionActionHandler>();
 let unsupported: MediaSessionAction[] = [];
 const session = {
   metadata: null as unknown,
+  playbackState: "none" as MediaSessionPlaybackState,
+  setPositionState: undefined as
+    Mock<(state?: MediaPositionState) => void> | undefined,
   setActionHandler(
     action: MediaSessionAction,
     handler: MediaSessionActionHandler | null,
@@ -46,6 +57,8 @@ class FakeMediaMetadata {
 
 beforeEach(() => {
   session.metadata = null;
+  session.playbackState = "none";
+  session.setPositionState = vi.fn();
   handlers.clear();
   unsupported = [];
   constructed = [];
@@ -300,5 +313,134 @@ describe("MediaSession action handlers", () => {
     expect(handlers.has("play")).toBe(true);
     expect(handlers.has("seekforward")).toBe(true);
     expect(handlers.has("seekto")).toBe(false);
+  });
+});
+
+describe("MediaSession position and playback state", () => {
+  /** The position writes since the last call, ignoring the clearing ones. */
+  function positions() {
+    return session
+      .setPositionState!.mock.calls.map(([state]) => state)
+      .filter((state) => state !== undefined);
+  }
+
+  it("writes the position on mount", () => {
+    renderWithStore(<MediaSession />, { element: { currentTime: 12.5 } });
+
+    expect(positions()).toEqual([
+      { duration: 100, playbackRate: 1, position: 12.5 },
+    ]);
+  });
+
+  it("writes once per second crossed, not per timeupdate", () => {
+    const { element, emit } = renderWithStore(<MediaSession />);
+    session.setPositionState!.mockClear();
+
+    element.currentTime = 0.25;
+    emit("timeupdate");
+    element.currentTime = 0.5;
+    emit("timeupdate");
+    expect(positions()).toEqual([]);
+
+    element.currentTime = 1.25;
+    emit("timeupdate");
+    expect(positions()).toEqual([
+      { duration: 100, playbackRate: 1, position: 1.25 },
+    ]);
+  });
+
+  it("writes the new rate", () => {
+    const { element, emit } = renderWithStore(<MediaSession />);
+    session.setPositionState!.mockClear();
+
+    element.playbackRate = 1.5;
+    emit("ratechange");
+
+    expect(positions()).toEqual([
+      { duration: 100, playbackRate: 1.5, position: 0 },
+    ]);
+  });
+
+  it("clears the position for a live stream and writes no more", () => {
+    const { element, emit } = renderWithStore(<MediaSession />);
+    session.setPositionState!.mockClear();
+
+    element.duration = Infinity;
+    emit("durationchange");
+    element.currentTime = 5;
+    emit("timeupdate");
+
+    expect(session.setPositionState!.mock.calls).toEqual([[]]);
+  });
+
+  it("clamps the position to the duration after ended", () => {
+    const { element, emit } = renderWithStore(<MediaSession />);
+    session.setPositionState!.mockClear();
+
+    // Chrome parks `currentTime` past `duration` here.
+    element.currentTime = 100.5;
+    element.paused = true;
+    emit("ended");
+
+    expect(positions().at(-1)).toEqual({
+      duration: 100,
+      playbackRate: 1,
+      position: 100,
+    });
+  });
+
+  it("logs a rejected position and keeps the player running", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    // A write rejected, as Chrome does for inputs it finds invalid. Clearing,
+    // with no argument, never throws.
+    session.setPositionState!.mockImplementation((state) => {
+      if (state) throw new TypeError("Invalid position");
+    });
+
+    renderWithStore(
+      <>
+        <MediaSession />
+        <PlayButton>Play</PlayButton>
+      </>,
+    );
+
+    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("the position state"),
+      expect.any(TypeError),
+    );
+  });
+
+  it("sets the playback state from play and pause", () => {
+    const { element, emit } = renderWithStore(<MediaSession />);
+    expect(session.playbackState).toBe("paused");
+
+    element.paused = false;
+    emit("play");
+    expect(session.playbackState).toBe("playing");
+
+    element.paused = true;
+    emit("pause");
+    expect(session.playbackState).toBe("paused");
+  });
+
+  it("resets the playback state and the position on unmount", () => {
+    const { unmount } = renderWithStore(<MediaSession />);
+    session.setPositionState!.mockClear();
+
+    unmount();
+
+    expect(session.playbackState).toBe("none");
+    expect(session.setPositionState!.mock.calls).toEqual([[]]);
+  });
+
+  it("still sets the playback state without setPositionState", () => {
+    session.setPositionState = undefined;
+
+    const { element, emit } = renderWithStore(<MediaSession />);
+    element.paused = false;
+    emit("play");
+
+    expect(session.playbackState).toBe("playing");
   });
 });

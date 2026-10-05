@@ -64,4 +64,17 @@ without affecting the rest. Unit tier only, as the E2E spec notes. The bundle
 row for the part is now "AudioPlayer + MediaSession" rather than the part alone:
 `usePlayerStore` pulls in the store factory, which the root already carries, so
 alone it double-counted ~400 B. The part costs ~630 B gzipped over the root, ~600
-B on the full surface. Position state and claim-on-play remain (phases 3–4).
+B on the full surface.
+
+**Phase 3 landed (2026-10-05): position and playback state.** One effect
+subscribes to `currentSecond`, `duration`, `rate` and `paused` outside React and
+calls `setPositionState` with the position clamped to the duration, only while
+the duration is above zero and the rate is not `0` (both throw). Moving to a
+live stream clears a position written earlier, so a swapped track does not keep
+its scrubber. Unmount clears it too, and sets `playbackState` to `"none"`;
+otherwise it follows `paused`. A rejected write is logged in development.
+Skipped where `setPositionState` is not a function. jsdom covers the
+per-second cadence, the clamp, the live-stream clear and the reset; the E2E spec
+reads `playbackState` through play and pause on both engines and fails on a
+`<MediaSession>` console error. The part is now ~840 B gzipped over the root.
+Claim-on-play remains (phase 4).

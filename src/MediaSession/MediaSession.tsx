@@ -39,9 +39,17 @@ function setHandler(
   }
 }
 
+// Absent in older Firefox, so tested on its own rather than assumed from the
+// parent object.
+function hasPositionState(): boolean {
+  return typeof navigator.mediaSession.setPositionState === "function";
+}
+
 function clearSession() {
   navigator.mediaSession.metadata = null;
+  navigator.mediaSession.playbackState = "none";
   for (const action of ACTIONS) setHandler(action, null);
+  if (hasPositionState()) navigator.mediaSession.setPositionState();
 }
 
 function reportError(what: string, error: unknown) {
@@ -161,6 +169,61 @@ function useMediaSession(props: MediaSessionProps) {
       hasNext ? () => latest.current.onNextTrack?.() : null,
     );
   }, [self, store, hasPrevious, hasNext]);
+
+  // Subscribed outside React, so none of this costs a render. The OS
+  // interpolates the scrubber from the last write, so it needs one only when
+  // something it cannot predict happens; `currentSecond` catches nearly every
+  // seek, and a seek within one second is off by under a second until the next.
+  useEffect(() => {
+    if (!hasMediaSession() || owner !== self) return;
+    const session = navigator.mediaSession;
+    let hasPosition = false;
+
+    const writePosition = () => {
+      if (!hasPositionState()) return;
+      // `0` stands for both "no metadata yet" and `Infinity`, a live stream.
+      const duration = store.duration.get();
+      const playbackRate = store.rate.get();
+      try {
+        if (duration > 0 && playbackRate !== 0) {
+          session.setPositionState({
+            duration,
+            playbackRate,
+            // Chrome reports `currentTime` past `duration` for about 0.5 s
+            // after `ended`, and `setPositionState` throws on that.
+            position: Math.min(store.currentTime.get(), duration),
+          });
+          hasPosition = true;
+        } else if (hasPosition) {
+          // A track swapped for a live stream would otherwise keep its
+          // scrubber.
+          session.setPositionState();
+          hasPosition = false;
+        }
+      } catch (error) {
+        reportError("the position state", error);
+      }
+    };
+
+    // Set explicitly: the browser guesses from whichever element it thinks is
+    // current, and with two players on a page it guesses wrong.
+    const writePlaybackState = () => {
+      session.playbackState = store.paused.get() ? "paused" : "playing";
+    };
+
+    writePlaybackState();
+    writePosition();
+    const unsubscribes = [
+      store.currentSecond.subscribe(writePosition),
+      store.duration.subscribe(writePosition),
+      store.rate.subscribe(writePosition),
+      store.paused.subscribe(() => {
+        writePlaybackState();
+        writePosition();
+      }),
+    ];
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+  }, [self, store]);
 }
 
 /**
