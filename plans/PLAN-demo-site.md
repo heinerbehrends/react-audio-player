@@ -6,7 +6,7 @@ so the examples are the product page. This plan settles where the examples live
 and how one copy of each serves the demo page, the sandboxes and CI, then lands
 them in five phases.
 
-## Status: phase 1 built 2026-10-05, except the deploy workflow, which waits on the choice of host.
+## Status: phase 1 built 2026-10-05, deploying to GitHub Pages.
 
 ---
 
@@ -173,20 +173,20 @@ that should install nothing but React and the library.
 
 ## Hosting
 
-**Open: GitHub Pages or Netlify.** The build does not care: `base` comes from
-`DEMO_BASE`, default `/`, and `pnpm demo:build` writes `demo/dist`.
+**GitHub Pages**, chosen 2026-10-05 over Netlify: no new vendor or secret. The
+site is `https://heinerbehrends.github.io/react-audio-player/`, which is also
+the fallback audio base in each example's `audio.ts`.
 
-- **GitHub Pages:** no new vendor or secret. Serves under
-  `/react-audio-player/`, so the workflow builds with
-  `DEMO_BASE=/react-audio-player/` — verified in a sub-path preview, page and
-  track both load. `.github/workflows/demo.yml`, its own workflow rather than
-  a job in `test.yml`, so a red test run does not take the site down; it uploads
-  with `actions/upload-pages-artifact` and `actions/deploy-pages`. Pages must
-  be switched to "GitHub Actions" as its source in the repo settings.
-- **Netlify:** a preview deploy for every pull request, so an example change
-  can be looked at before it merges, and the site at the root. A
-  `netlify.toml` with `pnpm demo:build` and `demo/dist`, and the repo
-  connected in Netlify's UI.
+`.github/workflows/demo.yml` builds with `DEMO_BASE=/react-audio-player/` —
+`base` comes from that variable, default `/` — and deploys `demo/dist` with
+`actions/upload-pages-artifact` and `actions/deploy-pages`. Its own workflow
+rather than a job in `test.yml`, so a red test run does not take the site down;
+it runs on pushes to `main` that touch what the build reads. The sub-path build
+is verified locally: page and track both load. Pages has to be set to "GitHub
+Actions" as its source in the repository settings, once.
+
+Netlify's preview deploy per pull request was the case for it. The build is
+host-agnostic, so moving later is a `netlify.toml` and a changed fallback URL.
 
 ## Phases
 
@@ -197,7 +197,7 @@ Each phase is one commit with its checks, in this order.
 - `demo/` with the aliasing config, a page shell and one example slot;
   `examples/minimal/` complete.
 - `tsconfig.demo.json`, wired into `type-check` and ESLint.
-- The deploy config for the chosen host.
+- `.github/workflows/demo.yml`, deploying to GitHub Pages.
 - E2E: a `demo` Playwright project, Chromium only, against the demo's dev
   server on 5175 (5173 is the dev app); the two existing projects ignore
   `testE2E/demo/`. One test per example — the track loads and the timeline
