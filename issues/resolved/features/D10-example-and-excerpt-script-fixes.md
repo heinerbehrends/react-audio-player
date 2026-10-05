@@ -40,7 +40,14 @@ cuts their audio.
 **Shipped** (2026-10-05).
 
 - The slider's left margin and its bridge share one `--gap` custom property,
-  so the bridge ends where the button does.
+  so the bridge ends where the button does. **Superseded the same day:** the
+  hover moved to a `.basic-volume` wrapper around the button and the slider,
+  which needs no bridge. Opening moved the button left, so a pointer above the
+  20px slider hovered nothing, the slider closed, and the button slid back
+  under it: a flicker. The wrapper is the button's height and its right edge
+  holds still. Verified by `stays open with the pointer near the mute
+button's top edge` in `testE2E/demo/examples.spec.ts`, which fails on the
+  old rule.
 - Under `@media (hover: none)` the basic example's volume slider stays open at
   every width; the hover reveal stays for a mouse. A screen reader focuses the
   slider before operating it, which opens it too. Phone widths still drop it

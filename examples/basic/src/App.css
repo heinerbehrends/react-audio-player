@@ -22,6 +22,13 @@
     sans-serif;
 }
 
+/* The pill is dark in both schemes; on a dark page an outline keeps its edge. */
+@media (prefers-color-scheme: dark) {
+  .basic {
+    box-shadow: 0 0 0 1px #3d3d3d;
+  }
+}
+
 .basic :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -67,6 +74,11 @@
   align-items: center;
 }
 
+.basic-volume {
+  display: flex;
+  align-items: center;
+}
+
 .basic-mute {
   display: grid;
   place-items: center;
@@ -101,8 +113,6 @@
    the tab order, and Tab from the mute button has to reach it. Zero width
    keeps it focusable, and focus opens it. */
 .basic-volume-slider {
-  --gap: 4px;
-
   width: 0;
   opacity: 0;
   pointer-events: none;
@@ -112,11 +122,14 @@
     opacity 0.2s;
 }
 
-.basic-mute:hover + .basic-volume-slider,
-.basic-volume-slider:hover,
+/* On the group, not the button: opening moves the button left, out from under
+   a pointer above or below the 20px slider, and closing moved it back — so the
+   slider flickered. The group is the button's height and its right edge holds
+   still. */
+.basic-volume:hover .basic-volume-slider,
 .basic-volume-slider:focus-within {
   width: 64px;
-  margin: 0 6px 0 var(--gap);
+  margin: 0 6px 0 4px;
   opacity: 1;
   pointer-events: auto;
 }
@@ -126,18 +139,10 @@
 @media (hover: none) {
   .basic-volume-slider {
     width: 64px;
-    margin: 0 6px 0 var(--gap);
+    margin: 0 6px 0 4px;
     opacity: 1;
     pointer-events: auto;
   }
-}
-
-/* Bridges the gap to the mute button, so the slider stays open while the
-   pointer crosses it. Any wider and it would cover the button. */
-.basic-volume-slider::before {
-  content: "";
-  position: absolute;
-  inset: 0 100% 0 calc(-1 * var(--gap));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -143,6 +143,28 @@ test.describe("Basic player", () => {
     await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
   });
 
+  // Opening moves the mute button left. Hovered above the 20px slider, the
+  // pointer then hovered nothing, the slider closed, and the button slid back
+  // under it — a flicker for as long as the pointer stayed.
+  test("stays open with the pointer near the mute button's top edge", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Basic player" });
+    const mute = example.getByRole("button", { name: labels.mute });
+    const box = (await mute.boundingBox())!;
+
+    await page.mouse.move(box.x + box.width / 2, box.y + 3);
+    await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
+
+    const widths: number[] = [];
+    for (let sample = 0; sample < 10; sample += 1) {
+      await page.waitForTimeout(100);
+      widths.push(await volumeWidth(example));
+    }
+    expect(Math.min(...widths)).toBeGreaterThan(40);
+  });
+
   test.describe("on a touch screen", () => {
     // Touch emulation is what makes `(hover: none)` match.
     test.use({ hasTouch: true, isMobile: true });

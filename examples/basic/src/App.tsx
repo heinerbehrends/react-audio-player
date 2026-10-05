@@ -44,37 +44,39 @@ export default function App() {
           {/* Shows the time left; press to switch to elapsed. */}
           <Time.Toggle className="basic-time" defaultValue="remaining" />
 
-          {/* The slider opens while the pointer is over the mute button or the
-              slider, or the slider has focus, so Tab from mute lands on it. */}
-          <MuteButton className="basic-mute">
-            <MuteButton.HighVolume>
-              <svg viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M2 6h3l4-3.5v11L5 10H2z" />
-                <path className="basic-wave" d="M11 5.5a3.5 3.5 0 0 1 0 5" />
-                <path className="basic-wave" d="M12.5 3a7 7 0 0 1 0 10" />
-              </svg>
-            </MuteButton.HighVolume>
-            <MuteButton.LowVolume>
-              <svg viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M2 6h3l4-3.5v11L5 10H2z" />
-                <path className="basic-wave" d="M11 5.5a3.5 3.5 0 0 1 0 5" />
-              </svg>
-            </MuteButton.LowVolume>
-            <MuteButton.Muted>
-              <svg viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M2 6h3l4-3.5v11L5 10H2z" />
-                <path className="basic-wave" d="M11 6l4 4M15 6l-4 4" />
-              </svg>
-            </MuteButton.Muted>
-          </MuteButton>
+          {/* The slider opens while the pointer is over this group, or the
+              slider has focus, so Tab from mute lands on it. */}
+          <div className="basic-volume">
+            <MuteButton className="basic-mute">
+              <MuteButton.HighVolume>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M2 6h3l4-3.5v11L5 10H2z" />
+                  <path className="basic-wave" d="M11 5.5a3.5 3.5 0 0 1 0 5" />
+                  <path className="basic-wave" d="M12.5 3a7 7 0 0 1 0 10" />
+                </svg>
+              </MuteButton.HighVolume>
+              <MuteButton.LowVolume>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M2 6h3l4-3.5v11L5 10H2z" />
+                  <path className="basic-wave" d="M11 5.5a3.5 3.5 0 0 1 0 5" />
+                </svg>
+              </MuteButton.LowVolume>
+              <MuteButton.Muted>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M2 6h3l4-3.5v11L5 10H2z" />
+                  <path className="basic-wave" d="M11 6l4 4M15 6l-4 4" />
+                </svg>
+              </MuteButton.Muted>
+            </MuteButton>
 
-          <Volume className="basic-slider basic-volume-slider">
-            <Volume.Control className="basic-control">
-              <Volume.Background className="basic-track" />
-              <Volume.Progress className="basic-fill" />
-            </Volume.Control>
-            <Volume.Thumb className="basic-thumb" />
-          </Volume>
+            <Volume className="basic-slider basic-volume-slider">
+              <Volume.Control className="basic-control">
+                <Volume.Background className="basic-track" />
+                <Volume.Progress className="basic-fill" />
+              </Volume.Control>
+              <Volume.Thumb className="basic-thumb" />
+            </Volume>
+          </div>
         </div>
       </div>
     </AudioPlayer>

@@ -6,7 +6,19 @@
   --border: #e7e5e4;
   --code-bg: #f5f5f4;
   --accent: #4338ca;
-  color-scheme: light;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c0a09;
+    --surface: #1c1917;
+    --text: #e7e5e4;
+    --muted: #a8a29e;
+    --border: #3a3532;
+    --code-bg: #151311;
+    --accent: #a5b4fc;
+  }
 }
 
 body {

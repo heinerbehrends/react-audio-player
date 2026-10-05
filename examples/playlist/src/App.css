@@ -4,8 +4,12 @@
   --text: #1c1917;
   --muted: #78716c;
   --line: #e7e5e4;
+  --hover: #f5f5f4;
   --accent: #b4532a;
   --focus: #2563eb;
+  /* What sits on --text and around the thumb: the page behind the player. */
+  --surface: #ffffff;
+  color-scheme: light dark;
 
   max-width: 420px;
   margin: 0 auto;
@@ -13,6 +17,18 @@
   font:
     15px/1.4 system-ui,
     sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .playlist {
+    --text: #f5f5f4;
+    --muted: #a8a29e;
+    --line: #44403c;
+    --hover: #292524;
+    --accent: #e8895f;
+    --focus: #60a5fa;
+    --surface: #1c1917;
+  }
 }
 
 .playlist :focus-visible {
@@ -79,7 +95,7 @@
   width: 52px;
   height: 52px;
   background: var(--text);
-  color: #fff;
+  color: var(--surface);
 }
 
 .playlist-skip svg,
@@ -143,7 +159,7 @@
   width: 14px;
   height: 14px;
   padding: 0;
-  border: 2px solid #fff;
+  border: 2px solid var(--surface);
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 1px var(--line);
@@ -173,7 +189,7 @@
 }
 
 .playlist-tracks button:hover {
-  background: #f5f5f4;
+  background: var(--hover);
 }
 
 .playlist-tracks [aria-current="true"] {
