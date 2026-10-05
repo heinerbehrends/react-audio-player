@@ -11,14 +11,16 @@ import type { PlayerLabels } from "../Shared/playerLabels";
  */
 export type AudioFile = {
   src: string;
-  /**
-   * Track metadata. Nothing reads these yet; they are declared now so that
-   * adding Media Session support later is not a breaking change to the one type
-   * every consumer passes to their root component.
-   */
+  /** The track title on the lock screen. Read by `<MediaSession>`. */
   title?: string;
+  /** The artist on the lock screen. Read by `<MediaSession>`. */
   artist?: string;
+  /** The album on the lock screen. Read by `<MediaSession>`. */
   album?: string;
+  /**
+   * Cover images for the lock screen; the operating system picks a size. Read by
+   * `<MediaSession>`.
+   */
   artwork?: MediaImage[];
 };
 

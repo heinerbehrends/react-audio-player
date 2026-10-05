@@ -8,6 +8,9 @@ export { Volume } from "./Volume/Volume";
 export { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 export { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
 export { Time } from "./TimeDisplay/TimeDisplay";
+// A part, not root behaviour: every consumer imports `AudioPlayer`, and only
+// those who render this pay for the lock screen (F6).
+export { MediaSession } from "./MediaSession/MediaSession";
 // Individually, not through a barrel: a module importing from every part is the
 // aggregated surface that cost 4,025 B → 1,137 B gzipped in P1-a.
 export { usePlayButtonProps } from "./Player/PlayButton";

@@ -22,8 +22,21 @@ import { gzipSync } from "node:zlib";
 import { writeFileSync, mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const DIST = join(process.cwd(), "dist/index.mjs");
+
+if (!existsSync(DIST)) {
+  console.error(`No ${DIST}. Run \`pnpm build\` first.`);
+  process.exit(1);
+}
+
+// Parts a consumer opts into by rendering them. "Full surface" leaves them out,
+// so it stays what everyone else pays, and each gets a row of its own (F6).
+const OPT_IN = ["MediaSession"];
+const SURFACE = Object.keys(await import(pathToFileURL(DIST).href)).filter(
+  (name) => !OPT_IN.includes(name),
+);
 
 /**
  * Ceilings, in gzipped bytes, roughly 15–20 % above today's measurement.
@@ -41,7 +54,12 @@ const BUDGETS = [
   { name: "MuteButton only", imports: "{ MuteButton }", max: 1500 },
   { name: "Timeline only", imports: "{ Timeline }", max: 4500 },
   { name: "Time only", imports: "{ Time }", max: 2500 },
-  { name: "Full surface", imports: "* as all", max: 8500 },
+  // The root every consumer imports, and the part only some do. The lock screen
+  // is a part so that the first row never pays for it (F6).
+  { name: "AudioPlayer only", imports: "{ AudioPlayer }", max: 2600 },
+  { name: "MediaSession only", imports: "{ MediaSession }", max: 750 },
+  { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 8500 },
+  { name: "Full surface + MediaSession", imports: "* as all", max: 9500 },
 ];
 
 /**
@@ -54,12 +72,8 @@ const FOREIGN_STRINGS = {
   "PlayButton only": ["Volume slider", "Timeline slider", "Playback rate"],
   "MuteButton only": ["Timeline slider", "Playback rate", "Show time"],
   "Time only": ["Volume slider", "Timeline slider", "Playback rate"],
+  "AudioPlayer only": ["mediaSession"],
 };
-
-if (!existsSync(DIST)) {
-  console.error(`No ${DIST}. Run \`pnpm build\` first.`);
-  process.exit(1);
-}
 
 const dir = mkdtempSync(join(tmpdir(), "bundle-size-"));
 const results = [];
@@ -114,7 +128,7 @@ if (process.argv.includes("--json")) {
     // a toolchain bump is loose enough to hide a small one.
     const bad = over || leaked.length > 0;
     console.log(
-      `${bad ? "FAIL" : "ok  "} ${name.padEnd(16)} ${String(bytes).padStart(5)} B / ${max} B gzip  (${headroom}% headroom)`,
+      `${bad ? "FAIL" : "ok  "} ${name.padEnd(27)} ${String(bytes).padStart(5)} B / ${max} B gzip  (${headroom}% headroom)`,
     );
     for (const probe of leaked) {
       console.log(`     ↳ leaked another component's string: ${probe}`);

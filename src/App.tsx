@@ -10,6 +10,7 @@ import { ErrorMessage } from "./Player/ErrorMessage";
 import { AudioPlayer } from "./Player/AudioPlayer";
 import { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 import { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";
+import { MediaSession } from "./MediaSession/MediaSession";
 import { Debug } from "./Debug";
 
 // A generated WAV, not the MP3 beside it: uncompressed PCM is the one format no
@@ -53,7 +54,14 @@ type PlayerProps = {
 
 function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
   return (
-    <AudioPlayer audioFile={{ src }}>
+    <AudioPlayer
+      audioFile={{
+        src,
+        title: "Test tone",
+        artist: "react-headless-audio-player",
+      }}
+    >
+      <MediaSession />
       <Timeline style={{ height: "40px" }}>
         {/* `styles.css` supplies the button reset: `[data-part="control"]`
             outranks App.css's `button` rule. */}

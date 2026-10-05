@@ -38,3 +38,19 @@ claimed on play. Settled in a grill session the same day: component only, claim 
 clear on unmount, no `stop` handler, metadata `null` without fields, position
 state once a second, throws caught and logged in development, and it ships in
 `0.1.0-beta.0` — the publish waits for it.
+
+## Progress
+
+**Phase 1 landed (2026-10-05): the part, and metadata.** `<MediaSession />` in
+`src/MediaSession/MediaSession.tsx`, exported from the index. It writes
+`MediaMetadata` from the four `AudioFile` fields, keyed on their content, `null`
+when none is set, and clears it on unmount; an artwork URL the constructor
+rejects is logged in development and leaves the player running. The first
+instance mounted owns the session. Verified by
+`testJSDom/MediaSession/MediaSession.test.tsx` and
+`testE2E/Player/media-session.spec.ts`; the demo renders it. `bundle-size.mjs`
+gained "AudioPlayer only" (which must not contain `mediaSession`),
+"MediaSession only" and "Full surface + MediaSession"; "Full surface" now leaves
+the part out, so it still measures what everyone else pays. The part costs
+~330 B gzipped on the full surface so far. Handlers, position state and
+claim-on-play remain (phases 2–4).
