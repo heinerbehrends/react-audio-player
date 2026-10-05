@@ -428,8 +428,12 @@ As written, this playlist stops after every track: a `src` change arrives
 loaded and paused, and nothing resumes it. Two ways to carry on. Pass
 `audioProps={{ autoPlay: true }}`, which also autoplays the first track and can
 be refused by the browser's autoplay policy — the refusal surfaces through
-`useAudioError()` as `kind: "playback"`. Or keep an effect keyed on the index
-that calls `play()` once the new track reports metadata.
+`useAudioError()` as `kind: "playback"`. Or call `play()` from an effect keyed on
+the selected track, inside the player. It has to run after the new `src` is in
+the DOM: a `play()` in the handler that changes the track is undone when the
+element starts loading the new one. The
+[playlist example](https://heinerbehrends.github.io/react-audio-player/#playlist)
+does this.
 
 In Firefox, dragging the timeline to the very end while paused also fires
 `onEnded`, so a user can advance this playlist by hand; Chrome does not.

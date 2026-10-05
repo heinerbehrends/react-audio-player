@@ -6,7 +6,7 @@ so the examples are the product page. This plan settles where the examples live
 and how one copy of each serves the demo page, the sandboxes and CI, then lands
 them in five phases.
 
-## Status: phase 1 built 2026-10-05, deploying to GitHub Pages.
+## Status: phases 1 and 2 built 2026-10-05; the site is live at https://heinerbehrends.github.io/react-audio-player/.
 
 ---
 
@@ -138,18 +138,22 @@ that should install nothing but React and the library.
   [librivox.org/alices-adventures-in-wonderland-by-lewis-carroll-4](https://librivox.org/alices-adventures-in-wonderland-by-lewis-carroll-4/),
   catalogued 2010-03-18: "LibriVox recordings are Public Domain in the USA."
   Twelve chapters, one reader, 64 kbps CBR at 22.05 kHz throughout, 10–16
-  minutes each, with the chapter titles in the ID3v2 tags. The source, reader
-  and statement go in a `CREDITS.md` next to the files.
-  - **Playlist:** chapters 1–3 as separate tracks (Down the Rabbit-Hole, The
-    Pool of Tears, A Caucus-Race and a Long Tale; 36:44, 17.7 MB).
-  - **Podcast:** chapters 10–12 joined into one file (The Lobster Quadrille,
-    Who Stole the Tarts?, Alice's Evidence; 39:25, 18.9 MB), with chapter
-    marks at 0, 13:50.7 and 26:03.6.
-  - **Artwork:** LibriVox's cover, 300 × 300 JPEG, from
-    `archive.org/download/LibrivoxCdCoverArt/Alices_Adventures_in_Wonderland_1003.jpg`.
-    The book page states no licence for the cover itself; confirm before
-    publishing it. Small for a lock screen, which prefers 512 px, but the OS
-    scales it.
+  minutes each, with the chapter titles in the ID3v2 tags. Credits in
+  `public/audio/CREDITS.md`. The chapters themselves stay out of the repo:
+  **excerpts** are committed instead, cut by `scripts/cut-excerpts.mjs` at
+  pauses, without re-encoding, and without LibriVox's spoken preamble.
+  - **Playlist:** ~48 s from each of chapters 1–3 (Down the Rabbit-Hole, The
+    Pool of Tears, A Caucus-Race and a Long Tale), ~380 KB each, 1.1 MB in
+    all. Long enough for the lock-screen controls — Chrome shows none for
+    media under 5 s — and short enough for an E2E test to reach an end.
+  - **Podcast:** ~2 minutes from each of chapters 10–12 (The Lobster
+    Quadrille, Who Stole the Tarts?, Alice's Evidence), joined: ~2.9 MB, three
+    chapter marks.
+  - **Artwork:** LibriVox's cover, 300 × 300 JPEG, from its CD cover art
+    collection on archive.org, which is marked public domain. Small for a lock
+    screen, which prefers 512 px, but the OS scales it.
+  - **Rejected:** short sound clips from an archive.org rip of Simon Harris's
+    _Beats, Breaks & Scratches_ CDs — no licence on the item, and under 5 s.
 - **Joining needs no ffmpeg, but needs the `Info` frame removed.** Strip each
   file's ID3v2 header, ID3v1 trailer and first frame — a LAME `Info` header
   holding that chapter's own frame count — then concatenate. Left in, Firefox
@@ -158,8 +162,8 @@ that should install nothing but React and the library.
   the 10–12 join reads 2364.8 s in Chromium and Firefox, and seeks land on
   both sides of each seam and near the end (2026-10-05). With CBR, chapter
   starts are byte offsets ÷ 8000. Safari is unchecked: WebKit is not installed
-  here, so that is a manual check on a device. The join becomes
-  `scripts/join-chapters.mjs`, emitting the chapter times alongside the file.
+  here, so that is a manual check on a device. The join goes into
+  `scripts/cut-excerpts.mjs`, emitting the chapter times alongside the file.
 - **Served once, from the deployed demo.** The demo's `publicDir` is the repo's
   `public/`, which the dev app and the E2E suite already read
   `The-Race.mp3` from, so there is no second copy. Each example's
@@ -168,8 +172,7 @@ that should install nothing but React and the library.
   which is what a sandbox gets. Copies in `examples/*/public/` would bloat the
   repo, and a StackBlitz sandbox imports the whole folder. An `<audio>`
   element plays a cross-origin file without CORS, and the peaks are
-  precomputed, so nothing reads the bytes from script. The fallback URL in each
-  `audio.ts` is fixed once the host is chosen.
+  precomputed, so nothing reads the bytes from script.
 
 ## Hosting
 
@@ -223,7 +226,7 @@ Each phase is one commit with its checks, in this order.
 
 ### Phase 4 — podcast
 
-- `scripts/join-chapters.mjs` and the joined chapters 10–12. Rate options, the
+- The join in `scripts/cut-excerpts.mjs`, and the joined sections of chapters 10–12. Rate options, the
   two skip sizes, the userland chapter list, `<MediaSession>` with artwork.
 - E2E: a chapter click seeks, and the current chapter follows playback.
 

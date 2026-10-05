@@ -2,6 +2,9 @@ import { useState } from "react";
 import MinimalApp from "../../examples/minimal/src/App";
 import minimalApp from "../../examples/minimal/src/App.tsx?raw";
 import minimalCss from "../../examples/minimal/src/App.css?raw";
+import PlaylistApp from "../../examples/playlist/src/App";
+import playlistApp from "../../examples/playlist/src/App.tsx?raw";
+import playlistCss from "../../examples/playlist/src/App.css?raw";
 
 const REPO = "https://github.com/heinerbehrends/react-audio-player";
 
@@ -25,6 +28,17 @@ const EXAMPLES: Example[] = [
     files: [
       { name: "App.tsx", code: minimalApp },
       { name: "App.css", code: minimalCss },
+    ],
+  },
+  {
+    id: "playlist",
+    title: "Playlist",
+    summary:
+      "Three chapters in your own state, carrying on from one to the next, with previous and next on the lock screen and media keys through <MediaSession>.",
+    App: PlaylistApp,
+    files: [
+      { name: "App.tsx", code: playlistApp },
+      { name: "App.css", code: playlistCss },
     ],
   },
 ];
@@ -63,7 +77,11 @@ function ExampleSection({ example }: { example: Example }) {
   const headingId = `${example.id}-heading`;
 
   return (
-    <section className="demo-example" aria-labelledby={headingId}>
+    <section
+      id={example.id}
+      className="demo-example"
+      aria-labelledby={headingId}
+    >
       <h2 id={headingId}>{example.title}</h2>
       <p>{example.summary}</p>
 
