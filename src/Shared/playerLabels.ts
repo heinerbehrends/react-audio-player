@@ -61,11 +61,11 @@ export type PlayerLabels = {
    */
   mute?: Record<VolumeState, string>;
   /**
-   * `Time.Toggle`'s name, keyed by its `data-state` — the readout showing, not
-   * the one pressing will show. Inverted the same way `mute` is:
-   * `elapsed: "Restzeit anzeigen"`.
+   * `Time.Toggle`'s name. `time` is the readout's text exactly as shown;
+   * `shown` is the readout showing, not the one pressing will show. Start with
+   * `time`, so the name contains what is on screen (WCAG 2.5.3).
    */
-  timeToggle?: Record<TimeDisplayState, string>;
+  timeToggle?: (state: { time: string; shown: TimeDisplayState }) => string;
 
   /** `SeekButton`'s name. `amount` is signed, in seconds. */
   seek?: (state: { amount: number }) => string;

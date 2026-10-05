@@ -7,7 +7,9 @@ Adventures in Wonderland (version 2)_ by Lewis Carroll, read by Kara Shallenberg
 for LibriVox, catalogued 2010-03-18.
 
 - Source: <https://librivox.org/alices-adventures-in-wonderland-by-lewis-carroll-4/>
-- Licence: "LibriVox recordings are Public Domain in the USA."
+- Licence: "LibriVox recordings are Public Domain in the USA." Outside the USA,
+  LibriVox asks listeners to check the work's copyright status in their own
+  country.
 - Cut by `scripts/cut-excerpts.mjs`, at pauses and without re-encoding; the
   spoken LibriVox preamble at the start of each chapter is left out.
 

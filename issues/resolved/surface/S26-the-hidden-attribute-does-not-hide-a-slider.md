@@ -25,7 +25,7 @@ extra element in every slider; not worth it for this case alone.
 **Shipped** (2026-10-05). The three roots spread `rootStylesFor(props.hidden)`,
 which swaps `display: grid` for `display: none` while `hidden` is set. The
 README's "What stays inline" section says so, and that hiding a root from CSS
-takes `display: none !important` or a wrapper. The minimal example hides its
+takes `display: none !important` or a wrapper. The basic example hides its
 volume slider in a container query with `!important`, and lost its wrapper.
 
 **Verified by** — a jsdom test per root in `dataAttributes.test.tsx`: hidden

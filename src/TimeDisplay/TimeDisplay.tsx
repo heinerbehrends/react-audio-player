@@ -51,9 +51,10 @@ type TimeProps = Omit<
  * `Time.Remaining` would, so it takes no children. For a readout that never
  * switches, render one of those on its own.
  *
- * Named for what pressing it will do — "Show time elapsed" / "Show time
- * remaining" — and that name is the only place the state appears; no
- * `aria-pressed` (A4). Translate both with `AudioPlayer`'s `labels.timeToggle`.
+ * Named by the time on screen, then what pressing does — "1:23 elapsed, show
+ * time remaining" — so the name contains the visible text (WCAG 2.5.3, A17).
+ * The name is the only place the state appears; no `aria-pressed` (A4).
+ * Translate it with `AudioPlayer`'s `labels.timeToggle`.
  *
  * The choice is this toggle's own: two toggles switch independently.
  *
@@ -61,19 +62,21 @@ type TimeProps = Omit<
  * readout showing, not the one pressing will show.
  */
 function Toggle({ defaultValue = "elapsed", ...props }: ToggleProps) {
-  const toggle = useTimeToggleProps(defaultValue, props);
+  // The state, not the bag's `data-state`, which `props` can replace (S30).
+  const [shown, toggle] = useTimeToggle(defaultValue, props);
   return (
     <button {...toggle}>
-      {toggle["data-state"] === "elapsed" ? <Elapsed /> : <Remaining />}
+      {shown === "elapsed" ? <Elapsed /> : <Remaining />}
     </button>
   );
 }
 
 /**
- * `Time.Toggle`'s props, for a `<button>` of your own: the state, the flipping
- * "Show time elapsed"/"Show time remaining" name, the toggle, the error gate and
- * the media keys. Render the readout yourself from `data-state`:
- * `Time.Elapsed` or `Time.Remaining`.
+ * `Time.Toggle`'s props, for a `<button>` of your own: the state, the name
+ * ("1:23 elapsed, show time remaining"), the toggle, the error gate and the
+ * media keys. Render the readout yourself from `data-state`:
+ * `Time.Elapsed` or `Time.Remaining`. Pass no `data-state` of your own — it
+ * replaces the bag's, which then no longer says which readout is showing.
  *
  * Spread it last, onto a `<button>`, and pass your own handlers in the call —
  * after the spread they replace the library's rather than composing with it.
@@ -84,8 +87,17 @@ export function useTimeToggleProps<
   defaultValue: TimeDisplayState = "elapsed",
   props?: P,
 ): StatefulButtonPropsBag<P, TimeDisplayState> {
+  return useTimeToggle(defaultValue, props)[1];
+}
+
+/** `useTimeToggleProps`, plus the state itself, which `props` cannot replace. */
+function useTimeToggle<P extends React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  defaultValue: TimeDisplayState = "elapsed",
+  props?: P,
+): [TimeDisplayState, StatefulButtonPropsBag<P, TimeDisplayState>] {
   const [timeDisplay, setTimeDisplay] = useState(defaultValue);
   const labels = useLabels();
+  const time = useReadoutText(timeDisplay);
 
   const composed = useComposedButtonProps(
     () =>
@@ -96,19 +108,22 @@ export function useTimeToggleProps<
   );
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
-  return {
+  const bag = {
     type: "button",
     "data-part": "time-toggle",
     "data-state": timeDisplay,
+    // Starts with the text on screen, so a voice-control user can say it (WCAG
+    // 2.5.3), then says what pressing does.
     "aria-label":
-      labels?.timeToggle?.[timeDisplay] ??
-      (timeDisplay === "remaining"
-        ? "Show time elapsed"
-        : "Show time remaining"),
+      labels?.timeToggle?.({ time, shown: timeDisplay }) ??
+      `${time} ${timeDisplay}, show time ${
+        timeDisplay === "elapsed" ? "remaining" : "elapsed"
+      }`,
     ...props,
     // Last, so the gate and the shortcuts cannot be spread away.
     ...composed,
   } as StatefulButtonPropsBag<P, TimeDisplayState>;
+  return [timeDisplay, bag];
 }
 
 /**
@@ -124,21 +139,9 @@ export function useTimeToggleProps<
  * all three readouts at once and is handed raw seconds (S16).
  */
 function Elapsed(props: TimeProps) {
-  const playerState = usePlayerState();
-  const { elapsed } = useTimeDisplay();
-  const labels = useLabels();
-
-  // The loading branch picks the number, not the format: the entry still runs,
-  // with `seconds: 0`, so a locale with its own digits gets them.
-  //
-  // Rounded, like the other two: `formatTime` rounds, so an entry handed the
-  // float would disagree with the fallback it replaces. `elapsed` is already
-  // whole — it comes off the 1 Hz clock — and this says so rather than relying
-  // on it.
-  const seconds = playerState === "loading" ? 0 : Math.round(elapsed);
   return (
     <time data-part="elapsed" {...props}>
-      {labels?.time?.({ seconds, part: "elapsed" }) ?? formatTime(seconds)}
+      {useReadoutText("elapsed")}
     </time>
   );
 }
@@ -156,10 +159,25 @@ function Elapsed(props: TimeProps) {
  * "remaining"` — it writes its own `-`, and the zero cases arrive as `0`.
  */
 function Remaining(props: TimeProps) {
+  return (
+    <time data-part="remaining" {...props}>
+      {useReadoutText("remaining")}
+    </time>
+  );
+}
+
+/**
+ * What `Time.Elapsed` or `Time.Remaining` renders, shared with the toggle's
+ * name so the two cannot disagree.
+ */
+function useReadoutText(part: TimeDisplayState) {
   const playerState = usePlayerState();
-  const { remaining } = useTimeDisplay();
+  const { elapsed, remaining } = useTimeDisplay();
   const labels = useLabels();
 
+  // The loading branch picks the number, not the format: the entry still runs,
+  // with `seconds: 0`, so a locale with its own digits gets them.
+  //
   // A magnitude, never a negative, and **whole seconds**: `duration -
   // currentSecond` is fractional on most tracks, and `formatTime` rounds — so
   // handing the entry the float made an entry that floors render a second below
@@ -169,13 +187,14 @@ function Remaining(props: TimeProps) {
   //
   // Zero both before the duration is known and once the track has finished — the
   // entry sees which case it is and can skip its own "-".
-  const seconds = playerState === "loading" ? 0 : Math.round(remaining);
-  return (
-    <time data-part="remaining" {...props}>
-      {labels?.time?.({ seconds, part: "remaining" }) ??
-        (seconds === 0 ? "0:00" : `-${formatTime(seconds)}`)}
-    </time>
-  );
+  const seconds =
+    playerState === "loading"
+      ? 0
+      : Math.round(part === "elapsed" ? elapsed : remaining);
+  const custom = labels?.time?.({ seconds, part });
+  if (custom !== undefined) return custom;
+  if (part === "elapsed" || seconds === 0) return formatTime(seconds);
+  return `-${formatTime(seconds)}`;
 }
 
 /**

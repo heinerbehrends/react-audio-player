@@ -63,6 +63,8 @@ export function createMediaElementFake(
     ...DEFAULTS,
     ...overrides,
     dataset: {} as Record<string, string>,
+    // jsdom's, for a store that listens to the page as well as the element.
+    ownerDocument: document,
     // Returns a promise, as a real element does — the write path normalises
     // the result anyway, but a test cannot exercise a refusal without one.
     play: vi.fn(() => Promise.resolve()),

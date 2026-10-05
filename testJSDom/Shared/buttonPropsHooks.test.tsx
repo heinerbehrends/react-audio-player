@@ -114,6 +114,18 @@ describe("data-state", () => {
     expect(result.current["data-state"]).toBe("remaining");
   });
 
+  it("starts useTimeToggleProps on the readout defaultValue names", () => {
+    const harness = createTestStore({ readyState: 1, duration: 100 });
+    const { result } = renderHook(() => useTimeToggleProps("remaining"), {
+      wrapper: wrapper(harness),
+    });
+
+    expect(result.current["data-state"]).toBe("remaining");
+    expect(result.current["aria-label"]).toBe(
+      "-1:40 remaining, show time elapsed",
+    );
+  });
+
   it("is overridable, being in the defaults tier", () => {
     const harness = createTestStore({ readyState: 1, duration: 100 });
     const { result } = renderHook(

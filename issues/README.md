@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**20 open · 0 part-done · 90 resolved · 2 rejected**
+**21 open · 0 part-done · 96 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -22,7 +22,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Accessibility
 
-0 open of 16.
+0 open of 17.
 
 - [x] [A1](resolved/accessibility/A1-space-activates-nothing-it-starts-playback-instead.md) Space activates nothing — it starts playback instead — P0
 - [x] [A2](resolved/accessibility/A2-no-modifier-key-guard-voiceover-navigation-drives.md) No modifier-key guard — VoiceOver navigation drives the player — P0
@@ -39,11 +39,12 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [A13](resolved/accessibility/A13-float-noise-in-aria-valuenow.md) Float noise in `aria-valuenow` — P2
 - [x] [A14](resolved/accessibility/A14-prop-spread-order-can-disable-keyboard-support.md) Prop-spread order can disable keyboard support — P2
 - [x] [A15](resolved/accessibility/A15-every-string-is-hardcoded-english.md) Every string is hardcoded English — P2, **breaking**
+- [x] [A17](resolved/accessibility/A17-the-time-toggle-name-hides-the-time-it-shows.md) The time toggle's name hides the time it shows — P2, **breaking**
 - [x] [A16](resolved/accessibility/A16-labels-player-names-an-element-outside-the-accessibility-tree.md) `labels.player` names an element outside the accessibility tree — P3
 
 ## Public surface & DX
 
-0 open of 27.
+0 open of 30.
 
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
@@ -67,18 +68,22 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S19](resolved/surface/S19-react-19-untested.md) React 19 untested — P2
 - [x] [S25](resolved/surface/S25-a-class-cannot-size-the-timeline-root.md) A class cannot size the `<Timeline>` root — P2
 - [x] [S27](resolved/surface/S27-the-time-readouts-depend-on-a-toggle-they-may-not-have.md) The time readouts depend on a toggle they may not have — P2, **breaking**
+- [x] [S28](resolved/surface/S28-a-stylesheet-cannot-restyle-the-progress-fill.md) A stylesheet cannot restyle the progress fill — P2, **breaking**
+- [x] [S29](resolved/surface/S29-progress-leaves-its-range-and-waits-for-measurement.md) `--progress` leaves its range, and waits for a measurement it does not need — P2
 - [x] [S20](resolved/surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
 - [x] [S23](resolved/surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
 - [x] [S26](resolved/surface/S26-the-hidden-attribute-does-not-hide-a-slider.md) The `hidden` attribute does not hide a slider — P3
+- [x] [S30](resolved/surface/S30-time-toggle-readout-follows-an-overridable-data-state.md) `Time.Toggle`'s readout follows a `data-state` the caller can replace — P3
 
 ## Features
 
-13 open of 28.
+14 open of 31.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
+- [ ] [F15](features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3
 - [ ] [B1](features/B1-playlist-resumption-is-undocumented-and-now-more.md) Playlist resumption is undocumented, and now more visible
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
 - [ ] [B4](features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation
@@ -100,6 +105,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F8](resolved/features/F8-mediaerror-code-is-thrown-away.md) `MediaError.code` is thrown away — P2
 - [x] [F9](resolved/features/F9-element-config-unreachable.md) Element config unreachable — P2
 - [x] [F13](resolved/features/F13-a-track-swap-should-carry-on-playing.md) A track swap should carry on playing — P2
+- [x] [F14](resolved/features/F14-a-track-swap-carries-on-only-when-it-should.md) A track swap carries on only when it should — P2
+- [x] [D10](resolved/features/D10-example-and-excerpt-script-fixes.md) The examples lose focus and reach, and the excerpt script cuts into tags — P3
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop

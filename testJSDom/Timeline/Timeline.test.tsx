@@ -42,12 +42,39 @@ describe("Timeline", () => {
       expect(progress).toHaveStyle({
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
-        width: "100%",
-        height: "100%",
-        transform: "scaleX(0.5)",
-        transformOrigin: "left",
         transition: "transform 250ms linear",
       });
+      expect(progress).toHaveAttribute("data-orientation", "horizontal");
+    });
+
+    /**
+     * S28. Size and transform come from a zero-specificity rule reading
+     * `--progress`, so a consumer's stylesheet can replace them. Inline, they
+     * outranked every rule, and the README's `width` fill did nothing.
+     */
+    it("leaves the fill's size and transform to a rule it ships", () => {
+      renderInPlayer(
+        <Timeline>
+          <Timeline.Control>track</Timeline.Control>
+          <Timeline.Progress data-testid="progress" />
+        </Timeline>,
+        { element: { currentTime: 50, duration: 100 } },
+      );
+
+      const { style } = screen.getByTestId("progress");
+      for (const property of [
+        "width",
+        "height",
+        "transform",
+        "transform-origin",
+      ]) {
+        expect(style.getPropertyValue(property)).toBe("");
+      }
+      // Anywhere in the document: React 19 hoists it into `<head>`.
+      const rules = document.querySelector(
+        'style[href="react-headless-audio-player-progress"]',
+      );
+      expect(rules?.textContent).toContain("scaleX(var(--progress,0))");
     });
 
     /**

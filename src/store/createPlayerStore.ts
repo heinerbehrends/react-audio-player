@@ -45,10 +45,13 @@ export type PlayerStore = {
   /**
    * Called after a `src` swap: plays the new track if playback was wanted
    * before it, which a swap does not change. Wanted means a `play` sent or
-   * observed and not since revoked by a pause — and a pause at the natural end
-   * does not revoke it, so a playlist advanced from `onEnded` carries on (F13).
+   * observed and not since revoked by a pause. A pause at the natural end
+   * keeps it only until the user acts or the element seeks, so a playlist
+   * advanced from `onEnded` carries on (F13) but a later swap does not (F14).
    */
   continuePlayback: () => void;
+  /** Revokes an intent held only by a natural end, as a user's own action does. */
+  expireEndedIntent: () => void;
 };
 
 export function createPlayerStore(): PlayerStore {
@@ -75,6 +78,33 @@ export function createPlayerStore(): PlayerStore {
   // than when the element's event arrives: the `play` event is a task late, and
   // a click that plays and swaps the track commits the swap before it.
   let playWanted = false;
+  // Removes the listeners that expire an intent kept through a natural end, or
+  // `null` when none is armed.
+  let disarmEndedIntent: (() => void) | null = null;
+
+  const setPlayWanted = (wanted: boolean) => {
+    disarmEndedIntent?.();
+    playWanted = wanted;
+  };
+
+  // The intent survives a natural end only for the swap that follows from it
+  // (F14). A user's pointer or key, or a seek — Chrome fires no `pause` on a
+  // paused seek back from the end — means whatever comes next is theirs.
+  const armEndedIntent = (target: HTMLAudioElement) => {
+    if (disarmEndedIntent) return;
+    const doc = target.ownerDocument;
+    const expire = () => setPlayWanted(false);
+    const options = { capture: true };
+    target.addEventListener("seeking", expire);
+    doc.addEventListener("pointerdown", expire, options);
+    doc.addEventListener("keydown", expire, options);
+    disarmEndedIntent = () => {
+      target.removeEventListener("seeking", expire);
+      doc.removeEventListener("pointerdown", expire, options);
+      doc.removeEventListener("keydown", expire, options);
+      disarmEndedIntent = null;
+    };
+  };
 
   const holdAudibleVolume = () => {
     audibleVolumeHolds += 1;
@@ -93,15 +123,17 @@ export function createPlayerStore(): PlayerStore {
   // intent alone. Firefox's `ended` on a paused seek to the end fires no
   // `pause` either (B4), so a paused player stays unwanted.
   const onPlay = () => {
-    if (element && !element.paused) playWanted = true;
+    if (element && !element.paused) setPlayWanted(true);
   };
   const onPause = () => {
-    if (element && element.paused && !element.ended) playWanted = false;
+    if (!element || !element.paused) return;
+    if (!element.ended) setPlayWanted(false);
+    else if (playWanted) armEndedIntent(element);
   };
 
   const attach = (nextElement: HTMLAudioElement) => {
     element = nextElement;
-    playWanted = !nextElement.paused;
+    setPlayWanted(!nextElement.paused);
     const detach = syncFromElement(nextElement, atoms, {
       isAudibleVolumePinned: () => audibleVolumeHolds > 0,
     });
@@ -112,6 +144,7 @@ export function createPlayerStore(): PlayerStore {
       nextElement.removeEventListener("play", onPlay);
       nextElement.removeEventListener("pause", onPause);
       if (element === nextElement) {
+        disarmEndedIntent?.();
         element = null;
       }
     };
@@ -120,11 +153,13 @@ export function createPlayerStore(): PlayerStore {
   const playbackError = atom<string | null>(null);
 
   const send = (action: SideEffectAction) => {
-    if (action.type === "PLAY") playWanted = true;
+    if (action.type === "PLAY") setPlayWanted(true);
     if (action.type === "PAUSE" || action.type === "STOP_AUDIO") {
-      playWanted = false;
+      setPlayWanted(false);
     }
-    if (action.type === "TOGGLE_PLAY" && element) playWanted = element.paused;
+    if (action.type === "TOGGLE_PLAY" && element) {
+      setPlayWanted(element.paused);
+    }
 
     const started = handleSideEffect(action, element, {
       lastAudibleVolume: atoms.lastAudibleVolume.get(),
@@ -141,8 +176,9 @@ export function createPlayerStore(): PlayerStore {
         // held key. The user's intent was honoured, so there is nothing to
         // report.
         if (name === "AbortError") return;
-        // Refused, so the next swap should not ask again.
-        playWanted = false;
+        // An autoplay refusal would only be repeated by the next swap. Any other —
+        // a 404's `NotSupportedError` — is the track's, so the next one plays.
+        if (name === "NotAllowedError") setPlayWanted(false);
         playbackError.set(name);
       },
     );
@@ -165,6 +201,11 @@ export function createPlayerStore(): PlayerStore {
     send,
     holdAudibleVolume,
     attach,
+    // A media-session track button reaches the page without a pointer or a
+    // key, so `<MediaSession>` calls this itself.
+    expireEndedIntent: () => {
+      if (disarmEndedIntent) setPlayWanted(false);
+    },
     continuePlayback: () => {
       if (playWanted) send({ type: "PLAY" });
     },

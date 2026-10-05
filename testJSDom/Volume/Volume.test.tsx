@@ -37,14 +37,28 @@ describe("Volume", () => {
         { element: { volume: 0.5 } },
       );
 
-      expect(screen.getByTestId("progress")).toHaveStyle({
-        gridColumn: "1 / 1",
-        gridRow: "1 / 1",
-        width: "100%",
-        height: "100%",
-        transform: "scaleX(0.5)",
-        transformOrigin: "left",
-      });
+      const progress = screen.getByTestId("progress");
+      expect(progress).toHaveStyle({ gridColumn: "1 / 1", gridRow: "1 / 1" });
+      // S28: drawn by a shipped rule from `--progress`, not inline.
+      expect(progress.style.transform).toBe("");
+      expect(progress.style.width).toBe("");
+      expect(progress).toHaveAttribute("data-orientation", "horizontal");
+    });
+
+    // The fill matches its own orientation, not an ancestor's, which could be
+    // any component's.
+    it("marks a vertical fill for the vertical rule", () => {
+      renderInPlayer(
+        <Volume orientation="vertical">
+          <Volume.Control>track</Volume.Control>
+          <Volume.Progress data-testid="progress" />
+        </Volume>,
+      );
+
+      expect(screen.getByTestId("progress")).toHaveAttribute(
+        "data-orientation",
+        "vertical",
+      );
     });
 
     it("should render Volume.Background with expected styles", () => {

@@ -197,12 +197,22 @@ function useMediaSession(props: MediaSessionProps) {
       // and the library has no playlist to derive one from (B2).
       setHandler(
         "previoustrack",
-        hasPrevious ? () => latest.current.onPreviousTrack?.() : null,
+        hasPrevious
+          ? () => {
+              store.expireEndedIntent();
+              latest.current.onPreviousTrack?.();
+            }
+          : null,
       );
       // `null` when absent also removes the previous owner's.
       setHandler(
         "nexttrack",
-        hasNext ? () => latest.current.onNextTrack?.() : null,
+        hasNext
+          ? () => {
+              store.expireEndedIntent();
+              latest.current.onNextTrack?.();
+            }
+          : null,
       );
     };
     writers.current.handlers = write;

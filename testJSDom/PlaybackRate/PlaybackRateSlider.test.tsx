@@ -82,7 +82,7 @@ describe("PlaybackRateSlider", () => {
   });
 
   it("renders Progress from the rate", () => {
-    renderInPlayer(
+    const { container } = renderInPlayer(
       <PlaybackRateSlider minValue={0.5} maxValue={2.5}>
         <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
         <PlaybackRateSlider.Progress data-testid="progress" />
@@ -90,11 +90,23 @@ describe("PlaybackRateSlider", () => {
       { element: { playbackRate: 1.5 } },
     );
 
-    // Half way between 0.5 and 2.5.
-    expect(screen.getByTestId("progress")).toHaveStyle({
-      transform: "scaleX(0.5)",
-      transformOrigin: "left",
-    });
+    // Half way between 0.5 and 2.5. The fill draws from this (S28).
+    const root = container.querySelector('[data-part="root"]') as HTMLElement;
+    expect(root.style.getPropertyValue("--progress")).toBe("0.5");
+    expect(screen.getByTestId("progress").style.transform).toBe("");
+  });
+
+  // S29: `PlaybackRate.Set` is not clamped to the slider's bounds.
+  it("clamps --progress for a rate past the slider's maximum", () => {
+    const { container } = renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+      { element: { playbackRate: 8 } },
+    );
+
+    const root = container.querySelector('[data-part="root"]') as HTMLElement;
+    expect(root.style.getPropertyValue("--progress")).toBe("1");
   });
 
   it("renders Background with the progress styles", () => {

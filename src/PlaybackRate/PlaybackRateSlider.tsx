@@ -1,34 +1,15 @@
 import {
   backgroundStyles,
-  progressStyles,
-  calculateProgressStyle,
   rootStylesFor,
   sliderCustomProperties,
 } from "../Slider/calculateStyle";
+import { SliderProgress } from "../Slider/SliderProgress";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
-import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
+import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
-
-function PlaybackRateProgress({
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  const slider = useSliderContext();
-  return (
-    <div
-      data-part="progress"
-      {...props}
-      style={{
-        ...progressStyles,
-        ...calculateProgressStyle(slider),
-        ...style,
-      }}
-    />
-  );
-}
 
 function PlaybackRateBackground({
   style,
@@ -99,7 +80,7 @@ function PlaybackRateSliderRoot({
 
 type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
   Background: typeof PlaybackRateBackground;
-  Progress: typeof PlaybackRateProgress;
+  Progress: typeof SliderProgress;
   Control: typeof SliderControl;
   Thumb: typeof SliderThumb;
 };
@@ -118,12 +99,12 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
  * semantics are on `.Control` (A11). Carries `data-part="root"`,
  * `data-state="idle|dragging"` and `data-orientation="horizontal"`, and sets
- * `--progress` and `--offset` as custom properties, for fills the inline
- * transform cannot draw.
+ * `--progress` and `--offset` as custom properties, which `.Progress` draws
+ * from and your own fills can read.
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;
 PlaybackRateSlider.Background = PlaybackRateBackground;
-PlaybackRateSlider.Progress = PlaybackRateProgress;
+PlaybackRateSlider.Progress = SliderProgress;
 PlaybackRateSlider.Control = SliderControl;
 PlaybackRateSlider.Thumb = SliderThumb;

@@ -101,6 +101,8 @@
    the tab order, and Tab from the mute button has to reach it. Zero width
    keeps it focusable, and focus opens it. */
 .basic-volume-slider {
+  --gap: 4px;
+
   width: 0;
   opacity: 0;
   pointer-events: none;
@@ -114,17 +116,28 @@
 .basic-volume-slider:hover,
 .basic-volume-slider:focus-within {
   width: 64px;
-  margin: 0 6px 0 4px;
+  margin: 0 6px 0 var(--gap);
   opacity: 1;
   pointer-events: auto;
 }
 
+/* Without hover there is nothing to reveal it, so it stays open. Screen
+   readers focus the slider before operating it, which opens it too. */
+@media (hover: none) {
+  .basic-volume-slider {
+    width: 64px;
+    margin: 0 6px 0 var(--gap);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 /* Bridges the gap to the mute button, so the slider stays open while the
-   pointer crosses it. */
+   pointer crosses it. Any wider and it would cover the button. */
 .basic-volume-slider::before {
   content: "";
   position: absolute;
-  inset: 0 100% 0 -8px;
+  inset: 0 100% 0 calc(-1 * var(--gap));
 }
 
 @media (prefers-reduced-motion: reduce) {

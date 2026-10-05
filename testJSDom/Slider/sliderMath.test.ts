@@ -131,7 +131,6 @@ describe("getOffset", () => {
   });
 
   // Vertical counts from the top, so the offset runs opposite to the value.
-  // That is why `getProgress` cannot reuse it.
   it("counts a vertical offset from the top", () => {
     const result = getOffset({
       value: 0.25,
@@ -175,6 +174,21 @@ describe("getOffset", () => {
     });
     expect(vertical).toBe(200);
   });
+
+  // S29: the thumb stays on the track when the value leaves the range.
+  it.each([
+    ["horizontal", 3, 200],
+    ["horizontal", -1, 0],
+    ["vertical", 3, 0],
+    ["vertical", -1, 200],
+  ] as const)(
+    "clamps a %s offset for a value of %d to the track",
+    (orientation, value, expected) => {
+      expect(getOffset({ value, sliderLength: 200, orientation })).toBe(
+        expected,
+      );
+    },
+  );
 
   it("survives a zero range on the rate slider's own bounds", () => {
     expect(

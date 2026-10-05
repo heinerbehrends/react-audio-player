@@ -102,3 +102,6 @@ paused seek, `TOGGLE_PLAY` both ways, a refusal, a stale `pause`);
 in Chromium and Firefox for next while playing, next while paused, a list click
 while paused and the end of a track; the full E2E suite, 138 tests in both
 engines.
+
+F14 narrowed the intent: an end holds it only until the user acts or seeks, and
+only an autoplay refusal clears it.

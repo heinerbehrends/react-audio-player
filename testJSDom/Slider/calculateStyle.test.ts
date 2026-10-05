@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   backgroundStyles,
   calculateDragStyle,
-  calculateProgressStyle,
+  fillStyles,
+  progressFillRules,
   progressStyles,
   containerStyles,
   rootStyles,
@@ -58,82 +59,44 @@ describe("calculateStyle", () => {
     });
   });
 
-  describe("calculateProgressStyle", () => {
-    it("calculates horizontal progress style correctly", () => {
-      const style = calculateProgressStyle(defaultContext);
+  /**
+   * S28. The fill's size and transform live in a zero-specificity rule, not
+   * inline, so a consumer's stylesheet can replace them.
+   */
+  describe("the fill", () => {
+    it.each(["width", "height", "transform", "transformOrigin"])(
+      "keeps %s out of the fill's inline styles",
+      (property) => {
+        expect(fillStyles).not.toHaveProperty(property);
+      },
+    );
 
-      expect(style).toEqual({
-        transform: "scaleX(0.5)",
-        transformOrigin: "left",
-        zIndex: 1,
-      });
+    it("draws from --progress, horizontally by default", () => {
+      expect(progressFillRules).toContain(
+        ':where([data-part="progress"][data-orientation]){width:100%;height:100%;transform:scaleX(var(--progress,0));transform-origin:left}',
+      );
     });
 
-    it("calculates vertical progress style correctly", () => {
-      const context = {
-        ...defaultContext,
-        orientation: "vertical" as const,
-      };
-      const style = calculateProgressStyle(context);
-
-      expect(style).toEqual({
-        transform: "scaleY(0.5)",
-        transformOrigin: "bottom",
-        zIndex: 1,
-      });
+    it("scales a vertical fill from the bottom", () => {
+      expect(progressFillRules).toContain(
+        ':where([data-part="progress"][data-orientation="vertical"]){transform:scaleY(var(--progress,0));transform-origin:bottom}',
+      );
     });
 
-    /**
-     * The vertical cases above all sit at `value: 0.5`, the fixed point of
-     * `x -> 1 - x`, where an inverted and a non-inverted rule agree exactly. The
-     * rows below sit away from it, so they are the ones that pin the direction.
-     */
-    it.each([
-      [0.25, "scaleY(0.25)"],
-      [0.8, "scaleY(0.8)"],
-    ])("tracks the value for a vertical slider at %f", (value, expected) => {
-      const style = calculateProgressStyle({
-        ...defaultContext,
-        orientation: "vertical" as const,
-        value,
-      });
-
-      expect(style.transform).toBe(expected);
+    // Equal specificity, so source order decides: vertical has to come last.
+    it("puts the vertical rule after the default", () => {
+      expect(progressFillRules.indexOf("scaleY")).toBeGreaterThan(
+        progressFillRules.indexOf("scaleX"),
+      );
     });
 
-    it.each([
-      [0.25, "scaleX(0.25)"],
-      [0.8, "scaleX(0.8)"],
-    ])("tracks the value for a horizontal slider at %f", (value, expected) => {
-      const style = calculateProgressStyle({ ...defaultContext, value });
+    it("wraps every selector in :where(), so any rule of yours wins", () => {
+      const selectors = progressFillRules.match(/[^{}]+(?={)/g) ?? [];
 
-      expect(style.transform).toBe(expected);
-    });
-
-    it("maps the value through its own range, not through 0 to 1", () => {
-      const style = calculateProgressStyle({
-        ...defaultContext,
-        minValue: 0.5,
-        maxValue: 2.5,
-        value: 1.5,
-      });
-
-      expect(style.transform).toBe("scaleX(0.5)");
-    });
-
-    it("handles edge cases", () => {
-      const context = {
-        ...defaultContext,
-        value: 0,
-        sliderLength: 0,
-      };
-      const style = calculateProgressStyle(context);
-
-      expect(style).toEqual({
-        transform: "scaleX(0)",
-        transformOrigin: "left",
-        zIndex: 1,
-      });
+      expect(selectors).toHaveLength(2);
+      for (const selector of selectors) {
+        expect(selector).toMatch(/^:where(.*)$/);
+      }
     });
   });
 
@@ -212,12 +175,12 @@ describe("the layer stack", () => {
 
   it("orders background, fill and thumb", () => {
     expect(backgroundStyles.zIndex).toBe(0);
-    expect(calculateProgressStyle(context).zIndex).toBe(1);
+    expect(fillStyles.zIndex).toBe(1);
     expect(calculateDragStyle(context).zIndex).toBe(2);
   });
 
   it("holds the order when the fill's transform is overridden", () => {
-    const fill = { ...calculateProgressStyle(context), transform: "none" };
+    const fill = { ...fillStyles, transform: "none" };
 
     expect(Number(fill.zIndex)).toBeGreaterThan(
       Number(backgroundStyles.zIndex),
@@ -230,9 +193,8 @@ describe("the layer stack", () => {
 });
 
 /**
- * C10. `getProgress` used to take `sliderLength` and never use it in the
- * arithmetic — it was a proxy for "not measured yet". The guard is now its own
- * step, so the two questions cannot be confused again.
+ * C10, S29. The fraction does not depend on the track's length, so it is right
+ * before the track is measured; only the pixel offset has to wait.
  */
 describe("an unmeasured track", () => {
   const context: StyleContext = {
@@ -243,23 +205,26 @@ describe("an unmeasured track", () => {
     orientation: "horizontal",
   };
 
-  it("draws no fill before the track has been measured", () => {
-    expect(calculateProgressStyle(context).transform).toBe("scaleX(0)");
+  it("still exposes the fill fraction", () => {
+    expect(sliderCustomProperties(context)).toEqual({
+      "--progress": "0.3",
+      "--offset": "0px",
+    });
   });
 
-  it("draws the same fraction at every length once it has", () => {
-    expect(
-      calculateProgressStyle({ ...context, sliderLength: 1 }).transform,
-    ).toBe("scaleX(0.3)");
-    expect(
-      calculateProgressStyle({ ...context, sliderLength: 1000 }).transform,
-    ).toBe("scaleX(0.3)");
+  it("exposes the same fraction at every length once it is measured", () => {
+    for (const sliderLength of [1, 1000]) {
+      expect(
+        sliderCustomProperties({ ...context, sliderLength }),
+      ).toHaveProperty("--progress", "0.3");
+    }
   });
 });
 
 /**
- * S20. The custom properties are the numbers behind the two transforms, so they
- * have to agree with them — and be strings, so React never appends a unit.
+ * S20. The custom properties are the numbers behind the fill and the thumb, so
+ * they have to agree with the thumb's transform — and be strings, so React
+ * never appends a unit.
  */
 describe("sliderCustomProperties", () => {
   const context: StyleContext = {
@@ -277,8 +242,7 @@ describe("sliderCustomProperties", () => {
     });
   });
 
-  it("agrees with the fill and thumb transforms", () => {
-    expect(calculateProgressStyle(context).transform).toBe("scaleX(0.25)");
+  it("agrees with the thumb's transform", () => {
     expect(calculateDragStyle(context).transform).toBe(
       "translate(calc(50px - 50%), 0)",
     );
@@ -307,10 +271,37 @@ describe("sliderCustomProperties", () => {
     ).toHaveProperty("--progress", "0.5");
   });
 
-  it("reads zero before the track is measured", () => {
-    expect(sliderCustomProperties({ ...context, sliderLength: 0 })).toEqual({
-      "--progress": "0",
+  /**
+   * S29. `PlaybackRate.Set` takes rates past the rate slider's bounds — 8x on
+   * the default 0.5–4 gave 2.14 — and Chrome can report a `currentTime` past
+   * `duration` at `ended`.
+   */
+  it.each([
+    ["above", 8, "1", "200px", "translate(calc(200px - 50%), 0)"],
+    ["below", 0.25, "0", "0px", "translate(calc(0px - 50%), 0)"],
+  ])(
+    "clamps a value %s the range to the track",
+    (_, value, progress, offset, thumb) => {
+      const rate = { ...context, minValue: 0.5, maxValue: 4, value };
+
+      expect(sliderCustomProperties(rate)).toEqual({
+        "--progress": progress,
+        "--offset": offset,
+      });
+      expect(calculateDragStyle(rate).transform).toBe(thumb);
+    },
+  );
+
+  it("clamps a vertical offset to the track, from the top", () => {
+    const vertical = { ...context, orientation: "vertical" as const };
+
+    expect(sliderCustomProperties({ ...vertical, value: 2 })).toEqual({
+      "--progress": "1",
       "--offset": "0px",
+    });
+    expect(sliderCustomProperties({ ...vertical, value: -1 })).toEqual({
+      "--progress": "0",
+      "--offset": "200px",
     });
   });
 });

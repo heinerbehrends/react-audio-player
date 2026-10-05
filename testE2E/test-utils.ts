@@ -225,8 +225,8 @@ export const labels = {
   playbackRate: "Playback rate slider",
   mute: "Mute",
   unmute: "Unmute",
-  showElapsed: "Show time elapsed",
-  showRemaining: "Show time remaining",
+  showElapsed: "show time elapsed",
+  showRemaining: "show time remaining",
 };
 
 // The drag thumbs are aria-hidden pointer affordances -- the slider semantics

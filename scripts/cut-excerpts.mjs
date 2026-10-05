@@ -49,13 +49,20 @@ if (!sourceDir) {
   process.exit(1);
 }
 const groups = names.length > 0 ? names : Object.keys(GROUPS);
+const unknown = groups.filter((name) => !Object.hasOwn(GROUPS, name));
+if (unknown.length > 0) {
+  console.error(
+    `Unknown group: ${unknown.join(", ")}. Known: ${Object.keys(GROUPS).join(", ")}.`,
+  );
+  process.exit(1);
+}
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
 mkdirSync(OUT, { recursive: true });
 
 for (const name of groups) {
-  for (const excerpt of GROUPS[name] ?? []) {
+  for (const excerpt of GROUPS[name]) {
     const file = readFileSync(join(sourceDir, excerpt.source));
     const frames = parseFrames(file);
     const loudness = await measure(file);
@@ -77,8 +84,9 @@ for (const name of groups) {
 await browser.close();
 
 /**
- * Every MPEG audio frame after the ID3v2 tag, with the LAME `Info` frame left
- * out. Layer III only, one sample rate per file.
+ * Every MPEG audio frame between the ID3v2 tag and any APE or ID3v1 tag at the
+ * end, with the LAME `Info` frame left out. Layer III only, one sample rate
+ * per file.
  */
 function parseFrames(buf) {
   const KBPS = {
@@ -95,9 +103,11 @@ function parseFrames(buf) {
     buf.toString("latin1", 0, 3) === "ID3"
       ? ((buf[6] << 21) | (buf[7] << 14) | (buf[8] << 7) | buf[9]) + 10
       : 0;
+  const end = audioEnd(buf);
   const frames = [];
   let rate;
-  while (offset + 4 <= buf.length) {
+  let frameEnd = offset;
+  while (offset + 4 <= end) {
     const version = (buf[offset + 1] >> 3) & 3;
     const layer = (buf[offset + 1] >> 1) & 3;
     const bitrate = buf[offset + 2] >> 4;
@@ -121,14 +131,36 @@ function parseFrames(buf) {
           RATES[version][rateIndex],
       ) +
       ((buf[offset + 2] >> 1) & 1);
+    // A truncated last frame.
+    if (offset + length > end) break;
     const tag = buf.toString("latin1", offset + 4, offset + 40);
     if (frames.length > 0 || !/Info|Xing/.test(tag)) frames.push({ offset });
     offset += length;
+    frameEnd = offset;
     frames.seconds = samples / rate;
   }
-  // The end of the last frame, so a cut can run to the end of the file.
-  frames.push({ offset: Math.min(offset, buf.length) });
+  // The end of the last frame, so a cut can run to the end of the audio.
+  frames.push({ offset: frameEnd });
   return frames;
+}
+
+/** Where the audio ends: before an ID3v1 tag, and an APE tag before that. */
+function audioEnd(buf) {
+  let end = buf.length;
+  if (end >= 128 && buf.toString("latin1", end - 128, end - 125) === "TAG") {
+    end -= 128;
+  }
+  const footer = end - 32;
+  if (
+    footer >= 0 &&
+    buf.toString("latin1", footer, footer + 8) === "APETAGEX"
+  ) {
+    // The size counts the items and the footer; bit 31 of the flags, a header.
+    const size = buf.readUInt32LE(footer + 12);
+    const header = buf.readUInt32LE(footer + 20) & 0x80000000 ? 32 : 0;
+    end = Math.max(0, end - size - header);
+  }
+  return end;
 }
 
 function frameAt(frames, seconds) {

@@ -35,3 +35,8 @@ transforms, vertical direction, the slider's own range, and zero before
 measurement) and `exposes the fill fraction and the thumb offset as custom
 properties` in `testJSDom/Timeline/Timeline.test.tsx`, which reads them back
 off the rendered root through `style.getPropertyValue`.
+
+**Since** — the fill's inline transform outranked the README's own stylesheet
+example, so the fill now draws from `--progress` through an overridable rule
+(S28); both properties are clamped to the track, and `--progress` no longer
+waits for a measurement (S29).

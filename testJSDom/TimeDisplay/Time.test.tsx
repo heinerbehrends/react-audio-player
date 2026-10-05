@@ -27,10 +27,10 @@ describe("Time", () => {
   });
 
   it.each([
-    ["remaining", "Show time elapsed"],
-    ["elapsed", "Show time remaining"],
+    ["remaining", "-2:00 remaining, show time elapsed"],
+    ["elapsed", "0:00 elapsed, show time remaining"],
   ] as const)(
-    "is named for what it will do while showing %s",
+    "is named by the time shown, then what it will do, while showing %s",
     (shown, name) => {
       renderWithStore(<Time.Toggle defaultValue={shown} />, {
         testStore: loaded(),
@@ -66,6 +66,25 @@ describe("Time", () => {
 
     expect(part("remaining")).toBeInTheDocument();
     expect(part("elapsed")).toBeNull();
+  });
+
+  /**
+   * S30. The readout was picked from the bag's `data-state`, which a consumer's
+   * own replaces: `data-state="on"` pinned it to remaining while the name
+   * flipped on every click.
+   */
+  it("keeps the readout with the name under a data-state of the caller's", () => {
+    renderWithStore(<Time.Toggle data-state="on" />, { testStore: loaded() });
+    const button = screen.getByRole("button");
+    expect(button).toHaveAccessibleName("0:00 elapsed, show time remaining");
+    expect(part("elapsed")).toBeInTheDocument();
+    expect(part("remaining")).toBeNull();
+
+    fireEvent.click(button);
+
+    expect(button).toHaveAccessibleName("-2:00 remaining, show time elapsed");
+    expect(part("elapsed")).toBeNull();
+    expect(part("remaining")).toHaveTextContent("-2:00");
   });
 
   it("keeps each toggle's choice its own", () => {

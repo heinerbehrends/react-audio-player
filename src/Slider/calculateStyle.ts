@@ -1,4 +1,4 @@
-import { getOffset, type Orientation } from "./sliderMath";
+import { getFraction, getOffset, type Orientation } from "./sliderMath";
 
 /**
  * Everything the styles need. Not the mode: how a slider fills depends on its
@@ -31,34 +31,16 @@ export function calculateDragStyle(context: StyleContext): React.CSSProperties {
   };
 }
 
-export function calculateProgressStyle(
-  context: StyleContext,
-): React.CSSProperties {
-  const { orientation, sliderLength } = context;
-  // Zero length means the track has not been measured yet (C10).
-  const progress = sliderLength === 0 ? 0 : getProgress(context);
-  return {
-    transform:
-      orientation === "vertical"
-        ? `scaleY(${progress})`
-        : `scaleX(${progress})`,
-    transformOrigin: orientation === "vertical" ? "bottom" : "left",
-    zIndex: 1,
-  };
-}
-
 /**
- * The two numbers behind the transforms, as custom properties for the slider
- * root: `--progress`, the filled fraction as a unitless `0`–`1`, and
+ * The two numbers behind the fill and the thumb, as custom properties for the
+ * slider root: `--progress`, the filled fraction as a unitless `0`–`1`, and
  * `--offset`, the thumb's position along the track in `px`, measured as the
  * thumb's own transform is — from the left, or from the top of a vertical
- * slider. Set on the root so they inherit to every part.
+ * slider. Set on the root so they inherit to every part. Both are clamped to
+ * the track (S29).
  *
- * An addition, not a replacement: the inline transforms stay the default and
- * need no stylesheet. These are for what a transform cannot draw —
- * `width: calc(var(--progress) * 100%)` keeps a `border-radius` round where
- * `scaleX()` squashes it, and a gradient or a conic dial reads the fraction
- * directly (S20).
+ * `--progress` needs no measurement, so it is right from the first render;
+ * `--offset` reads `0px` until the track is measured (C10).
  *
  * Strings, not numbers: React appends `px` to a bare number on a known
  * property and never on a custom one, so a string keeps both the same whatever
@@ -68,34 +50,37 @@ export function calculateProgressStyle(
 export function sliderCustomProperties(
   context: StyleContext,
 ): React.CSSProperties {
-  // Zero length means the track has not been measured yet (C10).
-  const progress = context.sliderLength === 0 ? 0 : getProgress(context);
   return {
-    "--progress": String(progress),
+    "--progress": String(getFraction(context)),
     "--offset": `${getOffset(context)}px`,
   } as React.CSSProperties;
 }
 
 /**
- * The fraction of the track that is filled. Direction is `transformOrigin`'s
- * job, so this cannot reuse `getOffset`, which counts vertical pixels from the
- * top and therefore runs opposite to the value.
+ * The fill's default size and transform, as a stylesheet rather than inline,
+ * so a consumer's rule on `[data-part="progress"]` overrides them without
+ * `!important` (S28). `:where()` has zero specificity, so any selector beats
+ * it wherever it loads. Read from `--progress` on the root; `data-orientation`
+ * is matched on the fill itself, since an ancestor's could belong to some other
+ * component.
  */
-function getProgress({
-  value,
-  minValue,
-  maxValue,
-}: Omit<StyleContext, "sliderLength" | "orientation">): number {
-  const range = maxValue - minValue;
-  if (range === 0) {
-    return 0;
-  }
-  return (value - minValue) / range;
-}
+export const progressFillRules =
+  ':where([data-part="progress"][data-orientation]){width:100%;height:100%;transform:scaleX(var(--progress,0));transform-origin:left}' +
+  ':where([data-part="progress"][data-orientation="vertical"]){transform:scaleY(var(--progress,0));transform-origin:bottom}';
 
 /**
- * One grid cell, spanned: the three layers stack by sharing it, and `scaleX()`
- * is relative to the size. Output rather than opinion, so it stays inline.
+ * What stays inline on the fill: its grid cell, and its place in the layer
+ * stack.
+ */
+export const fillStyles = {
+  gridColumn: "1 / 1",
+  gridRow: "1 / 1",
+  zIndex: 1,
+} satisfies React.CSSProperties;
+
+/**
+ * One grid cell, spanned: the layers stack by sharing it. Output rather than
+ * opinion, so it stays inline.
  */
 export const progressStyles = {
   gridColumn: "1 / 1",

@@ -43,10 +43,13 @@ const mute: NonNullable<PlayerLabels["mute"]> = {
   high: "Ton ausschalten",
 };
 
-const timeToggle: NonNullable<PlayerLabels["timeToggle"]> = {
-  elapsed: "Restzeit anzeigen",
-  remaining: "Verstrichene Zeit anzeigen",
-};
+const timeToggle: NonNullable<PlayerLabels["timeToggle"]> = ({
+  time,
+  shown,
+}) =>
+  shown === "elapsed"
+    ? `${time} vergangen, Restzeit anzeigen`
+    : `${time} verbleibend, vergangene Zeit anzeigen`;
 
 describe("labels.play", () => {
   // Every state, not just `paused`: a design that flattened the four into one
@@ -110,8 +113,8 @@ describe("labels.mute", () => {
 
 describe("labels.timeToggle", () => {
   it.each([
-    ["elapsed", "Restzeit anzeigen"],
-    ["remaining", "Verstrichene Zeit anzeigen"],
+    ["elapsed", "0:00 vergangen, Restzeit anzeigen"],
+    ["remaining", "-2:00 verbleibend, vergangene Zeit anzeigen"],
   ] as const)("names the toggle while showing %s", (shown, name) => {
     renderWithStore(<Time.Toggle defaultValue={shown} />, {
       testStore: createTestStore({ readyState: 1, duration: 120 }),
@@ -127,8 +130,21 @@ describe("labels.timeToggle", () => {
     });
 
     expect(screen.getByRole("button")).toHaveAccessibleName(
-      "Show time remaining",
+      "0:00 elapsed, show time remaining",
     );
+  });
+
+  // `time` is the text as shown, so a `labels.time` entry reaches the name too.
+  it("hands the entry the readout labels.time renders", () => {
+    renderWithStore(<Time.Toggle />, {
+      testStore: createTestStore({ readyState: 1, duration: 120 }),
+      labels: {
+        time: ({ seconds }) => `${seconds} s`,
+        timeToggle: ({ time }) => `${time}, umschalten`,
+      },
+    });
+
+    expect(screen.getByRole("button")).toHaveAccessibleName("0 s, umschalten");
   });
 });
 

@@ -102,29 +102,36 @@ type GetOffsetArgs = Pick<SliderGeometry, "sliderLength"> &
   };
 
 /**
- * The thumb's pixel offset from the start of the track. Vertical counts from the
- * top, so it runs opposite to the value — which is why `getProgress` cannot
- * reuse it.
+ * Where `value` sits in its range, from `0` to `1`. Clamped, because the value
+ * can leave the range: `PlaybackRate.Set` takes rates past a rate slider's
+ * bounds, and Chrome can report a `currentTime` past `duration` at `ended`
+ * (S29). `0` for an empty range — a live stream, or any player before
+ * `loadedmetadata` — where the division would give `NaN`, which makes the
+ * browser drop a transform built from it (F12).
  */
-export function getOffset({
+export function getFraction({
   value,
-  sliderLength,
   minValue = 0,
   maxValue = 1,
-  orientation = "horizontal",
-}: GetOffsetArgs): number {
+}: Omit<GetOffsetArgs, "sliderLength" | "orientation">): number {
   const range = maxValue - minValue;
-  // `NaN` when `maxValue === minValue` — a live stream, or any player before
-  // `loadedmetadata`. `translate(calc(NaNpx - 50%))` is invalid, so the browser
-  // drops the transform entirely. Guarded on `progress`, not by returning early:
-  // vertical counts from the top, so its minimum is the full length.
-  const progress = range === 0 ? 0 : (value - minValue) / range;
+  if (range === 0) {
+    return 0;
+  }
+  return Math.min(1, Math.max(0, (value - minValue) / range));
+}
 
-  if (orientation === "horizontal") {
-    return progress * sliderLength;
-  }
-  if (orientation === "vertical") {
-    return sliderLength - progress * sliderLength;
-  }
-  return 0;
+/**
+ * The thumb's pixel offset from the start of the track. Vertical counts from the
+ * top, so it runs opposite to the value.
+ */
+export function getOffset({
+  sliderLength,
+  orientation = "horizontal",
+  ...range
+}: GetOffsetArgs): number {
+  const progress = getFraction(range);
+  return orientation === "vertical"
+    ? sliderLength - progress * sliderLength
+    : progress * sliderLength;
 }

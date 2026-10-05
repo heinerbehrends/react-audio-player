@@ -90,8 +90,9 @@ Each control says its state in exactly one place.
 
 For the three toggles that is the **name**, which changes with the state:
 `<MuteButton>` is "Mute" or "Unmute", `<PlayButton>` is "Play audio", "Pause
-audio", "Loading audio" or "Error loading audio", and `<Time.Toggle>` is "Show
-time elapsed" or "Show time remaining". None of them sets `aria-pressed` — a
+audio", "Loading audio" or "Error loading audio", and `<Time.Toggle>` is "1:23
+elapsed, show time remaining" — it starts with the time on screen, so a
+voice-control user can say what they see (WCAG 2.5.3). None of them sets `aria-pressed` — a
 name that already says which way the toggle will go, plus a pressed state saying
 it has already gone, announces as a contradiction ("Unmute, toggle button,
 pressed").
@@ -187,15 +188,15 @@ raw values, `Intl` is yours.
 
 ### The table
 
-| Entry        | Type                               | Default                                                                |
-| ------------ | ---------------------------------- | ---------------------------------------------------------------------- |
-| `player`     | `string`                           | `"audio player"`                                                       |
-| `play`       | `Record<PlayerState, string>`      | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio" |
-| `mute`       | `Record<VolumeState, string>`      | "Unmute" when muted, "Mute" otherwise                                  |
-| `timeToggle` | `Record<TimeDisplayState, string>` | "Show time remaining" / "Show time elapsed"                            |
-| `seek`       | `({ amount }) => string`           | `"Seek forward by 10 seconds"`                                         |
-| `rateSet`    | `({ rate }) => string`             | `"Set playback rate to 1.5x"`                                          |
-| `rateChange` | `({ amount }) => string`           | `"Increase playback rate by 0.25x"`                                    |
+| Entry        | Type                          | Default                                                                |
+| ------------ | ----------------------------- | ---------------------------------------------------------------------- |
+| `player`     | `string`                      | `"audio player"`                                                       |
+| `play`       | `Record<PlayerState, string>` | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio" |
+| `mute`       | `Record<VolumeState, string>` | "Unmute" when muted, "Mute" otherwise                                  |
+| `timeToggle` | `({ time, shown }) => string` | `"1:23 elapsed, show time remaining"`                                  |
+| `seek`       | `({ amount }) => string`      | `"Seek forward by 10 seconds"`                                         |
+| `rateSet`    | `({ rate }) => string`        | `"Set playback rate to 1.5x"`                                          |
+| `rateChange` | `({ amount }) => string`      | `"Increase playback rate by 0.25x"`                                    |
 
 `player` names the `<audio>` element, which has no accessible object without
 `controls`, so Chromium and Firefox never announce it. Name the player on your
@@ -244,13 +245,19 @@ needs different wording. Both are reasons to select on
 They are not. **The state says what _is_; the name says what _pressing does_.**
 
 ```ts
-mute: { muted: "Ton einschalten" },       // state "muted", name "unmute"
-timeToggle: { elapsed: "Restzeit anzeigen" }, // showing elapsed, will show remaining
+mute: { muted: "Ton einschalten" }, // state "muted", name "unmute"
+timeToggle: ({ time, shown }) =>
+  shown === "elapsed"
+    ? `${time} vergangen, Restzeit anzeigen` // showing elapsed, will show remaining
+    : `${time} verbleibend, vergangene Zeit anzeigen`,
 ```
 
 `mute` also has three states and two names, because `low` and `high` both mean
 "audible, so pressing mutes". That is what the `data-state` attribute has, and
 the keys follow it.
+
+`timeToggle` receives `time`, the readout's text exactly as shown, `labels.time`
+included. Start the name with it: a voice-control user says what they see.
 
 ### `time` receives a magnitude, and you write the sign
 
@@ -423,10 +430,13 @@ function Playlist() {
 }
 ```
 
-The player carries on across a swap. If it was playing, or the track ended while
-playing, the new track starts by itself; if it was paused, it stays paused. So
-this playlist plays through, and next and previous buttons only change the
-index.
+The player carries on across a swap. If it was playing, the new track starts by
+itself; if it was paused, it stays paused. A track that ended while playing
+counts as playing for the swap that follows from the end — so this playlist
+plays through — but not once the user clicks, presses a key or seeks: Previous
+after the last track arrives paused. A track that fails to load does not stop
+the list; a browser that refuses autoplay does. Next and previous buttons only
+change the index.
 
 To start a track from a paused player — a click in a track list — call `play()`
 in the same handler as the change. The order does not matter; the player
@@ -516,7 +526,8 @@ Each readout always shows its own number, so a player that only ever shows the
 time left renders `<Time.Remaining />` and no toggle. Each toggle keeps its own
 choice. On a button of your own, `useTimeToggleProps(defaultValue)` gives you
 the toggle's props; render `<Time.Elapsed />` or `<Time.Remaining />` inside it
-from its `data-state`.
+from its `data-state`. Pass no `data-state` of your own: it replaces the bag's,
+which then no longer says which readout is showing.
 
 No `format` prop on the readouts: the formatting is `labels.time`, which names
 all three at once and receives raw seconds. See
@@ -705,11 +716,18 @@ structural output below — which is the point of it being optional.
 
 ### What stays inline
 
-`transform`, `transform-origin`, grid placement, `position`, `touch-action` and
-`z-index` — plus the width and height that make the progress fill's `scaleX()`
-mean anything. These are computed from the current value, so they are output
+The thumb's `transform`, grid placement, `position`, `touch-action` and
+`z-index`. These are computed from the current value, so they are output
 rather than opinion. Inline styles beat any stylesheet rule, so override these
 through the `style` prop, which is merged last and wins.
+
+The one exception is the progress fill's size and transform: `width: 100%`,
+`height: 100%` and `scaleX(var(--progress))` — `scaleY()` from the bottom on a
+vertical slider. They come from a rule the library renders itself, in a
+`<style>` beside the fill, so they need no import. Its selectors are wrapped in
+`:where()`, which has zero specificity, so any rule of yours on
+`[data-part="progress"]` replaces them, wherever it loads. The fill repeats the
+root's `data-orientation` for that rule to match.
 
 A slider root is `display: grid` inline, because that is how its layers stack.
 The `hidden` attribute still hides it. To hide one from CSS — in a media or
@@ -727,18 +745,17 @@ tooltip repeats this, since it is the mistake that produces no error at all.
 
 ### Custom properties
 
-Every slider root also carries the two numbers behind those transforms, as CSS
-custom properties that every part inherits:
+Every slider root also carries the two numbers behind the fill and the thumb,
+as CSS custom properties that every part inherits:
 
 | Property     | Value                                                         |
 | ------------ | ------------------------------------------------------------- |
 | `--progress` | The filled fraction, unitless `0`–`1`                         |
 | `--offset`   | The thumb's position along the track, in `px`, from the start |
 
-They are an addition, not a replacement: the inline transforms stay the default
-and work with no stylesheet. Reach for these when a transform cannot draw what
-you want. `scaleX()` squashes a `border-radius` along with the fill; a width
-does not:
+The default fill reads `--progress`, and works with no stylesheet. Reach for
+it yourself when a transform cannot draw what you want. `scaleX()` squashes a
+`border-radius` along with the fill; a width does not:
 
 ```css
 .player [data-part="progress"] {
@@ -747,6 +764,10 @@ does not:
   border-radius: 999px;
 }
 ```
+
+`<Timeline.Progress>` carries an inline `transition: transform 250ms linear`,
+dropped during a drag. To animate a width instead, pass
+`style={{ transition: "width 250ms linear" }}`.
 
 A gradient that stays put while the fill grows, or a conic dial, reads the
 fraction the same way:
@@ -761,7 +782,9 @@ fraction the same way:
 ```
 
 `--offset` runs the way the thumb's own transform does: from the left, or from
-the top of a vertical slider. Both read `0` until the track has been measured.
+the top of a vertical slider, and reads `0px` until the track has been
+measured. Both stay on the track when the value leaves the range — a rate set
+past the slider's maximum reads `--progress: 1`.
 
 ## Props hooks
 

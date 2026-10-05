@@ -55,7 +55,7 @@ const buttons: {
     // The one whose action changes no element: the name flips instead.
     expectAction: () =>
       expect(
-        screen.getByRole("button", { name: "Show time elapsed" }),
+        screen.getByRole("button", { name: /show time elapsed$/ }),
       ).toBeInTheDocument(),
   },
   {

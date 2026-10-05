@@ -155,6 +155,7 @@ describe("slider data attributes", () => {
       }
     });
 
+    // The fill also carries the orientation, for its own CSS rule (S28).
     it("carries drag state and orientation on the root, and nowhere else", () => {
       const { container } = renderInPlayer(ui({}), {
         element: { readyState: 1, duration: 100 },
@@ -164,7 +165,11 @@ describe("slider data attributes", () => {
       expect(root).toHaveAttribute("data-state", "idle");
       expect(root).toHaveAttribute("data-orientation", "horizontal");
       expect(container.querySelectorAll("[data-state]")).toHaveLength(1);
-      expect(container.querySelectorAll("[data-orientation]")).toHaveLength(1);
+      expect(
+        container.querySelectorAll(
+          '[data-orientation]:not([data-part="progress"])',
+        ),
+      ).toHaveLength(1);
     });
   });
 

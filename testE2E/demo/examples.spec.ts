@@ -59,6 +59,25 @@ test.describe("Playlist", () => {
     expect(await isPlaying(example)).toBe(false);
   });
 
+  test("previous keeps focus on reaching the first track", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Playlist" });
+    const previous = example.getByRole("button", { name: "Previous track" });
+    await expect(previous).toHaveAttribute("aria-disabled", "true");
+
+    await example.getByRole("button", { name: "Next track" }).click();
+    await expect(previous).toHaveAttribute("aria-disabled", "false");
+    await previous.focus();
+    await page.keyboard.press("Enter");
+
+    await expect(previous).toHaveAttribute("aria-disabled", "true");
+    await expect(previous).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(
+      example.getByRole("button", { name: /Down the Rabbit-Hole/ }),
+    ).toHaveAttribute("aria-current", "true");
+  });
+
   test("a track chosen from the list plays, even when paused", async ({
     page,
   }) => {
@@ -106,7 +125,7 @@ test.describe("Basic player", () => {
     await page.goto("/");
     const example = page.getByRole("region", { name: "Basic player" });
     const volume = example.getByRole("slider", { name: labels.volume });
-    expect(await volumeWidth(example)).toBe(0);
+    await expect.poll(() => volumeWidth(example)).toBe(0);
 
     await example.getByRole("button", { name: labels.mute }).focus();
     await page.keyboard.press("Tab");
@@ -122,5 +141,17 @@ test.describe("Basic player", () => {
     await example.getByRole("button", { name: labels.mute }).hover();
 
     await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
+  });
+
+  test.describe("on a touch screen", () => {
+    // Touch emulation is what makes `(hover: none)` match.
+    test.use({ hasTouch: true, isMobile: true });
+
+    test("the volume slider is open without hover", async ({ page }) => {
+      await page.goto("/");
+      const example = page.getByRole("region", { name: "Basic player" });
+
+      await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
+    });
   });
 });

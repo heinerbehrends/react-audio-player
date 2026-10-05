@@ -31,13 +31,16 @@ nothing to migrate from.
 - `labels` for every name and readout the library writes, with
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part and `data-state` where the DOM does not say it
-- `--progress` and `--offset` custom properties on every slider root, for fills
-  the inline transform cannot draw
+- `--progress` (0–1) and `--offset` custom properties on every slider root. The
+  default fill is drawn from `--progress` by a zero-specificity rule, so a
+  plain stylesheet rule on `[data-part="progress"]` replaces it
 - Playback rate clamped to 0.125–8 on every write, the widest range audible in
   both Chromium and Firefox; rate steps stop at the ends and never move the
   rate against their direction
 - Track swaps carry on playing: a new `src` starts by itself if the player was
-  playing or the track ended while playing, and stays paused otherwise
+  playing, or if the track ended while playing and the user has not acted since.
+  It stays paused otherwise. Only an autoplay refusal stops the next swap from
+  playing; a track that fails to load does not
 - `<MediaSession>`: the lock screen, media keys and system media controls, with
   metadata from `audioFile`, play, pause, skip and seek, a live scrubber, and
   `onPreviousTrack` / `onNextTrack`. Opt-in, so a player without it pays none of

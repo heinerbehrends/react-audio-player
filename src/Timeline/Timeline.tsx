@@ -1,11 +1,10 @@
 import type { HTMLAttributes } from "react";
 import {
   backgroundStyles,
-  calculateProgressStyle,
-  progressStyles,
   rootStylesFor,
   sliderCustomProperties,
 } from "../Slider/calculateStyle";
+import { SliderProgress } from "../Slider/SliderProgress";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
@@ -15,8 +14,9 @@ import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 type ProgressProps = HTMLAttributes<HTMLDivElement>;
 
 /**
- * The elapsed fill. Scaled with `transform`, so give it a background and let it
- * fill the root — width and height are the library's.
+ * The elapsed fill. Give it a background; it fills the root and scales with
+ * `--progress`, from a zero-specificity rule that any selector of yours
+ * overrides — `width: calc(var(--progress) * 100%)` instead, say (S28).
  *
  * Carries `transition: transform 250ms linear`: the position arrives in
  * `timeupdate` steps (~4 Hz) and would visibly tick without it. Linear, so the
@@ -29,14 +29,12 @@ type ProgressProps = HTMLAttributes<HTMLDivElement>;
 function TimelineProgress(props: ProgressProps) {
   const slider = useSliderContext();
   const style = {
-    ...progressStyles,
-    ...calculateProgressStyle(slider),
     ...(slider.dragState === "dragging"
       ? null
       : { transition: "transform 250ms linear" }),
     ...props.style,
   };
-  return <div data-part="progress" {...props} style={style} />;
+  return <SliderProgress {...props} style={style} />;
 }
 
 function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
@@ -115,8 +113,8 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * Carries `data-part="root"`, `data-state="idle|dragging"` and
  * `data-orientation="horizontal"`. All three sliders share their part names, so
  * scope your selectors. Also sets `--progress` (the filled fraction, `0`–`1`)
- * and `--offset` (the thumb position, in `px`) as custom properties, for fills
- * the inline transform cannot draw.
+ * and `--offset` (the thumb position, in `px`) as custom properties, which
+ * `.Progress` draws from and your own fills can read.
  *
  * @example
  * ```jsx

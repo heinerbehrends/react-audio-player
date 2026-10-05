@@ -58,8 +58,12 @@ function Player({ index, setIndex }: PlayerProps) {
   const { play } = useAudioPlayer();
   const hasPrevious = index > 0;
   const hasNext = index < TRACKS.length - 1;
-  const previous = () => setIndex(index - 1);
-  const next = () => setIndex(index + 1);
+  const previous = () => {
+    if (hasPrevious) setIndex(index - 1);
+  };
+  const next = () => {
+    if (hasNext) setIndex(index + 1);
+  };
 
   return (
     <div className="playlist">
@@ -87,11 +91,13 @@ function Player({ index, setIndex }: PlayerProps) {
       </div>
 
       <div className="playlist-transport">
+        {/* `aria-disabled` rather than `disabled`: a button that turns
+            `disabled` while focused drops focus to the body. */}
         <button
           type="button"
           className="playlist-skip"
           aria-label="Previous track"
-          disabled={!hasPrevious}
+          aria-disabled={!hasPrevious}
           onClick={previous}
         >
           <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -114,7 +120,7 @@ function Player({ index, setIndex }: PlayerProps) {
           type="button"
           className="playlist-skip"
           aria-label="Next track"
-          disabled={!hasNext}
+          aria-disabled={!hasNext}
           onClick={next}
         >
           <svg viewBox="0 0 16 16" aria-hidden="true">

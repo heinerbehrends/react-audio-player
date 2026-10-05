@@ -33,7 +33,7 @@ minimal example's `style={{ height: 24 }}` moves into its stylesheet.
 **Shipped** (2026-10-05). The timeline root spreads `rootStyles`, as the volume
 and rate roots do; `containerStyles` stays on `.Control`, which fills the root.
 The jsdom test that pinned the inline `height: 100%` now pins its absence, next
-to the S8 assertion for `width`. The minimal example sizes its timeline from
+to the S8 assertion for `width`. The basic example sizes its timeline from
 its stylesheet alone.
 
 **Verified by** — the jsdom suite (701 tests), and the Timeline E2E specs,

@@ -7,8 +7,8 @@
  * given your CSS loads after this.
  *
  * Not here, deliberately: anything computed from the current value —
- * `transform`, grid placement, `position`, `touch-action`, and the size the
- * progress fill's `scaleX()` is relative to. Those stay inline.
+ * `transform`, grid placement, `position`, `touch-action` — which stays inline,
+ * and the progress fill, which renders its own rule so it needs no import.
  */
 
 /* Width only: a slider root has no height of its own. Give it one, or its track

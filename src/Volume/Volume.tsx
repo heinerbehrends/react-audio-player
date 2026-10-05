@@ -1,28 +1,15 @@
 import type { HTMLAttributes } from "react";
 import {
   backgroundStyles,
-  calculateProgressStyle,
-  progressStyles,
   rootStylesFor,
   sliderCustomProperties,
 } from "../Slider/calculateStyle";
+import { SliderProgress } from "../Slider/SliderProgress";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
-import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
+import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
-
-type ProgressProps = HTMLAttributes<HTMLDivElement>;
-
-function VolumeProgress(props: ProgressProps) {
-  const slider = useSliderContext();
-  const style = {
-    ...progressStyles,
-    ...calculateProgressStyle(slider),
-    ...props.style,
-  };
-  return <div data-part="progress" {...props} style={style} />;
-}
 
 function VolumeBackground(props: HTMLAttributes<HTMLDivElement>) {
   return (
@@ -70,7 +57,7 @@ function VolumeContainer({
 }
 
 type VolumeComponent = React.FC<VolumeProps> & {
-  Progress: typeof VolumeProgress;
+  Progress: typeof SliderProgress;
   Background: typeof VolumeBackground;
   Control: typeof SliderControl;
   Thumb: typeof SliderThumb;
@@ -96,14 +83,14 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * Carries `data-part="root"`, `data-state="idle|dragging"` and
  * `data-orientation="horizontal|vertical"` — the axis, where a root-level layout
  * rule can read it; `aria-orientation` is on `.Control`, a child. Also sets
- * `--progress` and `--offset` as custom properties, for fills the inline
- * transform cannot draw.
+ * `--progress` and `--offset` as custom properties, which `.Progress` draws
+ * from and your own fills can read.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got
 // the whole library (P1-a). Used for every compound root here.
 export const Volume = VolumeContainer as VolumeComponent;
-Volume.Progress = VolumeProgress;
+Volume.Progress = SliderProgress;
 Volume.Background = VolumeBackground;
 Volume.Control = SliderControl;
 Volume.Thumb = SliderThumb;
