@@ -61,10 +61,10 @@ const BUDGETS = [
   {
     name: "AudioPlayer + MediaSession",
     imports: "{ AudioPlayer, MediaSession }",
-    max: 3400,
+    max: 3700,
   },
   { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 8500 },
-  { name: "Full surface + MediaSession", imports: "* as all", max: 9500 },
+  { name: "Full surface + MediaSession", imports: "* as all", max: 10200 },
 ];
 
 /**

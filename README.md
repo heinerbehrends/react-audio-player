@@ -569,7 +569,9 @@ parts, the session belongs to the player that most recently started playing,
 and stays with it while paused; before anything plays, the first one mounted
 holds it. When the owner unmounts the session is cleared, and the others wait
 until one of them plays — so if another player is still playing at that moment,
-its card stays blank until it is paused and played again.
+its card stays blank until it is paused and played again. The same goes for a
+`<MediaSession>` rendered into a player that is already playing while another
+player owns the session: it takes over on its next play, not on mount.
 
 Where the browser has no Media Session API, it does nothing.
 

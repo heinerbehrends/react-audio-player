@@ -60,7 +60,11 @@ function clearSession() {
   navigator.mediaSession.metadata = null;
   navigator.mediaSession.playbackState = "none";
   for (const action of ACTIONS) setHandler(action, null);
-  if (hasPositionState()) navigator.mediaSession.setPositionState();
+  try {
+    if (hasPositionState()) navigator.mediaSession.setPositionState();
+  } catch (error) {
+    reportError("the position state", error);
+  }
 }
 
 function reportError(what: string, error: unknown) {
@@ -163,7 +167,9 @@ function useMediaSession(props: MediaSessionProps) {
   useEffect(() => {
     if (!hasMediaSession()) return;
     const offset = (details: MediaSessionActionDetails) =>
-      details.seekOffset ?? latest.current.seekOffset ?? DEFAULT_SEEK_OFFSET;
+      Math.abs(
+        details.seekOffset ?? latest.current.seekOffset ?? DEFAULT_SEEK_OFFSET,
+      );
 
     const write = () => {
       if (owner !== self) return;

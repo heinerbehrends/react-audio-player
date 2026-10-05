@@ -242,6 +242,15 @@ describe("MediaSession action handlers", () => {
     expect(element.currentTime).toBe(45);
   });
 
+  it("ignores the sign of seekOffset", () => {
+    const { element } = renderWithStore(<MediaSession seekOffset={-15} />, {
+      element: { currentTime: 30 },
+    });
+
+    press("seekforward");
+    expect(element.currentTime).toBe(45);
+  });
+
   it("skips by the system's own offset when it names one", () => {
     const { element } = renderWithStore(<MediaSession seekOffset={15} />, {
       element: { currentTime: 30 },
