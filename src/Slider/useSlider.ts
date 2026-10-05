@@ -16,6 +16,8 @@ import {
 import { positionOf } from "./pointerPosition";
 import { useLabels } from "../Player/PlayerConfigContext";
 
+declare const process: { env: { NODE_ENV?: string } };
+
 export type SliderAriaAttributes = {
   /**
    * `true` when unavailable, absent otherwise — never `false`. Set on an error
@@ -134,6 +136,9 @@ export function useSlider({
   const releaseHoldRef = useRef<(() => void) | null>(null);
 
   const [element, setElement] = useState<HTMLButtonElement | null>(null);
+  // Mirrors `element` for the mount check below, which runs before the state
+  // set by the ref callback has rendered.
+  const hasControlRef = useRef(false);
   const measure = useCallback(
     (element: HTMLButtonElement) => {
       const rect = element.getBoundingClientRect();
@@ -155,6 +160,7 @@ export function useSlider({
 
   const setSliderRef = useCallback(
     (node: HTMLButtonElement | null) => {
+      hasControlRef.current = node !== null;
       setElement(node);
       if (node) measure(node);
     },
@@ -169,6 +175,22 @@ export function useSlider({
     observer.observe(element);
     return () => observer.disconnect();
   }, [element, measure]);
+
+  // A root without `.Control` renders fine and does nothing: no role, no keys,
+  // no measurement. Development only — bundlers replace `process.env.NODE_ENV`
+  // with a literal and drop the branch, as they do for React's own warnings.
+  // Refs attach before passive effects run, so the ref is settled here; a
+  // `.Control` mounted later is not checked, by design (S14).
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    if (hasControlRef.current) return;
+    console.error(
+      `<${config.rootName}> rendered without <${config.rootName}.Control>. ` +
+        "The control is the slider: without it there is no role, no keyboard, " +
+        "no measurement, and clicks do nothing. See the README: " +
+        "https://github.com/heinerbehrends/react-audio-player#readme",
+    );
+  }, [config.rootName]);
 
   /**
    * Dropping the local value the instant a drag ends causes a visible snap-back:

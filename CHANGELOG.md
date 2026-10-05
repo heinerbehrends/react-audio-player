@@ -29,6 +29,8 @@ nothing to migrate from.
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part and `data-state` where the DOM does not say it
 - An optional stylesheet at `react-headless-audio-player/styles.css`
+- A development-only error when a slider root is rendered without its
+  `.Control`, stripped from production builds through `process.env.NODE_ENV`
 - ESM-only build with a `"use client"` banner, `sideEffects: false`, types for
   React 18 and 19
 

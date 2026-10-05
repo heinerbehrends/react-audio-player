@@ -50,6 +50,7 @@ describe("Volume", () => {
     it("should render Volume.Background with expected styles", () => {
       renderInPlayer(
         <Volume>
+          <Volume.Control />
           <Volume.Background data-testid="background" />
         </Volume>,
       );
@@ -75,6 +76,7 @@ describe("Volume", () => {
     it("should render Volume.Thumb with expected attributes", () => {
       renderInPlayer(
         <Volume>
+          <Volume.Control />
           <Volume.Thumb data-testid="drag" />
         </Volume>,
       );

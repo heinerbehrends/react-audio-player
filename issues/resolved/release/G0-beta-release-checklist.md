@@ -2,7 +2,7 @@
 id: G0
 title: "Beta release checklist"
 epic: release
-status: open
+status: resolved
 severity: P0
 origin: assessment
 breaking: false
@@ -24,7 +24,7 @@ or explicitly deferred past the beta.
 - [x] **G1** — version, `prepublishOnly`, a `beta` dist-tag and a CHANGELOG
 - [x] **G2** — the playback-rate write throws in Chromium below 0.0625
 - [x] **G3** — four README sentences the code contradicts
-- [ ] **S14** — a dev-only warning for the slider that measures zero: `.Control`
+- [x] **S14** — a dev-only warning for the slider that measures zero: `.Control`
       omitted, `.Thumb` nested inside it, or a root with no height. All three
       fail silently today and are what a beta user hits first
 - [x] **C13** — delete the dead `AUDIO_FILE_ENDED` action
@@ -56,9 +56,8 @@ or explicitly deferred past the beta.
 - **G1**: nobody consumed the package before the beta, so the changelog opens
   with what ships rather than a migration.
 
-Still open on this list: **S14**, which needs a short plan first — the repo has
-no dev-only stripping mechanism yet, and a measurement-based check fires for a
-legitimately hidden player.
+**S14** shipped on 2026-10-05 as a single development-only check; the nested
+case turned out to be React's own warning and the zero-height case is CSS.
 
 ## Safe to leave open
 
@@ -83,3 +82,15 @@ Checked against the W3C specs rather than assumed:
   behaviour, and says so.
 - The two places the written spec and the code disagree are the README
   `onEnded` row and the rate-range comment — **G3** and **G2**.
+
+## Resolution
+
+**Closed** (2026-10-05) — every row above is resolved or explicitly deferred:
+G1, G2, G3, C13 and S14 shipped; D3, B4 and B1 are documented; A10 is decided
+and A16 closed with it; D2, F6 and B8 are deferred with their shape or roadmap
+line in the README. The tree is publishable at `0.1.0-beta.0`.
+
+What remains is the publish itself, which is a manual step: fill in the date
+in `CHANGELOG.md`, then `pnpm publish --tag beta`.
+
+**Verified by** — the release epic in `issues/README.md` reads 0 open of 4.

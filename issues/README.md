@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**25 open · 1 part-done · 78 resolved · 2 rejected**
+**23 open · 1 part-done · 80 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,9 +13,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-1 open of 4.
+0 open of 4.
 
-- [ ] [G0](release/G0-beta-release-checklist.md) Beta release checklist — P0
+- [x] [G0](resolved/release/G0-beta-release-checklist.md) Beta release checklist — P0
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
 - [x] [G3](resolved/release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
@@ -43,9 +43,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-2 open of 24.
+1 open of 24.
 
-- [ ] [S14](surface/S14-missing-mis-nested-children-fail-silently.md) Missing/mis-nested children fail silently — P1
 - [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
@@ -60,6 +59,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S11](resolved/surface/S11-translate-calc-offset-px-20px-0-hardcodes.md) `translate(calc(${offset}px - 20px), 0)` hardcodes a 40px thumb — P1
 - [x] [S12](resolved/surface/S12-volume-and-playbackrateslider-roots-lack-position-relative.md) Volume and PlaybackRateSlider roots lack `position: relative` — P1
 - [x] [S13](resolved/surface/S13-no-hook-level-api.md) No hook-level API — P1
+- [x] [S14](resolved/surface/S14-missing-mis-nested-children-fail-silently.md) Missing/mis-nested children fail silently — P1
 - [x] [S15](resolved/surface/S15-sideeffectaction-is-too-broad-for-its-one.md) `SideEffectAction` is too broad for its one public use — P1, **breaking**
 - [x] [S24](resolved/surface/S24-a-consumers-onclick-onkeydown-silently-kills-every.md) A consumer's `onClick`/`onKeyDown` silently kills every button — P1, **breaking**
 - [x] [S16](resolved/surface/S16-three-components-accept-no-props-and-cannot.md) Three components accept no props and cannot be styled — P2, **breaking**

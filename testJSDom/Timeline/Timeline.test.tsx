@@ -111,6 +111,7 @@ describe("Timeline", () => {
     it("should render Timeline.Background with expected styles", () => {
       renderInPlayer(
         <Timeline>
+          <Timeline.Control />
           <Timeline.Background data-testid="background" />
         </Timeline>,
       );
@@ -138,6 +139,7 @@ describe("Timeline", () => {
     it("should render Timeline.Thumb with expected attributes", () => {
       renderInPlayer(
         <Timeline>
+          <Timeline.Control />
           <Timeline.Thumb data-testid="drag" />
         </Timeline>,
       );

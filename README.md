@@ -443,6 +443,14 @@ seconds; its maximum is the track duration, so it takes no `maxValue`.
 - `<Timeline.Background>` — the track behind the fill
 - `<Timeline.Thumb>` — the draggable thumb
 
+`.Control` is required, on every slider: it is the element that carries the
+role, takes the keys and measures the track, so a root without one renders and
+does nothing. In development the root logs an error for it after mount. That
+check sits behind `process.env.NODE_ENV !== "production"`, the package's only
+such branch; bundlers replace it with a literal and drop the code, exactly as
+they do for React's own warnings, so a setup that runs React's development
+build runs this too.
+
 ### Playback controls
 
 - `<PlayButton>` — toggles play and pause

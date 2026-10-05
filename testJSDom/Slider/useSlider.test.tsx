@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
@@ -139,7 +139,16 @@ beforeEach(() => {
       disconnect() {}
     },
   );
+  // `renderHook` mounts no `.Control`, so every test here would trip the S14
+  // error. Swallow that one line and let anything else through.
+  const original = console.error;
+  vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
+    if (String(args[0]).includes("rendered without")) return;
+    original(...args);
+  });
 });
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("the value source", () => {
   it("reads currentTime and the duration in seek mode", () => {

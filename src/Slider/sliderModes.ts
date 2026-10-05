@@ -31,6 +31,8 @@ export type SliderAriaState = {
 export type SliderModeConfig = {
   /** Which component a `CHANGE_VALUE` names. Internal since S15. */
   component: SliderComponent;
+  /** The root's export name, for the missing-`.Control` error (S14). */
+  rootName: "Timeline" | "Volume" | "PlaybackRateSlider";
   /**
    * `"seek"` keeps a local value to display, since nothing echoes back
    * mid-drag. `"volume"` and `"rate"` write the element and read back from the
@@ -83,6 +85,7 @@ const hundredths = (value: number) => Math.round(value * 100) / 100;
 export const SLIDER_MODES = {
   seek: {
     component: "timeline",
+    rootName: "Timeline",
     writesDuringDrag: false,
     unmutesOnGrab: false,
     ariaLabel: "Timeline slider",
@@ -97,6 +100,7 @@ export const SLIDER_MODES = {
   },
   volume: {
     component: "volume",
+    rootName: "Volume",
     writesDuringDrag: true,
     unmutesOnGrab: true,
     ariaLabel: "Volume slider",
@@ -116,6 +120,7 @@ export const SLIDER_MODES = {
   },
   rate: {
     component: "playbackRate",
+    rootName: "PlaybackRateSlider",
     writesDuringDrag: true,
     unmutesOnGrab: false,
     ariaLabel: "Playback rate slider",

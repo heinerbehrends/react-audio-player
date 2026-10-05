@@ -26,6 +26,44 @@ describe("SliderControl", () => {
 
   afterEach(() => restoreRects());
 
+  /**
+   * S14. A root without its control renders and does nothing, which a beta
+   * user hits before anything else. Vitest runs with `NODE_ENV=test`, so the
+   * development branch is live here.
+   */
+  describe("is required", () => {
+    it("logs an error when the root renders without it", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      renderInPlayer(
+        <Volume>
+          <Volume.Background />
+          <Volume.Thumb />
+        </Volume>,
+      );
+
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(error).toHaveBeenCalledWith(
+        expect.stringContaining("<Volume> rendered without <Volume.Control>"),
+      );
+      error.mockRestore();
+    });
+
+    it("stays silent when the control is present", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      renderInPlayer(
+        <Timeline>
+          <Timeline.Control />
+        </Timeline>,
+        { element: { duration: 100 } },
+      );
+
+      expect(error).not.toHaveBeenCalled();
+      error.mockRestore();
+    });
+  });
+
   it("renders with correct ARIA attributes", () => {
     const { container } = renderInPlayer(
       <Timeline>

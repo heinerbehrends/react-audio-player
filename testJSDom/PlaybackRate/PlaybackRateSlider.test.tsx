@@ -100,6 +100,7 @@ describe("PlaybackRateSlider", () => {
   it("renders Background with the progress styles", () => {
     renderInPlayer(
       <PlaybackRateSlider>
+        <PlaybackRateSlider.Control />
         <PlaybackRateSlider.Background data-testid="background" />
       </PlaybackRateSlider>,
     );
@@ -115,6 +116,7 @@ describe("PlaybackRateSlider", () => {
   it("renders Drag out of the tab order", () => {
     renderInPlayer(
       <PlaybackRateSlider>
+        <PlaybackRateSlider.Control />
         <PlaybackRateSlider.Thumb data-testid="drag" />
       </PlaybackRateSlider>,
     );

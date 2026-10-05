@@ -11,9 +11,9 @@ type SliderControlProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
  * `aria-value*` attributes, the tab stop, the arrow keys and `Home`/`End`.
  *
  * **Required**, exactly one per slider, and it is what measures the track. Omit
- * it and the geometry stays at zero: no role, no aria, no tab stop, and clicks
- * do nothing. Do not nest `.Thumb` inside it — that would put a `<button>` in a
- * `<button>`.
+ * it and the slider is inert: no role, no aria, no tab stop, and clicks do
+ * nothing — the root logs an error for it in development. Do not nest `.Thumb`
+ * inside it: that is a `<button>` in a `<button>`, which React warns about.
  *
  * One focusable, value-announcing element per slider is deliberate, and differs
  * from the APG/Radix arrangement where the thumb carries the role.
@@ -44,7 +44,7 @@ export function SliderControl({ children, ...props }: SliderControlProps) {
       {...props}
       // After the spread and composed rather than replaced: these carry the
       // operability `role` is locked for. `aria` stays *before* the spread, so a
-      // consumer can still override `aria-label` (S5, A14).
+      // consumer can still override `aria-label`.
       onPointerDown={composeEventHandlers(
         props.onPointerDown,
         onTrackPointerDown,
