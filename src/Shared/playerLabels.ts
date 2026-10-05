@@ -1,11 +1,11 @@
 import type { PlayerState, VolumeState } from "../store/derived";
-import type { TimeDisplayState } from "../store/createPlayerStore";
+import type { TimeDisplayState } from "../TimeDisplay/TimeDisplay";
 import type { SliderAriaState } from "../Slider/sliderModes";
 
 /**
- * Which of the three readouts a `time` entry is being asked for. `Time.Elapsed`
- * and `Time.Remaining` render into the same slot and exactly one shows, so an
- * entry ignoring this returns the same text for both.
+ * Which of the three readouts a `time` entry is being asked for. An entry
+ * ignoring it returns the same text for elapsed and remaining, and a
+ * `Time.Toggle` then appears not to switch.
  */
 export type TimePart = "elapsed" | "remaining" | "duration";
 

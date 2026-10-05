@@ -1,18 +1,11 @@
 import { handleSideEffect } from "../AudioElement/handleSideEffect";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
-import { atom, readable, type Atom, type ReadableAtom } from "./atom";
+import { atom, readable, type ReadableAtom } from "./atom";
 import {
   syncFromElement,
   type LoadState,
   type ProjectionAtoms,
 } from "./syncFromElement";
-
-/**
- * Which readout is on screen — the one `Time.Elapsed` / `Time.Remaining` show,
- * not the one `Time.Toggle` will switch to. Player state, so every readout in
- * the tree follows it.
- */
-export type TimeDisplayState = "elapsed" | "remaining";
 
 export type PlayerStore = {
   // Read-only projections of the audio element. Only `syncFromElement` writes
@@ -39,9 +32,6 @@ export type PlayerStore = {
    */
   playbackError: ReadableAtom<string | null>;
 
-  /** The one writable atom: UI state with no counterpart on the element. */
-  timeDisplay: Atom<TimeDisplayState>;
-
   send: (action: SideEffectAction) => void;
   /**
    * Freezes `lastAudibleVolume` for the duration of a volume drag and returns
@@ -67,8 +57,6 @@ export function createPlayerStore(): PlayerStore {
     mediaErrorCode: atom<number | null>(null),
     loadState: atom<LoadState>("loading"),
   };
-
-  const timeDisplay = atom<TimeDisplayState>("elapsed");
 
   // Not atoms: nothing subscribes to either, and an atom would come with a
   // `set` handle that the read-only projections then have to forbid.
@@ -134,7 +122,6 @@ export function createPlayerStore(): PlayerStore {
     mediaErrorCode: readable(atoms.mediaErrorCode),
     loadState: readable(atoms.loadState),
     playbackError: readable(playbackError),
-    timeDisplay,
     send,
     holdAudibleVolume,
     attach,

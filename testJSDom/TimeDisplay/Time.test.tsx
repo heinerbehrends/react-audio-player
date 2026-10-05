@@ -4,66 +4,89 @@ import { Time } from "../../src/TimeDisplay/TimeDisplay";
 import "@testing-library/jest-dom";
 import { createTestStore } from "../store/createTestStore";
 import { renderWithStore } from "../store/renderWithStore";
-import type { TimeDisplayState } from "../../src/store/createPlayerStore";
 
-/** `timeDisplay` is the one writable atom, so a test sets it directly. */
-function withTimeDisplay(timeDisplay: TimeDisplayState) {
-  const harness = createTestStore({ readyState: 1, duration: 120 });
-  harness.store.timeDisplay.set(timeDisplay);
-  return harness;
-}
+const loaded = () => createTestStore({ readyState: 1, duration: 120 });
 
 /** The parts carry no accessible name of their own — `data-part` is the hook. */
 const part = (name: string) =>
   document.querySelector(`[data-part="${name}"]`) as HTMLElement | null;
 
 describe("Time", () => {
-  it("hides Elapsed when showing remaining time", () => {
-    renderWithStore(<Time.Elapsed />, {
-      testStore: withTimeDisplay("remaining"),
-    });
-    expect(screen.queryByLabelText("elapsed")).not.toBeInTheDocument();
-  });
+  /** Each readout always shows its own number; only the toggle switches. */
+  it("shows Elapsed and Remaining on their own, with no toggle", () => {
+    renderWithStore(
+      <>
+        <Time.Elapsed />
+        <Time.Remaining />
+      </>,
+      { testStore: loaded() },
+    );
 
-  it("hides Remaining when showing elapsed time", () => {
-    renderWithStore(<Time.Remaining />, {
-      testStore: withTimeDisplay("elapsed"),
-    });
-    expect(screen.queryByLabelText("remaining")).not.toBeInTheDocument();
+    expect(part("elapsed")).toHaveTextContent("0:00");
+    expect(part("remaining")).toHaveTextContent("-2:00");
   });
 
   it.each([
     ["remaining", "Show time elapsed"],
     ["elapsed", "Show time remaining"],
-  ])("is named for what it will do while showing %s", (shown, name) => {
-    renderWithStore(<Time.Toggle>Toggle</Time.Toggle>, {
-      testStore: withTimeDisplay(shown as TimeDisplayState),
-    });
-    const button = screen.getByRole("button");
-    expect(button).toHaveAccessibleName(name);
-    // A4: with the name already saying which way the toggle goes,
-    // `aria-pressed` announces the fact twice.
-    expect(button).not.toHaveAttribute("aria-pressed");
-  });
+  ] as const)(
+    "is named for what it will do while showing %s",
+    (shown, name) => {
+      renderWithStore(<Time.Toggle defaultValue={shown} />, {
+        testStore: loaded(),
+      });
+      const button = screen.getByRole("button");
+      expect(button).toHaveAccessibleName(name);
+      expect(button).toHaveAttribute("data-state", shown);
+      // A4: with the name already saying which way the toggle goes,
+      // `aria-pressed` announces the fact twice.
+      expect(button).not.toHaveAttribute("aria-pressed");
+    },
+  );
 
-  it("flips the atom on click, so the two halves swap", () => {
-    const testStore = withTimeDisplay("elapsed");
-    renderWithStore(
-      <Time.Toggle>
-        Toggle
-        <Time.Elapsed />
-        <Time.Remaining />
-      </Time.Toggle>,
-      { testStore },
-    );
+  it("starts on elapsed and swaps readouts on click", () => {
+    renderWithStore(<Time.Toggle />, { testStore: loaded() });
     expect(part("elapsed")).toBeInTheDocument();
+    expect(part("remaining")).toBeNull();
 
     fireEvent.click(screen.getByRole("button"));
 
-    expect(testStore.store.timeDisplay.get()).toBe("remaining");
     expect(part("elapsed")).toBeNull();
+    expect(part("remaining")).toHaveTextContent("-2:00");
+  });
+
+  it("starts on the readout defaultValue names, and reads it only once", () => {
+    const { rerender } = renderWithStore(
+      <Time.Toggle defaultValue="remaining" />,
+      { testStore: loaded() },
+    );
     expect(part("remaining")).toBeInTheDocument();
-    expect(part("remaining")).toHaveTextContent("-");
+
+    rerender(<Time.Toggle defaultValue="elapsed" />);
+
+    expect(part("remaining")).toBeInTheDocument();
+    expect(part("elapsed")).toBeNull();
+  });
+
+  it("keeps each toggle's choice its own", () => {
+    renderWithStore(
+      <>
+        <Time.Toggle data-testid="first" />
+        <Time.Toggle data-testid="second" />
+      </>,
+      { testStore: loaded() },
+    );
+
+    fireEvent.click(screen.getByTestId("first"));
+
+    expect(screen.getByTestId("first")).toHaveAttribute(
+      "data-state",
+      "remaining",
+    );
+    expect(screen.getByTestId("second")).toHaveAttribute(
+      "data-state",
+      "elapsed",
+    );
   });
 
   /**
@@ -73,27 +96,24 @@ describe("Time", () => {
    * so the label was unreliable in both directions. The text is the name now.
    */
   it.each([
-    ["elapsed", "elapsed", <Time.Elapsed key="e" />],
-    ["remaining", "remaining", <Time.Remaining key="r" />],
-    ["duration", "elapsed", <Time.Duration key="d" />],
-  ] as const)(
-    "leaves the %s time as its own accessible name",
-    (name, display, ui) => {
-      renderWithStore(ui, { testStore: withTimeDisplay(display) });
+    ["elapsed", <Time.Elapsed key="e" />],
+    ["remaining", <Time.Remaining key="r" />],
+    ["duration", <Time.Duration key="d" />],
+  ] as const)("leaves the %s time as its own accessible name", (name, ui) => {
+    renderWithStore(ui, { testStore: loaded() });
 
-      expect(part(name)).toBeInTheDocument();
-      expect(part(name)).not.toHaveAttribute("aria-label");
-      expect(screen.queryByLabelText(name)).toBeNull();
-    },
-  );
+    expect(part(name)).toBeInTheDocument();
+    expect(part(name)).not.toHaveAttribute("aria-label");
+    expect(screen.queryByLabelText(name)).toBeNull();
+  });
 
   /** S16: they took no props at all, so nothing could be styled or targeted. */
   it.each([
-    ["elapsed", "elapsed", <Time.Elapsed key="e" className="clock" />],
-    ["remaining", "remaining", <Time.Remaining key="r" className="clock" />],
-    ["duration", "elapsed", <Time.Duration key="d" className="clock" />],
-  ] as const)("passes props through on %s", (name, display, ui) => {
-    renderWithStore(ui, { testStore: withTimeDisplay(display) });
+    ["elapsed", <Time.Elapsed key="e" className="clock" />],
+    ["remaining", <Time.Remaining key="r" className="clock" />],
+    ["duration", <Time.Duration key="d" className="clock" />],
+  ] as const)("passes props through on %s", (name, ui) => {
+    renderWithStore(ui, { testStore: loaded() });
 
     expect(part(name)).toHaveClass("clock");
   });
@@ -111,6 +131,10 @@ describe("Time", () => {
         <Time.Elapsed>12:00</Time.Elapsed>
         {/* @ts-expect-error — and it collides with the text at runtime */}
         <Time.Duration dangerouslySetInnerHTML={{ __html: "12:00" }} />
+        {/* @ts-expect-error the toggle renders its own readout */}
+        <Time.Toggle>
+          <Time.Elapsed />
+        </Time.Toggle>
       </>
     );
 
@@ -127,7 +151,6 @@ describe("Time", () => {
       duration: 120,
       currentTime: 120,
     });
-    harness.store.timeDisplay.set("remaining");
     renderWithStore(<Time.Remaining />, { testStore: harness });
 
     expect(part("remaining")).toHaveTextContent("0:00");

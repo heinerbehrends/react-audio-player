@@ -45,7 +45,6 @@ function DebugStore() {
   const rate = useStore(store.rate);
   const paused = useStore(store.paused);
   const loadState = useStore(store.loadState);
-  const timeDisplay = useStore(store.timeDisplay);
   const playerState = usePlayerState();
   const volumeState = useVolumeState();
 
@@ -63,7 +62,6 @@ function DebugStore() {
       <p>Last Audible Volume: {lastAudibleVolume.toFixed(2)}</p>
       <p>Rate: {rate.toFixed(2)}</p>
       <p>Paused: {String(paused)}</p>
-      <p>Time Display: {timeDisplay}</p>
     </>
   );
 }

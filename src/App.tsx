@@ -107,10 +107,7 @@ function Player({
         <PlayButton.Paused>Play</PlayButton.Paused>
       </PlayButton>
       <SeekButton amount={10}>Forward</SeekButton>
-      <Time.Toggle>
-        <Time.Elapsed />
-        <Time.Remaining />
-      </Time.Toggle>
+      <Time.Toggle />
       /
       <Time.Duration />
       <Volume

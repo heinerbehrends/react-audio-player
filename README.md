@@ -271,9 +271,8 @@ time: ({ seconds, part }) =>
 ```
 
 An entry that ignores `part` type-checks and renders a plausible clock, but
-`<Time.Elapsed>` and `<Time.Remaining>` render into the same slot and exactly one
-shows — so you get two identical readouts and a `<Time.Toggle>` that looks dead.
-The only symptom is a missing hyphen.
+elapsed and remaining come out identical — so a `<Time.Toggle>` looks dead. The
+only symptom is a missing hyphen.
 
 ### What `time` cannot do
 
@@ -488,10 +487,22 @@ out and keep `<MuteButton>`, which still works.
 
 ### Time display
 
-- `<Time.Elapsed>` — position, while the display is showing elapsed time
-- `<Time.Remaining>` — time left, while the display is showing remaining time
+- `<Time.Elapsed>` — position
+- `<Time.Remaining>` — time left, as `-1:30`
 - `<Time.Duration>` — track length
-- `<Time.Toggle>` — switches between elapsed and remaining
+- `<Time.Toggle>` — a button showing elapsed or remaining time, switching on
+  press. `defaultValue="remaining"` starts it on remaining; the default is
+  elapsed. It renders its own readout, so it takes no children.
+
+```jsx
+<Time.Toggle defaultValue="remaining" /> / <Time.Duration />;
+```
+
+Each readout always shows its own number, so a player that only ever shows the
+time left renders `<Time.Remaining />` and no toggle. Each toggle keeps its own
+choice. On a button of your own, `useTimeToggleProps(defaultValue)` gives you
+the toggle's props; render `<Time.Elapsed />` or `<Time.Remaining />` inside it
+from its `data-state`.
 
 No `format` prop on the readouts: the formatting is `labels.time`, which names
 all three at once and receives raw seconds. See
@@ -713,7 +724,7 @@ function PlayPause() {
 | `usePlayButtonProps`         | `<PlayButton>`          | —              |
 | `useMuteButtonProps`         | `<MuteButton>`          | —              |
 | `useSeekButtonProps`         | `<SeekButton>`          | `amount`       |
-| `useTimeToggleProps`         | `<Time.Toggle>`         | —              |
+| `useTimeToggleProps`         | `<Time.Toggle>`         | `defaultValue` |
 | `usePlaybackRateSetProps`    | `<PlaybackRate.Set>`    | `rate`         |
 | `usePlaybackRateChangeProps` | `<PlaybackRate.Change>` | `amount`       |
 
@@ -730,7 +741,7 @@ that have one, and `aria-pressed` on `.Set`.
 Your handlers run first and the library's second, and `preventDefault()` in
 yours opts out of ours. Adding `onClick` after the spread replaces the library's
 instead, which silently breaks playback; passing it in is the only spelling that
-composes. Where `amount` or `rate` is needed it is a leading argument rather than
+composes. Where `amount`, `rate` or `defaultValue` is needed it is a leading argument rather than
 a key of the bag, because React would pass an unrecognised lowercase attribute
 through to the DOM — `<button rate="1.5">` in your page source.
 

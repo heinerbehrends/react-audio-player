@@ -53,4 +53,4 @@ export type {
   PlayerState,
   VolumeState,
 } from "./store/derived";
-export type { TimeDisplayState } from "./store/createPlayerStore";
+export type { TimeDisplayState } from "./TimeDisplay/TimeDisplay";

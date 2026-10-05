@@ -34,9 +34,9 @@ type AudioPlayerProps = {
    * Fired once when the track finishes, with the element parked at the end.
    *
    * The hook for a playlist. Nothing resumes playback on its own — a `src`
-   * change arrives loaded and paused — so call `play()` once the new track
-   * reports metadata, or pass `audioProps={{ autoPlay: true }}` and handle a
-   * possible autoplay refusal.
+   * change arrives loaded and paused — so call `play()` from an effect once the
+   * new track has rendered, or pass `audioProps={{ autoPlay: true }}` and
+   * handle a possible autoplay refusal.
    *
    * This is the edge, "the track just finished". For the level, "the position is
    * the end", use `useIsAtEnd()`.

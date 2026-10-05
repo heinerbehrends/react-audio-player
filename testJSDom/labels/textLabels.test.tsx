@@ -12,20 +12,14 @@ import { createTestStore } from "../store/createTestStore";
 import { renderWithStore } from "../store/renderWithStore";
 import { renderInPlayer } from "../testComponents";
 import type { PlayerLabels } from "../../src/Shared/playerLabels";
-import type { TimeDisplayState } from "../../src/store/createPlayerStore";
 import "@testing-library/jest-dom";
 
 /** The readouts carry no accessible name of their own — `data-part` is the hook. */
 const part = (name: string) =>
   document.querySelector(`[data-part="${name}"]`) as HTMLElement | null;
 
-function withTimeDisplay(
-  timeDisplay: TimeDisplayState,
-  element: Parameters<typeof createTestStore>[0] = {},
-) {
-  const harness = createTestStore({ readyState: 1, duration: 120, ...element });
-  harness.store.timeDisplay.set(timeDisplay);
-  return harness;
+function loaded(element: Parameters<typeof createTestStore>[0] = {}) {
+  return createTestStore({ readyState: 1, duration: 120, ...element });
 }
 
 /**
@@ -39,7 +33,7 @@ const marker: NonNullable<PlayerLabels["time"]> = ({ seconds, part: which }) =>
 describe("labels.time", () => {
   it("routes Time.Elapsed through the entry", () => {
     renderWithStore(<Time.Elapsed />, {
-      testStore: withTimeDisplay("elapsed", { currentTime: 30 }),
+      testStore: loaded({ currentTime: 30 }),
       labels: { time: marker },
     });
 
@@ -50,7 +44,7 @@ describe("labels.time", () => {
     // 120 − 30, unsigned: the entry writes its own "-", so `formatTime` never
     // has to grow negative handling.
     renderWithStore(<Time.Remaining />, {
-      testStore: withTimeDisplay("remaining", { currentTime: 30 }),
+      testStore: loaded({ currentTime: 30 }),
       labels: { time: marker },
     });
 
@@ -59,7 +53,7 @@ describe("labels.time", () => {
 
   it("routes Time.Duration through the entry", () => {
     renderWithStore(<Time.Duration />, {
-      testStore: withTimeDisplay("elapsed"),
+      testStore: loaded(),
       labels: { time: marker },
     });
 
@@ -73,7 +67,7 @@ describe("labels.time", () => {
     // Not a hardcoded "0:00" past the entry, and not a negative: both are
     // library rules about *which* number, and the consumer still formats it.
     renderWithStore(<Time.Remaining />, {
-      testStore: withTimeDisplay("remaining", element),
+      testStore: loaded(element),
       labels: { time: marker },
     });
 
@@ -95,7 +89,7 @@ describe("labels.time", () => {
     ["duration", <Time.Duration key="d" />, "duration@188"],
   ])("hands %s whole seconds, not the float behind it", (name, ui, text) => {
     renderWithStore(ui, {
-      testStore: withTimeDisplay("remaining", {
+      testStore: loaded({
         duration: 187.6,
         currentTime: 30,
       }),
@@ -110,7 +104,7 @@ describe("labels.time", () => {
     // floored and cannot contribute one. Rounds to 1, so the entry says
     // "-0:01" like the fallback rather than flooring to a signed zero.
     renderWithStore(<Time.Remaining />, {
-      testStore: withTimeDisplay("remaining", {
+      testStore: loaded({
         duration: 119.6,
         currentTime: 119,
       }),
@@ -126,7 +120,7 @@ describe("labels.time", () => {
         <Time.Remaining />
         <Time.Duration />
       </>,
-      { testStore: withTimeDisplay("remaining", { currentTime: 30 }) },
+      { testStore: loaded({ currentTime: 30 }) },
     );
 
     expect(part("remaining")).toHaveTextContent("-1:30");

@@ -41,11 +41,8 @@ export default function App() {
         </Timeline>
 
         <div className="basic-end">
-          {/* Press to switch between elapsed and remaining. */}
-          <Time.Toggle className="basic-time">
-            <Time.Elapsed />
-            <Time.Remaining />
-          </Time.Toggle>
+          {/* Shows the time left; press to switch to elapsed. */}
+          <Time.Toggle className="basic-time" defaultValue="remaining" />
 
           {/* The slider opens while the pointer is over the mute button or the
               slider, or the slider has focus, so Tab from mute lands on it. */}

@@ -10,7 +10,6 @@ import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { createTestStore } from "../store/createTestStore";
 import { renderWithStore } from "../store/renderWithStore";
 import type { PlayerLabels } from "../../src/Shared/playerLabels";
-import type { TimeDisplayState } from "../../src/store/createPlayerStore";
 import type { MediaFields } from "../store/mediaElementFake";
 import "@testing-library/jest-dom";
 
@@ -28,13 +27,6 @@ const volumeStates: Record<string, Partial<MediaFields>> = {
   low: { readyState: 1, volume: 0.4, muted: false },
   high: { readyState: 1, volume: 0.8, muted: false },
 };
-
-/** `timeDisplay` is the one writable atom, so a test sets it before rendering. */
-function withTimeDisplay(timeDisplay: TimeDisplayState) {
-  const harness = createTestStore({ readyState: 1, duration: 120 });
-  harness.store.timeDisplay.set(timeDisplay);
-  return harness;
-}
 
 const play: NonNullable<PlayerLabels["play"]> = {
   playing: "Audio pausieren",
@@ -120,9 +112,9 @@ describe("labels.timeToggle", () => {
   it.each([
     ["elapsed", "Restzeit anzeigen"],
     ["remaining", "Verstrichene Zeit anzeigen"],
-  ])("names the toggle while showing %s", (shown, name) => {
-    renderWithStore(<Time.Toggle>Toggle</Time.Toggle>, {
-      testStore: withTimeDisplay(shown as TimeDisplayState),
+  ] as const)("names the toggle while showing %s", (shown, name) => {
+    renderWithStore(<Time.Toggle defaultValue={shown} />, {
+      testStore: createTestStore({ readyState: 1, duration: 120 }),
       labels: { timeToggle },
     });
 
@@ -130,8 +122,8 @@ describe("labels.timeToggle", () => {
   });
 
   it("falls back to English with no entry", () => {
-    renderWithStore(<Time.Toggle>Toggle</Time.Toggle>, {
-      testStore: withTimeDisplay("elapsed"),
+    renderWithStore(<Time.Toggle />, {
+      testStore: createTestStore({ readyState: 1, duration: 120 }),
     });
 
     expect(screen.getByRole("button")).toHaveAccessibleName(

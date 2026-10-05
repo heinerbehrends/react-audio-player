@@ -15,7 +15,6 @@ describe("createPlayerStore", () => {
     expect(store.rate.get()).toBe(1);
     expect(store.paused.get()).toBe(true);
     expect(store.loadState.get()).toBe("loading");
-    expect(store.timeDisplay.get()).toBe("elapsed");
   });
 
   it("hands out projections with no set handle", () => {
@@ -26,12 +25,18 @@ describe("createPlayerStore", () => {
     expect("set" in store.volume).toBe(false);
   });
 
-  it("makes timeDisplay writable, the one UI atom", () => {
+  /**
+   * Every atom projects the element. The one piece of UI state the store held,
+   * which readout the time toggle shows, moved into the toggle.
+   */
+  it("hands out no writable atom", () => {
     const store = createPlayerStore();
+    const atoms = Object.values(store).filter(
+      (value) => typeof value === "object",
+    );
 
-    store.timeDisplay.set("remaining");
-
-    expect(store.timeDisplay.get()).toBe("remaining");
+    expect(atoms.length).toBeGreaterThan(0);
+    for (const atom of atoms) expect("set" in atom).toBe(false);
   });
 
   describe("attach", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PlayButton } from "../../src/Player/PlayButton";
 import { MuteButton } from "../../src/Player/MuteButton";
@@ -30,7 +30,7 @@ describe("data-part", () => {
     {
       name: "Time.Toggle",
       part: "time-toggle",
-      ui: <Time.Toggle>toggle</Time.Toggle>,
+      ui: <Time.Toggle />,
     },
     {
       name: "PlaybackRate.Set",
@@ -62,16 +62,10 @@ describe("data-part", () => {
   });
 
   it("Time.Remaining carries data-part=remaining", () => {
-    const { container } = renderInPlayer(
-      <>
-        <Time.Toggle>toggle</Time.Toggle>
-        <Time.Remaining />
-      </>,
-      { element: { readyState: 1, duration: 100 } },
-    );
+    const { container } = renderInPlayer(<Time.Remaining />, {
+      element: { readyState: 1, duration: 100 },
+    });
 
-    // Hidden until the toggle selects it, so it needs the click the others do not.
-    fireEvent.click(screen.getByRole("button"));
     expect(
       container.querySelector('[data-part="remaining"]'),
     ).toBeInTheDocument();

@@ -33,7 +33,7 @@ function renderAll() {
       <PlayButton>play</PlayButton>
       <MuteButton>mute</MuteButton>
       <SeekButton amount={10}>seek</SeekButton>
-      <Time.Toggle>toggle</Time.Toggle>
+      <Time.Toggle />
       <SetPlaybackRate rate={1.5}>1.5x</SetPlaybackRate>
       <ChangePlaybackRate amount={0.25}>faster</ChangePlaybackRate>
     </>

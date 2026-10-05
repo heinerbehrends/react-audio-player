@@ -47,8 +47,12 @@ const buttons: {
   },
   {
     name: "Time.Toggle",
-    render: (props) => <Time.Toggle {...props}>toggle</Time.Toggle>,
-    // The one whose action is store-only: the name flips instead.
+    // `defaultValue` is the DOM attribute's, which the toggle redefines as its
+    // starting readout; these tests never pass it.
+    render: (props) => (
+      <Time.Toggle {...(props as Omit<ButtonProps, "defaultValue">)} />
+    ),
+    // The one whose action changes no element: the name flips instead.
     expectAction: () =>
       expect(
         screen.getByRole("button", { name: "Show time elapsed" }),
