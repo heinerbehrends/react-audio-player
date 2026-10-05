@@ -27,3 +27,11 @@ beta and say so in the README's roadmap. Tracked from **G0**.
 
 **Roadmap line shipped** (2026-10-01, with G3); first item on it. Not in
 `0.1.0-beta.0`.
+
+## Plan (2026-10-05)
+
+`plans/PLAN-media-session.md`. The shape it settles: a `<MediaSession />` part
+rendered inside the root rather than root behaviour, so the bundle cost is paid
+only by consumers who import it; handlers send the actions the keyboard map
+sends; previous/next register only with their props; one owner per page,
+claimed on play. Two decisions are marked open in the plan.
