@@ -36,7 +36,12 @@ function App() {
       <>
         {Array.from({ length: players }, (_, index) => (
           <section key={index} data-testid={`player-${index}`}>
-            <Player src={src} volumeOrientation={volumeOrientation} />
+            {/* Numbered, so a spec can tell which one owns the media session. */}
+            <Player
+              src={src}
+              title={`Test tone ${index + 1}`}
+              volumeOrientation={volumeOrientation}
+            />
           </section>
         ))}
       </>
@@ -48,16 +53,22 @@ function App() {
 
 type PlayerProps = {
   src: string;
+  title?: string;
   volumeOrientation: "horizontal" | "vertical";
   showDebug?: boolean;
 };
 
-function Player({ src, volumeOrientation, showDebug }: PlayerProps) {
+function Player({
+  src,
+  title = "Test tone",
+  volumeOrientation,
+  showDebug,
+}: PlayerProps) {
   return (
     <AudioPlayer
       audioFile={{
         src,
-        title: "Test tone",
+        title,
         artist: "react-headless-audio-player",
       }}
     >

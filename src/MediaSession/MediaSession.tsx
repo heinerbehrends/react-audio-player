@@ -4,10 +4,21 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 
 declare const process: { env: { NODE_ENV?: string } };
 
-// `navigator.mediaSession` is one object per page, so it gets one owner per page.
-// A pointer to whoever last claimed a browser singleton, holding no state of its
-// own: not the registry B2 refused (F6).
+// `navigator.mediaSession` is one object per page, so it gets one owner per page:
+// the player that most recently started playing, kept while paused. A pointer to
+// whoever last claimed a browser singleton, holding no state of its own: not the
+// registry B2 refused (F6).
 let owner: symbol | null = null;
+
+// What a claim rewrites. Each effect keeps its writer here, current with its
+// dependencies.
+type Writers = {
+  metadata: () => void;
+  handlers: () => void;
+  state: () => void;
+};
+
+const noop = () => {};
 
 function hasMediaSession(): boolean {
   return typeof navigator !== "undefined" && "mediaSession" in navigator;
@@ -90,8 +101,19 @@ function useMediaSession(props: MediaSessionProps) {
     latest.current = props;
   });
 
-  // Before the metadata effect, so the first write on mount already passes the
-  // owner guard. Strict mode's second mount claims again after the release.
+  // Every write below runs for every instance and returns early unless this one
+  // owns the session, so a claim needs no subscriptions moved, only a rewrite.
+  const writers = useRef<Writers>({
+    metadata: noop,
+    handlers: noop,
+    state: noop,
+  });
+
+  // Before the writers, so the first write on mount already passes the owner
+  // guard. Claiming on mount when nobody owns the session makes a single player
+  // behave as if the root did it: Chrome builds the notification from the
+  // metadata present when playback starts. Strict mode's second mount claims
+  // again after the release.
   useEffect(() => {
     if (!hasMediaSession()) return;
     if (owner === null) owner = self;
@@ -108,23 +130,28 @@ function useMediaSession(props: MediaSessionProps) {
   const metadataKey = JSON.stringify({ title, artist, album, artwork });
 
   useEffect(() => {
-    if (!hasMediaSession() || owner !== self) return;
+    if (!hasMediaSession()) return;
     const fields: MediaMetadataInit = JSON.parse(metadataKey);
     const hasAny = Boolean(
       fields.title || fields.artist || fields.album || fields.artwork?.length,
     );
-    try {
-      // `null` rather than an "Untitled" card, and rather than keeping the
-      // previous track's title when a playlist moves to an untagged one.
-      navigator.mediaSession.metadata = hasAny
-        ? new MediaMetadata(fields)
-        : null;
-    } catch (error) {
-      // `MediaMetadata` throws `TypeError` on an artwork `src` that is not a
-      // valid URL.
-      navigator.mediaSession.metadata = null;
-      reportError("the metadata", error);
-    }
+    const write = () => {
+      if (owner !== self) return;
+      try {
+        // `null` rather than an "Untitled" card, and rather than keeping the
+        // previous track's title when a playlist moves to an untagged one.
+        navigator.mediaSession.metadata = hasAny
+          ? new MediaMetadata(fields)
+          : null;
+      } catch (error) {
+        // `MediaMetadata` throws `TypeError` on an artwork `src` that is not
+        // a valid URL.
+        navigator.mediaSession.metadata = null;
+        reportError("the metadata", error);
+      }
+    };
+    writers.current.metadata = write;
+    write();
   }, [self, metadataKey]);
 
   // The OS buttons send what the keyboard map sends, so they share its path and
@@ -134,40 +161,46 @@ function useMediaSession(props: MediaSessionProps) {
   const hasNext = props.onNextTrack !== undefined;
 
   useEffect(() => {
-    if (!hasMediaSession() || owner !== self) return;
+    if (!hasMediaSession()) return;
     const offset = (details: MediaSessionActionDetails) =>
       details.seekOffset ?? latest.current.seekOffset ?? DEFAULT_SEEK_OFFSET;
 
-    // Two handlers, not a toggle: the OS says which it wants.
-    setHandler("play", () => store.send({ type: "PLAY" }));
-    setHandler("pause", () => store.send({ type: "PAUSE" }));
-    setHandler("seekbackward", (details) =>
-      store.send({ type: "SET_TIME_BACKWARD", value: offset(details) }),
-    );
-    setHandler("seekforward", (details) =>
-      store.send({ type: "SET_TIME_FORWARD", value: offset(details) }),
-    );
-    setHandler("seekto", ({ seekTime }) => {
-      // `CHANGE_VALUE` has no seekable gate, because the slider sending it is
-      // disabled without a duration. The OS has no such guard: Android shows a
-      // seek bar from this handler's presence alone.
-      if (seekTime === undefined || !(store.duration.get() > 0)) return;
-      store.send({
-        type: "CHANGE_VALUE",
-        component: "timeline",
-        value: seekTime,
+    const write = () => {
+      if (owner !== self) return;
+      // Two handlers, not a toggle: the OS says which it wants.
+      setHandler("play", () => store.send({ type: "PLAY" }));
+      setHandler("pause", () => store.send({ type: "PAUSE" }));
+      setHandler("seekbackward", (details) =>
+        store.send({ type: "SET_TIME_BACKWARD", value: offset(details) }),
+      );
+      setHandler("seekforward", (details) =>
+        store.send({ type: "SET_TIME_FORWARD", value: offset(details) }),
+      );
+      setHandler("seekto", ({ seekTime }) => {
+        // `CHANGE_VALUE` has no seekable gate, because the slider sending it is
+        // disabled without a duration. The OS has no such guard: Android shows a
+        // seek bar from this handler's presence alone.
+        if (seekTime === undefined || !(store.duration.get() > 0)) return;
+        store.send({
+          type: "CHANGE_VALUE",
+          component: "timeline",
+          value: seekTime,
+        });
       });
-    });
-    // Registered only when passed: a handler is what makes the button appear,
-    // and the library has no playlist to derive one from (B2).
-    setHandler(
-      "previoustrack",
-      hasPrevious ? () => latest.current.onPreviousTrack?.() : null,
-    );
-    setHandler(
-      "nexttrack",
-      hasNext ? () => latest.current.onNextTrack?.() : null,
-    );
+      // Registered only when passed: a handler is what makes the button appear,
+      // and the library has no playlist to derive one from (B2).
+      setHandler(
+        "previoustrack",
+        hasPrevious ? () => latest.current.onPreviousTrack?.() : null,
+      );
+      // `null` when absent also removes the previous owner's.
+      setHandler(
+        "nexttrack",
+        hasNext ? () => latest.current.onNextTrack?.() : null,
+      );
+    };
+    writers.current.handlers = write;
+    write();
   }, [self, store, hasPrevious, hasNext]);
 
   // Subscribed outside React, so none of this costs a render. The OS
@@ -175,12 +208,14 @@ function useMediaSession(props: MediaSessionProps) {
   // something it cannot predict happens; `currentSecond` catches nearly every
   // seek, and a seek within one second is off by under a second until the next.
   useEffect(() => {
-    if (!hasMediaSession() || owner !== self) return;
+    if (!hasMediaSession()) return;
     const session = navigator.mediaSession;
+    // Whether a position may be on the session, so that one is cleared rather
+    // than left behind. Assumed on a claim: the previous owner may have set it.
     let hasPosition = false;
 
     const writePosition = () => {
-      if (!hasPositionState()) return;
+      if (owner !== self || !hasPositionState()) return;
       // `0` stands for both "no metadata yet" and `Infinity`, a live stream.
       const duration = store.duration.get();
       const playbackRate = store.rate.get();
@@ -208,18 +243,34 @@ function useMediaSession(props: MediaSessionProps) {
     // Set explicitly: the browser guesses from whichever element it thinks is
     // current, and with two players on a page it guesses wrong.
     const writePlaybackState = () => {
+      if (owner !== self) return;
       session.playbackState = store.paused.get() ? "paused" : "playing";
     };
 
-    writePlaybackState();
-    writePosition();
+    const write = () => {
+      writePlaybackState();
+      writePosition();
+    };
+    writers.current.state = () => {
+      hasPosition = true;
+      write();
+    };
+    write();
     const unsubscribes = [
       store.currentSecond.subscribe(writePosition),
       store.duration.subscribe(writePosition),
       store.rate.subscribe(writePosition),
       store.paused.subscribe(() => {
-        writePlaybackState();
-        writePosition();
+        // Starting playback claims the session. Pausing does not release it:
+        // the lock screen keeps the paused track with a play button.
+        if (!store.paused.get() && owner !== self) {
+          owner = self;
+          writers.current.metadata();
+          writers.current.handlers();
+          writers.current.state();
+          return;
+        }
+        write();
       }),
     ];
     return () => unsubscribes.forEach((unsubscribe) => unsubscribe());

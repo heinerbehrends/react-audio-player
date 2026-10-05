@@ -90,3 +90,26 @@ test("each player's mute button reads its own element", async () => {
     playerAt(1).getByRole("button", { name: labels.mute }),
   ).toBeVisible();
 });
+
+/**
+ * `navigator.mediaSession` is one per page; the session follows whichever player
+ * most recently started. Polled: `audio.paused` flips on the call, and the claim
+ * waits for the `play` event a task later.
+ */
+test("the media session follows the player that played", async () => {
+  const sessionTitle = () =>
+    page.evaluate(() => navigator.mediaSession.metadata?.title);
+
+  await playerAt(1).getByRole("button", { name: labels.playAudio }).click();
+  await expect.poll(sessionTitle).toBe("Test tone 2");
+  await playerAt(1).getByRole("button", { name: labels.pauseAudio }).click();
+  await expect
+    .poll(() => page.evaluate(() => navigator.mediaSession.playbackState))
+    .toBe("paused");
+  // Pausing does not release the session.
+  expect(await sessionTitle()).toBe("Test tone 2");
+
+  await playerAt(0).getByRole("button", { name: labels.playAudio }).click();
+  await expect.poll(sessionTitle).toBe("Test tone 1");
+  await playerAt(0).getByRole("button", { name: labels.pauseAudio }).click();
+});

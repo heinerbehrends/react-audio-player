@@ -77,4 +77,18 @@ Skipped where `setPositionState` is not a function. jsdom covers the
 per-second cadence, the clamp, the live-stream clear and the reset; the E2E spec
 reads `playbackState` through play and pause on both engines and fails on a
 `<MediaSession>` console error. The part is now ~840 B gzipped over the root.
-Claim-on-play remains (phase 4).
+
+**Phase 4 landed (2026-10-05): ownership.** A player starting playback claims
+the session and rewrites metadata, handlers, playback state and position at
+once; pausing keeps it. Every instance stays subscribed and every write returns
+early unless its instance owns the session, so a claim moves no subscriptions:
+each effect keeps its writer in a ref the claim calls. Still one `owner`
+pointer and no list of instances. A claim by a player with no duration clears
+the previous owner's position. jsdom covers the two-player hand-over, handlers
+following the owner, the previous owner going quiet, and the owner's unmount
+clearing the session with the other waiting until it plays;
+`multi-instance.spec.ts` reads the title after playing each in turn, against
+numbered demo titles. ~935 B gzipped over the root in all.
+
+**Remaining to close:** the README section, roadmap and CHANGELOG entries from
+the plan's Documentation list.

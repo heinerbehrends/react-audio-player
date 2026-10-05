@@ -11,7 +11,10 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { MediaSession } from "../../src/MediaSession/MediaSession";
 import { PlayButton } from "../../src/Player/PlayButton";
 import type { AudioFile } from "../../src/Player/PlayerConfigContext";
-import { renderWithStore } from "../store/renderWithStore";
+import {
+  renderWithStore,
+  type RenderWithStoreResult,
+} from "../store/renderWithStore";
 import { TestProviders } from "../testComponents";
 
 // jsdom has no Media Session API. The fake holds the metadata, the playback
@@ -188,7 +191,6 @@ describe("MediaSession", () => {
     expect(constructed).toEqual([]);
   });
 
-  /** The claim-on-play half lands with phase 4. */
   it("leaves the session to the instance that claimed it first", () => {
     renderWithStore(<MediaSession />, { audioFile: tagged });
     renderWithStore(<MediaSession />, {
@@ -442,5 +444,110 @@ describe("MediaSession position and playback state", () => {
     emit("play");
 
     expect(session.playbackState).toBe("playing");
+  });
+});
+
+describe("MediaSession ownership", () => {
+  const title = () => (session.metadata as MediaMetadataInit | null)?.title;
+
+  function renderTwo() {
+    const first = renderWithStore(<MediaSession />, {
+      audioFile: { src: "first.mp3", title: "First" },
+    });
+    const second = renderWithStore(<MediaSession onNextTrack={vi.fn()} />, {
+      audioFile: { src: "second.mp3", title: "Second" },
+    });
+    return { first, second };
+  }
+
+  function play(player: RenderWithStoreResult) {
+    player.element.paused = false;
+    player.emit("play");
+  }
+
+  function pause(player: RenderWithStoreResult) {
+    player.element.paused = true;
+    player.emit("pause");
+  }
+
+  it("follows the player that most recently started, and keeps it paused", () => {
+    const { first, second } = renderTwo();
+    expect(title()).toBe("First");
+
+    play(second);
+    expect(title()).toBe("Second");
+    expect(session.playbackState).toBe("playing");
+
+    pause(second);
+    expect(title()).toBe("Second");
+    expect(session.playbackState).toBe("paused");
+
+    play(first);
+    expect(title()).toBe("First");
+    expect(session.playbackState).toBe("playing");
+  });
+
+  it("hands the handlers over with the session", () => {
+    const { first, second } = renderTwo();
+
+    play(second);
+    expect(handlers.has("nexttrack")).toBe(true);
+    pause(second);
+
+    play(first);
+    // The first passed no `onNextTrack`, so the second's button goes.
+    expect(handlers.has("nexttrack")).toBe(false);
+    second.element.play.mockClear();
+    first.element.play.mockClear();
+    press("play");
+    expect(first.element.play).toHaveBeenCalledTimes(1);
+    expect(second.element.play).not.toHaveBeenCalled();
+  });
+
+  it("stops the previous owner writing", () => {
+    const { first, second } = renderTwo();
+    play(second);
+    session.setPositionState!.mockClear();
+
+    first.element.currentTime = 30;
+    first.emit("timeupdate");
+    pause(first);
+
+    expect(session.setPositionState).not.toHaveBeenCalled();
+    expect(title()).toBe("Second");
+    expect(session.playbackState).toBe("playing");
+  });
+
+  it("clears the previous owner's position when the new one has none", () => {
+    const first = renderWithStore(<MediaSession />, {
+      audioFile: { src: "first.mp3", title: "First" },
+    });
+    const live = renderWithStore(<MediaSession />, {
+      audioFile: { src: "live.mp3", title: "Live" },
+      element: { duration: Infinity },
+    });
+    expect(session.setPositionState!.mock.calls.at(-1)?.[0]).toMatchObject({
+      duration: 100,
+    });
+
+    play(live);
+
+    expect(session.setPositionState!.mock.calls.at(-1)).toEqual([]);
+    first.unmount();
+  });
+
+  it("clears the session when the owner unmounts, and the other waits to play", () => {
+    const { first, second } = renderTwo();
+
+    first.unmount();
+    expect(session.metadata).toBeNull();
+    expect(session.playbackState).toBe("none");
+    expect(handlers.size).toBe(0);
+
+    second.rerender(<MediaSession onNextTrack={vi.fn()} />);
+    expect(session.metadata).toBeNull();
+
+    play(second);
+    expect(title()).toBe("Second");
   });
 });
