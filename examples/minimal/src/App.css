@@ -1,0 +1,119 @@
+/* Scoped to `.minimal`: on the demo page every example shares one document. */
+
+.minimal {
+  --text: #bababa;
+  --controls: #ffffff;
+  --track: #4a4a4a;
+  --focus: #54a3fe;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  container-type: inline-size;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 18px 8px 10px;
+  border-radius: 999px;
+  background: #232323;
+  color: var(--text);
+  color-scheme: dark;
+  font:
+    14px/18px system-ui,
+    sans-serif;
+}
+
+.minimal :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.minimal-play {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--controls);
+  cursor: pointer;
+}
+
+.minimal-play:hover {
+  background: #2e2e2e;
+}
+
+.minimal-play svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+/* A slider root has no height of its own; this gives the track something to
+   measure. */
+.minimal-slider {
+  height: 20px;
+}
+
+.minimal-timeline {
+  flex: 1;
+}
+
+.minimal-volume {
+  flex: none;
+  width: 64px;
+}
+
+/* The track and fill fill the control, so its padding is what makes them thin
+   while the whole 20px stays clickable. */
+.minimal-control {
+  box-sizing: border-box;
+  padding: 9px 0;
+  cursor: pointer;
+}
+
+.minimal-track,
+.minimal-fill {
+  border-radius: 1px;
+}
+
+.minimal-track {
+  background: var(--track);
+}
+
+.minimal-fill {
+  background: var(--controls);
+}
+
+/* The thumb's horizontal position is inline; its vertical one is ours. */
+.minimal-thumb {
+  top: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--controls);
+}
+
+.minimal-time {
+  flex: none;
+  min-width: 3.5em;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* Phones have hardware volume buttons, and iOS ignores a volume set from
+   script, so a narrow player gives the timeline the room instead. */
+@container (max-width: 400px) {
+  .minimal-volume {
+    display: none;
+  }
+}

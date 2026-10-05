@@ -27,6 +27,8 @@
     "vite.config.ts",
     "vitest.config.ts",
     "tsup.config.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "demo/vite.config.ts",
+    "examples/*/vite.config.ts"
   ]
 }

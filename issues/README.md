@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 1 part-done · 82 resolved · 2 rejected**
+**21 open · 1 part-done · 83 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -43,7 +43,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-1 open of 24.
+1 open of 25.
 
 - [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
@@ -66,6 +66,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S17](resolved/surface/S17-playbackrate-current-contradicts-its-own-type.md) `PlaybackRate.Current` contradicts its own type — P2, **breaking**
 - [x] [S18](resolved/surface/S18-react-dom-is-an-unnecessary-peer-dependency.md) `react-dom` is an unnecessary peer dependency — P2
 - [x] [S19](resolved/surface/S19-react-19-untested.md) React 19 untested — P2
+- [x] [S25](resolved/surface/S25-a-class-cannot-size-the-timeline-root.md) A class cannot size the `<Timeline>` root — P2
 - [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
 - [x] [S23](resolved/surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3

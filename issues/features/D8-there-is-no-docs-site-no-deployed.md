@@ -23,3 +23,12 @@ mini-player — each with copyable source, outperforms any three features above.
 **Not blocking.** The README carries every example the beta needs. A deployed
 demo would help the beta announcement more than the beta itself. Tracked from
 **G0**.
+
+## Planned (2026-10-05)
+
+`plans/PLAN-demo-site.md`. Examples live in the repo as standalone Vite projects
+under `examples/`; a demo app renders them against `src/` and deploys to GitHub
+Pages, and each "Open in StackBlitz" link opens the same folder from GitHub, so
+there is one copy of each example and CI covers it. The lineup is minimal (on
+`styles.css`), playlist, podcast and waveform; the waveform needs no library
+change, spiked the same day. Sandbox links wait for the beta publish.

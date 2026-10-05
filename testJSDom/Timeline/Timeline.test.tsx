@@ -168,11 +168,12 @@ describe("Timeline", () => {
       display: "grid",
       gridTemplateColumns: "1fr",
       gridTemplateRows: "1fr",
-      height: "100%",
       position: "relative",
     });
     // S8: `width` moved to `styles.css`, where a class can beat it.
     expect(root.style.width).toBe("");
+    // S25: no height at all, so a class sizes it as it does the other roots.
+    expect(root.style.height).toBe("");
     expect(root).toHaveAttribute("data-part", "root");
   });
 

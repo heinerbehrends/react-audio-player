@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.demo.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+
+    /* What `demo/vite.config.ts` aliases at build time. The examples carry no
+       tsconfig of their own, so this is also what an editor in this repo
+       resolves them with; in a sandbox the package is installed. */
+    "paths": {
+      "react-headless-audio-player": ["./src/index.ts"]
+    },
+
+    /* The examples are what consumers copy, so they get the strict defaults a
+       new Vite project has, not this repo's extra flags. */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["demo/src", "examples/*/src"]
+}
