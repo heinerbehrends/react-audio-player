@@ -13,6 +13,7 @@ export type PlayerStore = {
   currentTime: ReadableAtom<number>;
   currentSecond: ReadableAtom<number>;
   duration: ReadableAtom<number>;
+  isLive: ReadableAtom<boolean>;
   volume: ReadableAtom<number>;
   muted: ReadableAtom<boolean>;
   lastAudibleVolume: ReadableAtom<number>;
@@ -55,6 +56,7 @@ export function createPlayerStore(): PlayerStore {
     currentTime: atom(0),
     currentSecond: atom(0),
     duration: atom(0),
+    isLive: atom(false),
     volume: atom(1),
     muted: atom(false),
     lastAudibleVolume: atom(1),
@@ -150,6 +152,7 @@ export function createPlayerStore(): PlayerStore {
     currentTime: readable(atoms.currentTime),
     currentSecond: readable(atoms.currentSecond),
     duration: readable(atoms.duration),
+    isLive: readable(atoms.isLive),
     volume: readable(atoms.volume),
     muted: readable(atoms.muted),
     lastAudibleVolume: readable(atoms.lastAudibleVolume),

@@ -15,6 +15,7 @@ function createAtoms(): ProjectionAtoms {
     currentTime: atom(0),
     currentSecond: atom(0),
     duration: atom(0),
+    isLive: atom(false),
     volume: atom(1),
     muted: atom(false),
     lastAudibleVolume: atom(1),
@@ -641,5 +642,63 @@ describe("prime", () => {
     element.emit("volumechange");
 
     expect(store.lastAudibleVolume.get()).toBe(0.3);
+  });
+});
+
+/**
+ * D4. `finite()` maps `Infinity` to 0, which is also what `duration` reads
+ * before metadata — so the live case is projected on its own, and from the same
+ * handler as `duration`, so the two cannot move apart.
+ */
+describe("isLive projection", () => {
+  it("is primed true off an unbounded duration and false off a finite one", () => {
+    const live = createAtoms();
+    prime(createMediaElementFake({ duration: Infinity, readyState: 1 }), live);
+    expect(live.isLive.get()).toBe(true);
+    // The flattened duration is unchanged: the badge is a second atom, not a
+    // different number.
+    expect(live.duration.get()).toBe(0);
+
+    const file = createAtoms();
+    prime(createMediaElementFake({ duration: 100 }), file);
+    expect(file.isLive.get()).toBe(false);
+  });
+
+  it("is false before metadata, where duration is NaN", () => {
+    const atoms = createAtoms();
+    prime(createMediaElementFake({ duration: NaN }), atoms);
+    expect(atoms.isLive.get()).toBe(false);
+  });
+
+  it("follows loadedmetadata and durationchange in both directions", () => {
+    const atoms = createAtoms();
+    const element = createMediaElementFake({ duration: NaN });
+    syncFromElement(element, atoms);
+    expect(atoms.isLive.get()).toBe(false);
+
+    element.duration = Infinity;
+    element.emit("loadedmetadata");
+    expect(atoms.isLive.get()).toBe(true);
+
+    // A recording that finished reports a length and stops being live.
+    element.duration = 3600;
+    element.emit("durationchange");
+    expect(atoms.isLive.get()).toBe(false);
+  });
+
+  it("clears on a src swap away from a stream", () => {
+    const atoms = createAtoms();
+    const element = createMediaElementFake({
+      duration: Infinity,
+      readyState: 1,
+    });
+    syncFromElement(element, atoms);
+    expect(atoms.isLive.get()).toBe(true);
+
+    // The media load algorithm resets `duration` to NaN before `emptied`.
+    element.duration = NaN;
+    element.readyState = 0;
+    element.emit("emptied");
+    expect(atoms.isLive.get()).toBe(false);
   });
 });

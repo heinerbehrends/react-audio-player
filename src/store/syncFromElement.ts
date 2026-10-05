@@ -19,6 +19,13 @@ export type ProjectionAtoms = {
   currentTime: Atom<number>;
   currentSecond: Atom<number>;
   duration: Atom<number>;
+  /**
+   * Whether the element reports an unbounded duration — a live stream.
+   * Projected on its own because `duration` flattens `Infinity` to `0`, which
+   * is also what it reads before metadata, so downstream the two cannot be
+   * told apart (D4).
+   */
+  isLive: Atom<boolean>;
   volume: Atom<number>;
   muted: Atom<boolean>;
   lastAudibleVolume: Atom<number>;
@@ -84,8 +91,14 @@ const projectTime: SyncHandler = (element, atoms) => {
   atoms.currentSecond.set(Math.floor(element.currentTime));
 };
 
+/**
+ * `duration` and `isLive` move together: both are read off `element.duration`,
+ * and `isLive` is the one fact `finite()` erases. `NaN` before metadata is not
+ * live; only `Infinity` is.
+ */
 const projectDuration: SyncHandler = (element, atoms) => {
   atoms.duration.set(finite(element.duration));
+  atoms.isLive.set(element.duration === Infinity);
 };
 
 /** Never toggled: always read off the element. */
@@ -140,7 +153,7 @@ export function prime(
   atoms.paused.set(element.paused);
   atoms.currentTime.set(element.currentTime);
   atoms.currentSecond.set(Math.floor(element.currentTime));
-  atoms.duration.set(finite(element.duration));
+  projectDuration(element, atoms, pinned);
   atoms.readyState.set(element.readyState);
   const unusable = isUnusable(element);
   // Cleared when the element is usable, so a `src` swap away from a broken
@@ -161,8 +174,8 @@ export const HANDLERS = {
   // leave the atom stale for up to ~250 ms, with no event for the slider's
   // retain-until-changed rule to clear on.
   seeked: projectTime,
-  loadedmetadata: (element, atoms) => {
-    atoms.duration.set(finite(element.duration));
+  loadedmetadata: (element, atoms, pinned) => {
+    projectDuration(element, atoms, pinned);
     atoms.readyState.set(element.readyState);
     atoms.loadState.set("ready");
   },

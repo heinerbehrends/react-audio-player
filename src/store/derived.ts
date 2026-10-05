@@ -101,6 +101,24 @@ export function useIsSeekable(): boolean {
   return duration > 0;
 }
 
+/**
+ * Whether the track is a live stream — the element reports an unbounded
+ * duration. For a "LIVE" badge, hiding the clock, or swapping the timeline for
+ * a "listen live" control.
+ *
+ * Not the inverse of `useIsSeekable()`, which is also false before metadata:
+ * that one says a position cannot be named *yet*, this one says it never will
+ * be. Gate the timeline on the first and the badge on the second.
+ *
+ * False before metadata, and false again after a `src` swap to an ordinary
+ * file. A stream that later reports a finite duration — a recording that
+ * finished — clears it on `durationchange`.
+ */
+export function useIsLive(): boolean {
+  const store = usePlayerStore();
+  return useStore(store.isLive);
+}
+
 const MEDIA_ERROR_REASONS: Record<number, MediaErrorReason> = {
   1: "aborted",
   2: "network",

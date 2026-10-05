@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 1 part-done · 86 resolved · 2 rejected**
+**19 open · 0 part-done · 89 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -43,9 +43,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-1 open of 27.
+0 open of 27.
 
-- [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
 - [x] [S3](resolved/surface/S3-no-use-client-directive-breaks-the-next.md) 'No `"use client"` directive — breaks the Next.js App Router' — P0
@@ -68,6 +67,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S19](resolved/surface/S19-react-19-untested.md) React 19 untested — P2
 - [x] [S25](resolved/surface/S25-a-class-cannot-size-the-timeline-root.md) A class cannot size the `<Timeline>` root — P2
 - [x] [S27](resolved/surface/S27-the-time-readouts-depend-on-a-toggle-they-may-not-have.md) The time readouts depend on a toggle they may not have — P2, **breaking**
+- [x] [S20](resolved/surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
 - [x] [S23](resolved/surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
@@ -75,7 +75,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-14 open of 28.
+13 open of 28.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
@@ -85,7 +85,6 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [ ] [B8](features/B8-codec-fallback-via-source.md) Codec fallback via `<source>` — **breaking**
 - [ ] [B9](features/B9-buffered-ranges.md) Buffered ranges
 - [ ] [D2](features/D2-refs-on-the-parts-additive-but-it.md) Refs on the parts. — additive, but it touches every public prop type
-- [ ] [D4](features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
 - [ ] [D5](features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one
 - [ ] [D6](features/D6-the-podcast-surface-chapters-and-markers-first.md) The podcast surface: chapters and markers first, transcript sync second
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
@@ -105,13 +104,13 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop
 - [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
+- [x] [D4](resolved/features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
 
 ## Architecture & style
 
-2 open of 15.
+1 open of 15.
 
 - [ ] [C12](architecture/C12-the-committed-value-reset-needs-an-effect.md) The committed-value reset needs an effect and a lint suppression — P3
-- [~] [C8](architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2, part-done
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
 - [x] [C2](resolved/architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1
 - [x] [C3](resolved/architecture/C3-valuefromstoreref-its-effect-mirror-a-value-the.md) `valueFromStoreRef` + its effect mirror a value the store gives free — P1
@@ -119,6 +118,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [C5](resolved/architecture/C5-the-resizeobserver-effect-binds-a-node-it.md) The ResizeObserver effect binds a node it can never re-bind — P1
 - [x] [C6](resolved/architecture/C6-time-is-typed-as-a-component-and.md) `Time` is typed as a component and is not one — P1
 - [x] [C7](resolved/architecture/C7-positionof-duplicates-getclientxy-byte-for-byte.md) `positionOf` duplicates `getClientXY` byte-for-byte — P2
+- [x] [C8](resolved/architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2
 - [x] [C9](resolved/architecture/C9-the-drag-effect-registers-touchcancel-but-not.md) The drag effect registers `touchcancel` but not `touchend` — P2
 - [x] [C11](resolved/architecture/C11-positionof-reads-an-empty-touches-list-on.md) `positionOf` reads an empty `touches` list on `touchend` — P2
 - [x] [C10](resolved/architecture/C10-getprogress-takes-sliderlength-and-never-uses-it.md) `getProgress` takes `sliderLength` and never uses it arithmetically — P3

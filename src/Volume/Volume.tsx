@@ -4,6 +4,7 @@ import {
   calculateProgressStyle,
   progressStyles,
   rootStylesFor,
+  sliderCustomProperties,
 } from "../Slider/calculateStyle";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
@@ -58,6 +59,7 @@ function VolumeContainer({
         {...props}
         style={{
           ...rootStylesFor(props.hidden),
+          ...sliderCustomProperties(slider),
           ...props.style,
         }}
       >
@@ -93,7 +95,9 @@ type VolumeComponent = React.FC<VolumeProps> & {
  *
  * Carries `data-part="root"`, `data-state="idle|dragging"` and
  * `data-orientation="horizontal|vertical"` — the axis, where a root-level layout
- * rule can read it; `aria-orientation` is on `.Control`, a child.
+ * rule can read it; `aria-orientation` is on `.Control`, a child. Also sets
+ * `--progress` and `--offset` as custom properties, for fills the inline
+ * transform cannot draw.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got

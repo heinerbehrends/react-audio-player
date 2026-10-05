@@ -3,6 +3,7 @@ import {
   progressStyles,
   calculateProgressStyle,
   rootStylesFor,
+  sliderCustomProperties,
 } from "../Slider/calculateStyle";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
@@ -86,6 +87,7 @@ function PlaybackRateSliderRoot({
         // relative`, which the thumb's `transform` is placed against.
         style={{
           ...rootStylesFor(props.hidden),
+          ...sliderCustomProperties(slider),
           ...props.style,
         }}
       >
@@ -115,7 +117,9 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  *
  * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
  * semantics are on `.Control` (A11). Carries `data-part="root"`,
- * `data-state="idle|dragging"` and `data-orientation="horizontal"`.
+ * `data-state="idle|dragging"` and `data-orientation="horizontal"`, and sets
+ * `--progress` and `--offset` as custom properties, for fills the inline
+ * transform cannot draw.
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;

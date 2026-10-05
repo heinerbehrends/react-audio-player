@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
-import { useStore } from "../store/atom";
 import {
   useComposedButtonProps,
   type ButtonPropsBag,
@@ -69,13 +68,19 @@ export function usePlaybackRateChangeProps<
   } as ButtonPropsBag<P>;
 }
 
-// Subscribes to `rate` only to supply a value at click time, so every
-// `ratechange` re-renders the button. `store.rate.get()` in the handler would do
-// the same with no subscription (C8).
+// The same two actions the `<` and `>` keys send. They read the rate off the
+// element when the click lands, so there is nothing to subscribe to — a
+// subscription to `rate` re-rendered the button on every `ratechange` — and
+// they clamp to `RATE_BOUNDS`, so the button, the keys and the slider arrows
+// all stop at the same two ends (C8).
 function useChangePlaybackRate(amount: number) {
-  const store = usePlayerStore();
-  const rate = useStore(store.rate);
-  const { send } = store;
+  const { send } = usePlayerStore();
+  const value = Math.abs(amount);
 
-  return () => send({ type: "SET_PLAYBACK_RATE", playbackRate: rate + amount });
+  return () =>
+    send(
+      amount >= 0
+        ? { type: "INCREASE_PLAYBACK_RATE", value }
+        : { type: "DECREASE_PLAYBACK_RATE", value },
+    );
 }

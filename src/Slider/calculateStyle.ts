@@ -48,6 +48,35 @@ export function calculateProgressStyle(
 }
 
 /**
+ * The two numbers behind the transforms, as custom properties for the slider
+ * root: `--progress`, the filled fraction as a unitless `0`–`1`, and
+ * `--offset`, the thumb's position along the track in `px`, measured as the
+ * thumb's own transform is — from the left, or from the top of a vertical
+ * slider. Set on the root so they inherit to every part.
+ *
+ * An addition, not a replacement: the inline transforms stay the default and
+ * need no stylesheet. These are for what a transform cannot draw —
+ * `width: calc(var(--progress) * 100%)` keeps a `border-radius` round where
+ * `scaleX()` squashes it, and a gradient or a conic dial reads the fraction
+ * directly (S20).
+ *
+ * Strings, not numbers: React appends `px` to a bare number on a known
+ * property and never on a custom one, so a string keeps both the same whatever
+ * React decides. Cast because `React.CSSProperties` has no key for a custom
+ * property.
+ */
+export function sliderCustomProperties(
+  context: StyleContext,
+): React.CSSProperties {
+  // Zero length means the track has not been measured yet (C10).
+  const progress = context.sliderLength === 0 ? 0 : getProgress(context);
+  return {
+    "--progress": String(progress),
+    "--offset": `${getOffset(context)}px`,
+  } as React.CSSProperties;
+}
+
+/**
  * The fraction of the track that is filled. Direction is `transformOrigin`'s
  * job, so this cannot reuse `getOffset`, which counts vertical pixels from the
  * top and therefore runs opposite to the value.

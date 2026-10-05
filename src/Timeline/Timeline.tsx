@@ -4,6 +4,7 @@ import {
   calculateProgressStyle,
   progressStyles,
   rootStylesFor,
+  sliderCustomProperties,
 } from "../Slider/calculateStyle";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderControl } from "../Slider/SliderControl";
@@ -79,6 +80,7 @@ const TimelineRoot: React.FC<TimelineProps> = ({
         {...props}
         style={{
           ...rootStylesFor(props.hidden),
+          ...sliderCustomProperties(slider),
           ...props.style,
         }}
       >
@@ -112,7 +114,9 @@ type TimelineComponent = React.FC<TimelineProps> & {
  *
  * Carries `data-part="root"`, `data-state="idle|dragging"` and
  * `data-orientation="horizontal"`. All three sliders share their part names, so
- * scope your selectors.
+ * scope your selectors. Also sets `--progress` (the filled fraction, `0`–`1`)
+ * and `--offset` (the thumb position, in `px`) as custom properties, for fills
+ * the inline transform cannot draw.
  *
  * @example
  * ```jsx

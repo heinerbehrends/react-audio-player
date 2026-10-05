@@ -59,6 +59,20 @@ describe("useAudioPlayer", () => {
     expect(errored.result.current.playerState).toBe("error");
   });
 
+  it("reports isLive for an unbounded duration only", () => {
+    expect(
+      setup(useAudioPlayer, { duration: Infinity }).result.current.isLive,
+    ).toBe(true);
+    expect(setup(useAudioPlayer, { duration: 120 }).result.current.isLive).toBe(
+      false,
+    );
+    // Before metadata the duration is NaN: loading, not live.
+    expect(
+      setup(useAudioPlayer, { readyState: 0, duration: NaN }).result.current
+        .isLive,
+    ).toBe(false);
+  });
+
   /**
    * `isDisabled` and `isSeekable` are inlined here rather than calling the two
    * hooks, so they can drift from `useIsDisabled` / `useIsSeekable`. These rows

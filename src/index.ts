@@ -27,6 +27,7 @@ export {
 export {
   useIsAtEnd,
   useIsBuffering,
+  useIsLive,
   useIsSeekable,
   useAudioError,
   useTimeDisplay,

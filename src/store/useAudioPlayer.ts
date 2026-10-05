@@ -46,6 +46,11 @@ export type AudioPlayerState = {
    */
   isSeekable: boolean;
   /**
+   * The track is a live stream: the element reports an unbounded duration.
+   * `isSeekable` is false for it too, and stays false — see `useIsLive()`.
+   */
+  isLive: boolean;
+  /**
    * Playback wants to advance and cannot — the spinner condition. Independent
    * of `playerState`, which stays `"playing"` through a stall because the
    * player is still in play mode.
@@ -80,6 +85,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const store = usePlayerStore();
 
   const duration = useStore(store.duration);
+  const isLive = useStore(store.isLive);
   const paused = useStore(store.paused);
   const volume = useStore(store.volume);
   const muted = useStore(store.muted);
@@ -134,6 +140,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     // `useIsDisabled` / `useIsSeekable`.
     isDisabled: loadState === "error",
     isSeekable: duration > 0,
+    isLive,
     isBuffering:
       loadState === "ready" && !paused && readyState < HAVE_FUTURE_DATA,
     error,

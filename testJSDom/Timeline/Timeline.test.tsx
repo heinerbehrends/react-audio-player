@@ -194,6 +194,29 @@ describe("Timeline", () => {
     expect(screen.getByTestId("drag")).toBeInTheDocument();
   });
 
+  /**
+   * S20: the numbers behind the transforms, as custom properties on the root
+   * where every part inherits them.
+   */
+  it("exposes the fill fraction and the thumb offset as custom properties", () => {
+    const { container, element, emit } = renderInPlayer(
+      <Timeline>
+        <Timeline.Control>track</Timeline.Control>
+      </Timeline>,
+      { element: { duration: 100 } },
+    );
+    const root = container.querySelector('[data-part="root"]') as HTMLElement;
+
+    expect(root.style.getPropertyValue("--progress")).toBe("0");
+    expect(root.style.getPropertyValue("--offset")).toBe("0px");
+
+    element.currentTime = 25;
+    emit("timeupdate");
+
+    expect(root.style.getPropertyValue("--progress")).toBe("0.25");
+    expect(root.style.getPropertyValue("--offset")).toMatch(/^[1-9][\d.]*px$/);
+  });
+
   // The timeline's max is the duration, so it takes no `maxValue` prop.
   it("takes its range from the duration atom", () => {
     const { emit, element } = renderInPlayer(

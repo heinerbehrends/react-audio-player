@@ -6,6 +6,7 @@ import {
   progressStyles,
   containerStyles,
   rootStyles,
+  sliderCustomProperties,
   type StyleContext,
 } from "../../src/Slider/calculateStyle";
 
@@ -253,5 +254,63 @@ describe("an unmeasured track", () => {
     expect(
       calculateProgressStyle({ ...context, sliderLength: 1000 }).transform,
     ).toBe("scaleX(0.3)");
+  });
+});
+
+/**
+ * S20. The custom properties are the numbers behind the two transforms, so they
+ * have to agree with them — and be strings, so React never appends a unit.
+ */
+describe("sliderCustomProperties", () => {
+  const context: StyleContext = {
+    value: 0.25,
+    minValue: 0,
+    maxValue: 1,
+    sliderLength: 200,
+    orientation: "horizontal",
+  };
+
+  it("exposes the fill fraction unitless and the offset in px", () => {
+    expect(sliderCustomProperties(context)).toEqual({
+      "--progress": "0.25",
+      "--offset": "50px",
+    });
+  });
+
+  it("agrees with the fill and thumb transforms", () => {
+    expect(calculateProgressStyle(context).transform).toBe("scaleX(0.25)");
+    expect(calculateDragStyle(context).transform).toBe(
+      "translate(calc(50px - 50%), 0)",
+    );
+  });
+
+  // Away from 0.5, the fixed point where an inverted and a non-inverted rule
+  // agree, so this pins that the offset runs the way the thumb does.
+  it("measures a vertical offset from the top, as the thumb does", () => {
+    const vertical = { ...context, orientation: "vertical" as const };
+    const offset = sliderCustomProperties(vertical) as Record<string, string>;
+
+    expect(calculateDragStyle(vertical).transform).toBe(
+      `translate(0, calc(${offset["--offset"]} - 50%))`,
+    );
+    expect(offset["--progress"]).toBe("0.25");
+  });
+
+  it("maps through the slider's own range", () => {
+    expect(
+      sliderCustomProperties({
+        ...context,
+        minValue: 0.5,
+        maxValue: 2.5,
+        value: 1.5,
+      }),
+    ).toHaveProperty("--progress", "0.5");
+  });
+
+  it("reads zero before the track is measured", () => {
+    expect(sliderCustomProperties({ ...context, sliderLength: 0 })).toEqual({
+      "--progress": "0",
+      "--offset": "0px",
+    });
   });
 });

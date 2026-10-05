@@ -2,7 +2,7 @@
 id: C8
 title: "`ChangePlaybackRate` subscribes to read once, and bypasses the clamp"
 epic: architecture
-status: partial
+status: resolved
 severity: P2
 origin: review
 breaking: false
@@ -28,6 +28,19 @@ the same day.
 
 ## Resolution
 
-**Shipped** — The write path clamps `playbackRate` to the browser's own range, so no rate write can throw. Verified by 9 clamp tests, including the two `NaN`-before-metadata paths
+**Shipped** (2026-10-05) — Both halves, with one change. `PlaybackRate.Change`
+now sends `INCREASE_PLAYBACK_RATE` / `DECREASE_PLAYBACK_RATE`, the two actions
+the `<` and `>` keys already use. They read the rate off the element at click
+time, so the subscription to `rate` is gone and a `ratechange` no longer
+re-renders the button; and they clamp to `RATE_BOUNDS`, so the button stops at
+0.5 and 4 exactly as the keys and the slider arrows do — which is what its
+JSDoc and the README had claimed all along. `PlaybackRate.Set` stays unclamped
+to the library range on purpose: it names an explicit rate, and the write path
+clamps to the browser's own (G2). The contract is now one sentence in the
+README's Playback rate section.
 
-**Verified by** —
+**Verified by** — `clamps … to the library's 0.5–4 range, like the < and >
+keys` and `does not re-render on a ratechange` in
+`testJSDom/PlaybackRate/ChangePlaybackRate.test.tsx`; the existing `adds to the
+rate the element reports after a ratechange` still passes, now because the
+handler reads the element rather than because the button subscribed.

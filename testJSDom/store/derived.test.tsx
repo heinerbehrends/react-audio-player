@@ -6,6 +6,7 @@ import {
   useIsAtEnd,
   useIsBuffering,
   useIsDisabled,
+  useIsLive,
   useIsSeekable,
   usePlayerState,
   useTimeDisplay,
@@ -201,6 +202,59 @@ describe("useIsSeekable", () => {
       duration: 100,
     });
     expect(errored.result.current).toBe(true);
+  });
+});
+
+/**
+ * D4. `finite()` flattens `Infinity` to 0, which is also what `duration` reads
+ * before metadata, so the live case is projected on its own rather than derived.
+ */
+describe("useIsLive", () => {
+  it("is true for an unbounded duration and false for a finite one", () => {
+    expect(
+      renderDerived(useIsLive, { duration: Infinity }).result.current,
+    ).toBe(true);
+    expect(renderDerived(useIsLive, { duration: 100 }).result.current).toBe(
+      false,
+    );
+  });
+
+  it("is false before metadata — that is loading, not live", () => {
+    expect(renderDerived(useIsLive, { duration: NaN }).result.current).toBe(
+      false,
+    );
+  });
+
+  it("follows a durationchange in both directions", () => {
+    const harness = renderDerived(useIsLive, { duration: NaN });
+    expect(harness.result.current).toBe(false);
+
+    drive(harness, "durationchange", { duration: Infinity });
+    expect(harness.result.current).toBe(true);
+
+    // A recording that finished: the stream reports a length and stops being live.
+    drive(harness, "durationchange", { duration: 3600 });
+    expect(harness.result.current).toBe(false);
+  });
+
+  /**
+   * Not the inverse of `useIsSeekable`: both are false before metadata, and a
+   * stream splits them. The badge and the gate are different questions.
+   */
+  it("is not the inverse of useIsSeekable", () => {
+    const useBoth = () => ({ live: useIsLive(), seekable: useIsSeekable() });
+
+    const stream = renderDerived(useBoth, {
+      duration: Infinity,
+      readyState: 4,
+    });
+    expect(stream.result.current).toEqual({ live: true, seekable: false });
+
+    const loading = renderDerived(useBoth, { duration: NaN });
+    expect(loading.result.current).toEqual({ live: false, seekable: false });
+
+    const file = renderDerived(useBoth, { duration: 100 });
+    expect(file.result.current).toEqual({ live: false, seekable: true });
   });
 });
 

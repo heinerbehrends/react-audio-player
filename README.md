@@ -537,8 +537,10 @@ all three at once and receives raw seconds. See
 
 `<PlaybackRate.Set>` is **not** clamped to the slider's range: it names an
 explicit rate, so `rate={8}` sets 8 where `<PlaybackRateSlider>` stops at 4. The
-write path clamps to the element's own 0–16, so nothing throws. `.Change` and the
-`<` `>` keys clamp to the library's 0.5–4.
+write path clamps to what the browser accepts — `0`, or 0.0625–16 — so nothing
+throws. `.Change` and the `<` `>` keys step through the same two actions, so
+both clamp to the library's 0.5–4 and read the rate off the element as they
+go.
 
 ### Playback rate slider
 
@@ -718,6 +720,44 @@ transform does not put the background on top.
 track measures zero, which leaves the slider silently inert. Each slider's own
 tooltip repeats this, since it is the mistake that produces no error at all.
 
+### Custom properties
+
+Every slider root also carries the two numbers behind those transforms, as CSS
+custom properties that every part inherits:
+
+| Property     | Value                                                         |
+| ------------ | ------------------------------------------------------------- |
+| `--progress` | The filled fraction, unitless `0`–`1`                         |
+| `--offset`   | The thumb's position along the track, in `px`, from the start |
+
+They are an addition, not a replacement: the inline transforms stay the default
+and work with no stylesheet. Reach for these when a transform cannot draw what
+you want. `scaleX()` squashes a `border-radius` along with the fill; a width
+does not:
+
+```css
+.player [data-part="progress"] {
+  transform: none;
+  width: calc(var(--progress) * 100%);
+  border-radius: 999px;
+}
+```
+
+A gradient that stays put while the fill grows, or a conic dial, reads the
+fraction the same way:
+
+```css
+.player [data-part="thumb"] {
+  background: conic-gradient(
+    rebeccapurple calc(var(--progress) * 360deg),
+    transparent 0
+  );
+}
+```
+
+`--offset` runs the way the thumb's own transform does: from the left, or from
+the top of a vertical slider. Both read `0` until the track has been measured.
+
 ## Props hooks
 
 For when you already have a styled `<button>` of your own and want this
@@ -797,18 +837,19 @@ function TrackInfo() {
 }
 ```
 
-| Returns                                           |                                                                    |
-| ------------------------------------------------- | ------------------------------------------------------------------ |
-| `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                     |
-| `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                    |
-| `volumeState`                                     | `"muted" \| "low" \| "high"`                                       |
-| `isDisabled`                                      | The track is errored. Loading does not disable — see below.        |
-| `isSeekable`                                      | A position on the track can be named: the duration is known.       |
-| `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.      |
-| `error`                                           | The last failure, or `null`. See `useAudioError()`.                |
-| `play`, `pause`, `toggle`                         |                                                                    |
-| `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                   |
-| `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. |
+| Returns                                           |                                                                       |
+| ------------------------------------------------- | --------------------------------------------------------------------- |
+| `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                        |
+| `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                       |
+| `volumeState`                                     | `"muted" \| "low" \| "high"`                                          |
+| `isDisabled`                                      | The track is errored. Loading does not disable — see below.           |
+| `isSeekable`                                      | A position on the track can be named: the duration is known.          |
+| `isLive`                                          | The track is a live stream: an unbounded duration. See `useIsLive()`. |
+| `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.         |
+| `error`                                           | The last failure, or `null`. See `useAudioError()`.                   |
+| `play`, `pause`, `toggle`                         |                                                                       |
+| `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                      |
+| `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does.    |
 
 The control methods keep the same identity for the lifetime of the player, so
 they are safe to put in a dependency array.
@@ -890,6 +931,35 @@ Two things this catches that a load-state check does not:
 
 The loading state is still announced — on the accessible name, which reads
 "Loading audio" — rather than by making the button unavailable.
+
+### `useIsLive()`
+
+Whether the track is a live stream — the element reports an unbounded duration.
+For a "LIVE" badge, hiding the clock, or swapping the timeline for a "listen
+live" control:
+
+```jsx
+function Scrubber() {
+  const live = useIsLive();
+
+  if (live) return <span data-live>LIVE</span>;
+
+  return (
+    <Timeline>
+      <Timeline.Control />
+    </Timeline>
+  );
+}
+```
+
+It is not the inverse of `useIsSeekable()`. Both are false before metadata
+arrives: that one says a position cannot be named _yet_, this one says it never
+will be. Gate the timeline on the first and the badge on the second.
+
+`duration` still reads `0` for a live stream, as it does before metadata — so
+this hook is the only place the two are told apart. A stream that later reports
+a finite length, such as a recording that finished, stops being live on
+`durationchange`.
 
 ### `useIsVolumeAvailable()`
 
@@ -1036,7 +1106,6 @@ Additive, in the order they are likely to land. None changes what ships today.
 
 - `<source>` fallback, with the `AudioFile` shape shown under
   [`<AudioPlayer>`](#audioplayer)
-- An `isLive` signal for unbounded durations
 - A `ref` on every part, for focus management and measurement; `audioRef`
   reaches the `<audio>` element today
 - Playlist components, skip and loop (`onEnded` already supports a userland
@@ -1067,10 +1136,9 @@ you supply a [`labels.time`](#localisation) entry.
 
 Live streams play. Play, pause, volume, mute and rate all work on an unbounded
 duration; only the timeline and the seek buttons are disabled, through
-[`useIsSeekable()`](#useisseekable). What is missing is a name for the state:
-`duration` reads `0` for a live stream exactly as it does before metadata, so
-gate any UI that needs a length on `useAudioPlayer().duration > 0` and hide the
-timeline on `useIsSeekable()`.
+[`useIsSeekable()`](#useisseekable), and [`useIsLive()`](#useislive) names the
+state so you can show a badge or swap the scrubber out. `duration` reads `0`
+for a live stream, as it does before metadata.
 
 ## License
 

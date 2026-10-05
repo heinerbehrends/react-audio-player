@@ -2,7 +2,7 @@
 id: D4
 title: "Live streams are a supported case documented as an unsupported one"
 epic: features
-status: open
+status: resolved
 severity: none
 origin: demand
 breaking: false
@@ -32,3 +32,21 @@ Requirements paragraph from a limitation into a branch is part of **G3**; the
 
 **README paragraph shipped** (2026-10-01, with G3). The `isLive` projection
 stays open and is on the roadmap.
+
+## Resolution
+
+**Shipped** (2026-10-05) — A boolean projection, not the raw value: `isLive`
+is a new atom written by `projectDuration`, which `prime`, `loadedmetadata` and
+`durationchange` all go through, so `duration` and `isLive` cannot move apart.
+`Infinity` sets it; `NaN` before metadata does not. Read it through
+`useIsLive()`, or as `isLive` on `useAudioPlayer()`. Both are documented, and
+the README's Requirements paragraph now points at the hook instead of at
+`duration > 0`. `useIsSeekable()` is unchanged and still gates the timeline:
+the two are different questions, and the docs say so.
+
+**Verified by** — `isLive projection` in `testJSDom/store/syncFromElement.test.ts`
+(primed, before metadata, both directions on `durationchange` and
+`loadedmetadata`, cleared on a `src` swap); `useIsLive` in
+`testJSDom/store/derived.test.tsx`, including the row that pins it is not the
+inverse of `useIsSeekable`; and `reports isLive for an unbounded duration only`
+in `testJSDom/store/useAudioPlayer.test.tsx`.
