@@ -164,7 +164,8 @@ describe("handleSideEffect", () => {
    * Browsers throw on out-of-range media writes rather than clamping. Measured
    * in Chromium: `volume` outside [0, 1] raises IndexSizeError, `playbackRate`
    * other than `0` or [0.0625, 16] raises NotSupportedError, and a non-finite
-   * `currentTime` raises TypeError. Firefox clamps the rate silently (G2).
+   * `currentTime` raises TypeError. Firefox clamps the rate silently (G2), and
+   * cuts the sound outside 0.125–8 (C14).
    *
    * The sliders clamp by construction, so this was unreachable until
    * `useAudioPlayer` exposed `setVolume`, `setRate` and `seek` to arbitrary
@@ -187,60 +188,39 @@ describe("handleSideEffect", () => {
       expect(audioElement.volume).toBe(0);
     });
 
-    it("clamps a negative playback rate to the browser's floor", () => {
+    /**
+     * C14. Every rate write clamps to `RATE_LIMITS`, 0.125–8: the widest range
+     * that stays audible in Firefox, and inside Chromium's 0.0625–16, so it
+     * also covers G2's throwing values.
+     */
+    it.each([
+      ["a negative rate", -1, 0.125],
+      ["0, which pause replaces", 0, 0.125],
+      ["Chromium's throwing 0.01", 0.01, 0.125],
+      ["Firefox's silent 0.1", 0.1, 0.125],
+      ["Firefox's silent 9", 9, 8],
+      ["Chromium's throwing 16.01", 16.01, 8],
+      ["100", 100, 8],
+    ])("clamps %s into 0.125–8", (_name, rate, expected) => {
       handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: -1 },
+        { type: "SET_PLAYBACK_RATE", playbackRate: rate },
         audioElement,
       );
-      expect(audioElement.playbackRate).toBe(0);
-    });
-
-    it("clamps a playback rate above the browser's ceiling", () => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 100 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(16);
-    });
-
-    // The probes from G2: Chromium accepts `0`, `0.0625` and `16`, and throws
-    // on `0.01` and `16.01`.
-    it("clamps a non-zero rate below 1/16 up to Chromium's floor", () => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 0.01 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(0.0625);
-    });
-
-    it("keeps 0, the one rate below the floor that does not throw", () => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 0 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(0);
+      expect(audioElement.playbackRate).toBe(expected);
     });
 
     it("passes the floor and the ceiling through unchanged", () => {
       handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 0.0625 },
+        { type: "SET_PLAYBACK_RATE", playbackRate: 0.125 },
         audioElement,
       );
-      expect(audioElement.playbackRate).toBe(0.0625);
+      expect(audioElement.playbackRate).toBe(0.125);
 
       handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 16 },
+        { type: "SET_PLAYBACK_RATE", playbackRate: 8 },
         audioElement,
       );
-      expect(audioElement.playbackRate).toBe(16);
-    });
-
-    it("clamps a rate just above the ceiling", () => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 16.01 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(16);
+      expect(audioElement.playbackRate).toBe(8);
     });
 
     it("clamps a slider commit below the floor too", () => {
@@ -248,15 +228,15 @@ describe("handleSideEffect", () => {
         { type: "CHANGE_VALUE", component: "playbackRate", value: 0.05 },
         audioElement,
       );
-      expect(audioElement.playbackRate).toBe(0.0625);
+      expect(audioElement.playbackRate).toBe(0.125);
     });
 
     /**
-     * The library's own 0.5–4 policy is narrower than the browser's, and is
+     * The slider's 0.5–4 default is narrower than `RATE_LIMITS`, and is
      * deliberately not enforced here — `<PlaybackRate.Set rate={8}>` names an
      * explicit rate and the write path should not silently override it.
      */
-    it("does not impose the slider's 0.5-4 policy on an explicit rate", () => {
+    it("does not impose the slider's 0.5–4 default on an explicit rate", () => {
       handleSideEffect(
         { type: "SET_PLAYBACK_RATE", playbackRate: 8 },
         audioElement,
@@ -330,22 +310,69 @@ describe("handleSideEffect", () => {
       expect(audioElement.volume).toBe(0.02);
     });
 
-    it("clamps INCREASE_PLAYBACK_RATE at 4", () => {
-      audioElement.playbackRate = 3.99;
+    it("clamps INCREASE_PLAYBACK_RATE at 8", () => {
+      audioElement.playbackRate = 7.99;
       handleSideEffect(
         { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
         audioElement,
       );
-      expect(audioElement.playbackRate).toBe(4);
+      expect(audioElement.playbackRate).toBe(8);
     });
 
-    it("clamps DECREASE_PLAYBACK_RATE at 0.5", () => {
-      audioElement.playbackRate = 0.51;
+    it("clamps DECREASE_PLAYBACK_RATE at 0.125", () => {
+      audioElement.playbackRate = 0.15;
       handleSideEffect(
         { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
         audioElement,
       );
-      expect(audioElement.playbackRate).toBe(0.5);
+      expect(audioElement.playbackRate).toBe(0.125);
+    });
+
+    /**
+     * C14. A step stops at its bound but never moves against its direction:
+     * clamping a rate already past the bound used to turn an increase at 8x
+     * into a drop to 4x.
+     */
+    it.each([
+      [
+        "an increase past a narrower slider's ceiling",
+        "INCREASE",
+        3,
+        { maxValue: 2 },
+      ],
+      [
+        "a decrease below a narrower slider's floor",
+        "DECREASE",
+        0.75,
+        { minValue: 1 },
+      ],
+      ["an increase from a rate set above the limits", "INCREASE", 16, {}],
+      ["a decrease from a rate set below the limits", "DECREASE", 0.0625, {}],
+    ] as const)("leaves %s where it is", (_name, direction, from, bounds) => {
+      audioElement.playbackRate = from;
+      handleSideEffect(
+        { type: `${direction}_PLAYBACK_RATE`, value: 0.25, ...bounds },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(from);
+    });
+
+    it("still moves a rate past the bound back towards it", () => {
+      audioElement.playbackRate = 16;
+      handleSideEffect(
+        { type: "DECREASE_PLAYBACK_RATE", value: 0.25 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(8);
+    });
+
+    it("does nothing on a step of 0", () => {
+      audioElement.playbackRate = 8;
+      handleSideEffect(
+        { type: "INCREASE_PLAYBACK_RATE", value: 0 },
+        audioElement,
+      );
+      expect(audioElement.playbackRate).toBe(8);
     });
 
     // C1: a slider with a narrower range sends its own bounds, and they win.

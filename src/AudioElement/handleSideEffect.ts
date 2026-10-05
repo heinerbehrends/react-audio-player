@@ -1,5 +1,5 @@
 import { areNumbersClose } from "../Shared/areNumbersClose";
-import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
+import { RATE_LIMITS, type SideEffectAction } from "./sideEffectActions";
 
 /*
  * Media properties throw on an out-of-range write rather than clamping, so each
@@ -8,7 +8,8 @@ import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
  * - `volume` — [0, 1]; outside throws `IndexSizeError`
  * - `playbackRate` — `0` or [0.0625, 16] in Chromium; a non-zero rate below
  *   1/16, or anything above 16, throws `NotSupportedError`. Firefox clamps
- *   silently. Measured on both engines, 2026-10-01 (G2)
+ *   silently (G2). The library writes only `RATE_LIMITS`, narrower than both,
+ *   where neither engine cuts the sound (C14)
  * - `currentTime` — any finite number, clamped to [0, duration] by the browser;
  *   `NaN` throws `TypeError`
  *
@@ -16,9 +17,6 @@ import { RATE_BOUNDS, type SideEffectAction } from "./sideEffectActions";
  * Non-finite values are dropped rather than clamped: `NaN` has no meaningful
  * target, and usually means `duration` was read before metadata.
  */
-
-const MIN_PLAYBACK_RATE = 0.0625;
-const MAX_PLAYBACK_RATE = 16;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -30,10 +28,31 @@ function writeVolume(audioElement: HTMLAudioElement, value: number) {
 
 function writeRate(audioElement: HTMLAudioElement, value: number) {
   if (!Number.isFinite(value)) return;
-  // Zero is the one value below the floor both browsers accept, so a negative
-  // rate lands there rather than at 1/16.
-  audioElement.playbackRate =
-    value <= 0 ? 0 : clamp(value, MIN_PLAYBACK_RATE, MAX_PLAYBACK_RATE);
+  audioElement.playbackRate = clamp(
+    value,
+    RATE_LIMITS.minValue,
+    RATE_LIMITS.maxValue,
+  );
+}
+
+/**
+ * Moves the rate by `delta`, stopping at `bound`, and never against its own
+ * direction: a rate already past the bound — a narrower slider's, or one set
+ * outside the library — stays put rather than jumping back to it.
+ */
+function stepRate(
+  audioElement: HTMLAudioElement,
+  delta: number,
+  bound: number,
+) {
+  const rate = audioElement.playbackRate;
+  const target = clamp(
+    delta > 0 ? Math.min(rate + delta, bound) : Math.max(rate + delta, bound),
+    RATE_LIMITS.minValue,
+    RATE_LIMITS.maxValue,
+  );
+  if (delta > 0 ? target > rate : target < rate)
+    writeRate(audioElement, target);
 }
 
 /**
@@ -155,22 +174,18 @@ export function handleSideEffect(
       break;
     }
     case "INCREASE_PLAYBACK_RATE": {
-      writeRate(
+      stepRate(
         audioElement,
-        Math.min(
-          audioElement.playbackRate + action.value,
-          action.maxValue ?? RATE_BOUNDS.maxValue,
-        ),
+        action.value,
+        action.maxValue ?? RATE_LIMITS.maxValue,
       );
       break;
     }
     case "DECREASE_PLAYBACK_RATE": {
-      writeRate(
+      stepRate(
         audioElement,
-        Math.max(
-          audioElement.playbackRate - action.value,
-          action.minValue ?? RATE_BOUNDS.minValue,
-        ),
+        -action.value,
+        action.minValue ?? RATE_LIMITS.minValue,
       );
       break;
     }

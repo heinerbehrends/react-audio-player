@@ -535,17 +535,22 @@ all three at once and receives raw seconds. See
   the row does not reflow as it moves
 - `<PlaybackRate.Change amount={0.1}>` — adjusts the rate by `amount`
 
+Every rate write is clamped to 0.125–8: outside it Firefox keeps playing at
+the requested speed with the sound cut, so that is the widest range audible in
+both Chromium and Firefox. Safari is not yet measured. Stop playback with
+pause; a rate of `0` is clamped like any other.
+
 `<PlaybackRate.Set>` is **not** clamped to the slider's range: it names an
-explicit rate, so `rate={8}` sets 8 where `<PlaybackRateSlider>` stops at 4. The
-write path clamps to what the browser accepts — `0`, or 0.0625–16 — so nothing
-throws. `.Change` and the `<` `>` keys step through the same two actions, so
-both clamp to the library's 0.5–4 and read the rate off the element as they
-go.
+explicit rate, so `rate={8}` sets 8 where `<PlaybackRateSlider>` stops at 4.
+`.Change` and the `<` `>` keys step through the same two actions, read the
+rate off the element as they go, and stop at 0.125 and 8. A step never moves
+the rate against its own direction.
 
 ### Playback rate slider
 
 `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` is the root. Those
-are the defaults; pass `step={0}` for a continuous slider.
+are the defaults; widen the range up to 0.125–8, and pass `step={0}` for a
+continuous slider.
 
 - `<PlaybackRateSlider.Control>` — the focusable slider
 - `<PlaybackRateSlider.Progress>` — the filled part of the track

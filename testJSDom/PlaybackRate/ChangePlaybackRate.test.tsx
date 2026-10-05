@@ -156,10 +156,10 @@ describe("ChangePlaybackRate", () => {
    * README had promised while the button was sending an unclamped set.
    */
   it.each([
-    ["up", 1, 3.8, 4],
-    ["down", -1, 0.7, 0.5],
+    ["up", 1, 7.8, 8],
+    ["down", -1, 0.3, 0.125],
   ])(
-    "clamps %s to the library's 0.5–4 range, like the < and > keys",
+    "clamps %s to the library's 0.125–8 range, like the < and > keys",
     (_direction, amount, from, expected) => {
       const { element } = renderChange(
         <ChangePlaybackRate amount={amount}>Change Rate</ChangePlaybackRate>,
@@ -171,6 +171,36 @@ describe("ChangePlaybackRate", () => {
       expect(element.playbackRate).toBe(expected);
     },
   );
+
+  /**
+   * C14. Clamping to the old 0.5–4 turned "increase" at 8x into a drop to 4x,
+   * and "decrease" at 0.25x into a rise to 0.5x. Both now stop where they are.
+   */
+  it.each([
+    ["Increase at 8x", 0.25, 8],
+    ["Decrease at 0.125x", -0.25, 0.125],
+    ["A step of 0 at 8x", 0, 8],
+  ])("%s leaves the rate where it is", (_name, amount, from) => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={amount}>Change Rate</ChangePlaybackRate>,
+      { playbackRate: from },
+    );
+
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(element.playbackRate).toBe(from);
+  });
+
+  it("decreases from 8x rather than jumping to the slider's ceiling", () => {
+    const { element } = renderChange(
+      <ChangePlaybackRate amount={-0.25}>Change Rate</ChangePlaybackRate>,
+      { playbackRate: 8 },
+    );
+
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(element.playbackRate).toBe(7.75);
+  });
 
   /**
    * C8. The rate is read off the element when the button is pressed, so there

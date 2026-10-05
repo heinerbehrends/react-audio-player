@@ -21,7 +21,7 @@ export type AudioPlayerControls = {
   /** 0–1. Setting it to zero mutes, exactly as it does on the slider. */
   setVolume: (volume: number) => void;
   toggleMute: () => void;
-  /** Clamped to what the browser accepts: `0`, or 0.0625–16. */
+  /** Clamped to 0.125–8, the range that stays audible in Chromium and Firefox. */
   setRate: (rate: number) => void;
 };
 

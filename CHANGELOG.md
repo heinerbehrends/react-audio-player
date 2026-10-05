@@ -33,6 +33,9 @@ nothing to migrate from.
 - `data-part` on every part and `data-state` where the DOM does not say it
 - `--progress` and `--offset` custom properties on every slider root, for fills
   the inline transform cannot draw
+- Playback rate clamped to 0.125–8 on every write, the widest range audible in
+  both Chromium and Firefox; rate steps stop at the ends and never move the
+  rate against their direction
 - Track swaps carry on playing: a new `src` starts by itself if the player was
   playing or the track ended while playing, and stays paused otherwise
 - `<MediaSession>`: the lock screen, media keys and system media controls, with
@@ -53,6 +56,7 @@ Documented in the README; each has a ticket under `issues/`.
   slider disables itself there and `useIsVolumeAvailable()` reports it; `muted`
   still works
 - In Firefox a paused seek to the end of the track fires `onEnded`
+- Nothing has been measured in Safari yet, including the playback-rate range
 - No `<source>` fallback yet; one format is loaded per track
 - No part forwards a `ref`; `audioRef` reaches the `<audio>` element
 

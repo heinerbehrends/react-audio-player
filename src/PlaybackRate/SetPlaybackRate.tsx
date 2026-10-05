@@ -15,8 +15,9 @@ type SetPlaybackRateProps = {
    * The rate to set — `1` is normal speed, `2` is double.
    *
    * **Not clamped to the slider's range.** This names an explicit rate, so
-   * `rate={8}` sets 8 where `PlaybackRateSlider` would stop at 4. The write path
-   * clamps to the element's own 0–16, so nothing throws.
+   * `rate={8}` sets 8 where `PlaybackRateSlider` would stop at 4. Like every
+   * rate write it is clamped to the library's 0.125–8, the range that stays
+   * audible in Chromium and Firefox.
    */
   rate: number;
   children: React.ReactNode;

@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**19 open · 0 part-done · 89 resolved · 2 rejected**
+**20 open · 0 part-done · 90 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -108,7 +108,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Architecture & style
 
-1 open of 15.
+1 open of 16.
 
 - [ ] [C12](architecture/C12-the-committed-value-reset-needs-an-effect.md) The committed-value reset needs an effect and a lint suppression — P3
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
@@ -121,6 +121,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [C8](resolved/architecture/C8-changeplaybackrate-subscribes-to-read-once-and-bypasses.md) `ChangePlaybackRate` subscribes to read once, and bypasses the clamp — P2
 - [x] [C9](resolved/architecture/C9-the-drag-effect-registers-touchcancel-but-not.md) The drag effect registers `touchcancel` but not `touchend` — P2
 - [x] [C11](resolved/architecture/C11-positionof-reads-an-empty-touches-list-on.md) `positionOf` reads an empty `touches` list on `touchend` — P2
+- [x] [C14](resolved/architecture/C14-rate-steps-move-against-their-direction.md) Rate steps move against their own direction, and the rate range is three ranges — P2
 - [x] [C10](resolved/architecture/C10-getprogress-takes-sliderlength-and-never-uses-it.md) `getProgress` takes `sliderLength` and never uses it arithmetically — P3
 - [x] [C13](resolved/architecture/C13-audio-file-ended-is-a-dead-action.md) `AUDIO_FILE_ENDED` is a dead action — P3
 - [-] [R1](architecture/R1-a-projected-ended-atom.md) A projected `ended` atom — rejected
@@ -128,8 +129,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Tests
 
-1 open of 13.
+2 open of 14.
 
+- [ ] [T13](tests/T13-nothing-has-run-in-safari.md) Nothing has run in Safari — P2
 - [ ] [T12](tests/T12-e2e-specs-locate-elements-by-english-aria-label.md) E2E specs locate elements by English `aria-label` — P3
 - [x] [T1](resolved/tests/T1-no-snap-back-spec-ts-cannot-detect.md) `no-snap-back.spec.ts` cannot detect a snap-back — P0
 - [x] [T2](resolved/tests/T2-the-progressbar-assertion-is-vacuous.md) The `progressbar` assertion is vacuous — P0
