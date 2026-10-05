@@ -111,9 +111,10 @@
 }
 
 /* Phones have hardware volume buttons, and iOS ignores a volume set from
-   script, so a narrow player gives the timeline the room instead. */
+   script, so a narrow player gives the timeline the room instead. Important,
+   because the root's `display: grid` is inline. */
 @container (max-width: 400px) {
   .minimal-volume {
-    display: none;
+    display: none !important;
   }
 }

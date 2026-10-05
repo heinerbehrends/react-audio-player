@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 1 part-done · 83 resolved · 2 rejected**
+**21 open · 1 part-done · 84 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -43,7 +43,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-1 open of 25.
+1 open of 26.
 
 - [ ] [S20](surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
@@ -70,6 +70,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
 - [x] [S23](resolved/surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
+- [x] [S26](resolved/surface/S26-the-hidden-attribute-does-not-hide-a-slider.md) The `hidden` attribute does not hide a slider — P3
 
 ## Features
 

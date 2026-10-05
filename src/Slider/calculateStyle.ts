@@ -102,6 +102,15 @@ export const rootStyles = {
   position: "relative",
 } as const;
 
+/**
+ * `rootStyles` for a root that may carry `hidden`. The inline `display: grid`
+ * would otherwise outrank the attribute's `display: none`, and the slider would
+ * stay on screen (S26).
+ */
+export function rootStylesFor(hidden: boolean | undefined) {
+  return hidden ? { ...rootStyles, display: "none" } : rootStyles;
+}
+
 /** `rootStyles` plus the height, which the track needs to fill its root. */
 export const containerStyles = {
   ...rootStyles,

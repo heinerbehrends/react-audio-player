@@ -3,7 +3,7 @@ import {
   backgroundStyles,
   calculateProgressStyle,
   progressStyles,
-  rootStyles,
+  rootStylesFor,
 } from "../Slider/calculateStyle";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
@@ -57,7 +57,7 @@ function VolumeContainer({
         {...sliderRootAttributes(slider)}
         {...props}
         style={{
-          ...rootStyles,
+          ...rootStylesFor(props.hidden),
           ...props.style,
         }}
       >

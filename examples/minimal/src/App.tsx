@@ -45,17 +45,13 @@ export default function App() {
           <Time.Remaining />
         </Time.Toggle>
 
-        {/* Wrapped, because the root's inline `display: grid` outranks a
-            class that hides it. */}
-        <div className="minimal-volume">
-          <Volume className="minimal-slider">
-            <Volume.Control className="minimal-control">
-              <Volume.Background className="minimal-track" />
-              <Volume.Progress className="minimal-fill" />
-            </Volume.Control>
-            <Volume.Thumb className="minimal-thumb" />
-          </Volume>
-        </div>
+        <Volume className="minimal-slider minimal-volume">
+          <Volume.Control className="minimal-control">
+            <Volume.Background className="minimal-track" />
+            <Volume.Progress className="minimal-fill" />
+          </Volume.Control>
+          <Volume.Thumb className="minimal-thumb" />
+        </Volume>
       </div>
     </AudioPlayer>
   );

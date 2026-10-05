@@ -675,6 +675,11 @@ mean anything. These are computed from the current value, so they are output
 rather than opinion. Inline styles beat any stylesheet rule, so override these
 through the `style` prop, which is merged last and wins.
 
+A slider root is `display: grid` inline, because that is how its layers stack.
+The `hidden` attribute still hides it. To hide one from CSS — in a media or
+container query — use `display: none !important`, or hide an element wrapped
+around it.
+
 The three slider layers stack in one order: `.Background` at `z-index: 0`,
 `.Progress` at `1`, `.Thumb` at `2`, whatever order you write them in. It is
 declared rather than left to the fill's `transform`, so overriding that

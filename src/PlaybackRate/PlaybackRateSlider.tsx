@@ -2,7 +2,7 @@ import {
   backgroundStyles,
   progressStyles,
   calculateProgressStyle,
-  rootStyles,
+  rootStylesFor,
 } from "../Slider/calculateStyle";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
@@ -82,10 +82,10 @@ function PlaybackRateSliderRoot({
       <div
         {...sliderRootAttributes(slider)}
         {...props}
-        // After the spread, and merged: `rootStyles` carries `position:
+        // After the spread, and merged: the root styles carry `position:
         // relative`, which the thumb's `transform` is placed against.
         style={{
-          ...rootStyles,
+          ...rootStylesFor(props.hidden),
           ...props.style,
         }}
       >

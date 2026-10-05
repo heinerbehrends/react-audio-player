@@ -3,7 +3,7 @@ import {
   backgroundStyles,
   calculateProgressStyle,
   progressStyles,
-  rootStyles,
+  rootStylesFor,
 } from "../Slider/calculateStyle";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderControl } from "../Slider/SliderControl";
@@ -78,7 +78,7 @@ const TimelineRoot: React.FC<TimelineProps> = ({
         {...sliderRootAttributes(slider)}
         {...props}
         style={{
-          ...rootStyles,
+          ...rootStylesFor(props.hidden),
           ...props.style,
         }}
       >

@@ -193,6 +193,21 @@ describe("slider data attributes", () => {
    * against, so a consumer `style` that replaced it rather than merging would
    * silently move every thumb.
    */
+  /** S26. Inline `display: grid` outranks the attribute's `display: none`. */
+  it.each(sliders)("$name is hidden by the hidden attribute", ({ ui }) => {
+    const { container, rerender } = renderInPlayer(ui({ hidden: true }), {
+      element: { readyState: 1, duration: 100 },
+    });
+    const root = container.querySelector('[data-part="root"]');
+    expect(root).toHaveStyle({ display: "none" });
+    expect(root).not.toBeVisible();
+
+    rerender(ui({}));
+    expect(container.querySelector('[data-part="root"]')).toHaveStyle({
+      display: "grid",
+    });
+  });
+
   it.each(sliders)("$name merges a consumer style over its own", ({ ui }) => {
     const { container } = renderInPlayer(ui({ style: { height: "40px" } }), {
       element: { readyState: 1, duration: 100 },
