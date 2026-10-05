@@ -45,6 +45,38 @@ test.describe("Playlist", () => {
       .toBe("The Pool of Tears");
   });
 
+  test("next while paused stays paused", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Playlist" });
+
+    await example.getByRole("button", { name: "Next track" }).click();
+
+    await expect(
+      example.getByRole("button", { name: /The Pool of Tears/ }),
+    ).toHaveAttribute("aria-current", "true");
+    // Long enough for a wrongly started track to report itself.
+    await page.waitForTimeout(500);
+    expect(await isPlaying(example)).toBe(false);
+  });
+
+  test("a track chosen from the list plays, even when paused", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Playlist" });
+
+    await example.getByRole("button", { name: /A Caucus-Race/ }).click();
+
+    await expect(
+      example.getByRole("button", { name: /A Caucus-Race/ }),
+    ).toHaveAttribute("aria-current", "true");
+    await expect.poll(() => isPlaying(example)).toBe(true);
+    await expect(example.locator("audio")).toHaveAttribute(
+      "src",
+      /alice-03.mp3$/,
+    );
+  });
+
   test("the end of a track starts the next", async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name: "Playlist" });

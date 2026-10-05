@@ -423,19 +423,33 @@ function Playlist() {
 }
 ```
 
-As written, this playlist stops after every track: a `src` change arrives
-loaded and paused, and nothing resumes it. Two ways to carry on. Pass
-`audioProps={{ autoPlay: true }}`, which also autoplays the first track and can
-be refused by the browser's autoplay policy — the refusal surfaces through
-`useAudioError()` as `kind: "playback"`. Or call `play()` from an effect keyed on
-the selected track, inside the player. It has to run after the new `src` is in
-the DOM: a `play()` in the handler that changes the track is undone when the
-element starts loading the new one. The
-[playlist example](https://heinerbehrends.github.io/react-audio-player/#playlist)
-does this.
+The player carries on across a swap. If it was playing, or the track ended while
+playing, the new track starts by itself; if it was paused, it stays paused. So
+this playlist plays through, and next and previous buttons only change the
+index.
+
+To start a track from a paused player — a click in a track list — call `play()`
+in the same handler as the change. The order does not matter; the player
+remembers the request across the swap:
+
+```jsx
+// Rendered inside the player, where useAudioPlayer() is available.
+function TrackButton({ index, title, select }) {
+  const { play } = useAudioPlayer();
+  const playTrack = () => {
+    select(index);
+    play();
+  };
+  return <button onClick={playTrack}>{title}</button>;
+}
+```
+
+The [playlist example](https://heinerbehrends.github.io/react-audio-player/#playlist)
+does all three.
 
 In Firefox, dragging the timeline to the very end while paused also fires
-`onEnded`, so a user can advance this playlist by hand; Chrome does not.
+`onEnded`, so a user can advance this playlist by hand; Chrome does not. The next
+track arrives paused, since nothing was playing.
 
 ### Timeline
 

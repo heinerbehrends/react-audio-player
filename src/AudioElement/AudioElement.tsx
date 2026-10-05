@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePlayerConfig } from "../Player/PlayerConfigContext";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
@@ -41,6 +41,16 @@ export function AudioElement({
     () => (element ? store.attach(element) : undefined),
     [element, store],
   );
+
+  // After the commit, because a `play()` before the new `src` reaches the element
+  // is undone when it starts loading it (measured in Chrome and Firefox). Not on
+  // mount, and not when Strict Mode re-runs the effect for the same `src` (F13).
+  const committedSrc = useRef(src);
+  useEffect(() => {
+    if (committedSrc.current === src) return;
+    committedSrc.current = src;
+    store.continuePlayback();
+  }, [src, store]);
 
   // React re-invokes a ref callback whose identity changed, so an inline arrow
   // would detach and reattach the store on every render.

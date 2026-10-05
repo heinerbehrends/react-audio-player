@@ -1,7 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 import "@testing-library/jest-dom/vitest";
 import { AudioElement } from "../../src/AudioElement/AudioElement";
+import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
+import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
+import { createPlayerStore } from "../../src/store/createPlayerStore";
 import { renderInPlayer } from "../testComponents";
 
 /**
@@ -148,5 +152,47 @@ describe("AudioElement", () => {
     rerender(<AudioElement />);
 
     expect(attach).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * F13. The swap is the root's to notice: after the new `src` is committed it
+ * asks the store to carry on, and the store decides whether playback was wanted.
+ */
+describe("AudioElement src swap", () => {
+  function renderSwappable() {
+    const store = createPlayerStore();
+    const continuePlayback = vi.spyOn(store, "continuePlayback");
+    const ui = (src: string) => (
+      <StrictMode>
+        <PlayerStoreProvider store={store}>
+          <PlayerConfigProvider
+            audioFile={{ src }}
+            customKeyboardShortcuts={undefined}
+            labels={undefined}
+          >
+            <AudioElement />
+          </PlayerConfigProvider>
+        </PlayerStoreProvider>
+      </StrictMode>
+    );
+    const { rerender } = render(ui("one.mp3"));
+    return { continuePlayback, swapTo: (src: string) => rerender(ui(src)) };
+  }
+
+  it("does not continue on mount, Strict Mode's second run included", () => {
+    const { continuePlayback } = renderSwappable();
+
+    expect(continuePlayback).not.toHaveBeenCalled();
+  });
+
+  it("continues once per new src, and not for the same one", () => {
+    const { continuePlayback, swapTo } = renderSwappable();
+
+    swapTo("one.mp3");
+    expect(continuePlayback).not.toHaveBeenCalled();
+
+    swapTo("two.mp3");
+    expect(continuePlayback).toHaveBeenCalledTimes(1);
   });
 });

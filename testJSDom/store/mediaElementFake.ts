@@ -29,6 +29,7 @@ export type MediaFields = {
   muted: boolean;
   playbackRate: number;
   paused: boolean;
+  ended: boolean;
   readyState: number;
   error: MediaError | null;
 };
@@ -40,6 +41,7 @@ const DEFAULTS: MediaFields = {
   muted: false,
   playbackRate: 1,
   paused: true,
+  ended: false,
   // 0 = HAVE_NOTHING, so a bare fake primes to "loading". Tests that want
   // "ready" pass `readyState: 1` (HAVE_METADATA).
   readyState: 0,

@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   AudioPlayer,
   MediaSession,
@@ -31,47 +31,35 @@ const TRACKS = [
   },
 ];
 
-/**
- * The current track, and whether it should start on its own: a new `src`
- * arrives paused, so carrying on is the playlist's job. A new object on every
- * choice, so choosing the current track again also starts it.
- */
-type Selection = { index: number; play: boolean };
-
+// The player carries on across a track change by itself: playing stays playing,
+// a track that ended moves on to the next, and paused stays paused.
 export default function App() {
-  const [selection, select] = useState<Selection>({ index: 0, play: false });
-  const { index } = selection;
+  const [index, setIndex] = useState(0);
 
   return (
     <AudioPlayer
       audioFile={{ ...BOOK, ...TRACKS[index] }}
       onEnded={() => {
-        if (index < TRACKS.length - 1) select({ index: index + 1, play: true });
+        if (index < TRACKS.length - 1) setIndex(index + 1);
       }}
     >
-      <Player selection={selection} select={select} />
+      <Player index={index} setIndex={setIndex} />
     </AudioPlayer>
   );
 }
 
 type PlayerProps = {
-  selection: Selection;
-  select: (selection: Selection) => void;
+  index: number;
+  setIndex: (index: number) => void;
 };
 
-function Player({ selection, select }: PlayerProps) {
-  const { paused, play } = useAudioPlayer();
-  const { index } = selection;
+// Its own component because `useAudioPlayer()` works only inside the player.
+function Player({ index, setIndex }: PlayerProps) {
+  const { play } = useAudioPlayer();
   const hasPrevious = index > 0;
   const hasNext = index < TRACKS.length - 1;
-  const previous = () => select({ index: index - 1, play: !paused });
-  const next = () => select({ index: index + 1, play: !paused });
-
-  // After the commit, not in the handlers: a `play()` before the new `src`
-  // reaches the element is undone when it starts loading it.
-  useEffect(() => {
-    if (selection.play) play();
-  }, [selection, play]);
+  const previous = () => setIndex(index - 1);
+  const next = () => setIndex(index + 1);
 
   return (
     <div className="playlist">
@@ -153,7 +141,11 @@ function Player({ selection, select }: PlayerProps) {
             <button
               type="button"
               aria-current={i === index ? "true" : undefined}
-              onClick={() => select({ index: i, play: true })}
+              onClick={() => {
+                // A click in the list means "play this", even when paused.
+                setIndex(i);
+                play();
+              }}
             >
               <span className="playlist-number">{i + 1}</span>
               {track.title}

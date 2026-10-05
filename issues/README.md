@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 1 part-done · 85 resolved · 2 rejected**
+**21 open · 1 part-done · 86 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -75,7 +75,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-14 open of 27.
+14 open of 28.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
@@ -100,6 +100,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F7](resolved/features/F7-ended-is-unobservable-and-actively-erased.md) `ended` is unobservable and actively erased — P2
 - [x] [F8](resolved/features/F8-mediaerror-code-is-thrown-away.md) `MediaError.code` is thrown away — P2
 - [x] [F9](resolved/features/F9-element-config-unreachable.md) Element config unreachable — P2
+- [x] [F13](resolved/features/F13-a-track-swap-should-carry-on-playing.md) A track swap should carry on playing — P2
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop

@@ -71,12 +71,12 @@ demo/
 
 ## The examples
 
-| example      | shows                                                                                                                                                       | styling                    |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| **basic**    | A compact dark bar after a news-site podcast player: play, timeline, time, mute that opens volume on hover or focus                                         | `styles.css` + a few lines |
-| **playlist** | A track list in consumer state, `onEnded` advance with the resume effect from the README, `<MediaSession>` with previous/next — the lock screen is the demo | custom                     |
-| **podcast**  | Rate options, ±15/30 s `<SeekButton>`s, chapters as a userland list that seeks and highlights the current one, `<MediaSession>` with artwork                | custom                     |
-| **waveform** | Precomputed peaks as SVG bars inside `<Timeline>`, the played part highlighted, the bar beneath. D5 with no library change                                  | custom                     |
+| example      | shows                                                                                                                                                                 | styling                    |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **basic**    | A compact dark bar after a news-site podcast player: play, timeline, time, mute that opens volume on hover or focus                                                   | `styles.css` + a few lines |
+| **playlist** | A track list in consumer state, `onEnded` advance, the player carrying on across each change (F13), `<MediaSession>` with previous/next — the lock screen is the demo | custom                     |
+| **podcast**  | Rate options, ±15/30 s `<SeekButton>`s, chapters as a userland list that seeks and highlights the current one, `<MediaSession>` with artwork                          | custom                     |
+| **waveform** | Precomputed peaks as SVG bars inside `<Timeline>`, the played part highlighted, the bar beneath. D5 with no library change                                            | custom                     |
 
 Basic is the one on `styles.css`: it shows what the optional stylesheet
 gives, and the three custom ones show the parts take any markup.

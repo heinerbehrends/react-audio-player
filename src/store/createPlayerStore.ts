@@ -41,6 +41,13 @@ export type PlayerStore = {
   holdAudibleVolume: () => () => void;
   /** Binds the store to an element and returns the detach function. */
   attach: (element: HTMLAudioElement) => () => void;
+  /**
+   * Called after a `src` swap: plays the new track if playback was wanted
+   * before it, which a swap does not change. Wanted means a `play` sent or
+   * observed and not since revoked by a pause — and a pause at the natural end
+   * does not revoke it, so a playlist advanced from `onEnded` carries on (F13).
+   */
+  continuePlayback: () => void;
 };
 
 export function createPlayerStore(): PlayerStore {
@@ -62,6 +69,10 @@ export function createPlayerStore(): PlayerStore {
   // `set` handle that the read-only projections then have to forbid.
   let element: HTMLAudioElement | null = null;
   let audibleVolumeHolds = 0;
+  // Whether the user wants playback, recorded when a command is sent rather
+  // than when the element's event arrives: the `play` event is a task late, and
+  // a click that plays and swaps the track commits the swap before it.
+  let playWanted = false;
 
   const holdAudibleVolume = () => {
     audibleVolumeHolds += 1;
@@ -73,13 +84,31 @@ export function createPlayerStore(): PlayerStore {
     };
   };
 
+  // Playback started or stopped by something other than `send`: native
+  // controls, `autoplay`, a consumer holding the element. Each handler checks the
+  // element first, so an event made stale by a later command changes nothing.
+  // A swap fires no `pause` (measured in Chrome and Firefox), so it leaves the
+  // intent alone. Firefox's `ended` on a paused seek to the end fires no
+  // `pause` either (B4), so a paused player stays unwanted.
+  const onPlay = () => {
+    if (element && !element.paused) playWanted = true;
+  };
+  const onPause = () => {
+    if (element && element.paused && !element.ended) playWanted = false;
+  };
+
   const attach = (nextElement: HTMLAudioElement) => {
     element = nextElement;
+    playWanted = !nextElement.paused;
     const detach = syncFromElement(nextElement, atoms, {
       isAudibleVolumePinned: () => audibleVolumeHolds > 0,
     });
+    nextElement.addEventListener("play", onPlay);
+    nextElement.addEventListener("pause", onPause);
     return () => {
       detach();
+      nextElement.removeEventListener("play", onPlay);
+      nextElement.removeEventListener("pause", onPause);
       if (element === nextElement) {
         element = null;
       }
@@ -89,6 +118,12 @@ export function createPlayerStore(): PlayerStore {
   const playbackError = atom<string | null>(null);
 
   const send = (action: SideEffectAction) => {
+    if (action.type === "PLAY") playWanted = true;
+    if (action.type === "PAUSE" || action.type === "STOP_AUDIO") {
+      playWanted = false;
+    }
+    if (action.type === "TOGGLE_PLAY" && element) playWanted = element.paused;
+
     const started = handleSideEffect(action, element, {
       lastAudibleVolume: atoms.lastAudibleVolume.get(),
     });
@@ -104,6 +139,8 @@ export function createPlayerStore(): PlayerStore {
         // held key. The user's intent was honoured, so there is nothing to
         // report.
         if (name === "AbortError") return;
+        // Refused, so the next swap should not ask again.
+        playWanted = false;
         playbackError.set(name);
       },
     );
@@ -125,5 +162,8 @@ export function createPlayerStore(): PlayerStore {
     send,
     holdAudibleVolume,
     attach,
+    continuePlayback: () => {
+      if (playWanted) send({ type: "PLAY" });
+    },
   };
 }

@@ -7,8 +7,10 @@ import type { PlayerLabels } from "../Shared/playerLabels";
 type AudioPlayerProps = {
   children: React.ReactNode;
   /**
-   * The track. Changing `src` swaps it and returns the player to loading, so a
-   * playlist is your own state driving this prop, advanced from `onEnded`.
+   * The track. Changing `src` swaps it and returns the player to loading. If it
+   * was playing, or the track ended while playing, the new one starts by itself;
+   * if it was paused, it stays paused. A playlist is your own state driving this
+   * prop, advanced from `onEnded`.
    *
    * Safe to pass as an inline literal; nothing memoises on its identity.
    */
@@ -33,10 +35,8 @@ type AudioPlayerProps = {
   /**
    * Fired once when the track finishes, with the element parked at the end.
    *
-   * The hook for a playlist. Nothing resumes playback on its own — a `src`
-   * change arrives loaded and paused — so call `play()` from an effect once the
-   * new track has rendered, or pass `audioProps={{ autoPlay: true }}` and
-   * handle a possible autoplay refusal.
+   * The hook for a playlist: change `audioFile` from it and the next track
+   * plays, since this one ended while playing.
    *
    * This is the edge, "the track just finished". For the level, "the position is
    * the end", use `useIsAtEnd()`.

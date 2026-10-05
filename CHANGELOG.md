@@ -30,6 +30,8 @@ nothing to migrate from.
 - `labels` for every name and readout the library writes, with
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part and `data-state` where the DOM does not say it
+- Track swaps carry on playing: a new `src` starts by itself if the player was
+  playing or the track ended while playing, and stays paused otherwise
 - `<MediaSession>`: the lock screen, media keys and system media controls, with
   metadata from `audioFile`, play, pause, skip and seek, a live scrubber, and
   `onPreviousTrack` / `onNextTrack`. Opt-in, so a player without it pays none of
@@ -48,7 +50,6 @@ Documented in the README; each has a ticket under `issues/`.
   slider disables itself there and `useIsVolumeAvailable()` reports it; `muted`
   still works
 - In Firefox a paused seek to the end of the track fires `onEnded`
-- A playlist advance arrives paused; nothing resumes playback on its own
 - No `<source>` fallback yet; one format is loaded per track
 - No part forwards a `ref`; `audioRef` reaches the `<audio>` element
 - Live streams play, but there is no `isLive` signal; `duration` reads `0`
