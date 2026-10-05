@@ -54,10 +54,15 @@ const BUDGETS = [
   { name: "MuteButton only", imports: "{ MuteButton }", max: 1500 },
   { name: "Timeline only", imports: "{ Timeline }", max: 4500 },
   { name: "Time only", imports: "{ Time }", max: 2500 },
-  // The root every consumer imports, and the part only some do. The lock screen
-  // is a part so that the first row never pays for it (F6).
+  // The root every consumer imports, then the root with the part only some do:
+  // the part is unusable without the root, and alone would count the store
+  // twice. The lock screen is a part so that the first row never pays (F6).
   { name: "AudioPlayer only", imports: "{ AudioPlayer }", max: 2600 },
-  { name: "MediaSession only", imports: "{ MediaSession }", max: 750 },
+  {
+    name: "AudioPlayer + MediaSession",
+    imports: "{ AudioPlayer, MediaSession }",
+    max: 3400,
+  },
   { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 8500 },
   { name: "Full surface + MediaSession", imports: "* as all", max: 9500 },
 ];

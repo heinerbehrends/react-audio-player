@@ -1,16 +1,38 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { MediaSession } from "../../src/MediaSession/MediaSession";
 import { PlayButton } from "../../src/Player/PlayButton";
 import type { AudioFile } from "../../src/Player/PlayerConfigContext";
 import { renderWithStore } from "../store/renderWithStore";
 import { TestProviders } from "../testComponents";
 
-// jsdom has no Media Session API. The fake holds the metadata; the constructor
-// records its argument and, as Chrome does, rejects an artwork `src` that is not
-// a URL.
-const session = { metadata: null as unknown };
+// jsdom has no Media Session API. The fake holds the metadata and the
+// registered handlers by name; the constructor records its argument and, as
+// Chrome does, rejects an artwork `src` that is not a URL.
+const handlers = new Map<MediaSessionAction, MediaSessionActionHandler>();
+let unsupported: MediaSessionAction[] = [];
+const session = {
+  metadata: null as unknown,
+  setActionHandler(
+    action: MediaSessionAction,
+    handler: MediaSessionActionHandler | null,
+  ) {
+    if (unsupported.includes(action)) throw new TypeError(`No ${action}`);
+    if (handler) handlers.set(action, handler);
+    else handlers.delete(action);
+  },
+};
 let constructed: MediaMetadataInit[] = [];
+
+/** Presses a system button, as the OS would. */
+function press(
+  action: MediaSessionAction,
+  details: Partial<MediaSessionActionDetails> = {},
+) {
+  const handler = handlers.get(action);
+  if (!handler) throw new Error(`No handler for ${action}`);
+  act(() => handler({ action, ...details }));
+}
 
 class FakeMediaMetadata {
   constructor(init: MediaMetadataInit) {
@@ -24,6 +46,8 @@ class FakeMediaMetadata {
 
 beforeEach(() => {
   session.metadata = null;
+  handlers.clear();
+  unsupported = [];
   constructed = [];
   Object.defineProperty(navigator, "mediaSession", {
     value: session,
@@ -159,5 +183,122 @@ describe("MediaSession", () => {
     });
 
     expect(constructed.map((init) => init.title)).toEqual([tagged.title]);
+  });
+});
+
+describe("MediaSession action handlers", () => {
+  it("registers play, pause and the seeks, and neither track skip nor stop", () => {
+    renderWithStore(<MediaSession />);
+
+    expect([...handlers.keys()].sort()).toEqual(
+      ["pause", "play", "seekbackward", "seekforward", "seekto"].sort(),
+    );
+  });
+
+  it("plays and pauses the element, each on its own", () => {
+    const { element } = renderWithStore(<MediaSession />);
+
+    press("play");
+    expect(element.play).toHaveBeenCalledTimes(1);
+    expect(element.pause).not.toHaveBeenCalled();
+
+    press("pause");
+    expect(element.pause).toHaveBeenCalledTimes(1);
+    expect(element.play).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips by 10 seconds by default", () => {
+    const { element } = renderWithStore(<MediaSession />, {
+      element: { currentTime: 30 },
+    });
+
+    press("seekforward");
+    expect(element.currentTime).toBe(40);
+    press("seekbackward");
+    expect(element.currentTime).toBe(30);
+  });
+
+  it("skips by the seekOffset prop", () => {
+    const { element } = renderWithStore(<MediaSession seekOffset={15} />, {
+      element: { currentTime: 30 },
+    });
+
+    press("seekforward");
+    expect(element.currentTime).toBe(45);
+  });
+
+  it("skips by the system's own offset when it names one", () => {
+    const { element } = renderWithStore(<MediaSession seekOffset={15} />, {
+      element: { currentTime: 30 },
+    });
+
+    press("seekbackward", { seekOffset: 5 });
+    expect(element.currentTime).toBe(25);
+  });
+
+  it("seeks to the system's position", () => {
+    const { element } = renderWithStore(<MediaSession />);
+
+    press("seekto", { seekTime: 42 });
+    expect(element.currentTime).toBe(42);
+  });
+
+  it("ignores the skips and seekto without a duration", () => {
+    const { element } = renderWithStore(<MediaSession />, {
+      element: { duration: NaN, currentTime: 5 },
+    });
+
+    press("seekforward");
+    press("seekbackward");
+    press("seekto", { seekTime: 42 });
+    expect(element.currentTime).toBe(5);
+  });
+
+  it("registers previous and next only when their handlers are passed", () => {
+    const onPreviousTrack = vi.fn();
+    const onNextTrack = vi.fn();
+    renderWithStore(
+      <MediaSession
+        onPreviousTrack={onPreviousTrack}
+        onNextTrack={onNextTrack}
+      />,
+    );
+
+    press("previoustrack");
+    press("nexttrack");
+    expect(onPreviousTrack).toHaveBeenCalledTimes(1);
+    expect(onNextTrack).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls the latest inline handler and drops the button when it goes", () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const { rerender } = renderWithStore(<MediaSession onNextTrack={first} />);
+
+    rerender(<MediaSession onNextTrack={second} />);
+    press("nexttrack");
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+
+    rerender(<MediaSession />);
+    expect(handlers.has("nexttrack")).toBe(false);
+  });
+
+  it("removes every handler on unmount", () => {
+    const { unmount } = renderWithStore(<MediaSession onNextTrack={vi.fn()} />);
+
+    unmount();
+
+    expect(handlers.size).toBe(0);
+  });
+
+  it("registers the rest when the browser rejects an action", () => {
+    unsupported = ["seekto"];
+
+    renderWithStore(<MediaSession />);
+
+    expect(handlers.has("play")).toBe(true);
+    expect(handlers.has("seekforward")).toBe(true);
+    expect(handlers.has("seekto")).toBe(false);
   });
 });

@@ -50,7 +50,18 @@ instance mounted owns the session. Verified by
 `testJSDom/MediaSession/MediaSession.test.tsx` and
 `testE2E/Player/media-session.spec.ts`; the demo renders it. `bundle-size.mjs`
 gained "AudioPlayer only" (which must not contain `mediaSession`),
-"MediaSession only" and "Full surface + MediaSession"; "Full surface" now leaves
-the part out, so it still measures what everyone else pays. The part costs
-~330 B gzipped on the full surface so far. Handlers, position state and
-claim-on-play remain (phases 2–4).
+"AudioPlayer + MediaSession" and "Full surface + MediaSession"; "Full surface"
+now leaves the part out, so it still measures what everyone else pays.
+
+**Phase 2 landed (2026-10-05): action handlers.** `play`, `pause`,
+`seekbackward`, `seekforward` and `seekto` send the keyboard map's actions
+through `store.send`; `seekto` drops the call without a duration.
+`previoustrack` and `nexttrack` register only with `onPreviousTrack` /
+`onNextTrack`, read through a ref so an inline callback does not re-register.
+`seekOffset` defaults to 10, and the system's own offset wins. No `stop`. Every
+handler is removed on unmount, and an action the browser rejects is skipped
+without affecting the rest. Unit tier only, as the E2E spec notes. The bundle
+row for the part is now "AudioPlayer + MediaSession" rather than the part alone:
+`usePlayerStore` pulls in the store factory, which the root already carries, so
+alone it double-counted ~400 B. The part costs ~630 B gzipped over the root, ~600
+B on the full surface. Position state and claim-on-play remain (phases 3–4).

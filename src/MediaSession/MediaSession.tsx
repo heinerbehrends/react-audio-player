@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlayerConfig } from "../Player/PlayerConfigContext";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 declare const process: { env: { NODE_ENV?: string } };
 
@@ -12,6 +13,37 @@ function hasMediaSession(): boolean {
   return typeof navigator !== "undefined" && "mediaSession" in navigator;
 }
 
+// `stop` is left out on purpose: unregistered, the X on Chrome's desktop media
+// controls pauses, where `STOP_AUDIO` would also rewind.
+const ACTIONS: MediaSessionAction[] = [
+  "play",
+  "pause",
+  "seekbackward",
+  "seekforward",
+  "seekto",
+  "previoustrack",
+  "nexttrack",
+];
+
+const DEFAULT_SEEK_OFFSET = 10;
+
+function setHandler(
+  action: MediaSessionAction,
+  handler: MediaSessionActionHandler | null,
+) {
+  try {
+    navigator.mediaSession.setActionHandler(action, handler);
+  } catch {
+    // An action the browser does not know throws `TypeError`. Its button is
+    // simply not shown, which is the outcome either way.
+  }
+}
+
+function clearSession() {
+  navigator.mediaSession.metadata = null;
+  for (const action of ACTIONS) setHandler(action, null);
+}
+
 function reportError(what: string, error: unknown) {
   if (process.env.NODE_ENV === "production") return;
   console.error(
@@ -20,9 +52,35 @@ function reportError(what: string, error: unknown) {
   );
 }
 
-function useMediaSession() {
+type MediaSessionProps = {
+  /**
+   * Shows a previous-track button on the system controls and runs when it is
+   * pressed. Without it, there is no button.
+   */
+  onPreviousTrack?: () => void;
+  /**
+   * Shows a next-track button on the system controls and runs when it is
+   * pressed. Without it, there is no button.
+   */
+  onNextTrack?: () => void;
+  /**
+   * Seconds the system's skip buttons move, in both directions, when the system
+   * does not name a distance itself. Defaults to `10`.
+   */
+  seekOffset?: number;
+};
+
+function useMediaSession(props: MediaSessionProps) {
   const { audioFile } = usePlayerConfig();
+  const store = usePlayerStore();
   const [self] = useState(() => Symbol("MediaSession"));
+
+  // The handlers read the latest props through this, so an inline callback does
+  // not re-register every handler on each render.
+  const latest = useRef(props);
+  useEffect(() => {
+    latest.current = props;
+  });
 
   // Before the metadata effect, so the first write on mount already passes the
   // owner guard. Strict mode's second mount claims again after the release.
@@ -32,7 +90,7 @@ function useMediaSession() {
     return () => {
       if (owner !== self) return;
       owner = null;
-      navigator.mediaSession.metadata = null;
+      clearSession();
     };
   }, [self]);
 
@@ -60,6 +118,49 @@ function useMediaSession() {
       reportError("the metadata", error);
     }
   }, [self, metadataKey]);
+
+  // The OS buttons send what the keyboard map sends, so they share its path and
+  // its seekable gate: a live stream ignores the skips as it ignores
+  // `<SeekButton>`.
+  const hasPrevious = props.onPreviousTrack !== undefined;
+  const hasNext = props.onNextTrack !== undefined;
+
+  useEffect(() => {
+    if (!hasMediaSession() || owner !== self) return;
+    const offset = (details: MediaSessionActionDetails) =>
+      details.seekOffset ?? latest.current.seekOffset ?? DEFAULT_SEEK_OFFSET;
+
+    // Two handlers, not a toggle: the OS says which it wants.
+    setHandler("play", () => store.send({ type: "PLAY" }));
+    setHandler("pause", () => store.send({ type: "PAUSE" }));
+    setHandler("seekbackward", (details) =>
+      store.send({ type: "SET_TIME_BACKWARD", value: offset(details) }),
+    );
+    setHandler("seekforward", (details) =>
+      store.send({ type: "SET_TIME_FORWARD", value: offset(details) }),
+    );
+    setHandler("seekto", ({ seekTime }) => {
+      // `CHANGE_VALUE` has no seekable gate, because the slider sending it is
+      // disabled without a duration. The OS has no such guard: Android shows a
+      // seek bar from this handler's presence alone.
+      if (seekTime === undefined || !(store.duration.get() > 0)) return;
+      store.send({
+        type: "CHANGE_VALUE",
+        component: "timeline",
+        value: seekTime,
+      });
+    });
+    // Registered only when passed: a handler is what makes the button appear,
+    // and the library has no playlist to derive one from (B2).
+    setHandler(
+      "previoustrack",
+      hasPrevious ? () => latest.current.onPreviousTrack?.() : null,
+    );
+    setHandler(
+      "nexttrack",
+      hasNext ? () => latest.current.onNextTrack?.() : null,
+    );
+  }, [self, store, hasPrevious, hasNext]);
 }
 
 /**
@@ -69,10 +170,11 @@ function useMediaSession() {
  * controls; leave it out for a sound effect or a preview clip.
  *
  * Reads `title`, `artist`, `album` and `artwork` from `audioFile`. With none of
- * them set, the session carries no metadata. Where the browser has no Media
- * Session API it does nothing.
+ * them set, the session carries no metadata. Play, pause and the skip and seek
+ * buttons drive the player; previous and next appear only with their handlers.
+ * Where the browser has no Media Session API it does nothing.
  */
-export function MediaSession(): null {
-  useMediaSession();
+export function MediaSession(props: MediaSessionProps): null {
+  useMediaSession(props);
   return null;
 }
