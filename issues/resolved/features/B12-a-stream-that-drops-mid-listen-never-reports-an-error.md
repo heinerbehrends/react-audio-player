@@ -79,7 +79,7 @@ end rather than the old "Paused".
 **Verified by**:
 
 - `testE2E/Player/network-drop.spec.ts`, in Chromium and Firefox. A local
-  server cuts the WAV after 2 s and answers reconnects with 503, which Chromium
+  server cuts the WAV after 8 s and answers reconnects with 503, which Chromium
   gives up on in ~3 s; a reset takes it ~25 s. The test checks that the alert
   renders and the play button reads "Error loading audio". It also checks that
   `load()` clears the error and plays again once the server answers. The

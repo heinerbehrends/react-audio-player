@@ -34,6 +34,9 @@ export type PlayerStore = {
    */
   playbackError: ReadableAtom<string | null>;
 
+  /** The attached element, for an opt-in part that reads it directly. */
+  element: ReadableAtom<HTMLAudioElement | null>;
+
   send: (action: SideEffectAction) => void;
   /**
    * Freezes `lastAudibleVolume` for the duration of a volume drag and returns
@@ -71,7 +74,9 @@ export function createPlayerStore(): PlayerStore {
 
   // Not atoms: nothing subscribes to either, and an atom would come with a
   // `set` handle that the read-only projections then have to forbid.
+  // `elementAtom` publishes the element for the parts that subscribe.
   let element: HTMLAudioElement | null = null;
+  const elementAtom = atom<HTMLAudioElement | null>(null);
   let audibleVolumeHolds = 0;
   // Whether the user wants playback, recorded when a command is sent rather
   // than when the element's event arrives: the `play` event is a task late, and
@@ -103,6 +108,7 @@ export function createPlayerStore(): PlayerStore {
 
   const attach = (nextElement: HTMLAudioElement) => {
     element = nextElement;
+    elementAtom.set(nextElement);
     playWanted = !nextElement.paused;
     const detach = syncFromElement(nextElement, atoms, {
       isAudibleVolumePinned: () => audibleVolumeHolds > 0,
@@ -115,6 +121,7 @@ export function createPlayerStore(): PlayerStore {
       nextElement.removeEventListener("pause", onPause);
       if (element === nextElement) {
         element = null;
+        elementAtom.set(null);
       }
     };
   };
@@ -176,6 +183,7 @@ export function createPlayerStore(): PlayerStore {
     mediaErrorCode: readable(atoms.mediaErrorCode),
     loadState: readable(atoms.loadState),
     playbackError: readable(playbackError),
+    element: readable(elementAtom),
     send,
     holdAudibleVolume,
     attach,

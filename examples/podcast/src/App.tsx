@@ -8,6 +8,7 @@ import {
   SeekButton,
   Time,
   Timeline,
+  TimelineBuffered,
   useAudioPlayer,
   useCurrentSecond,
 } from "react-headless-audio-player";
@@ -105,6 +106,7 @@ function Episode() {
         <Timeline className="podcast-timeline">
           <Timeline.Control className="podcast-control">
             <Timeline.Background className="podcast-track" />
+            <TimelineBuffered className="podcast-buffered" />
             <Timeline.Progress className="podcast-fill" />
             <ChapterMarks />
           </Timeline.Control>

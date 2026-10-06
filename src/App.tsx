@@ -2,6 +2,7 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import { PlayButton } from "./Player/PlayButton";
 import { Timeline } from "./Timeline/Timeline";
+import { TimelineBuffered } from "./Timeline/TimelineBuffered";
 import { MuteButton } from "./Player/MuteButton";
 import { Volume } from "./Volume/Volume";
 import { Time } from "./TimeDisplay/TimeDisplay";
@@ -101,6 +102,7 @@ function Player({
           }}
         >
           <Timeline.Progress style={{ backgroundColor: "darkgray" }} />
+          <TimelineBuffered style={{ backgroundColor: "silver" }} />
           <Timeline.Background style={{ backgroundColor: "lightgray" }} />
         </Timeline.Control>
         <Timeline.Thumb

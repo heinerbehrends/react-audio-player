@@ -14,8 +14,9 @@ import { labels, waitForPlaying } from "../test-utils";
  * whole body, and the failure is a body cut short.
  */
 const WAV = readFileSync("public/test-tone.wav");
-// The header and 2 s of 44.1 kHz 16-bit stereo.
-const CUT = 44 + 2 * 176400;
+// The header and 8 s of the tone: 22.05 kHz, mono, 16-bit. Less, and
+// Chromium has not read the metadata when the connection goes.
+const CUT = 44 + 8 * 44100;
 
 let server: Server;
 let src: string;

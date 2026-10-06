@@ -6,6 +6,7 @@ export { MuteButton } from "./Player/MuteButton";
 export { SeekButton } from "./Player/SeekButton";
 export { ErrorMessage } from "./Player/ErrorMessage";
 export { Timeline } from "./Timeline/Timeline";
+export { TimelineBuffered } from "./Timeline/TimelineBuffered";
 export { Volume } from "./Volume/Volume";
 export { PlaybackRate } from "./PlaybackRate/PlaybackRate";
 export { PlaybackRateSlider } from "./PlaybackRate/PlaybackRateSlider";

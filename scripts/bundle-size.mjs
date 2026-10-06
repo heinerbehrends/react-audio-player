@@ -33,7 +33,7 @@ if (!existsSync(DIST)) {
 
 // Parts a consumer opts into by rendering them. "Full surface" leaves them out,
 // so it stays what everyone else pays, and each gets a row of its own (F6).
-const OPT_IN = ["MediaSession"];
+const OPT_IN = ["MediaSession", "TimelineBuffered"];
 const SURFACE = Object.keys(await import(pathToFileURL(DIST).href)).filter(
   (name) => !OPT_IN.includes(name),
 );
@@ -53,6 +53,12 @@ const BUDGETS = [
   { name: "PlayButton only", imports: "{ PlayButton }", max: 1500 },
   { name: "MuteButton only", imports: "{ MuteButton }", max: 1500 },
   { name: "Timeline only", imports: "{ Timeline }", max: 4500 },
+  // Opt-in like the lock screen: the downloaded bar is a separate import.
+  {
+    name: "Timeline + TimelineBuffered",
+    imports: "{ Timeline, TimelineBuffered }",
+    max: 5200,
+  },
   { name: "Time only", imports: "{ Time }", max: 2500 },
   // The root every consumer imports, then the root with the part only some do:
   // the part is unusable without the root, and alone would count the store
@@ -66,7 +72,7 @@ const BUDGETS = [
   // Raised from 8500 for `<PlayerRoot>` and `usePlayerRootProps`: new public
   // API, paid only by code that imports it.
   { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 8700 },
-  { name: "Full surface + MediaSession", imports: "* as all", max: 10200 },
+  { name: "Full surface + opt-ins", imports: "* as all", max: 10200 },
 ];
 
 /**

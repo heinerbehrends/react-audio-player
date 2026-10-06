@@ -33,7 +33,17 @@ export type MediaFields = {
   readyState: number;
   networkState: number;
   error: MediaError | null;
+  buffered: TimeRanges;
 };
+
+/** A `TimeRanges` over `[start, end]` pairs, in seconds. */
+export function timeRanges(ranges: Array<[number, number]>): TimeRanges {
+  return {
+    length: ranges.length,
+    start: (i: number) => ranges[i]![0],
+    end: (i: number) => ranges[i]![1],
+  };
+}
 
 const DEFAULTS: MediaFields = {
   currentTime: 0,
@@ -51,6 +61,7 @@ const DEFAULTS: MediaFields = {
   // "ready" (S34).
   networkState: 2,
   error: null,
+  buffered: timeRanges([]),
 };
 
 /**

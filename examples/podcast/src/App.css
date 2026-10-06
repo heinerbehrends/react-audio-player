@@ -156,12 +156,19 @@
 }
 
 .podcast-track,
+.podcast-buffered,
 .podcast-fill {
   border-radius: 2px;
 }
 
 .podcast-track {
   background: var(--line);
+}
+
+/* What has downloaded, between the track and the fill. */
+.podcast-buffered {
+  background: var(--muted);
+  opacity: 0.35;
 }
 
 .podcast-fill {
@@ -172,7 +179,7 @@
 .podcast-mark {
   position: absolute;
   top: 50%;
-  z-index: 2;
+  z-index: 3;
   width: 2px;
   height: 10px;
   border-radius: 1px;

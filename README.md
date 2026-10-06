@@ -494,6 +494,15 @@ seconds; its maximum is the track duration, so it takes no `maxValue`.
 - `<Timeline.Progress>` — the filled part of the track
 - `<Timeline.Background>` — the track behind the fill
 - `<Timeline.Thumb>` — the draggable thumb
+- `<TimelineBuffered>` — how much has downloaded ahead of the position, behind
+  the fill. A separate import, so a player without it does not pay for it.
+  Render it inside `.Control`
+
+`<TimelineBuffered>` draws the downloaded range the position is in, not every
+range: after a seek ahead, the earlier download is not drawn. It is empty before
+metadata and on a live stream. It sets `--buffered`, the fraction from `0` to
+`1`, which its default `transform` reads; for every range, read `buffered`
+through `audioRef`.
 
 `.Control` is required, on every slider: it is the element that carries the
 role, takes the keys and measures the track, so a root without one renders and
@@ -670,6 +679,7 @@ every element:
 | `.Control`               | `control`      |
 | `.Progress`              | `progress`     |
 | `.Background`            | `background`   |
+| `<TimelineBuffered>`     | `buffered`     |
 | `.Thumb`                 | `thumb`        |
 
 All three sliders share these part names, so each root also says which slider
@@ -775,8 +785,9 @@ The `hidden` attribute still hides it. To hide one from CSS — in a media or
 container query — use `display: none !important`, or hide an element wrapped
 around it.
 
-The three slider layers stack in one order: `.Background` at `z-index: 0`,
-`.Progress` at `1`, `.Thumb` at `2`, whatever order you write them in. It is
+The slider layers stack in one order: `.Background` at `z-index: 0`,
+`<TimelineBuffered>` at `1`, `.Progress` at `2`, `.Thumb` at `3`, whatever order
+you write them in. It is
 declared rather than left to the fill's `transform`, so overriding that
 transform does not put the background on top.
 

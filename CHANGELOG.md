@@ -35,6 +35,8 @@ nothing to migrate from.
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part, `data-state` where the DOM does not say it, and
   `data-slider` on each slider root, since the three share their part names
+- `<TimelineBuffered>`, a separate import: how much has downloaded ahead of the
+  position, as a bar behind the timeline's fill
 - `--progress` (0–1) and `--offset` custom properties on every slider root. The
   default fill is drawn from `--progress` by a zero-specificity rule, so a
   plain stylesheet rule on `[data-part="progress"]` replaces it

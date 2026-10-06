@@ -27,7 +27,7 @@ export function calculateDragStyle(context: StyleContext): React.CSSProperties {
         ? `translate(calc(${offset}px - 50%), 0)`
         : `translate(0, calc(${offset}px - 50%))`,
     touchAction: "none",
-    zIndex: 2,
+    zIndex: 3,
   };
 }
 
@@ -63,6 +63,12 @@ export function sliderCustomProperties(
 export const fillStyles = {
   gridColumn: "1 / 1",
   gridRow: "1 / 1",
+  zIndex: 2,
+} satisfies React.CSSProperties;
+
+/** The downloaded part, between the background and the fill. */
+export const bufferedStyles = {
+  ...fillStyles,
   zIndex: 1,
 } satisfies React.CSSProperties;
 
@@ -78,7 +84,8 @@ export const progressStyles = {
 } satisfies React.CSSProperties;
 
 /**
- * The layers stack in one order: background `0`, fill `1`, thumb `2`. Grid
+ * The layers stack in one order: background `0`, buffered `1`, fill `2`,
+ * thumb `3`. Grid
  * items take a `z-index` without being positioned, so the order is stated here
  * rather than left to whichever layer makes a stacking context — the fill used
  * to win only because of its `transform` (S22).

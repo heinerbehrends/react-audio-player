@@ -29,7 +29,7 @@ describe("calculateStyle", () => {
         gridRow: "1 / 1",
         transform: "translate(calc(50px - 50%), 0)",
         touchAction: "none",
-        zIndex: 2,
+        zIndex: 3,
       });
     });
 
@@ -46,7 +46,7 @@ describe("calculateStyle", () => {
         gridRow: "1 / 1",
         transform: "translate(0, calc(50px - 50%))",
         touchAction: "none",
-        zIndex: 2,
+        zIndex: 3,
       });
     });
 
@@ -180,8 +180,8 @@ describe("the layer stack", () => {
 
   it("orders background, fill and thumb", () => {
     expect(backgroundStyles.zIndex).toBe(0);
-    expect(fillStyles.zIndex).toBe(1);
-    expect(calculateDragStyle(context).zIndex).toBe(2);
+    expect(fillStyles.zIndex).toBe(2);
+    expect(calculateDragStyle(context).zIndex).toBe(3);
   });
 
   it("holds the order when the fill's transform is overridden", () => {
