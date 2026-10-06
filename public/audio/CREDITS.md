@@ -4,7 +4,8 @@
 
 `alice-01.mp3` – `alice-03.mp3` are excerpts of chapters 1–3 of _Alice's
 Adventures in Wonderland (version 2)_ by Lewis Carroll, read by Kara Shallenberg
-for LibriVox, catalogued 2010-03-18.
+for LibriVox, catalogued 2010-03-18. `alice-podcast.mp3` joins excerpts of
+chapters 10–12 of the same recording.
 
 - Source: <https://librivox.org/alices-adventures-in-wonderland-by-lewis-carroll-4/>
 - Licence: "LibriVox recordings are Public Domain in the USA." Outside the USA,

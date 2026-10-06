@@ -30,17 +30,37 @@ const PAUSE = 0.25;
 const REACH = 5;
 
 /**
- * `start` skips LibriVox's spoken preamble ("This is a LibriVox recording…"):
- * the excerpt begins at the longest pause in that window, which is the one
- * before the chapter's title. Then `length` seconds, to the nearest pause.
+ * Each output is one or more parts, joined. A part's `start` skips LibriVox's
+ * spoken preamble ("This is a LibriVox recording…"): it begins at the longest
+ * pause in that window, which is the one before the chapter's title. Then
+ * `length` seconds, to the nearest pause.
+ *
+ * An output of several parts also writes `chapters`: each part's title and
+ * where it starts in the joined file, in seconds.
  */
+const part = (chapter, length, title) => ({
+  source: `alices_adventures_${String(chapter).padStart(2, "0")}_carroll_64kb.mp3`,
+  start: [8, 40],
+  length,
+  title,
+});
+
 const GROUPS = {
   playlist: [1, 2, 3].map((chapter) => ({
-    source: `alices_adventures_0${chapter}_carroll_64kb.mp3`,
     out: `alice-0${chapter}.mp3`,
-    start: [8, 40],
-    length: 45,
+    parts: [part(chapter, 45)],
   })),
+  podcast: [
+    {
+      out: "alice-podcast.mp3",
+      chapters: "examples/podcast/src/chapters.json",
+      parts: [
+        part(10, 120, "The Lobster Quadrille"),
+        part(11, 120, "Who Stole the Tarts?"),
+        part(12, 120, "Alice's Evidence"),
+      ],
+    },
+  ],
 };
 
 const [sourceDir, ...names] = process.argv.slice(2);
@@ -62,23 +82,41 @@ const page = await browser.newPage();
 mkdirSync(OUT, { recursive: true });
 
 for (const name of groups) {
-  for (const excerpt of GROUPS[name]) {
-    const file = readFileSync(join(sourceDir, excerpt.source));
-    const frames = parseFrames(file);
-    const loudness = await measure(file);
+  for (const output of GROUPS[name]) {
+    const pieces = [];
+    const chapters = [];
+    // Whole frames of one format, so the join is a concatenation, and a part's
+    // start is the frames before it.
+    let seconds = 0;
+    for (const excerpt of output.parts) {
+      const file = readFileSync(join(sourceDir, excerpt.source));
+      const frames = parseFrames(file);
+      const loudness = await measure(file);
 
-    const from = longestPause(loudness, ...excerpt.start);
-    const to = quietestNear(loudness, from + excerpt.length);
-    const first = frameAt(frames, from);
-    const last = frameAt(frames, to);
-    const bytes = file.subarray(frames[first].offset, frames[last].offset);
-
-    writeFileSync(join(OUT, excerpt.out), bytes);
+      const from = longestPause(loudness, ...excerpt.start);
+      const to = quietestNear(loudness, from + excerpt.length);
+      const first = frameAt(frames, from);
+      const last = frameAt(frames, to);
+      pieces.push(file.subarray(frames[first].offset, frames[last].offset));
+      chapters.push({ title: excerpt.title, start: round(seconds) });
+      seconds += (last - first) * frames.seconds;
+      console.log(
+        `  ${from.toFixed(2)}–${to.toFixed(2)} s of ${excerpt.source}`,
+      );
+    }
+    const bytes = Buffer.concat(pieces);
+    writeFileSync(join(OUT, output.out), bytes);
+    if (output.chapters) {
+      writeFileSync(output.chapters, JSON.stringify(chapters, null, 2) + "\n");
+    }
     console.log(
-      `${excerpt.out}: ${from.toFixed(2)}–${to.toFixed(2)} s of ${excerpt.source}, ` +
-        `${((last - first) * frames.seconds).toFixed(1)} s, ${(bytes.length / 1024).toFixed(0)} KB`,
+      `${output.out}: ${seconds.toFixed(1)} s, ${(bytes.length / 1024).toFixed(0)} KB`,
     );
   }
+}
+
+function round(seconds) {
+  return Math.round(seconds * 100) / 100;
 }
 
 await browser.close();

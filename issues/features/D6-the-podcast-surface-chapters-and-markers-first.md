@@ -19,3 +19,12 @@ skipping are userland and should stay there.
 
 This is also the answer to "why not use the video player", which is worth being
 able to give before it is asked.
+
+## Evidence from the podcast example (2026-10-06)
+
+`examples/podcast` builds chapters in userland: a sorted list,
+`useCurrentSecond()` and `seek()`, about fifteen lines. That is the case for
+leaving the list itself out of the library. The one snag: `useCurrentSecond()`
+is floored, so a chapter start at 115.75 has to be compared floored too, or a
+click on that chapter marks the one before it for a moment. The `<Timeline>`
+marks this ticket proposes are untouched by the example: it has none.

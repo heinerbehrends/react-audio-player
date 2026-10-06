@@ -6,7 +6,7 @@ import { labels } from "../test-utils";
  * missing track or an API change an example was not updated for fails here
  * instead of on the deployed site.
  */
-for (const name of ["Basic player", "Playlist", "Waveform"]) {
+for (const name of ["Basic player", "Playlist", "Podcast", "Waveform"]) {
   test(`${name} plays`, async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name });
@@ -221,6 +221,51 @@ test.describe("Basic player", () => {
 
       await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
     });
+  });
+});
+
+test.describe("Podcast", () => {
+  const chapter = (example: Locator, title: string) =>
+    example.getByRole("list", { name: "Chapters" }).getByRole("button", {
+      name: new RegExp(title),
+    });
+  const position = (example: Locator) =>
+    example
+      .locator("audio")
+      .evaluate((audio: HTMLAudioElement) => audio.currentTime);
+
+  test("a chapter click seeks there and marks it", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Podcast" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+    await expect(timeline).not.toHaveAttribute("aria-disabled", "true");
+
+    await chapter(example, "Alice's Evidence").click();
+
+    await expect.poll(() => position(example)).toBeGreaterThan(236);
+    await expect(chapter(example, "Alice's Evidence")).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+  });
+
+  // The mark follows the position, not the last click.
+  test("the current chapter follows a skip back", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Podcast" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+    await expect(timeline).not.toHaveAttribute("aria-disabled", "true");
+    await chapter(example, "Alice's Evidence").click();
+    await expect.poll(() => position(example)).toBeGreaterThan(236);
+
+    await example
+      .getByRole("button", { name: "Seek backward by 15 seconds" })
+      .click();
+
+    await expect(chapter(example, "Who Stole the Tarts")).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
   });
 });
 

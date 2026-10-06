@@ -1,5 +1,4 @@
 import "./App.css";
-import { useId } from "react";
 import {
   AudioPlayer,
   PlayButton,
@@ -36,11 +35,9 @@ function Bars({ className }: { className: string }) {
 }
 
 export default function App() {
-  const titleId = useId();
-
   return (
     <AudioPlayer audioFile={TRACK}>
-      <PlayerRoot className="waveform" aria-labelledby={titleId}>
+      <PlayerRoot className="waveform">
         <div className="waveform-head">
           <PlayButton className="waveform-play">
             <PlayButton.Paused>
@@ -54,9 +51,7 @@ export default function App() {
               </svg>
             </PlayButton.Playing>
           </PlayButton>
-          <p className="waveform-title" id={titleId}>
-            {TRACK.title}
-          </p>
+          <p className="waveform-title">{TRACK.title}</p>
           <p className="waveform-time">
             <Time.Elapsed /> / <Time.Duration />
           </p>

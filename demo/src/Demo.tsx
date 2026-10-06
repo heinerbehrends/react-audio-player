@@ -5,6 +5,9 @@ import basicCss from "../../examples/basic/src/App.css?raw";
 import PlaylistApp from "../../examples/playlist/src/App";
 import playlistApp from "../../examples/playlist/src/App.tsx?raw";
 import playlistCss from "../../examples/playlist/src/App.css?raw";
+import PodcastApp from "../../examples/podcast/src/App";
+import podcastApp from "../../examples/podcast/src/App.tsx?raw";
+import podcastCss from "../../examples/podcast/src/App.css?raw";
 import WaveformApp from "../../examples/waveform/src/App";
 import waveformApp from "../../examples/waveform/src/App.tsx?raw";
 import waveformCss from "../../examples/waveform/src/App.css?raw";
@@ -45,6 +48,17 @@ const EXAMPLES: Example[] = [
     files: [
       { name: "App.tsx", code: playlistApp },
       { name: "App.css", code: playlistCss },
+    ],
+  },
+  {
+    id: "podcast",
+    title: "Podcast",
+    summary:
+      "One episode in three chapters: a chapter list built from useCurrentSecond() and seek(), skips of 15 and 30 seconds, rate options, and the cover on the lock screen.",
+    App: PodcastApp,
+    files: [
+      { name: "App.tsx", code: podcastApp },
+      { name: "App.css", code: podcastCss },
     ],
   },
   {

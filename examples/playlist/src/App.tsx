@@ -1,5 +1,5 @@
 import "./App.css";
-import { useId, useState } from "react";
+import { useState } from "react";
 import {
   AudioPlayer,
   MediaSession,
@@ -57,7 +57,6 @@ type PlayerProps = {
 // Its own component because `useAudioPlayer()` works only inside the player.
 function Player({ index, setIndex }: PlayerProps) {
   const { play } = useAudioPlayer();
-  const titleId = useId();
   const hasPrevious = index > 0;
   const hasNext = index < TRACKS.length - 1;
   const previous = () => {
@@ -71,7 +70,7 @@ function Player({ index, setIndex }: PlayerProps) {
     // Named by the chapter playing. A click anywhere focuses it, and the
     // shortcuts reach previous, next and the track list too, which are this
     // example's own buttons rather than the library's.
-    <PlayerRoot className="playlist" aria-labelledby={titleId}>
+    <PlayerRoot className="playlist">
       {/* The lock screen and media keys; previous and next appear only while
           there is a track to go to. */}
       <MediaSession
@@ -88,9 +87,7 @@ function Player({ index, setIndex }: PlayerProps) {
           height={72}
         />
         <div>
-          <p className="playlist-title" id={titleId}>
-            {TRACKS[index].title}
-          </p>
+          <p className="playlist-title">{TRACKS[index].title}</p>
           <p className="playlist-meta">
             {BOOK.album} · Chapter {index + 1}
           </p>

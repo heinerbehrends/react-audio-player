@@ -1,5 +1,5 @@
 import "./App.css";
-import { useCallback, useEffect, useId, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   AudioPlayer,
   ErrorMessage,
@@ -45,7 +45,6 @@ function Station({
 }: {
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }) {
-  const titleId = useId();
   const buffering = useIsBuffering();
   const { play } = useAudioPlayer();
 
@@ -58,7 +57,7 @@ function Station({
   useReconnectOnStall(buffering, reconnect);
 
   return (
-    <PlayerRoot className="live" aria-labelledby={titleId}>
+    <PlayerRoot className="live">
       {/* The lock screen and media keys. A live stream reports no position,
           so the OS shows no scrubber. */}
       <MediaSession />
@@ -81,9 +80,7 @@ function Station({
         </PlayButton>
 
         <div className="live-station">
-          <p className="live-title" id={titleId}>
-            {STATION.title}
-          </p>
+          <p className="live-title">{STATION.title}</p>
           <p className="live-meta">
             <a href="https://www.radiomast.io/reference-streams">
               {STATION.artist}

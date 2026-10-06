@@ -35,17 +35,5 @@ change, spiked the same day. Sandbox links wait for the beta publish.
 
 ## Added (2026-10-06): a multi-player example
 
-Several players on one page, such as a list of episodes or sound clips each
-with its own compact player. It is the common case the four examples do not
-cover, and it exercises what only shows up with more than one:
-
-- **One at a time, in userland.** Starting one player pauses the others. **B2**
-  keeps that a consumer concern, since a library-owned rule would need the
-  cross-instance registry the per-player store avoids; this example is the
-  evidence that it is easy to do, or the finding that it is not.
-- **Regions that announce apart.** Each `<PlayerRoot>` named by its own title,
-  not the shared "audio player" label.
-- **Shortcuts scoped to the focused player**, so Space or `k` drives the one
-  you are in and no other.
-- **Independent state**: position, volume and rate per player, as
-  `testE2E/Player/multi-instance.spec.ts` already pins for the dev app.
+A fifth example, several players on one page. Planned with the others in
+`plans/PLAN-demo-site.md`, phase 5.

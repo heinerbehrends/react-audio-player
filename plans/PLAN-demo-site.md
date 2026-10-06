@@ -4,9 +4,9 @@
 For a headless library there is nothing to look at except what a consumer builds,
 so the examples are the product page. This plan settles where the examples live
 and how one copy of each serves the demo page, the sandboxes and CI, then lands
-them in five phases.
+them in six phases.
 
-## Status: phases 1 and 2 built 2026-10-05, phase 3 and live radio on 2026-10-06; the site is live at https://heinerbehrends.github.io/react-audio-player/.
+## Status: phases 1 and 2 built 2026-10-05, phases 3 and 4 and live radio on 2026-10-06; the site is live at https://heinerbehrends.github.io/react-audio-player/.
 
 ---
 
@@ -71,15 +71,31 @@ demo/
 
 ## The examples
 
-| example      | shows                                                                                                                                                                 | styling                    |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| **basic**    | A compact dark bar after a news-site podcast player: play, timeline, time, mute that opens volume on hover or focus                                                   | `styles.css` + a few lines |
-| **playlist** | A track list in consumer state, `onEnded` advance, the player carrying on across each change (F13), `<MediaSession>` with previous/next — the lock screen is the demo | custom                     |
-| **podcast**  | Rate options, ±15/30 s `<SeekButton>`s, chapters as a userland list that seeks and highlights the current one, `<MediaSession>` with artwork                          | custom                     |
-| **waveform** | Precomputed peaks as SVG bars inside `<Timeline>`, the played part highlighted, the bar beneath. D5 with no library change                                            | custom                     |
+| example          | shows                                                                                                                                                                 | styling                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **basic**        | A compact dark bar after a news-site podcast player: play, timeline, time, mute that opens volume on hover or focus                                                   | `styles.css` + a few lines |
+| **playlist**     | A track list in consumer state, `onEnded` advance, the player carrying on across each change (F13), `<MediaSession>` with previous/next — the lock screen is the demo | custom                     |
+| **podcast**      | Rate options, ±15/30 s `<SeekButton>`s, chapters as a userland list that seeks and highlights the current one, `<MediaSession>` with artwork                          | custom                     |
+| **waveform**     | Precomputed peaks as SVG bars inside `<Timeline>`, the played part highlighted, the bar beneath. D5 with no library change                                            | custom                     |
+| **multi-player** | Several compact players on one page, one per clip: starting one pauses the others, each region named by its own title, shortcuts that drive only the focused player   | custom                     |
 
 Basic is the one on `styles.css`: it shows what the optional stylesheet
-gives, and the three custom ones show the parts take any markup.
+gives, and the custom ones show the parts take any markup.
+
+**Multi-player, added 2026-10-06**: a list of episodes or sound clips, each
+with its own compact player, is the common case the other examples do not
+cover. It exercises what only shows up with more than one player:
+
+- **One at a time, in userland.** Starting one player pauses the others.
+  **B2** keeps that a consumer concern, since a library-owned rule would need
+  the cross-instance registry the per-player store avoids; this example is the
+  evidence that it is easy to do, or the finding that it is not.
+- **Regions that announce apart.** `<PlayerRoot>` names each one by
+  `audioFile.title`, so the example shows it rather than builds it.
+- **Shortcuts scoped to the focused player**, so Space or `k` drives the one
+  you are in and no other.
+- **Independent state**: position, volume and rate per player, as
+  `testE2E/Player/multi-instance.spec.ts` already pins for the dev app.
 
 **Chapters stay userland in the podcast example** — a sorted list,
 `useCurrentSecond()` and `seek()`. That is possible today, and building it is
@@ -137,7 +153,7 @@ that should install nothing but React and the library.
 - **`The-Race.mp3`** (6.8 MB, 4:43, free to distribute) for basic and
   waveform.
 - **LibriVox's _Alice's Adventures in Wonderland (version 2)_**, read by Kara
-  Shallenberg, for playlist and podcast.
+  Shallenberg, for playlist, podcast and multi-player.
   [librivox.org/alices-adventures-in-wonderland-by-lewis-carroll-4](https://librivox.org/alices-adventures-in-wonderland-by-lewis-carroll-4/),
   catalogued 2010-03-18: "LibriVox recordings are Public Domain in the USA."
   Twelve chapters, one reader, 64 kbps CBR at 22.05 kHz throughout, 10–16
@@ -234,7 +250,7 @@ Each phase is one commit with its checks, in this order.
   within 0.75–0.95 of its maximum and drew bars of one height.
 - Found on the way: an SVG with a `viewBox` in the one-cell grid set the
   row's minimum from its aspect ratio, and grew the timeline to 519 px at
-  830 px wide. **S31**, fixed the same day: the slider grids are
+  830 px wide. **S31**, fixed the same day: the slider grid rows are
   `minmax(0, 1fr)`.
 
 ### Phase 4 — podcast
@@ -242,8 +258,25 @@ Each phase is one commit with its checks, in this order.
 - The join in `scripts/cut-excerpts.mjs`, and the joined sections of chapters 10–12. Rate options, the
   two skip sizes, the userland chapter list, `<MediaSession>` with artwork.
 - E2E: a chapter click seeks, and the current chapter follows playback.
+- Built as planned. The script takes 115.8, 120.6 and 120.8 s from chapters
+  10–12, each ending at a pause, and writes the chapter starts to
+  `examples/podcast/src/chapters.json`; the joined file is 357 s and 2.8 MB,
+  and Chromium and Firefox both read that duration. The highlight is tested
+  against a skip back, so it follows the position rather than the last click.
+- For **D6**: the chapter list is about fifteen lines of userland, a reduce
+  over the starts and `seek()`. The one snag is that `useCurrentSecond()` is
+  floored, so a chapter start has to be compared floored too, or a click on a
+  chapter marks the one before it until the next whole second.
 
-### Phase 5 — sandboxes and links
+### Phase 5 — multi-player
+
+- The playlist's three excerpts, one compact player each: play, timeline and
+  time, under a title. No new audio.
+- One-at-a-time in userland: each player pauses the others when it starts.
+- E2E: playing a second player pauses the first; `k` with focus in one player
+  leaves the others alone; each region is named by its title.
+
+### Phase 6 — sandboxes and links
 
 - After `0.1.0-beta.0` is on npm: until then `react-headless-audio-player@beta`
   does not resolve and every sandbox fails to install.
@@ -252,7 +285,7 @@ Each phase is one commit with its checks, in this order.
 - Resolve **D8**.
 
 The order of publishing is: demo live, beta published, sandbox links, then the
-announcement. Phases 1–4 need nothing from npm.
+announcement. Phases 1–5 need nothing from npm.
 
 ## Not in this plan
 
@@ -269,4 +302,5 @@ announcement. Phases 1–4 need nothing from npm.
 
 Phase 1 is a day: the aliasing, the Pages workflow and the E2E project are
 most of it. Phases 2 and 3 are half a day each. Phase 4 is half a day, the join
-script included. Phase 5 is an hour after the publish. About three days in all.
+script included. Phase 5 is half a day. Phase 6 is an hour after the publish.
+About three and a half days in all.

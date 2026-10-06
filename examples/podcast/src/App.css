@@ -1,0 +1,245 @@
+/* Scoped to `.podcast`: on the demo page every example shares one document. */
+
+.podcast {
+  --text: #1c1917;
+  --muted: #78716c;
+  --line: #e7e5e4;
+  --hover: #f5f5f4;
+  --accent: #b4532a;
+  --focus: #2563eb;
+  /* What sits on --text and around the thumb: the page behind the player. */
+  --surface: #ffffff;
+  color-scheme: light dark;
+
+  max-width: 420px;
+  margin: 0 auto;
+  color: var(--text);
+  font:
+    15px/1.4 system-ui,
+    sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .podcast {
+    --text: #f5f5f4;
+    --muted: #a8a29e;
+    --line: #44403c;
+    --hover: #292524;
+    --accent: #e8895f;
+    --focus: #60a5fa;
+    --surface: #1c1917;
+  }
+}
+
+.podcast :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.podcast p {
+  margin: 0;
+}
+
+.podcast-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.podcast-cover {
+  flex: none;
+  border-radius: 8px;
+}
+
+.podcast-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.podcast-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.podcast-transport {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin: 18px 0 10px;
+}
+
+.podcast-seek,
+.podcast-play {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* The number sits in the arrow's circle. */
+.podcast-seek {
+  width: 44px;
+  height: 44px;
+  background: none;
+  color: var(--text);
+}
+
+.podcast-seek > * {
+  grid-area: 1 / 1;
+}
+
+.podcast-seek svg {
+  width: 38px;
+  height: 38px;
+  fill: currentColor;
+}
+
+.podcast-seek span {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.podcast-seek[aria-disabled="true"] {
+  color: var(--line);
+  cursor: default;
+}
+
+.podcast-play {
+  width: 52px;
+  height: 52px;
+  background: var(--text);
+  color: var(--surface);
+}
+
+.podcast-play svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.podcast-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.podcast-time {
+  flex: none;
+  min-width: 2.6em;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.podcast-time:last-child {
+  text-align: right;
+}
+
+/* A slider root has no height of its own; this gives the track something to
+   measure. */
+.podcast-timeline {
+  flex: 1;
+  height: 20px;
+}
+
+/* The track and fill fill the control, so its padding is what makes them thin
+   while the whole 20px stays clickable. */
+.podcast-control {
+  box-sizing: border-box;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.podcast-track,
+.podcast-fill {
+  border-radius: 2px;
+}
+
+.podcast-track {
+  background: var(--line);
+}
+
+.podcast-fill {
+  background: var(--accent);
+}
+
+/* The thumb's horizontal position is inline; its vertical one is ours. */
+.podcast-thumb {
+  top: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--line);
+  box-sizing: border-box;
+  cursor: grab;
+}
+
+.podcast-rates {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.podcast-rate {
+  min-width: 3.2em;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.podcast-rate[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.podcast-chapters {
+  margin: 18px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.podcast-chapters button {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 4px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.podcast-chapters button:hover {
+  background: var(--hover);
+}
+
+.podcast-chapters [aria-current="true"] {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.podcast-chapter-time {
+  min-width: 2.6em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
