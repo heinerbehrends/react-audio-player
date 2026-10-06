@@ -290,11 +290,43 @@ Each phase is one commit with its checks, in this order.
 The order of publishing is: demo live, beta published, sandbox links, then the
 announcement. Phases 1–5 need nothing from npm.
 
+## Examples from the README rewrite (G4)
+
+Added 2026-10-06. G4 prefers a runnable example to a README code block, so the
+rewrite turns the README's feature-sized blocks into examples. Most already
+have a home:
+
+| README block                                          | Home                                                                |
+| ----------------------------------------------------- | ------------------------------------------------------------------- |
+| Basic usage                                           | **basic**                                                           |
+| Playlists, previous and next                          | **playlist**                                                        |
+| A retry after an error, `useIsLive()`, a stall        | **live**                                                            |
+| Chapters, `useCurrentSecond()` and `seek()`, buffered | **podcast**                                                         |
+| `useIsVolumeAvailable()`                              | **multi-player** (phase 5): compact players that drop volume on iOS |
+| Refs: focus the play button after a track change      | **playlist**, a few lines                                           |
+| `useIsAtEnd()`: an end card with Play again           | **podcast**, at the end of the episode                              |
+
+And four that need an example of their own, in order of value:
+
+- **design-system**: the props hooks (`usePlayButtonProps()` and the rest)
+  spread onto another library's `Button`, which is what the hooks are for and
+  what no example shows yet.
+- **localised**: a player in German through `labels`, with `labels.time`
+  writing its own sign, and the same through an i18n library's `t()`.
+- **keyboard**: `customKeyboardShortcuts` rebinding and unbinding keys, with
+  the active map shown beside the player.
+- **hls**: hls.js attached through `audioRef`. This replaces D7's README recipe
+  and reverses "HLS" under "Not in this plan" below; it adds hls.js as the
+  example's own dependency, never the library's.
+
+Each new example is one phase as before: the project, its demo slot, and one
+E2E test that it still runs.
+
 ## Not in this plan
 
 - **A documentation site.** The README stays the reference; the demo is the
   showcase. A generated API site is a separate decision.
-- **HLS.** **D7**'s README recipe.
+- **HLS.** **D7**'s README recipe, until the hls example above replaces it.
 - **A mini-player.** Mostly a layout exercise, and the playlist covers the
   library surface it would show. A styling variant of the playlist if wanted.
 - **Library changes.** None are required. S20's `--progress` would tidy the

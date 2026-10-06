@@ -38,8 +38,12 @@ when they need it.
 - **Edge cases only where a reader would trip.** A browser quirk stays in the
   README only if it changes what the reader writes; otherwise it goes to the
   JSDoc or the ticket.
-- **Link the demo** for anything an example already shows, rather than a code
-  block that repeats it.
+- **An example over README code.** A runnable example beats a code block: it is
+  type-checked, tested in CI, shown on the demo page and opens in a sandbox.
+  Where a README block shows a whole feature rather than one line, it becomes
+  an example, or moves into an existing one, and the README links to it. Short
+  snippets that show one prop stay. The candidates are listed in
+  `plans/PLAN-demo-site.md`, "Examples from the README rewrite".
 - **No size target, but a smell test:** if a section needs scrolling to find
   its first code block, it is too long.
 

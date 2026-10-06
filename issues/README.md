@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**15 open · 0 part-done · 109 resolved · 4 rejected**
+**16 open · 0 part-done · 110 resolved · 5 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,9 +13,10 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-1 open of 5.
+2 open of 6.
 
 - [ ] [G4](release/G4-the-readme-is-a-reference-dump-not-documentation.md) The README is a reference dump, not documentation — P0
+- [ ] [G5](release/G5-review-every-public-doc-comment.md) Review every public doc comment — P1
 - [x] [G0](resolved/release/G0-beta-release-checklist.md) Beta release checklist — P0
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
@@ -84,10 +85,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-9 open of 34.
+9 open of 35.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
-- [ ] [F11](features/F11-no-persistence.md) No persistence — P3
 - [ ] [F15](features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
 - [ ] [B4](features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation
@@ -95,6 +95,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
 - [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [ ] [D9](features/D9-publish-the-refusals.md) Publish the refusals
+- [ ] [F16](features/F16-headless-controls-that-also-drive-a-video.md) Headless controls that also drive a `<video>`
 - [x] [F1](resolved/features/F1-no-way-to-read-player-state.md) No way to read player state — P0
 - [x] [F2](resolved/features/F2-audiofiles-is-an-array-that-ignores-index.md) `audioFiles` is an array that ignores index 1+ — P0
 - [x] [F3](resolved/features/F3-audiofile-is-src-and-the-readme-example.md) `AudioFile` is `{src}` and the README example does not compile — P0
@@ -118,14 +119,16 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [x] [D4](resolved/features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
 - [x] [D5](resolved/features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one
+- [-] [F11](features/F11-no-persistence.md) No persistence — P3, rejected
 - [-] [D6](features/D6-the-podcast-surface-chapters-and-markers-first.md) The podcast surface: chapters and markers first, transcript sync second — rejected
 - [-] [D11](features/D11-a-paused-live-stream-resumes-behind-live.md) A paused live stream resumes behind live, and nothing says so — rejected
 
 ## Architecture & style
 
-1 open of 16.
+2 open of 17.
 
 - [ ] [C12](architecture/C12-the-committed-value-reset-needs-an-effect.md) The committed-value reset needs an effect and a lint suppression — P3
+- [ ] [C15](architecture/C15-review-the-comments-consumers-never-see.md) Review the comments consumers never see — P3
 - [x] [C1](resolved/architecture/C1-rate-slider-bounds-live-in-three-places.md) Rate-slider bounds live in three places and disagree — P1
 - [x] [C2](resolved/architecture/C2-slider-modes-mutesatzero-does-not-control-mute.md) `SLIDER_MODES.mutesAtZero` does not control mute-at-zero — P1
 - [x] [C3](resolved/architecture/C3-valuefromstoreref-its-effect-mirror-a-value-the.md) `valueFromStoreRef` + its effect mirror a value the store gives free — P1
@@ -173,8 +176,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Packaging
 
-2 open of 3.
+1 open of 3.
 
-- [ ] [B10](packaging/B10-nothing-checks-that-doc-comments-reach-the.md) Nothing checks that doc comments reach the published `.d.ts` — P2
 - [ ] [B6](packaging/B6-typescript-eslint-8-68-declares-typescript.md) `typescript-eslint` 8.68 declares `typescript
+- [x] [B10](resolved/packaging/B10-nothing-checks-that-doc-comments-reach-the.md) Nothing checks that doc comments reach the published `.d.ts` — P2
 - [x] [B7](resolved/packaging/B7-extend-type-check-to-cover-tsconfig-node.md) Extend `type-check` to cover `tsconfig.node.json` as well as `tsconfig.app.json`

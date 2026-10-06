@@ -2,10 +2,11 @@
 id: B10
 title: "Nothing checks that doc comments reach the published `.d.ts`"
 epic: packaging
-status: open
+status: resolved
 severity: P2
 origin: backlog
 breaking: false
+evidence: [verified]
 ---
 
 A doc comment is only worth writing if a consumer's editor shows it, and the only
@@ -43,3 +44,20 @@ preceded by a doc comment. The check was the dozen lines described above —
 split on `\r?\n`, since the emitted file has Windows line endings on this
 machine, find each `declare` line, and look back over blank lines for a
 closing `*/`. Not blocking the beta; wiring it into CI still is the ticket.
+
+## Resolution
+
+**Shipped** (2026-10-06) as `scripts/check-docs.mjs`, run as `pnpm check-docs`
+and in CI after the build, beside `check-exports`. It fails when a name in the
+final `export { … }` list of `dist/index.d.ts` has no doc comment above its
+declaration, or when a member of an exported object of parts does.
+
+The member rule is new since this ticket: with D2, `Time`'s parts became
+`forwardRef` constants, the emitter inlined their types into
+`declare const Time: { … }`, and every one of their doc comments was dropped
+without a warning. A function whose return type is an object literal is left
+out of that rule; its fields are return values, not parts.
+
+**Verified by** — 44 exports pass on the current build. A copy of the
+`.d.ts` with the doc stripped from `PlayButton` and from `Time.Elapsed` fails
+with both named.

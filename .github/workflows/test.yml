@@ -162,6 +162,11 @@ jobs:
       - name: Check exports
         run: pnpm check-exports
 
+      # Every public symbol still has its doc comment in the built .d.ts, which
+      # is all a consumer's editor reads (B10).
+      - name: Check docs
+        run: pnpm check-docs
+
       # `test:run`, not `test`: bare `vitest` only runs once because Vitest
       # disables watch when CI is set. Relying on that leaves CI one env var away
       # from hanging until the job times out.
