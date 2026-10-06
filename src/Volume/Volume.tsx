@@ -80,11 +80,11 @@ type VolumeComponent = React.FC<VolumeProps> & {
  * `.Control`, which is already named "Volume slider" (A11). Add your own
  * `role`/`aria-label` if you compose more controls in.
  *
- * Carries `data-part="root"`, `data-state="idle|dragging"` and
- * `data-orientation="horizontal|vertical"` — the axis, where a root-level layout
- * rule can read it; `aria-orientation` is on `.Control`, a child. Also sets
- * `--progress` and `--offset` as custom properties, which `.Progress` draws
- * from and your own fills can read.
+ * Carries `data-part="root"`, `data-slider="volume"`,
+ * `data-state="idle|dragging"` and `data-orientation="horizontal|vertical"` —
+ * the axis, where a root-level layout rule can read it; `aria-orientation` is
+ * on `.Control`, a child. Also sets `--progress` and `--offset` as custom
+ * properties, which `.Progress` draws from and your own fills can read.
  */
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got

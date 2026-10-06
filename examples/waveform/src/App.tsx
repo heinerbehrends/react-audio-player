@@ -64,12 +64,13 @@ export default function App() {
 
         {/* The waveform is the slider's track: a click anywhere on it seeks,
             and the arrow keys, Home, End and the announced position are the
-            library's. The played copy reads `--progress` from the root, so
-            nothing here re-renders as the track plays. */}
+            library's. The fill holds a second, coloured copy of the bars. */}
         <Timeline className="waveform-timeline">
           <Timeline.Control className="waveform-control">
             <Bars className="waveform-bars" />
-            <Bars className="waveform-bars waveform-played" />
+            <Timeline.Progress className="waveform-played">
+              <Bars className="waveform-bars" />
+            </Timeline.Progress>
           </Timeline.Control>
           <Timeline.Thumb className="waveform-thumb" />
         </Timeline>

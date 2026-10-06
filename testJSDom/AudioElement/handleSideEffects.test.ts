@@ -141,7 +141,7 @@ describe("handleSideEffect", () => {
 
   it("should change the playback rate on CHANGE_VALUE action for playback rate", () => {
     handleSideEffect(
-      { type: "CHANGE_VALUE", component: "playbackRate", value: 1.5 },
+      { type: "CHANGE_VALUE", component: "rate", value: 1.5 },
       audioElement,
     );
     expect(audioElement.playbackRate).toBe(1.5);
@@ -225,7 +225,7 @@ describe("handleSideEffect", () => {
 
     it("clamps a slider commit below the floor too", () => {
       handleSideEffect(
-        { type: "CHANGE_VALUE", component: "playbackRate", value: 0.05 },
+        { type: "CHANGE_VALUE", component: "rate", value: 0.05 },
         audioElement,
       );
       expect(audioElement.playbackRate).toBe(0.125);

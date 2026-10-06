@@ -98,44 +98,50 @@ describe("slider data attributes", () => {
 
   type RootProps = React.HTMLAttributes<HTMLDivElement>;
 
-  const sliders: { name: string; ui: (props: RootProps) => React.ReactNode }[] =
-    [
-      {
-        name: "Timeline",
-        ui: (props) => (
-          <Timeline {...props}>
-            <Timeline.Background />
-            <Timeline.Progress />
-            <Timeline.Control>track</Timeline.Control>
-            <Timeline.Thumb />
-          </Timeline>
-        ),
-      },
-      {
-        name: "Volume",
-        ui: (props) => (
-          <Volume {...props}>
-            <Volume.Background />
-            <Volume.Progress />
-            <Volume.Control>track</Volume.Control>
-            <Volume.Thumb />
-          </Volume>
-        ),
-      },
-      {
-        name: "PlaybackRateSlider",
-        ui: (props) => (
-          <PlaybackRateSlider {...props}>
-            <PlaybackRateSlider.Background />
-            <PlaybackRateSlider.Progress />
-            <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
-            <PlaybackRateSlider.Thumb />
-          </PlaybackRateSlider>
-        ),
-      },
-    ];
+  const sliders: {
+    name: string;
+    slider: string;
+    ui: (props: RootProps) => React.ReactNode;
+  }[] = [
+    {
+      name: "Timeline",
+      slider: "timeline",
+      ui: (props) => (
+        <Timeline {...props}>
+          <Timeline.Background />
+          <Timeline.Progress />
+          <Timeline.Control>track</Timeline.Control>
+          <Timeline.Thumb />
+        </Timeline>
+      ),
+    },
+    {
+      name: "Volume",
+      slider: "volume",
+      ui: (props) => (
+        <Volume {...props}>
+          <Volume.Background />
+          <Volume.Progress />
+          <Volume.Control>track</Volume.Control>
+          <Volume.Thumb />
+        </Volume>
+      ),
+    },
+    {
+      name: "PlaybackRateSlider",
+      slider: "rate",
+      ui: (props) => (
+        <PlaybackRateSlider {...props}>
+          <PlaybackRateSlider.Background />
+          <PlaybackRateSlider.Progress />
+          <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
+          <PlaybackRateSlider.Thumb />
+        </PlaybackRateSlider>
+      ),
+    },
+  ];
 
-  describe.each(sliders)("$name", ({ ui }) => {
+  describe.each(sliders)("$name", ({ slider, ui }) => {
     it("names all five parts", () => {
       const { container } = renderInPlayer(ui({}), {
         element: { readyState: 1, duration: 100 },
@@ -153,6 +159,18 @@ describe("slider data attributes", () => {
           `missing data-part="${part}"`,
         ).toBeInTheDocument();
       }
+    });
+
+    // S32: the three share their part names, so this is what a rule for one
+    // slider's parts scopes by.
+    it("says which slider it is on the root", () => {
+      const { container } = renderInPlayer(ui({}));
+
+      expect(container.querySelector('[data-part="root"]')).toHaveAttribute(
+        "data-slider",
+        slider,
+      );
+      expect(container.querySelectorAll("[data-slider]")).toHaveLength(1);
     });
 
     // The fill also carries the orientation, for its own CSS rule (S28).

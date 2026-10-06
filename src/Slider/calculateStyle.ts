@@ -63,10 +63,17 @@ export function sliderCustomProperties(
  * it wherever it loads. Read from `--progress` on the root; `data-orientation`
  * is matched on the fill itself, since an ancestor's could belong to some other
  * component.
+ *
+ * The timeline's transition is here too, rather than inline, so a consumer's
+ * `transition-property` can point it at another property (S32). The drag rule
+ * sets only the duration, so it still applies to whatever property that names;
+ * it has to come after the transition, since both have zero specificity.
  */
 export const progressFillRules =
   ':where([data-part="progress"][data-orientation]){width:100%;height:100%;transform:scaleX(var(--progress,0));transform-origin:left}' +
-  ':where([data-part="progress"][data-orientation="vertical"]){transform:scaleY(var(--progress,0));transform-origin:bottom}';
+  ':where([data-part="progress"][data-orientation="vertical"]){transform:scaleY(var(--progress,0));transform-origin:bottom}' +
+  ':where([data-slider="timeline"] [data-part="progress"]){transition:transform 250ms linear}' +
+  ':where([data-part="root"][data-state="dragging"] [data-part="progress"]){transition-duration:0s}';
 
 /**
  * What stays inline on the fill: its grid cell, and its place in the layer

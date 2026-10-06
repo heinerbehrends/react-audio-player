@@ -33,7 +33,8 @@ nothing to migrate from.
   inside it, your own included, and Space for play/pause while it has focus
 - `labels` for every name and readout the library writes, with
   `PlayerLabels` and `TimePart` types
-- `data-part` on every part and `data-state` where the DOM does not say it
+- `data-part` on every part, `data-state` where the DOM does not say it, and
+  `data-slider` on each slider root, since the three share their part names
 - `--progress` (0–1) and `--offset` custom properties on every slider root. The
   default fill is drawn from `--progress` by a zero-specificity rule, so a
   plain stylesheet rule on `[data-part="progress"]` replaces it

@@ -29,7 +29,10 @@ export type SliderAriaState = {
  * consumer's own `CHANGE_VALUE` also passes through (C2).
  */
 export type SliderModeConfig = {
-  /** Which component a `CHANGE_VALUE` names. Internal since S15. */
+  /**
+   * Which slider this is: what a `CHANGE_VALUE` names, internal since S15, and
+   * the root's `data-slider`, which is public.
+   */
   component: SliderComponent;
   /** The root's export name, for the missing-`.Control` error (S14). */
   rootName: "Timeline" | "Volume" | "PlaybackRateSlider";
@@ -119,7 +122,7 @@ export const SLIDER_MODES = {
     decrease: (amount) => ({ type: "DECREASE_VOLUME", value: amount }),
   },
   rate: {
-    component: "playbackRate",
+    component: "rate",
     rootName: "PlaybackRateSlider",
     writesDuringDrag: true,
     unmutesOnGrab: false,

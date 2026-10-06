@@ -55,6 +55,38 @@ test("the root reports drag state through a drag and back", async () => {
   await expect(root).toHaveAttribute("data-state", "idle");
 });
 
+/**
+ * S32: the fill's transition comes from a zero-specificity rule keyed on the
+ * root's `data-slider`, and a second one drops its duration while the root is
+ * dragging. Only a real cascade can say both apply.
+ */
+test("the fill's transition stops for a drag and resumes after", async () => {
+  await resetAudioState(page);
+  const { sliderStart, sliderLength } = await getTimelineState(page);
+  const fill = page.locator('[data-slider="timeline"] [data-part="progress"]');
+  const duration = () =>
+    fill.evaluate((element) => getComputedStyle(element).transitionDuration);
+
+  await expect.poll(duration).toBe("0.25s");
+
+  const thumb = page.getByTestId(testIds.timelineDragThumb);
+  const box = await thumb.boundingBox();
+  if (!box) throw new Error("timeline thumb has no box");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    sliderStart + sliderLength * 0.4,
+    box.y + box.height / 2,
+    {
+      steps: 10,
+    },
+  );
+
+  await expect.poll(duration).toBe("0s");
+  await page.mouse.up();
+  await expect.poll(duration).toBe("0.25s");
+});
+
 test("a track click does not leave the root dragging", async () => {
   await resetAudioState(page);
   const timeline = page.getByLabel(labels.timeline);

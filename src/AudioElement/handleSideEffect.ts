@@ -153,7 +153,7 @@ export function handleSideEffect(
           writeVolume(audioElement, action.value);
           break;
         }
-        case "playbackRate": {
+        case "rate": {
           writeRate(audioElement, action.value);
           break;
         }

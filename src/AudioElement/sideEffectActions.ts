@@ -1,4 +1,4 @@
-export type SliderComponent = "timeline" | "volume" | "playbackRate";
+export type SliderComponent = "timeline" | "volume" | "rate";
 
 /**
  * The playback rates the library will write, and the only place they are

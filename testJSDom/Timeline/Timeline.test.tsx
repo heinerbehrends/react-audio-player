@@ -1,14 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Timeline } from "../../src/Timeline/Timeline";
 import { renderInPlayer } from "../testComponents";
-import {
-  alongTrack,
-  pointerEventAt,
-  stubElementRects,
-  stubResizeObserver,
-} from "../testUtils";
+import { stubElementRects, stubResizeObserver } from "../testUtils";
 
 describe("Timeline", () => {
   let restoreRects: () => void;
@@ -42,7 +37,6 @@ describe("Timeline", () => {
       expect(progress).toHaveStyle({
         gridColumn: "1 / 1",
         gridRow: "1 / 1",
-        transition: "transform 250ms linear",
       });
       expect(progress).toHaveAttribute("data-orientation", "horizontal");
     });
@@ -78,61 +72,36 @@ describe("Timeline", () => {
     });
 
     /**
-     * The fill is driven by `currentTime`, which arrives in `timeupdate` steps
-     * (~4 Hz), so it would visibly tick without the transition. 250 ms linear
-     * matches that cadence: any easing would make the fill advance at a rate the
-     * audio does not.
+     * S32. The transition comes from the fill's own stylesheet, keyed on the
+     * root's `data-slider`, so a consumer's `transition-property` can point it
+     * elsewhere. Inline, only `style` could touch it. Whether it applies, and
+     * stops for a drag, is a cascade question jsdom cannot answer; see
+     * `testE2E/Timeline/drag-state.spec.ts`.
      */
-    describe("the progress transition", () => {
-      const renderTimeline = () =>
-        renderInPlayer(
-          <Timeline>
-            <Timeline.Control>track</Timeline.Control>
-            <Timeline.Thumb data-testid="thumb" />
-            <Timeline.Progress data-testid="progress" />
-          </Timeline>,
-          { element: { currentTime: 50, duration: 100 } },
-        );
+    it("leaves the transition to the rule it ships", () => {
+      renderInPlayer(
+        <Timeline>
+          <Timeline.Control>track</Timeline.Control>
+          <Timeline.Progress data-testid="progress" />
+        </Timeline>,
+        { element: { currentTime: 50, duration: 100 } },
+      );
 
-      it("smooths the timeupdate steps while idle", () => {
-        renderTimeline();
+      expect(screen.getByTestId("progress").style.transition).toBe("");
+    });
 
-        expect(screen.getByTestId("progress").style.transition).toBe(
-          "transform 250ms linear",
-        );
-      });
+    it("lets a consumer's own style win, so it can be dropped", () => {
+      renderInPlayer(
+        <Timeline>
+          <Timeline.Control>track</Timeline.Control>
+          <Timeline.Progress
+            data-testid="progress"
+            style={{ transition: "none" }}
+          />
+        </Timeline>,
+      );
 
-      /**
-       * Off during a drag: there the value updates at pointer rate, and easing
-       * reads as the fill lagging the finger.
-       */
-      it("drops out for the duration of a drag", () => {
-        renderTimeline();
-        const progress = screen.getByTestId("progress");
-
-        fireEvent(
-          screen.getByTestId("thumb"),
-          pointerEventAt("pointerdown", alongTrack(0.5)),
-        );
-        expect(progress.style.transition).toBe("");
-
-        fireEvent(window, pointerEventAt("pointerup", alongTrack(0.75)));
-        expect(progress.style.transition).toBe("transform 250ms linear");
-      });
-
-      it("lets a consumer's own style win, so it can be dropped", () => {
-        renderInPlayer(
-          <Timeline>
-            <Timeline.Control>track</Timeline.Control>
-            <Timeline.Progress
-              data-testid="progress"
-              style={{ transition: "none" }}
-            />
-          </Timeline>,
-        );
-
-        expect(screen.getByTestId("progress").style.transition).toBe("none");
-      });
+      expect(screen.getByTestId("progress").style.transition).toBe("none");
     });
 
     it("should render Timeline.Background with expected styles", () => {

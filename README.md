@@ -670,9 +670,11 @@ every element:
 | `.Background`            | `background`   |
 | `.Thumb`                 | `thumb`        |
 
+All three sliders share these part names, so each root also says which slider
+it is: `data-slider="timeline"`, `"volume"` or `"rate"`.
+
 ```css
-/* Scope to your own container: all three sliders share these part names. */
-.player [data-part="progress"] {
+[data-slider="volume"] [data-part="progress"] {
   background: rebeccapurple;
 }
 ```
@@ -750,6 +752,20 @@ vertical slider. They come from a rule the library renders itself, in a
 `:where()`, which has zero specificity, so any rule of yours on
 `[data-part="progress"]` replaces them, wherever it loads. The fill repeats the
 root's `data-orientation` for that rule to match.
+
+The timeline's fill also takes its transition from there: `transform` over
+250ms, linear, which smooths the `timeupdate` steps, with the duration dropped
+to `0s` during a drag. Set `transition-property` alone to animate something
+else and keep both, or `transition: none` to remove it.
+
+```css
+/* A waveform cut at the playhead rather than squashed by the scale. */
+.waveform-played {
+  transform: none;
+  clip-path: inset(0 calc((1 - var(--progress)) * 100%) 0 0);
+  transition-property: clip-path;
+}
+```
 
 A slider root is `display: grid` inline, because that is how its layers stack.
 The `hidden` attribute still hides it. To hide one from CSS — in a media or

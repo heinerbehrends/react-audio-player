@@ -98,9 +98,9 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  *
  * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
  * semantics are on `.Control` (A11). Carries `data-part="root"`,
- * `data-state="idle|dragging"` and `data-orientation="horizontal"`, and sets
- * `--progress` and `--offset` as custom properties, which `.Progress` draws
- * from and your own fills can read.
+ * `data-slider="rate"`, `data-state="idle|dragging"` and
+ * `data-orientation="horizontal"`, and sets `--progress` and `--offset` as
+ * custom properties, which `.Progress` draws from and your own fills can read.
  */
 export const PlaybackRateSlider =
   PlaybackRateSliderRoot as PlaybackRateSliderComponent;

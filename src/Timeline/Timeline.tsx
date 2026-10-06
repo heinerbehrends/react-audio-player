@@ -7,7 +7,7 @@ import {
 import { SliderProgress } from "../Slider/SliderProgress";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderControl } from "../Slider/SliderControl";
-import { SliderProvider, useSliderContext } from "../Slider/SliderContext";
+import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 
@@ -18,23 +18,15 @@ type ProgressProps = HTMLAttributes<HTMLDivElement>;
  * `--progress`, from a zero-specificity rule that any selector of yours
  * overrides — `width: calc(var(--progress) * 100%)` instead, say (S28).
  *
- * Carries `transition: transform 250ms linear`: the position arrives in
- * `timeupdate` steps (~4 Hz) and would visibly tick without it. Linear, so the
- * fill advances at the rate the audio does. Dropped during a drag, where easing
- * reads as the fill lagging the finger.
- *
- * Override it through `style`, which is merged last: `style={{ transition:
- * "none" }}`.
+ * Transitions `transform` over 250ms, linear, from the same rule: the position
+ * arrives in `timeupdate` steps (~4 Hz) and would visibly tick without it. The
+ * duration drops to `0s` during a drag, where easing reads as the fill lagging
+ * the finger. Set `transition-property` to animate something else — a
+ * `clip-path` that cuts a waveform rather than scaling it — and the drag still
+ * turns it off; `transition: none` removes it (S32).
  */
 function TimelineProgress(props: ProgressProps) {
-  const slider = useSliderContext();
-  const style = {
-    ...(slider.dragState === "dragging"
-      ? null
-      : { transition: "transform 250ms linear" }),
-    ...props.style,
-  };
-  return <SliderProgress {...props} style={style} />;
+  return <SliderProgress {...props} />;
 }
 
 function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
@@ -110,9 +102,9 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * `.Control` (A11). Add your own `role="group"` and `aria-label` if you compose
  * other controls in beside it.
  *
- * Carries `data-part="root"`, `data-state="idle|dragging"` and
- * `data-orientation="horizontal"`. All three sliders share their part names, so
- * scope your selectors. Also sets `--progress` (the filled fraction, `0`–`1`)
+ * Carries `data-part="root"`, `data-slider="timeline"`,
+ * `data-state="idle|dragging"` and `data-orientation="horizontal"`. All three
+ * sliders share their part names, so scope by `data-slider`. Also sets `--progress` (the filled fraction, `0`–`1`)
  * and `--offset` (the thumb position, in `px`) as custom properties, which
  * `.Progress` draws from and your own fills can read.
  *
