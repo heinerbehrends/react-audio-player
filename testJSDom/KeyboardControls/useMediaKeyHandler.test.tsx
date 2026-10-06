@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { useMediaKeyHandler } from "../../src/KeyboardControls/handleMediaKeys";
 import {
   PlayerRoot,
+  Timeline,
   usePlayButtonProps,
   usePlayerRootProps,
 } from "../../src/index";
@@ -137,7 +138,20 @@ describe("<PlayerRoot>", () => {
     expect(element.play).toHaveBeenCalledTimes(1);
   });
 
-  it("takes its name from labels.player", () => {
+  // `labels` is shared by every player on a page; the title tells them apart.
+  it("takes its name from the track title, over labels.player", () => {
+    renderWithStore(<Root />, {
+      ...loaded,
+      audioFile: { src: "race.mp3", title: "The Race" },
+      labels: { player: "Hörbuch" },
+    });
+
+    expect(
+      screen.getByRole("region", { name: "The Race" }),
+    ).toBeInTheDocument();
+  });
+
+  it("takes its name from labels.player without a title", () => {
     renderWithStore(<Root />, { ...loaded, labels: { player: "Hörbuch" } });
 
     expect(screen.getByRole("region", { name: "Hörbuch" })).toBeInTheDocument();
@@ -164,6 +178,26 @@ describe("<PlayerRoot>", () => {
 
     fireEvent.keyDown(screen.getByRole("region"), { key: "m" });
     expect(element.muted).toBe(true);
+  });
+
+  // The slider swallows the key; the root is the first listener above it.
+  it("ignores arrow keys on a disabled slider inside", () => {
+    const { element } = renderWithStore(
+      <PlayerRoot>
+        <Timeline>
+          <Timeline.Control />
+        </Timeline>
+      </PlayerRoot>,
+      { element: { readyState: 0, duration: NaN, volume: 0.5 } },
+    );
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("aria-disabled", "true");
+
+    fireEvent.keyDown(slider, { key: "ArrowUp" });
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+
+    expect(element.volume).toBe(0.5);
+    expect(element.currentTime).toBe(0);
   });
 
   it("runs the caller's onKeyDown first, and preventDefault opts out", () => {

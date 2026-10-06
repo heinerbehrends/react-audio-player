@@ -354,10 +354,14 @@ export function useSlider({
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if (isArrowKey(event.key)) {
         // Swallowed, not passed on: the global map seeks on `ArrowRight` and
-        // changes the volume on `ArrowUp`, so falling through would let a
-        // disabled slider drive the player. No `preventDefault()` — a control
-        // that does nothing should not eat the scroll.
-        if (isDisabled) return;
+        // changes the volume on `ArrowUp`, so falling through, or bubbling to
+        // `<PlayerRoot>`, would let a disabled slider drive the player. No
+        // `preventDefault()` — a control that does nothing should not eat the
+        // scroll.
+        if (isDisabled) {
+          event.stopPropagation();
+          return;
+        }
         const amount = step || config.defaultArrowStep;
         const bounds = { minValue, maxValue };
         store.send(
@@ -370,7 +374,10 @@ export function useSlider({
         return;
       }
       if (isJumpKey(event.key)) {
-        if (isDisabled) return;
+        if (isDisabled) {
+          event.stopPropagation();
+          return;
+        }
         // `commit`, not `send`: a jump has the same echo gap as a click, so in
         // `"seek"` mode the display would snap back until the element caught up.
         commit(JUMP_KEYS[event.key] === "minValue" ? minValue : maxValue);

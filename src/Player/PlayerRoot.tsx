@@ -11,8 +11,8 @@ import { useLabels, usePlayerConfig } from "./PlayerConfigContext";
  * with the keyboard shortcuts on everything inside it, your own buttons
  * included. Opt-in: `<AudioPlayer>` renders no element of its own (A10).
  *
- * - `role="region"`, named by `labels.player`, so two players on a page
- *   announce apart. Pass `aria-labelledby` to name it by the track title.
+ * - `role="region"`, named by `audioFile.title`, so two players on a page
+ *   announce apart. Without a title, by `labels.player`.
  * - `tabIndex={-1}`: a click on the cover or the title focuses the player, so
  *   the shortcuts keep working, without adding a tab stop.
  * - Space plays and pauses while the root itself has focus; on a button inside,
@@ -40,13 +40,15 @@ export function usePlayerRootProps<P extends React.HTMLAttributes<HTMLElement>>(
   props?: P,
 ) {
   const labels = useLabels();
-  const { customKeyboardShortcuts } = usePlayerConfig();
+  const { audioFile, customKeyboardShortcuts } = usePlayerConfig();
   const { send } = usePlayerStore();
   const onKeyDown = useMediaKeyHandler();
   return {
     "data-part": "player",
     role: "region",
-    "aria-label": labels?.player ?? "audio player",
+    // The title first: `labels` is shared by every player on a page, and two
+    // regions both named "audio player" are what A10 was about.
+    "aria-label": audioFile.title ?? labels?.player ?? "audio player",
     tabIndex: -1,
     ...props,
     onKeyDown: composeEventHandlers(

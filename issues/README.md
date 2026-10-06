@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 0 part-done · 101 resolved · 3 rejected**
+**22 open · 0 part-done · 101 resolved · 3 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -83,8 +83,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-14 open of 33.
+15 open of 34.
 
+- [ ] [B12](features/B12-a-stream-that-drops-mid-listen-never-reports-an-error.md) A stream that drops mid-listen never reports an error, and nothing can retry it — P1
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
 - [ ] [F15](features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3

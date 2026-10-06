@@ -113,7 +113,7 @@ function Station() {
       </div>
 
       <ErrorMessage className="live-error">
-        The station is not answering. Try again in a moment.
+        The station is not answering. Reload the page to try again.
       </ErrorMessage>
     </PlayerRoot>
   );

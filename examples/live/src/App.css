@@ -67,6 +67,11 @@
   cursor: pointer;
 }
 
+.live-play[aria-disabled="true"] {
+  background: var(--line);
+  cursor: default;
+}
+
 .live-play svg {
   width: 16px;
   height: 16px;

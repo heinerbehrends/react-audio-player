@@ -39,9 +39,9 @@ export type TimePart = "elapsed" | "remaining" | "duration";
  */
 export type PlayerLabels = {
   /**
-   * The player's name, on `<PlayerRoot>`. Default:
-   * "audio player". Also set on the `<audio>` element, where it is not
-   * announced: without `controls` that has no accessible object (A16).
+   * The player's name, on `<PlayerRoot>` when `audioFile` has no `title`.
+   * Default: "audio player". Also set on the `<audio>` element, where it is
+   * not announced: without `controls` that has no accessible object (A16).
    */
   player?: string;
 

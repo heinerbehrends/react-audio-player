@@ -88,9 +88,9 @@ controls in `<PlayerRoot>` and each player becomes a named landmark:
 </AudioPlayer>
 ```
 
-It renders a `<div data-part="player">` with `role="region"`, a name from
-`labels.player` (or pass `aria-labelledby` pointing at the track title),
-`tabIndex={-1}` and the keyboard shortcuts. The `-1` means a click on the cover or the title focuses
+It renders a `<div data-part="player">` with `role="region"`, named by
+`audioFile.title` (without one, by `labels.player`; `aria-label` or
+`aria-labelledby` override both), `tabIndex={-1}` and the keyboard shortcuts. The `-1` means a click on the cover or the title focuses
 the player, so the shortcuts keep working, without adding a tab stop: keyboard
 users reach it through its controls, and no focus ring appears on a click. For
 a container of your own — a `<section>`, or one another component library
@@ -214,8 +214,8 @@ raw values, `Intl` is yours.
 | `rateSet`    | `({ rate }) => string`        | `"Set playback rate to 1.5x"`                                          |
 | `rateChange` | `({ amount }) => string`      | `"Increase playback rate by 0.25x"`                                    |
 
-`player` names [`<PlayerRoot>`](#accessibility) — see
-[Accessibility](#accessibility). It is also set on the `<audio>` element, which
+`player` names [`<PlayerRoot>`](#accessibility) when `audioFile` has no
+`title` — see [Accessibility](#accessibility). It is also set on the `<audio>` element, which
 has no accessible object without `controls`, so it is not announced there.
 | `rateGroup` | `string` | `"Playback rate options"` |
 | `timelineSlider` | `string` | `"Timeline slider"` |
