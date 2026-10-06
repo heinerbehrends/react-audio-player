@@ -196,8 +196,9 @@ discovering it.
   keeps the what and loses the why is worse than no comment
 - Do not add comments where none existed unless the fact fits a category above
 - Match each file's existing conventions: dash style, backticks, line width
-- Ticket refs (`A4`, `S9`, `T1`) are load-bearing — they point at reasoning
-  instead of duplicating it. Keep them and their format
+- Ticket refs (`A4`, `S9`, `T1`) are load-bearing inline — they point at
+  reasoning instead of duplicating it. Never in public JSDoc, which a consumer
+  reads without access to `issues/`: there the reason stays and the ID goes
 
 ## Worked examples
 
@@ -268,3 +269,28 @@ npx tsup && node -e "…"   # doc comments must survive into dist/index.d.ts
 
 The `react-refresh/only-export-components` warning in
 `testJSDom/testComponents.tsx` is pre-existing and expected.
+
+## Second pass: the public JSDoc (G5, 2026-10-06)
+
+The first pass measured source files. The public surface is better measured
+where consumers read it, in the `.d.ts`, against other libraries' published
+`.d.ts` files. `scripts/doc-comment-stats.mjs` does that (`pnpm doc-stats`);
+the numbers and the peer table are in the G5 ticket.
+
+What the peers that rely on hover text settle on, and what this repo now holds
+public JSDoc to:
+
+- **Every public symbol and every member has a block**, members included
+  (`children`, each method of a returned object). React Aria Components and
+  `react-use-audio-player` document about 90% of members; Base UI 61%.
+- **A root is one to three sentences**: what it is, what element it renders
+  with its `data-part`, then only what the signature cannot say — units,
+  defaults, when it is disabled, required composition. Peers sit at 3–4 lines
+  and 12–15 words; this repo, having no docs site, sits at 5 lines and 30.
+- **A member is one sentence**, with `@defaultValue` where there is one.
+  Peers: 4 lines and 12 words, most of that the comment delimiters.
+- **`@example` is rare**: Base UI's slider has 2 in 216 blocks. Keep one where
+  the composition is not obvious from the types (the root, the slider, the
+  labels bag), not as a habit.
+- **No ticket IDs**, and no browser versions or measurement dates: those go in
+  `issues/` and inline, where the maintainer reads them.

@@ -9,6 +9,7 @@ import {
   Time,
   Timeline,
   TimelineBuffered,
+  formatTime,
   useAudioPlayer,
   useCurrentSecond,
 } from "react-headless-audio-player";
@@ -168,7 +169,9 @@ function Chapters() {
             }}
           >
             <span className="podcast-chapter-time">
-              {formatTime(chapter.start)}
+              {/* Floored like `useCurrentSecond()`, so the label agrees with
+                  the highlight; `formatTime` alone would round up. */}
+              {formatTime(Math.floor(chapter.start))}
             </span>
             {chapter.title}
           </button>
@@ -176,9 +179,4 @@ function Chapters() {
       ))}
     </ol>
   );
-}
-
-function formatTime(seconds: number) {
-  const whole = Math.floor(seconds);
-  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
 }

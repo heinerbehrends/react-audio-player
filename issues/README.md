@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**16 open · 0 part-done · 110 resolved · 5 rejected**
+**16 open · 0 part-done · 111 resolved · 5 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,14 +13,14 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-2 open of 6.
+1 open of 6.
 
 - [ ] [G4](release/G4-the-readme-is-a-reference-dump-not-documentation.md) The README is a reference dump, not documentation — P0
-- [ ] [G5](release/G5-review-every-public-doc-comment.md) Review every public doc comment — P1
 - [x] [G0](resolved/release/G0-beta-release-checklist.md) Beta release checklist — P0
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
 - [x] [G3](resolved/release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
+- [x] [G5](resolved/release/G5-review-every-public-doc-comment.md) Review every public doc comment — P1
 
 ## Accessibility
 
@@ -46,8 +46,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-0 open of 34.
+1 open of 35.
 
+- [ ] [S35](surface/S35-useplayerrootprops-returns-a-270-line-inferred-type.md) `usePlayerRootProps()` returns a 270-line inferred type — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
 - [x] [S3](resolved/surface/S3-no-use-client-directive-breaks-the-next.md) 'No `"use client"` directive — breaks the Next.js App Router' — P0
