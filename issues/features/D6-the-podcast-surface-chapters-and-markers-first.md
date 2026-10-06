@@ -26,5 +26,11 @@ able to give before it is asked.
 `useCurrentSecond()` and `seek()`, about fifteen lines. That is the case for
 leaving the list itself out of the library. The one snag: `useCurrentSecond()`
 is floored, so a chapter start at 115.75 has to be compared floored too, or a
-click on that chapter marks the one before it for a moment. The `<Timeline>`
-marks this ticket proposes are untouched by the example: it has none.
+click on that chapter marks the one before it for a moment.
+
+The `<Timeline>` marks this ticket proposes are userland too: a span per
+chapter inside `<Timeline.Control>`, at `start / duration` as a percentage,
+`aria-hidden` because the chapter list is the accessible version. About fifteen
+lines with their CSS. They need `z-index: 2` to sit over the fill, which the
+README's layer order (`0`, `1`, `2`) already documents. So neither half needs
+a library primitive yet.

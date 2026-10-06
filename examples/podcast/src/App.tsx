@@ -106,6 +106,7 @@ function Episode() {
           <Timeline.Control className="podcast-control">
             <Timeline.Background className="podcast-track" />
             <Timeline.Progress className="podcast-fill" />
+            <ChapterMarks />
           </Timeline.Control>
           <Timeline.Thumb className="podcast-thumb" />
         </Timeline>
@@ -123,6 +124,22 @@ function Episode() {
       <Chapters />
     </PlayerRoot>
   );
+}
+
+// A gap in the track where each chapter after the first begins. Hidden from
+// assistive technology: the chapter list below says the same, and can be used.
+function ChapterMarks() {
+  const { duration } = useAudioPlayer();
+  if (!(duration > 0)) return null;
+
+  return CHAPTERS.slice(1).map((chapter) => (
+    <span
+      key={chapter.title}
+      className="podcast-mark"
+      style={{ left: `${(chapter.start / duration) * 100}%` }}
+      aria-hidden="true"
+    />
+  ));
 }
 
 // Chapters in userland: a sorted list, the current second and `seek()`.

@@ -168,6 +168,18 @@
   background: var(--accent);
 }
 
+/* Above the fill, which the library stacks over the track. */
+.podcast-mark {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  translate: -50% -50%;
+  background: var(--muted);
+}
+
 /* The thumb's horizontal position is inline; its vertical one is ours. */
 .podcast-thumb {
   top: calc(50% - 7px);

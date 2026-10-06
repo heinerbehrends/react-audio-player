@@ -1189,6 +1189,16 @@ Use `useCurrentSecond` for anything a human reads. Reach for `useCurrentTime`
 only for something drawn continuously, such as a waveform or a custom progress
 bar.
 
+`useCurrentSecond` is floored, so compare it with a floored time. A chapter
+that starts at 115.75 reads 115 right after a seek to it, and
+`start <= second` would still mark the chapter before:
+
+```js
+const current = chapters.findLastIndex(
+  (chapter) => Math.floor(chapter.start) <= second,
+);
+```
+
 ## Keyboard shortcuts
 
 Available on every focusable control. A slider's own keys take precedence over

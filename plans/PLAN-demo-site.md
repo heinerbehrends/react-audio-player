@@ -267,6 +267,9 @@ Each phase is one commit with its checks, in this order.
   over the starts and `seek()`. The one snag is that `useCurrentSecond()` is
   floored, so a chapter start has to be compared floored too, or a click on a
   chapter marks the one before it until the next whole second.
+- Chapter marks on the timeline, added after: a tick per chapter inside
+  `<Timeline.Control>` at `start / duration`, over the fill at `z-index: 2`.
+  Also userland, so D6's proposed `<Timeline>` marks are not needed for this.
 
 ### Phase 5 — multi-player
 
