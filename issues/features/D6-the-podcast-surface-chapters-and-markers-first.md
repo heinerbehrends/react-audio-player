@@ -2,7 +2,7 @@
 id: D6
 title: "The podcast surface: chapters and markers first, transcript sync second"
 epic: features
-status: open
+status: rejected
 severity: none
 origin: demand
 breaking: false
@@ -34,3 +34,13 @@ chapter inside `<Timeline.Control>`, at `start / duration` as a percentage,
 lines with their CSS. They need `z-index: 2` to sit over the fill, which the
 README's layer order (`0`, `1`, `2`) already documents. So neither half needs
 a library primitive yet.
+
+## Decision
+
+**No library primitive** (2026-10-06). The podcast example builds both halves
+in userland with the hooks that exist: the chapter list, and marks on the
+timeline. Transcript sync is the same pattern, a sorted list against
+`useCurrentSecond()`, and was not built. The README's `useCurrentSecond()`
+section carries the one snag, comparing a floored time. Reopen if a consumer
+needs something the example cannot show, such as marks a screen reader can
+reach from the slider itself.

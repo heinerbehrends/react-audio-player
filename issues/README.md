@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**20 open · 0 part-done · 103 resolved · 3 rejected**
+**17 open · 0 part-done · 105 resolved · 4 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -83,19 +83,16 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-14 open of 34.
+11 open of 34.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
 - [ ] [F15](features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3
-- [ ] [B1](features/B1-playlist-resumption-is-undocumented-and-now-more.md) Playlist resumption is undocumented, and now more visible
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
 - [ ] [B4](features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation
 - [ ] [B8](features/B8-codec-fallback-via-source.md) Codec fallback via `<source>` — **breaking**
 - [ ] [B9](features/B9-buffered-ranges.md) Buffered ranges
 - [ ] [D2](features/D2-refs-on-the-parts-additive-but-it.md) Refs on the parts. — additive, but it touches every public prop type
-- [ ] [D5](features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one
-- [ ] [D6](features/D6-the-podcast-surface-chapters-and-markers-first.md) The podcast surface: chapters and markers first, transcript sync second
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
 - [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [ ] [D9](features/D9-publish-the-refusals.md) Publish the refusals
@@ -114,10 +111,13 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F14](resolved/features/F14-a-track-swap-carries-on-only-when-it-should.md) A track swap carries on only when it should — P2
 - [x] [D10](resolved/features/D10-example-and-excerpt-script-fixes.md) The examples lose focus and reach, and the excerpt script cuts into tags — P3
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
+- [x] [B1](resolved/features/B1-playlist-resumption-is-undocumented-and-now-more.md) Playlist resumption is undocumented, and now more visible
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop
 - [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [x] [D4](resolved/features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
+- [x] [D5](resolved/features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one
+- [-] [D6](features/D6-the-podcast-surface-chapters-and-markers-first.md) The podcast surface: chapters and markers first, transcript sync second — rejected
 - [-] [D11](features/D11-a-paused-live-stream-resumes-behind-live.md) A paused live stream resumes behind live, and nothing says so — rejected
 
 ## Architecture & style

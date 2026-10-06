@@ -2,7 +2,7 @@
 id: B1
 title: "Playlist resumption is undocumented, and now more visible"
 epic: features
-status: open
+status: resolved
 severity: none
 origin: backlog
 breaking: false
@@ -17,3 +17,11 @@ consumer-side fixes the tooltip already names. Tracked from **G0** and **G3**.
 
 **Documented** (2026-10-01, with G3): the Playlists section names both
 consumer-side fixes. Whether the library should resume on its own stays open.
+
+## Resolution
+
+**Resolved by F13** (2026-10-06). The library now decides what this ticket
+left open: a track swap carries on playing when the player was playing or the
+track ran to its end, and stays paused after a pause. The README's Playlists
+section documents that, `pause()` for a player that should rest, and `play()`
+for a click in a track list. Neither consumer-side workaround is needed.
