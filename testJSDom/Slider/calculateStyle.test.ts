@@ -3,13 +3,13 @@ import {
   backgroundStyles,
   calculateDragStyle,
   fillStyles,
-  progressFillRules,
   progressStyles,
   containerStyles,
   rootStyles,
   sliderCustomProperties,
   type StyleContext,
 } from "../../src/Slider/calculateStyle";
+import { progressFillRules } from "../../src/Slider/SliderProgress";
 
 describe("calculateStyle", () => {
   const defaultContext: StyleContext = {
@@ -90,29 +90,15 @@ describe("calculateStyle", () => {
       );
     });
 
-    // S32: inline, the transition could only be replaced through `style`.
-    it("transitions the timeline's fill", () => {
-      expect(progressFillRules).toContain(
-        ':where([data-slider="timeline"] [data-part="progress"]){transition:transform 250ms linear}',
-      );
-    });
-
-    // The duration alone, so a consumer's `transition-property` still stops
-    // for a drag.
-    it("drops the transition's duration during a drag, after the transition", () => {
-      const drag =
-        ':where([data-part="root"][data-state="dragging"] [data-part="progress"]){transition-duration:0s}';
-
-      expect(progressFillRules).toContain(drag);
-      expect(progressFillRules.indexOf(drag)).toBeGreaterThan(
-        progressFillRules.indexOf("transition:"),
-      );
+    // S33: a default glide glided seeks too; the fill jumps, like the thumb.
+    it("ships no transition", () => {
+      expect(progressFillRules).not.toContain("transition");
     });
 
     it("wraps every selector in :where(), so any rule of yours wins", () => {
       const selectors = progressFillRules.match(/[^{}]+(?={)/g) ?? [];
 
-      expect(selectors).toHaveLength(4);
+      expect(selectors).toHaveLength(2);
       for (const selector of selectors) {
         expect(selector).toMatch(/^:where(.*)$/);
       }

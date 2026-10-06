@@ -1,6 +1,22 @@
 import type { HTMLAttributes } from "react";
-import { fillStyles, progressFillRules } from "./calculateStyle";
+import { fillStyles } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
+
+/**
+ * The fill's default size and transform, as a stylesheet rather than inline,
+ * so a consumer's rule on `[data-part="progress"]` overrides them without
+ * `!important` (S28). `:where()` has zero specificity, so any selector beats
+ * it wherever it loads. Read from `--progress` on the root; `data-orientation`
+ * is matched on the fill itself, since an ancestor's could belong to some other
+ * component.
+ *
+ * No transition: the fill jumps to each `timeupdate` step and to a seek's
+ * target alike, as the thumb does. A default glide also glided seeks, and only
+ * a seek signal the store does not have could tell the two apart (S33).
+ */
+export const progressFillRules =
+  ':where([data-part="progress"][data-orientation]){width:100%;height:100%;transform:scaleX(var(--progress,0));transform-origin:left}' +
+  ':where([data-part="progress"][data-orientation="vertical"]){transform:scaleY(var(--progress,0));transform-origin:bottom}';
 
 // React 19's resource props, which `@types/react` 18 does not declare.
 const hoisted = {

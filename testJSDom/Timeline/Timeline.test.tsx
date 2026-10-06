@@ -71,14 +71,8 @@ describe("Timeline", () => {
       expect(rules?.textContent).toContain("scaleX(var(--progress,0))");
     });
 
-    /**
-     * S32. The transition comes from the fill's own stylesheet, keyed on the
-     * root's `data-slider`, so a consumer's `transition-property` can point it
-     * elsewhere. Inline, only `style` could touch it. Whether it applies, and
-     * stops for a drag, is a cascade question jsdom cannot answer; see
-     * `testE2E/Timeline/drag-state.spec.ts`.
-     */
-    it("leaves the transition to the rule it ships", () => {
+    // S33: nothing inline either, so the fill jumps to a seek's target.
+    it("sets no transition of its own", () => {
       renderInPlayer(
         <Timeline>
           <Timeline.Control>track</Timeline.Control>
@@ -88,20 +82,6 @@ describe("Timeline", () => {
       );
 
       expect(screen.getByTestId("progress").style.transition).toBe("");
-    });
-
-    it("lets a consumer's own style win, so it can be dropped", () => {
-      renderInPlayer(
-        <Timeline>
-          <Timeline.Control>track</Timeline.Control>
-          <Timeline.Progress
-            data-testid="progress"
-            style={{ transition: "none" }}
-          />
-        </Timeline>,
-      );
-
-      expect(screen.getByTestId("progress").style.transition).toBe("none");
     });
 
     it("should render Timeline.Background with expected styles", () => {

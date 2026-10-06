@@ -70,9 +70,9 @@ test("progress indicator updates on audio playback", async () => {
     Math.floor(currentTime).toString(),
   );
 
-  // The fill is driven by the unquantised value and carries a 250 ms
-  // transition, so it is allowed to lag the element — but it must have moved,
-  // and must not have run past the position.
+  // The fill is driven by the unquantised value, which can trail the element
+  // by one `timeupdate` — but it must have moved, and must not have run past
+  // the position.
   const fraction = await fillFraction();
   expect(fraction).toBeGreaterThan(0);
   expect(fraction).toBeLessThanOrEqual(currentTime / duration + 0.01);

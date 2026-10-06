@@ -47,3 +47,7 @@ Chromium and Firefox: the fill's computed `transition-duration` is `0.25s`
 idle, `0s` mid-drag, and `0.25s` after. It fails with the drag rule removed.
 jsdom tests pin the rule text and its order, the absence of an inline
 transition, and `data-slider` on each root and nowhere else.
+
+**Superseded in part** (2026-10-06) by **S33**: the default transition and its
+drag rule are gone, so a seek jumps. `data-slider`, and the zero-specificity
+fill that lets two plain rules add a glide back, stay.

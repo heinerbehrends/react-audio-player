@@ -34,8 +34,7 @@ const SAMPLE_INTERVAL = 50;
  * Samples the UI, not the element. The snap-back is a display bug — on commit,
  * display falls back to the `currentTime` atom until `seeked` echoes ~250 ms
  * later — while `el.currentTime` is assigned synchronously and never dips, so
- * reading it cannot fail. The thumb follows the display value at event rate;
- * `Timeline.Progress` would smear the transient through its transition.
+ * reading it cannot fail. The thumb follows the display value at event rate.
  */
 async function sampleUi(): Promise<{ thumbX: number; valueNow: number }[]> {
   const samples: { thumbX: number; valueNow: number }[] = [];

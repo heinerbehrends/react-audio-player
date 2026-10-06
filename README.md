@@ -753,17 +753,17 @@ vertical slider. They come from a rule the library renders itself, in a
 `[data-part="progress"]` replaces them, wherever it loads. The fill repeats the
 root's `data-orientation` for that rule to match.
 
-The timeline's fill also takes its transition from there: `transform` over
-250ms, linear, which smooths the `timeupdate` steps, with the duration dropped
-to `0s` during a drag. Set `transition-property` alone to animate something
-else and keep both, or `transition: none` to remove it.
+Nothing animates. The position arrives in `timeupdate` steps, about four a
+second, and the fill and the thumb both jump to each one — and straight to the
+target of a seek. To smooth playback, add a transition and drop it for a drag,
+knowing that a seek will glide too:
 
 ```css
-/* A waveform cut at the playhead rather than squashed by the scale. */
-.waveform-played {
-  transform: none;
-  clip-path: inset(0 calc((1 - var(--progress)) * 100%) 0 0);
-  transition-property: clip-path;
+.player [data-slider="timeline"] [data-part="progress"] {
+  transition: transform 250ms linear;
+}
+.player [data-slider="timeline"][data-state="dragging"] [data-part="progress"] {
+  transition: none;
 }
 ```
 
@@ -803,9 +803,14 @@ it yourself when a transform cannot draw what you want. `scaleX()` squashes a
 }
 ```
 
-`<Timeline.Progress>` carries an inline `transition: transform 250ms linear`,
-dropped during a drag. To animate a width instead, pass
-`style={{ transition: "width 250ms linear" }}`.
+A waveform is cut at the playhead rather than squashed:
+
+```css
+.waveform-played {
+  transform: none;
+  clip-path: inset(0 calc((1 - var(--progress)) * 100%) 0 0);
+}
+```
 
 A gradient that stays put while the fill grows, or a conic dial, reads the
 fraction the same way:

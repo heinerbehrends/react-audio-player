@@ -103,20 +103,17 @@
 }
 
 /* The fill scales by default, which would squash the bars; this cuts them at
-   the playhead instead. Only the property changes: the library's 250ms, and
-   its pause during a drag, still apply. */
+   the playhead instead. */
 .waveform-played {
   transform: none;
   clip-path: inset(0 calc((1 - var(--progress)) * 100%) 0 0);
-  transition-property: clip-path;
 }
 
 .waveform-played .waveform-bars {
   fill: var(--accent);
 }
 
-/* A wide hit area that draws a 2px playhead down its middle. Its position is
-   an inline transform; the transition keeps it on the clip's edge. */
+/* A wide hit area that draws a 2px playhead down its middle. */
 .waveform-thumb {
   top: 0;
   width: 12px;
@@ -126,10 +123,4 @@
   background: linear-gradient(var(--text), var(--text)) center / 2px 100%
     no-repeat;
   cursor: grab;
-  transition: transform 250ms linear;
-}
-
-/* Easing during a drag reads as the playhead lagging the pointer. */
-.waveform-timeline[data-state="dragging"] .waveform-thumb {
-  transition: none;
 }

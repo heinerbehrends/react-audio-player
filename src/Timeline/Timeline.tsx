@@ -11,24 +11,6 @@ import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 
-type ProgressProps = HTMLAttributes<HTMLDivElement>;
-
-/**
- * The elapsed fill. Give it a background; it fills the root and scales with
- * `--progress`, from a zero-specificity rule that any selector of yours
- * overrides — `width: calc(var(--progress) * 100%)` instead, say (S28).
- *
- * Transitions `transform` over 250ms, linear, from the same rule: the position
- * arrives in `timeupdate` steps (~4 Hz) and would visibly tick without it. The
- * duration drops to `0s` during a drag, where easing reads as the fill lagging
- * the finger. Set `transition-property` to animate something else — a
- * `clip-path` that cuts a waveform rather than scaling it — and the drag still
- * turns it off; `transition: none` removes it (S32).
- */
-function TimelineProgress(props: ProgressProps) {
-  return <SliderProgress {...props} />;
-}
-
 function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
@@ -81,7 +63,7 @@ const TimelineRoot: React.FC<TimelineProps> = ({
 };
 
 type TimelineComponent = React.FC<TimelineProps> & {
-  Progress: typeof TimelineProgress;
+  Progress: typeof SliderProgress;
   Background: typeof TimelineBackground;
   Control: typeof SliderControl;
   Thumb: typeof SliderThumb;
@@ -119,7 +101,7 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * ```
  */
 export const Timeline: TimelineComponent = TimelineRoot as TimelineComponent;
-Timeline.Progress = TimelineProgress;
+Timeline.Progress = SliderProgress;
 Timeline.Control = SliderControl;
 Timeline.Thumb = SliderThumb;
 Timeline.Background = TimelineBackground;
