@@ -1114,6 +1114,27 @@ bar.
 Available on every focusable control. A slider's own keys take precedence over
 the shortcuts below.
 
+For controls of your own, such as a playlist's previous and next buttons,
+`useMediaKeyHandler()` returns the same handler as an `onKeyDown`. Put it on
+one element, or on a container to cover everything inside:
+
+```jsx
+function Player() {
+  const onKeyDown = useMediaKeyHandler();
+  return (
+    <div className="player" onKeyDown={onKeyDown}>
+      <PlayButton>…</PlayButton>
+      <button onClick={next}>Next</button>
+    </div>
+  );
+}
+```
+
+A key a library control already handled stops there, so nothing runs twice.
+Keys typed into a text field, `<select>` or `contenteditable` are left alone.
+It works only inside `<AudioPlayer>`, and only while focus is inside the
+container: the shortcuts are never page-wide.
+
 On a focused slider the arrow keys adjust its value, and `Home` and `End` jump to
 the ends of its range. Those two are slider-only: everywhere else they stay the
 browser's.

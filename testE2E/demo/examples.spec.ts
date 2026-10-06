@@ -78,6 +78,20 @@ test.describe("Playlist", () => {
     ).toHaveAttribute("aria-current", "true");
   });
 
+  // Previous and next are the example's own buttons, so only
+  // `useMediaKeyHandler` on the root gives them the shortcuts.
+  test("the shortcuts work with a custom button focused", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Playlist" });
+
+    await example.getByRole("button", { name: "Next track" }).focus();
+    await page.keyboard.press("k");
+
+    await expect.poll(() => isPlaying(example)).toBe(true);
+    await page.keyboard.press("k");
+    await expect.poll(() => isPlaying(example)).toBe(false);
+  });
+
   test("a track chosen from the list plays, even when paused", async ({
     page,
   }) => {

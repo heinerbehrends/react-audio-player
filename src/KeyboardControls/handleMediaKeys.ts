@@ -109,3 +109,32 @@ export function useHandleMediaKeys() {
     return result;
   };
 }
+
+/**
+ * The player's keyboard shortcuts as an `onKeyDown` handler, for controls of
+ * your own. Put it on one element, or on a container to cover every control
+ * inside it: a key a library control already handled stops there, so nothing
+ * runs twice. Keys typed into a text field, `<select>` or `contenteditable`
+ * are left alone.
+ *
+ * Follows `customKeyboardShortcuts`, like every library control.
+ *
+ * @example
+ * ```jsx
+ * const onKeyDown = useMediaKeyHandler();
+ * <div className="player" onKeyDown={onKeyDown}>…</div>
+ * ```
+ */
+export function useMediaKeyHandler() {
+  const handleMediaKeys = useHandleMediaKeys();
+  // Only here: no library control is editable, so they skip the check.
+  return (event: React.KeyboardEvent) => {
+    const target = event.target as HTMLElement;
+    if (
+      !target.isContentEditable &&
+      !/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)
+    ) {
+      handleMediaKeys(event as React.KeyboardEvent<HTMLButtonElement>);
+    }
+  };
+}

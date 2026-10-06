@@ -28,6 +28,8 @@ nothing to migrate from.
   browser ignores `volume` writes
 - Keyboard shortcuts bound to every focused control, with `KeyToActionMap` to
   rebind or unbind them
+- `useMediaKeyHandler()`, the shortcuts as an `onKeyDown` for controls of your
+  own, on one element or a container
 - `labels` for every name and readout the library writes, with
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part and `data-state` where the DOM does not say it

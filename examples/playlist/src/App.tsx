@@ -7,6 +7,7 @@ import {
   Time,
   Timeline,
   useAudioPlayer,
+  useMediaKeyHandler,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
 
@@ -56,6 +57,7 @@ type PlayerProps = {
 // Its own component because `useAudioPlayer()` works only inside the player.
 function Player({ index, setIndex }: PlayerProps) {
   const { play } = useAudioPlayer();
+  const onKeyDown = useMediaKeyHandler();
   const hasPrevious = index > 0;
   const hasNext = index < TRACKS.length - 1;
   const previous = () => {
@@ -66,7 +68,9 @@ function Player({ index, setIndex }: PlayerProps) {
   };
 
   return (
-    <div className="playlist">
+    // The shortcuts reach previous, next and the track list too, which are this
+    // example's own buttons rather than the library's.
+    <div className="playlist" onKeyDown={onKeyDown}>
       {/* The lock screen and media keys; previous and next appear only while
           there is a track to go to. */}
       <MediaSession
