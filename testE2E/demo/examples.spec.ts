@@ -6,7 +6,7 @@ import { labels } from "../test-utils";
  * missing track or an API change an example was not updated for fails here
  * instead of on the deployed site.
  */
-for (const name of ["Basic player", "Playlist"]) {
+for (const name of ["Basic player", "Playlist", "Waveform"]) {
   test(`${name} plays`, async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name });
@@ -221,5 +221,29 @@ test.describe("Basic player", () => {
 
       await expect.poll(() => volumeWidth(example)).toBeGreaterThan(40);
     });
+  });
+});
+
+test.describe("Waveform", () => {
+  // The bars are inside `.Control`, so the whole waveform is the track, not
+  // only a strip along its bottom.
+  test("a click on the waveform's upper half seeks", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Waveform" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+    await expect(timeline).not.toHaveAttribute("aria-disabled", "true");
+
+    // `mouse.click` does not scroll, and the example starts below the fold.
+    await timeline.scrollIntoViewIfNeeded();
+    const box = (await timeline.boundingBox())!;
+    await page.mouse.click(box.x + box.width * 0.6, box.y + 10);
+
+    // `aria-valuenow` is in whole seconds, so compare fractions.
+    const max = Number(await timeline.getAttribute("aria-valuemax"));
+    await expect
+      .poll(
+        async () => Number(await timeline.getAttribute("aria-valuenow")) / max,
+      )
+      .toBeCloseTo(0.6, 2);
   });
 });

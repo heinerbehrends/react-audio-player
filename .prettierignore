@@ -4,6 +4,7 @@ dist
 test-results
 test-results.json
 playwright-report
+examples/waveform/src/peaks.json
 
 # pnpm writes this. Reformatting it produces a diff of thousands of lines and
 # risks the lockfile's own semantics.

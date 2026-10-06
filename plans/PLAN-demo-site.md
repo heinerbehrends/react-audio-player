@@ -6,7 +6,7 @@ so the examples are the product page. This plan settles where the examples live
 and how one copy of each serves the demo page, the sandboxes and CI, then lands
 them in five phases.
 
-## Status: phases 1 and 2 built 2026-10-05; the site is live at https://heinerbehrends.github.io/react-audio-player/.
+## Status: phases 1 and 2 built 2026-10-05, phase 3 on 2026-10-06; the site is live at https://heinerbehrends.github.io/react-audio-player/.
 
 ---
 
@@ -224,6 +224,16 @@ Each phase is one commit with its checks, in this order.
 - `scripts/generate-peaks.mjs` and the committed `peaks.json`.
 - The example as spiked above, styled.
 - E2E: a click on the waveform's upper half seeks.
+- Built differently from the spike: S20's `--progress` had landed, so the
+  played copy is clipped in CSS and nothing re-renders as the track plays; the
+  bars sit inside `.Control` with a full-height playhead for a thumb, and no
+  bar beneath. The peaks are mean power, not RMS: this track's RMS stays
+  within 0.75–0.95 of its maximum and drew bars of one height.
+- Found on the way: an SVG with a `viewBox` in the one-cell grid sets the
+  row's minimum from its aspect ratio, and grew the timeline to 519 px at
+  830 px wide. `min-height: 0` on the bars and on `.Control` — commented in
+  the example's CSS. Any consumer drawing an SVG into a slider hits this; a
+  line in the README's Timeline section would save them the search.
 
 ### Phase 4 — podcast
 

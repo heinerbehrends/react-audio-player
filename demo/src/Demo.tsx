@@ -5,6 +5,9 @@ import basicCss from "../../examples/basic/src/App.css?raw";
 import PlaylistApp from "../../examples/playlist/src/App";
 import playlistApp from "../../examples/playlist/src/App.tsx?raw";
 import playlistCss from "../../examples/playlist/src/App.css?raw";
+import WaveformApp from "../../examples/waveform/src/App";
+import waveformApp from "../../examples/waveform/src/App.tsx?raw";
+import waveformCss from "../../examples/waveform/src/App.css?raw";
 
 const REPO = "https://github.com/heinerbehrends/react-audio-player";
 
@@ -39,6 +42,17 @@ const EXAMPLES: Example[] = [
     files: [
       { name: "App.tsx", code: playlistApp },
       { name: "App.css", code: playlistCss },
+    ],
+  },
+  {
+    id: "waveform",
+    title: "Waveform",
+    summary:
+      "Precomputed peaks drawn as SVG bars inside <Timeline>, the played part in colour. A click anywhere on the waveform seeks, and the keyboard and screen reader get the same slider as every other timeline.",
+    App: WaveformApp,
+    files: [
+      { name: "App.tsx", code: waveformApp },
+      { name: "App.css", code: waveformCss },
     ],
   },
 ];
