@@ -1,0 +1,81 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { AudioPlayer, useIsLive } from "../../src/index";
+import { createTestStore } from "./createTestStore";
+
+function Badge() {
+  return <span>{useIsLive() ? "live" : "not live"}</span>;
+}
+
+/**
+ * B11. Firefox reports a live MP3 or Opus stream as a finite track whose
+ * duration grows with the buffer, so `audioFile.live` marks the element
+ * `data-live` and the store reads it with the duration.
+ */
+describe("audioFile.live", () => {
+  it("is live whatever duration the element reports", () => {
+    const { store, element } = createTestStore({
+      duration: 12,
+      readyState: 1,
+    });
+    element.dataset["live"] = "";
+
+    element.emit("durationchange");
+    expect(store.isLive.get()).toBe(true);
+    expect(store.duration.get()).toBe(0);
+
+    element.duration = 14;
+    element.emit("durationchange");
+    expect(store.isLive.get()).toBe(true);
+
+    delete element.dataset["live"];
+    element.emit("durationchange");
+    expect(store.isLive.get()).toBe(false);
+    expect(store.duration.get()).toBe(14);
+  });
+
+  it("is read on the reset a new source triggers", () => {
+    const { store, element } = createTestStore({
+      duration: 12,
+      readyState: 1,
+    });
+    element.dataset["live"] = "";
+    element.duration = NaN;
+
+    element.emit("loadstart");
+
+    expect(store.isLive.get()).toBe(true);
+  });
+
+  // The keys reach the write path from any button, so the guard is there too.
+  it.each([
+    [{ type: "SET_TIME_FORWARD", value: 10 }],
+    [{ type: "SET_TIME_BACKWARD", value: 10 }],
+    [{ type: "SET_TIME_TO_START" }],
+    [{ type: "SET_TIME_TO_PERCENT", percent: 0.5 }],
+  ] as const)("ignores %o on a stream with a finite duration", (action) => {
+    const { store, element } = createTestStore({
+      duration: 12,
+      currentTime: 4,
+      readyState: 1,
+    });
+    element.dataset["live"] = "";
+
+    store.send(action);
+
+    expect(element.currentTime).toBe(4);
+  });
+
+  it.each([
+    [{ src: "station.mp3", live: true }, "live"],
+    [{ src: "episode.mp3" }, "not live"],
+  ])("reaches useIsLive from AudioPlayer for %o", (audioFile, expected) => {
+    render(
+      <AudioPlayer audioFile={audioFile}>
+        <Badge />
+      </AudioPlayer>,
+    );
+
+    expect(screen.getByText(expected)).toBeInTheDocument();
+  });
+});

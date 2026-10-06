@@ -32,7 +32,7 @@ export function AudioElement({
   ...props
 }: AudioElementProps) {
   const { audioFile, labels } = usePlayerConfig();
-  const { src } = audioFile ?? {};
+  const { src, live } = audioFile ?? {};
 
   const store = usePlayerStore();
   const [element, setElement] = useState<HTMLAudioElement | null>(null);
@@ -70,6 +70,9 @@ export function AudioElement({
     <audio
       // Before the spread, so `audioProps` can replace it per instance (A15).
       aria-label={labels?.player ?? "audio player"}
+      // Read off the element by the store, in the same commit as `src`, so the
+      // new source's `loadstart` already sees it (B11).
+      data-live={live ? "" : undefined}
       {...props}
       src={src}
       ref={ref}

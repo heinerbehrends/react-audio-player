@@ -11,6 +11,12 @@ import type { PlayerLabels } from "../Shared/playerLabels";
  */
 export type AudioFile = {
   src: string;
+  /**
+   * Marks the source as a live stream: no timeline, seeking or remaining time.
+   * Needed for MP3 and Opus streams in Firefox, which reports them as a finite,
+   * growing track; elsewhere a stream's endless duration says so (B11).
+   */
+  live?: boolean;
   /** The track title on the lock screen. Read by `<MediaSession>`. */
   title?: string;
   /** The artist on the lock screen. Read by `<MediaSession>`. */

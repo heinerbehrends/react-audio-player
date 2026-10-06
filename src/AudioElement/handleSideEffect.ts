@@ -57,13 +57,17 @@ function stepRate(
 
 /**
  * A finite duration is what makes a position on the track meaningful: it is
- * `NaN` before metadata and `Infinity` on a live stream. `useIsSeekable()` is
- * the same test, so `SeekButton` is already `aria-disabled` whenever this is
- * false — but the media keys are player-wide and reach these actions from any
- * button, so the guard belongs here too.
+ * `NaN` before metadata and `Infinity` on a live stream — or finite on a
+ * stream marked `data-live` (B11). `useIsSeekable()` is the same test, so
+ * `SeekButton` is already `aria-disabled` whenever this is false — but the
+ * media keys are player-wide and reach these actions from any button, so the
+ * guard belongs here too.
  */
 function isSeekable(audioElement: HTMLAudioElement) {
-  return Number.isFinite(audioElement.duration);
+  return (
+    Number.isFinite(audioElement.duration) &&
+    audioElement.dataset["live"] === undefined
+  );
 }
 
 function writeTime(audioElement: HTMLAudioElement, value: number) {
@@ -217,10 +221,12 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_TO_START": {
+      if (!isSeekable(audioElement)) break;
       audioElement.currentTime = 0;
       break;
     }
     case "SET_TIME_TO_PERCENT": {
+      if (!isSeekable(audioElement)) break;
       writeTime(audioElement, audioElement.duration * action.percent);
       break;
     }

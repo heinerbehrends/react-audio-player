@@ -20,10 +20,10 @@ export type ProjectionAtoms = {
   currentSecond: Atom<number>;
   duration: Atom<number>;
   /**
-   * Whether the element reports an unbounded duration — a live stream.
-   * Projected on its own because `duration` flattens `Infinity` to `0`, which
-   * is also what it reads before metadata, so downstream the two cannot be
-   * told apart (D4).
+   * Whether the source is a live stream: an unbounded duration, or `data-live`
+   * on the element, which `audioFile.live` sets (B11). Projected on its own
+   * because `duration` reads `0` for it, which is also what it reads before
+   * metadata, so downstream the two cannot be told apart (D4).
    */
   isLive: Atom<boolean>;
   volume: Atom<number>;
@@ -60,6 +60,7 @@ export type SyncableMediaElement = {
   paused: boolean;
   readyState: number;
   error: MediaError | null;
+  dataset: DOMStringMap;
   addEventListener: (type: string, listener: () => void) => void;
   removeEventListener: (type: string, listener: () => void) => void;
 };
@@ -92,13 +93,18 @@ const projectTime: SyncHandler = (element, atoms) => {
 };
 
 /**
- * `duration` and `isLive` move together: both are read off `element.duration`,
- * and `isLive` is the one fact `finite()` erases. `NaN` before metadata is not
- * live; only `Infinity` is.
+ * `duration` and `isLive` move together. A live stream reads `0`: `Infinity`,
+ * which `finite()` erases, or `data-live` on a stream Firefox reports as a
+ * finite, growing track (B11). `NaN` before metadata is not live.
+ *
+ * The attribute is read when the duration is, so toggling `audioFile.live` on
+ * the same `src` takes effect at the next `durationchange`.
  */
 const projectDuration: SyncHandler = (element, atoms) => {
-  atoms.duration.set(finite(element.duration));
-  atoms.isLive.set(element.duration === Infinity);
+  const isLive =
+    element.duration === Infinity || element.dataset["live"] !== undefined;
+  atoms.duration.set(isLive ? 0 : finite(element.duration));
+  atoms.isLive.set(isLive);
 };
 
 /** Never toggled: always read off the element. */

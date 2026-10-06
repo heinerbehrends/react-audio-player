@@ -41,6 +41,8 @@ nothing to migrate from.
   playing, or if the track ended while playing and the user has not acted since.
   It stays paused otherwise. Only an autoplay refusal stops the next swap from
   playing; a track that fails to load does not
+- `audioFile.live`, for live MP3 and Opus streams, which Firefox reports as a
+  finite, growing track rather than an endless one
 - `<MediaSession>`: the lock screen, media keys and system media controls, with
   metadata from `audioFile`, play, pause, skip and seek, a live scrubber, and
   `onPreviousTrack` / `onNextTrack`. Opt-in, so a player without it pays none of

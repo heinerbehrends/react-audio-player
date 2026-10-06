@@ -365,6 +365,9 @@ everything below it.
 ```ts
 type AudioFile = {
   src: string;
+  // A live stream: no timeline, seeking or remaining time. Needed for MP3 and
+  // Opus streams in Firefox; see "Live streams in Firefox".
+  live?: boolean;
   // Shown on the lock screen and the system media controls by <MediaSession>.
   title?: string;
   artist?: string;
@@ -865,19 +868,19 @@ function TrackInfo() {
 }
 ```
 
-| Returns                                           |                                                                       |
-| ------------------------------------------------- | --------------------------------------------------------------------- |
-| `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                        |
-| `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                       |
-| `volumeState`                                     | `"muted" \| "low" \| "high"`                                          |
-| `isDisabled`                                      | The track is errored. Loading does not disable — see below.           |
-| `isSeekable`                                      | A position on the track can be named: the duration is known.          |
-| `isLive`                                          | The track is a live stream: an unbounded duration. See `useIsLive()`. |
-| `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.         |
-| `error`                                           | The last failure, or `null`. See `useAudioError()`.                   |
-| `play`, `pause`, `toggle`                         |                                                                       |
-| `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                      |
-| `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does.    |
+| Returns                                           |                                                                    |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                     |
+| `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                    |
+| `volumeState`                                     | `"muted" \| "low" \| "high"`                                       |
+| `isDisabled`                                      | The track is errored. Loading does not disable — see below.        |
+| `isSeekable`                                      | A position on the track can be named: the duration is known.       |
+| `isLive`                                          | The track is a live stream. See `useIsLive()`.                     |
+| `isBuffering`                                     | Playback wants to advance and cannot — the spinner condition.      |
+| `error`                                           | The last failure, or `null`. See `useAudioError()`.                |
+| `play`, `pause`, `toggle`                         |                                                                    |
+| `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                   |
+| `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. |
 
 The control methods keep the same identity for the lifetime of the player, so
 they are safe to put in a dependency array.
@@ -962,7 +965,8 @@ The loading state is still announced — on the accessible name, which reads
 
 ### `useIsLive()`
 
-Whether the track is a live stream — the element reports an unbounded duration.
+Whether the track is a live stream: the element reports an unbounded duration,
+or [`audioFile.live`](#live-streams-in-firefox) says so.
 For a "LIVE" badge, hiding the clock, or swapping the timeline for a "listen
 live" control:
 
@@ -987,7 +991,22 @@ will be. Gate the timeline on the first and the badge on the second.
 `duration` still reads `0` for a live stream, as it does before metadata — so
 this hook is the only place the two are told apart. A stream that later reports
 a finite length, such as a recording that finished, stops being live on
-`durationchange`.
+`durationchange`, unless `audioFile.live` says otherwise.
+
+### Live streams in Firefox
+
+Firefox reports some live streams as a finite track: for MP3 and Opus, the
+duration is how far it has buffered, and grows about once a second. Chromium,
+and Firefox's AAC, report `Infinity`. Measured in Chromium 151 and Firefox 153;
+Safari is not yet measured.
+
+The player cannot tell such a stream from a file, so say it is live:
+
+```jsx
+<AudioPlayer audioFile={{ src: stationUrl, live: true }}>
+```
+
+Nothing overrides it, and in a playlist it follows the current `audioFile`.
 
 ### `useIsVolumeAvailable()`
 
@@ -1166,7 +1185,9 @@ Live streams play. Play, pause, volume, mute and rate all work on an unbounded
 duration; only the timeline and the seek buttons are disabled, through
 [`useIsSeekable()`](#useisseekable), and [`useIsLive()`](#useislive) names the
 state so you can show a badge or swap the scrubber out. `duration` reads `0`
-for a live stream, as it does before metadata.
+for a live stream, as it does before metadata. Firefox reports MP3 and Opus
+streams as finite, so pass
+[`audioFile.live`](#live-streams-in-firefox) for those.
 
 ## License
 
