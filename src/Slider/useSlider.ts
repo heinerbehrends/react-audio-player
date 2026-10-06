@@ -67,6 +67,31 @@ const NEVER = constant(0);
 
 type DragState = typeof IDLE | { state: "dragging"; value: number };
 
+/** The last committed value, and what the store held when it went out. */
+type Committed = { value: number; storeValue: number } | null;
+
+/**
+ * After a commit the store holds the old value until the element echoes, so the
+ * committed value stays shown until the store moves off what it held at commit
+ * time. Not until it matches the committed value: an echo can differ slightly.
+ */
+function valueToShow({
+  storeValue,
+  drag,
+  committed,
+  writesDuringDrag,
+}: {
+  storeValue: number;
+  drag: DragState;
+  committed: Committed;
+  writesDuringDrag: boolean;
+}) {
+  if (drag.state === "dragging" && !writesDuringDrag) return drag.value;
+  if (drag.state === "dragging") return storeValue;
+  if (committed && committed.storeValue === storeValue) return committed.value;
+  return storeValue;
+}
+
 /**
  * Drives one slider of any kind. Owns drag state and geometry, and returns the
  * whole `SliderContext` value. `Timeline`, `Volume` and `PlaybackRateSlider` are
@@ -128,10 +153,7 @@ export function useSlider({
 
   const [geometry, setGeometry] = useState({ sliderStart: 0, sliderLength: 0 });
   const [drag, setDrag] = useState<DragState>(IDLE);
-  const [committed, setCommitted] = useState<{
-    value: number;
-    storeValue: number;
-  } | null>(null);
+  const [committed, setCommitted] = useState<Committed>(null);
 
   // Read by the drag's window listeners, which outlive the render that attached
   // them, so a change here does not force a re-attach.
@@ -195,23 +217,12 @@ export function useSlider({
     );
   }, [config.rootName]);
 
-  /**
-   * Dropping the local value the instant a drag ends causes a visible snap-back:
-   * the commit writes the element, but the atom holds the pre-drag value until
-   * the element echoes back — up to ~250 ms in `"seek"` mode (T1). So the
-   * committed value is retained until the store moves off what it held when the
-   * commit went out.
-   *
-   * Compared against the store value *at commit time*, not against the committed
-   * value: an element may echo back a slightly different time than the one it
-   * was given, which would freeze the display for good.
-   */
-  const displayValue =
-    drag.state === "dragging"
-      ? drag.value
-      : committed && committed.storeValue === valueFromStore
-        ? committed.value
-        : valueFromStore;
+  const displayValue = valueToShow({
+    storeValue: valueFromStore,
+    drag,
+    committed,
+    writesDuringDrag: config.writesDuringDrag,
+  });
 
   // Load-bearing, not housekeeping: an entry left in place matches again
   // whenever the store returns to the value the commit was made against, and
@@ -409,13 +420,16 @@ export function useSlider({
 
     function move(event: PointerEvent | TouchEvent) {
       const value = valueFor(event);
+      // Volume and rate write as they go, and the store holds the written value
+      // in the same task, so the slider shows that: one update per move, and
+      // one render.
+      if (config.writesDuringDrag) {
+        send(value);
+        return;
+      }
       setDrag((current) =>
         current.state === "dragging" ? { state: "dragging", value } : current,
       );
-
-      if (config.writesDuringDrag) {
-        send(value);
-      }
     }
 
     // One finger fires both `pointerup` and `touchend`, before React can

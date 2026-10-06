@@ -214,4 +214,37 @@ describe("createPlayerStore", () => {
       expect(listener).not.toHaveBeenCalled();
     });
   });
+
+  /**
+   * A volume or rate drag writes the element on every move. The value reads
+   * back at once, while its event arrives a task later, so the store projects
+   * it straight away: the subscriber wakes in the same task as the slider's own
+   * update, and the echo wakes no one.
+   */
+  describe("volume and rate writes", () => {
+    it("project at once, and the echo changes nothing", () => {
+      const element = createMediaElementFake({ readyState: 1 });
+      const store = createPlayerStore();
+      store.attach(element as unknown as HTMLAudioElement);
+      const listener = vi.fn();
+      store.volume.subscribe(listener);
+
+      store.send({ type: "CHANGE_VALUE", component: "volume", value: 0.4 });
+      expect(store.volume.get()).toBe(0.4);
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      element.emit("volumechange");
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it("project a rate the same way", () => {
+      const element = createMediaElementFake({ readyState: 1 });
+      const store = createPlayerStore();
+      store.attach(element as unknown as HTMLAudioElement);
+
+      store.send({ type: "CHANGE_VALUE", component: "rate", value: 1.5 });
+
+      expect(store.rate.get()).toBe(1.5);
+    });
+  });
 });

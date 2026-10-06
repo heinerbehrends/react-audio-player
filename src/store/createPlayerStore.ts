@@ -2,6 +2,7 @@ import { handleSideEffect } from "../AudioElement/handleSideEffect";
 import type { SideEffectAction } from "../AudioElement/sideEffectActions";
 import { atom, readable, type ReadableAtom } from "./atom";
 import {
+  HANDLERS,
   syncFromElement,
   type LoadState,
   type ProjectionAtoms,
@@ -133,6 +134,14 @@ export function createPlayerStore(): PlayerStore {
       lastAudibleVolume: atoms.lastAudibleVolume.get(),
       isSeekable: atoms.duration.get() > 0,
     });
+    // Volume and rate read back at once, while their events arrive a task
+    // later. Projecting now lands in the same render as the caller's own
+    // update, and the echo then changes nothing: one render per drag move,
+    // not two.
+    if (element) {
+      HANDLERS.volumechange(element, atoms, audibleVolumeHolds > 0);
+      HANDLERS.ratechange(element, atoms);
+    }
     if (!started) return;
 
     started.then(
