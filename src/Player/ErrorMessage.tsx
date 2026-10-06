@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 
@@ -22,7 +23,10 @@ type ErrorMessageProps = {
  * Style it through `className`, `style`, or `[data-part="error"]`. It adds no
  * class of its own.
  */
-export function ErrorMessage({ children, ...props }: ErrorMessageProps) {
+export const ErrorMessage = /* @__PURE__ */ forwardRef<
+  HTMLDivElement,
+  ErrorMessageProps
+>(function ErrorMessage({ children, ...props }, ref) {
   const store = usePlayerStore();
   const loadState = useStore(store.loadState);
 
@@ -31,6 +35,7 @@ export function ErrorMessage({ children, ...props }: ErrorMessageProps) {
       <div
         data-part="error"
         {...props}
+        ref={ref}
         // After the spread: the role and the politeness are the component.
         role="alert"
         aria-live="assertive"
@@ -40,4 +45,4 @@ export function ErrorMessage({ children, ...props }: ErrorMessageProps) {
     );
   }
   return null;
-}
+});

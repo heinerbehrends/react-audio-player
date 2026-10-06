@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
+import { forwardRef } from "react";
 import { usePlayerState, type PlayerState } from "../store/derived";
 import {
   useComposedButtonProps,
@@ -49,9 +50,16 @@ export function usePlayButtonProps<
   } as StatefulButtonPropsBag<P, PlayerState>;
 }
 
-function PlayButtonComponent({ children, ...props }: PlayButtonProps) {
-  return <button {...usePlayButtonProps(props)}>{children}</button>;
-}
+const PlayButtonRoot = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  PlayButtonProps
+>(function PlayButton({ children, ...props }, ref) {
+  return (
+    <button {...usePlayButtonProps(props)} ref={ref}>
+      {children}
+    </button>
+  );
+});
 
 /**
  * Reads no state: `TOGGLE_PLAY` already branches on `el.paused`, so a
@@ -94,13 +102,12 @@ function Paused({
   return <>{children}</>;
 }
 
-type PlayButtonComponent = React.FC<PlayButtonProps> & {
+type PlayButtonComponent = React.ForwardRefExoticComponent<
+  PlayButtonProps & React.RefAttributes<HTMLButtonElement>
+> & {
   Playing: typeof Playing;
   Paused: typeof Paused;
 };
-
-PlayButtonComponent.Playing = Playing;
-PlayButtonComponent.Paused = Paused;
 
 /**
  * Play/pause, as one button.
@@ -118,4 +125,7 @@ PlayButtonComponent.Paused = Paused;
  *
  * Carries `data-part="play"` and `data-state="playing|paused|loading|error"`.
  */
-export const PlayButton = PlayButtonComponent;
+export const PlayButton: PlayButtonComponent = /* @__PURE__ */ Object.assign(
+  PlayButtonRoot,
+  { Playing, Paused },
+);

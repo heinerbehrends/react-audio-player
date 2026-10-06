@@ -3,7 +3,7 @@
    consumers through it rather than being exported individually. Fast refresh
    degrades for this file; a call signature that type-checks and then throws at
    runtime is the worse trade. */
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { formatTime } from "../Shared/formatTime";
 import { useStore } from "../store/atom";
 import { usePlayerState, useTimeDisplay } from "../store/derived";
@@ -45,31 +45,17 @@ type TimeProps = Omit<
   "children" | "dangerouslySetInnerHTML"
 >;
 
-/**
- * A button showing the elapsed or the remaining time, switching between them
- * when pressed. Renders the readout itself, as `Time.Elapsed` or
- * `Time.Remaining` would, so it takes no children. For a readout that never
- * switches, render one of those on its own.
- *
- * Named by the time on screen, then what pressing does — "1:23 elapsed, show
- * time remaining" — so the name contains the visible text (WCAG 2.5.3, A17).
- * The name is the only place the state appears; no `aria-pressed` (A4).
- * Translate it with `AudioPlayer`'s `labels.timeToggle`.
- *
- * The choice is this toggle's own: two toggles switch independently.
- *
- * Carries `data-part="time-toggle"` and `data-state="elapsed|remaining"` — the
- * readout showing, not the one pressing will show.
- */
-function Toggle({ defaultValue = "elapsed", ...props }: ToggleProps) {
-  // The state, not the bag's `data-state`, which `props` can replace (S30).
-  const [shown, toggle] = useTimeToggle(defaultValue, props);
-  return (
-    <button {...toggle}>
-      {shown === "elapsed" ? <Elapsed /> : <Remaining />}
-    </button>
-  );
-}
+const Toggle = /* @__PURE__ */ forwardRef<HTMLButtonElement, ToggleProps>(
+  function Toggle({ defaultValue = "elapsed", ...props }, ref) {
+    // The state, not the bag's `data-state`, which `props` can replace (S30).
+    const [shown, toggle] = useTimeToggle(defaultValue, props);
+    return (
+      <button {...toggle} ref={ref}>
+        {shown === "elapsed" ? <Elapsed /> : <Remaining />}
+      </button>
+    );
+  },
+);
 
 /**
  * `Time.Toggle`'s props, for a `<button>` of your own: the state, the name
@@ -126,45 +112,25 @@ function useTimeToggle<P extends React.ButtonHTMLAttributes<HTMLButtonElement>>(
   return [timeDisplay, bag];
 }
 
-/**
- * The position, as `M:SS` or `H:MM:SS`, in a `<time data-part="elapsed">`.
- *
- * Updates once a second, not at the element's ~4 Hz.
- *
- * The time is its own accessible name. No `aria-label`: on a `<time>` one
- * replaces the value rather than adding to it (A12). Pass your own if the
- * context needs spelling out.
- *
- * No `format` prop: the formatting is `AudioPlayer`'s `labels.time`, which names
- * all three readouts at once and is handed raw seconds (S16).
- */
-function Elapsed(props: TimeProps) {
-  return (
-    <time data-part="elapsed" {...props}>
-      {useReadoutText("elapsed")}
-    </time>
-  );
-}
+const Elapsed = /* @__PURE__ */ forwardRef<HTMLTimeElement, TimeProps>(
+  function Elapsed(props, ref) {
+    return (
+      <time data-part="elapsed" {...props} ref={ref}>
+        {useReadoutText("elapsed")}
+      </time>
+    );
+  },
+);
 
-/**
- * The time left, negative-signed — `-1:30` — in a
- * `<time data-part="remaining">`.
- *
- * Never counts past zero, and
- * reads `0:00` — unsigned — both before the duration is known and once the track
- * has finished, where a "-0:00" would read as a glitch. No `aria-label`, for the
- * reason given on `Time.Elapsed`.
- *
- * A `labels.time` entry receives the **magnitude** here, with `part:
- * "remaining"` — it writes its own `-`, and the zero cases arrive as `0`.
- */
-function Remaining(props: TimeProps) {
-  return (
-    <time data-part="remaining" {...props}>
-      {useReadoutText("remaining")}
-    </time>
-  );
-}
+const Remaining = /* @__PURE__ */ forwardRef<HTMLTimeElement, TimeProps>(
+  function Remaining(props, ref) {
+    return (
+      <time data-part="remaining" {...props} ref={ref}>
+        {useReadoutText("remaining")}
+      </time>
+    );
+  },
+);
 
 /**
  * What `Time.Elapsed` or `Time.Remaining` renders, shared with the toggle's
@@ -197,27 +163,23 @@ function useReadoutText(part: TimeDisplayState) {
   return `-${formatTime(seconds)}`;
 }
 
-/**
- * The track length, in a `<time data-part="duration">`.
- *
- * Reads `0:00` until metadata arrives, and for a live stream. No `aria-label`,
- * for the reason given on `Time.Elapsed`.
- */
-function Duration(props: TimeProps) {
-  const store = usePlayerStore();
-  const duration = useStore(store.duration);
-  const labels = useLabels();
-  // Finite and ≥ 0 without a guard: `duration` is `finite()`-wrapped at every
-  // write, so neither `NaN` before metadata nor a live stream's `Infinity`
-  // reaches here (`syncFromElement`). Rounded for the reason given on
-  // `Time.Remaining`.
-  const seconds = Math.round(duration);
-  return (
-    <time data-part="duration" {...props}>
-      {labels?.time?.({ seconds, part: "duration" }) ?? formatTime(seconds)}
-    </time>
-  );
-}
+const Duration = /* @__PURE__ */ forwardRef<HTMLTimeElement, TimeProps>(
+  function Duration(props, ref) {
+    const store = usePlayerStore();
+    const duration = useStore(store.duration);
+    const labels = useLabels();
+    // Finite and ≥ 0 without a guard: `duration` is `finite()`-wrapped at every
+    // write, so neither `NaN` before metadata nor a live stream's `Infinity`
+    // reaches here (`syncFromElement`). Rounded for the reason given on
+    // `Time.Remaining`.
+    const seconds = Math.round(duration);
+    return (
+      <time data-part="duration" {...props} ref={ref}>
+        {labels?.time?.({ seconds, part: "duration" }) ?? formatTime(seconds)}
+      </time>
+    );
+  },
+);
 
 /**
  * The time readouts and the toggle between them.
@@ -235,8 +197,54 @@ function Duration(props: TimeProps) {
  * ```
  */
 export const Time = {
+  /**
+   * The position, as `M:SS` or `H:MM:SS`, in a `<time data-part="elapsed">`.
+   *
+   * Updates once a second, not at the element's ~4 Hz.
+   *
+   * The time is its own accessible name. No `aria-label`: on a `<time>` one
+   * replaces the value rather than adding to it (A12). Pass your own if the
+   * context needs spelling out.
+   *
+   * No `format` prop: the formatting is `AudioPlayer`'s `labels.time`, which names
+   * all three readouts at once and is handed raw seconds (S16).
+   */
   Elapsed,
+  /**
+   * The time left, negative-signed — `-1:30` — in a
+   * `<time data-part="remaining">`.
+   *
+   * Never counts past zero, and
+   * reads `0:00` — unsigned — both before the duration is known and once the track
+   * has finished, where a "-0:00" would read as a glitch. No `aria-label`, for the
+   * reason given on `Time.Elapsed`.
+   *
+   * A `labels.time` entry receives the **magnitude** here, with `part:
+   * "remaining"` — it writes its own `-`, and the zero cases arrive as `0`.
+   */
   Remaining,
+  /**
+   * The track length, in a `<time data-part="duration">`.
+   *
+   * Reads `0:00` until metadata arrives, and for a live stream. No `aria-label`,
+   * for the reason given on `Time.Elapsed`.
+   */
   Duration,
+  /**
+   * A button showing the elapsed or the remaining time, switching between them
+   * when pressed. Renders the readout itself, as `Time.Elapsed` or
+   * `Time.Remaining` would, so it takes no children. For a readout that never
+   * switches, render one of those on its own.
+   *
+   * Named by the time on screen, then what pressing does — "1:23 elapsed, show
+   * time remaining" — so the name contains the visible text (WCAG 2.5.3, A17).
+   * The name is the only place the state appears; no `aria-pressed` (A4).
+   * Translate it with `AudioPlayer`'s `labels.timeToggle`.
+   *
+   * The choice is this toggle's own: two toggles switch independently.
+   *
+   * Carries `data-part="time-toggle"` and `data-state="elapsed|remaining"` — the
+   * readout showing, not the one pressing will show.
+   */
   Toggle,
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState, type HTMLAttributes } from "react";
+import { forwardRef, useEffect, useState, type HTMLAttributes } from "react";
 import { bufferedStyles } from "../Slider/calculateStyle";
 import { useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
@@ -48,7 +48,10 @@ function bufferedEnd({ buffered, currentTime }: HTMLMediaElement) {
  * </Timeline.Control>
  * ```
  */
-export function TimelineBuffered(props: HTMLAttributes<HTMLDivElement>) {
+export const TimelineBuffered = /* @__PURE__ */ forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(function TimelineBuffered(props, ref) {
   const store = usePlayerStore();
   const element = useStore(store.element);
   const duration = useStore(store.duration);
@@ -74,6 +77,7 @@ export function TimelineBuffered(props: HTMLAttributes<HTMLDivElement>) {
       <div
         data-part="buffered"
         {...props}
+        ref={ref}
         style={
           {
             ...bufferedStyles,
@@ -84,4 +88,4 @@ export function TimelineBuffered(props: HTMLAttributes<HTMLDivElement>) {
       />
     </>
   );
-}
+});

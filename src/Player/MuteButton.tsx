@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
+import { forwardRef } from "react";
 import { useVolumeState, type VolumeState } from "../store/derived";
 import {
   useComposedButtonProps,
@@ -45,12 +46,16 @@ export function useMuteButtonProps<
   } as StatefulButtonPropsBag<P, VolumeState>;
 }
 
-export function MuteButtonComponent({
-  children,
-  ...props
-}: MuteButtonComponentProps) {
-  return <button {...useMuteButtonProps(props)}>{children}</button>;
-}
+const MuteButtonRoot = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  MuteButtonComponentProps
+>(function MuteButton({ children, ...props }, ref) {
+  return (
+    <button {...useMuteButtonProps(props)} ref={ref}>
+      {children}
+    </button>
+  );
+});
 
 type MutedProps = {
   children: React.ReactNode;
@@ -97,15 +102,14 @@ function HighVolume({ children }: HighVolumeProps): React.ReactElement | null {
   return <>{children}</>;
 }
 
-type MuteButtonComponent = React.FC<MuteButtonComponentProps> & {
+type MuteButtonComponent = React.ForwardRefExoticComponent<
+  MuteButtonComponentProps & React.RefAttributes<HTMLButtonElement>
+> & {
   Muted: typeof Muted;
   LowVolume: typeof LowVolume;
   HighVolume: typeof HighVolume;
 };
 
-MuteButtonComponent.Muted = Muted;
-MuteButtonComponent.LowVolume = LowVolume;
-MuteButtonComponent.HighVolume = HighVolume;
 /**
  * Mute/unmute. Named "Mute" or "Unmute" for what pressing it will do, and that
  * name is the only place the state appears — no `aria-pressed`. Translate both
@@ -120,4 +124,7 @@ MuteButtonComponent.HighVolume = HighVolume;
  *
  * Carries `data-part="mute"` and `data-state="muted|low|high"`.
  */
-export const MuteButton = MuteButtonComponent as MuteButtonComponent;
+export const MuteButton: MuteButtonComponent = /* @__PURE__ */ Object.assign(
+  MuteButtonRoot,
+  { Muted, LowVolume, HighVolume },
+);

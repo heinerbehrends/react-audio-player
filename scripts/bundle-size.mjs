@@ -69,9 +69,10 @@ const BUDGETS = [
     imports: "{ AudioPlayer, MediaSession }",
     max: 3700,
   },
-  // Raised from 8500 for `<PlayerRoot>` and `usePlayerRootProps`: new public
-  // API, paid only by code that imports it.
-  { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 8700 },
+  // Raised from 8500 for `<PlayerRoot>` and `usePlayerRootProps`, and from
+  // 8700 for a `ref` on every part: new public API, each part paying only for
+  // its own.
+  { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 9200 },
   { name: "Full surface + opt-ins", imports: "* as all", max: 10200 },
 ];
 

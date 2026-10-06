@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
+import { forwardRef } from "react";
 import {
   useComposedButtonProps,
   type ButtonPropsBag,
@@ -30,13 +31,16 @@ type SeekButtonComponentProps = {
  *
  * Carries `data-part="seek"`, and no `data-state`: a jump has none.
  */
-export function SeekButton({
-  children,
-  amount,
-  ...props
-}: SeekButtonComponentProps) {
-  return <button {...useSeekButtonProps(amount, props)}>{children}</button>;
-}
+export const SeekButton = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  SeekButtonComponentProps
+>(function SeekButton({ children, amount, ...props }, ref) {
+  return (
+    <button {...useSeekButtonProps(amount, props)} ref={ref}>
+      {children}
+    </button>
+  );
+});
 
 /**
  * `SeekButton`'s props, for a `<button>` of your own: the name following the

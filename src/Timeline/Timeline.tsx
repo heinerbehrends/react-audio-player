@@ -1,29 +1,20 @@
-import type { HTMLAttributes } from "react";
+/* eslint-disable react-refresh/only-export-components --
+   The parts attach to the root through a pure `Object.assign`, so that an
+   unused compound component tree-shakes; the rule does not read the result as
+   a component. */
+import { forwardRef, type HTMLAttributes } from "react";
 import {
-  backgroundStyles,
   rootStylesFor,
   sliderCustomProperties,
 } from "../Slider/calculateStyle";
 import { SliderProgress } from "../Slider/SliderProgress";
+import { SliderBackground } from "../Slider/SliderBackground";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { SEEK_MODE } from "../Slider/sliderModes";
-
-function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      data-part="background"
-      {...props}
-      style={{
-        ...backgroundStyles,
-        ...props.style,
-      }}
-    />
-  );
-}
 
 type TimelineProps = HTMLAttributes<HTMLDivElement> & {
   children?: React.ReactNode;
@@ -36,36 +27,37 @@ type TimelineProps = HTMLAttributes<HTMLDivElement> & {
   step?: number;
 };
 
-const TimelineRoot: React.FC<TimelineProps> = ({
-  children,
-  step,
-  ...props
-}) => {
-  const slider = useSlider({
-    config: SEEK_MODE,
-    ...(step === undefined ? {} : { step }),
-  });
+const TimelineRoot = /* @__PURE__ */ forwardRef<HTMLDivElement, TimelineProps>(
+  function Timeline({ children, step, ...props }, ref) {
+    const slider = useSlider({
+      config: SEEK_MODE,
+      ...(step === undefined ? {} : { step }),
+    });
 
-  return (
-    <SliderProvider value={slider}>
-      <div
-        {...sliderRootAttributes(slider)}
-        {...props}
-        style={{
-          ...rootStylesFor(props.hidden),
-          ...sliderCustomProperties(slider),
-          ...props.style,
-        }}
-      >
-        {children}
-      </div>
-    </SliderProvider>
-  );
-};
+    return (
+      <SliderProvider value={slider}>
+        <div
+          {...sliderRootAttributes(slider)}
+          {...props}
+          ref={ref}
+          style={{
+            ...rootStylesFor(props.hidden),
+            ...sliderCustomProperties(slider),
+            ...props.style,
+          }}
+        >
+          {children}
+        </div>
+      </SliderProvider>
+    );
+  },
+);
 
-type TimelineComponent = React.FC<TimelineProps> & {
+type TimelineComponent = React.ForwardRefExoticComponent<
+  TimelineProps & React.RefAttributes<HTMLDivElement>
+> & {
   Progress: typeof SliderProgress;
-  Background: typeof TimelineBackground;
+  Background: typeof SliderBackground;
   Control: typeof SliderControl;
   Thumb: typeof SliderThumb;
 };
@@ -102,8 +94,12 @@ type TimelineComponent = React.FC<TimelineProps> & {
  * </Timeline>
  * ```
  */
-export const Timeline: TimelineComponent = TimelineRoot as TimelineComponent;
-Timeline.Progress = SliderProgress;
-Timeline.Control = SliderControl;
-Timeline.Thumb = SliderThumb;
-Timeline.Background = TimelineBackground;
+export const Timeline: TimelineComponent = /* @__PURE__ */ Object.assign(
+  TimelineRoot,
+  {
+    Progress: SliderProgress,
+    Control: SliderControl,
+    Thumb: SliderThumb,
+    Background: SliderBackground,
+  },
+);

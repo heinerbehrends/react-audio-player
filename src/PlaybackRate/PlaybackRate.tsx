@@ -1,3 +1,8 @@
+/* eslint-disable react-refresh/only-export-components --
+   The parts attach to the root through a pure `Object.assign`, so that an
+   unused compound component tree-shakes; the rule does not read the result as
+   a component. */
+import { forwardRef } from "react";
 import { ChangePlaybackRate } from "./ChangePlaybackRate";
 import { useLabels } from "../Player/PlayerConfigContext";
 import {
@@ -9,6 +14,35 @@ import {
 type PlaybackRateProps = {
   children: React.ReactNode;
 } & React.HTMLAttributes<HTMLSpanElement>;
+
+const PlaybackRateRoot = /* @__PURE__ */ forwardRef<
+  HTMLSpanElement,
+  PlaybackRateProps
+>(function PlaybackRate({ children, ...props }, ref) {
+  const labels = useLabels();
+  return (
+    <span
+      data-part="root"
+      // Before the spread, so a consumer can still replace it per instance.
+      // `role` is after, and cannot be replaced.
+      aria-label={labels?.rateGroup ?? "Playback rate options"}
+      {...props}
+      ref={ref}
+      role="group"
+    >
+      {children}
+    </span>
+  );
+});
+
+type PlaybackRateComponent = React.ForwardRefExoticComponent<
+  PlaybackRateProps & React.RefAttributes<HTMLSpanElement>
+> & {
+  Set: typeof SetPlaybackRate;
+  Change: typeof ChangePlaybackRate;
+  Current: typeof CurrentIndicator;
+  Display: typeof RateDisplay;
+};
 
 /**
  * A labelled group for a set of rate controls — an inline `<span role="group">`,
@@ -22,23 +56,10 @@ type PlaybackRateProps = {
  * Translate the group name with `AudioPlayer`'s `labels.rateGroup`, or pass your
  * own `aria-label` to override this one group.
  */
-export function PlaybackRate({ children, ...props }: PlaybackRateProps) {
-  const labels = useLabels();
-  return (
-    <span
-      data-part="root"
-      // Before the spread, so a consumer can still replace it per instance.
-      // `role` is after, and cannot be replaced.
-      aria-label={labels?.rateGroup ?? "Playback rate options"}
-      {...props}
-      role="group"
-    >
-      {children}
-    </span>
-  );
-}
-
-PlaybackRate.Set = SetPlaybackRate;
-PlaybackRate.Change = ChangePlaybackRate;
-PlaybackRate.Current = CurrentIndicator;
-PlaybackRate.Display = RateDisplay;
+export const PlaybackRate: PlaybackRateComponent =
+  /* @__PURE__ */ Object.assign(PlaybackRateRoot, {
+    Set: SetPlaybackRate,
+    Change: ChangePlaybackRate,
+    Current: CurrentIndicator,
+    Display: RateDisplay,
+  });

@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
+import { forwardRef } from "react";
 import { areNumbersClose } from "../Shared/areNumbersClose";
 import { useStore } from "../store/atom";
 import {
@@ -37,13 +38,16 @@ type SetPlaybackRateProps = {
  * Carries `data-part="rate-set"`, and no `data-state`: style the current rate
  * from `[aria-pressed="true"]`, which already says it.
  */
-export function SetPlaybackRate({
-  rate,
-  children,
-  ...props
-}: SetPlaybackRateProps) {
-  return <button {...usePlaybackRateSetProps(rate, props)}>{children}</button>;
-}
+export const SetPlaybackRate = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  SetPlaybackRateProps
+>(function SetPlaybackRate({ rate, children, ...props }, ref) {
+  return (
+    <button {...usePlaybackRateSetProps(rate, props)} ref={ref}>
+      {children}
+    </button>
+  );
+});
 
 /** `aria-pressed` is always present too — the library's, or the consumer's. */
 type SetPlaybackRateBag<P> = ButtonPropsBag<P> & {
@@ -100,17 +104,17 @@ type CurrentIndicatorProps = {
  * keeps the hidden marker out of the accessibility tree, leaving `.Set`'s
  * `aria-pressed` as the announced signal.
  */
-export function CurrentIndicator({
-  rate,
-  children,
-}: CurrentIndicatorProps): React.ReactElement {
+export const CurrentIndicator = /* @__PURE__ */ forwardRef<
+  HTMLSpanElement,
+  CurrentIndicatorProps
+>(function CurrentIndicator({ rate, children }, ref) {
   const isCurrent = useIsCurrent(rate);
   return (
-    <span style={isCurrent ? undefined : { visibility: "hidden" }}>
+    <span ref={ref} style={isCurrent ? undefined : { visibility: "hidden" }}>
       {children}
     </span>
   );
-}
+});
 
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
@@ -126,7 +130,10 @@ type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
  * Translate the text with `AudioPlayer`'s `labels.rateDisplay`, which receives
  * the rounded number.
  */
-export function RateDisplay({ ...props }: RateDisplayProps) {
+export const RateDisplay = /* @__PURE__ */ forwardRef<
+  HTMLSpanElement,
+  RateDisplayProps
+>(function RateDisplay(props, ref) {
   const store = usePlayerStore();
   const rate = useStore(store.rate);
   const labels = useLabels();
@@ -134,11 +141,11 @@ export function RateDisplay({ ...props }: RateDisplayProps) {
   // stay one number.
   const roundedRate = Math.round(rate * 100) / 100;
   return (
-    <span data-part="rate-display" {...props}>
+    <span data-part="rate-display" {...props} ref={ref}>
       {labels?.rateDisplay?.({ rate: roundedRate }) ?? `${roundedRate}x`}
     </span>
   );
-}
+});
 
 function useSetPlaybackRate(rate: number) {
   const { send } = usePlayerStore();

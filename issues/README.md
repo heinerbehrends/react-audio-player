@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**15 open · 0 part-done · 108 resolved · 4 rejected**
+**15 open · 0 part-done · 109 resolved · 4 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,8 +13,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-0 open of 4.
+1 open of 5.
 
+- [ ] [G4](release/G4-the-readme-is-a-reference-dump-not-documentation.md) The README is a reference dump, not documentation — P0
 - [x] [G0](resolved/release/G0-beta-release-checklist.md) Beta release checklist — P0
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
@@ -83,7 +84,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-10 open of 34.
+9 open of 34.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
@@ -91,7 +92,6 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
 - [ ] [B4](features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation
 - [ ] [B8](features/B8-codec-fallback-via-source.md) Codec fallback via `<source>` — **breaking**
-- [ ] [D2](features/D2-refs-on-the-parts-additive-but-it.md) Refs on the parts. — additive, but it touches every public prop type
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
 - [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [ ] [D9](features/D9-publish-the-refusals.md) Publish the refusals
@@ -114,6 +114,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [B9](resolved/features/B9-buffered-ranges.md) Buffered ranges
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop
+- [x] [D2](resolved/features/D2-refs-on-the-parts-additive-but-it.md) Refs on the parts. — additive, but it touches every public prop type
 - [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [x] [D4](resolved/features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
 - [x] [D5](resolved/features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one

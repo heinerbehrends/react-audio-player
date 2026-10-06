@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
+import { forwardRef } from "react";
 import { useMediaKeyHandler } from "../KeyboardControls/handleMediaKeys";
 import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { usePlayerStore } from "../store/PlayerStoreContext";
@@ -27,9 +28,12 @@ import { useLabels, usePlayerConfig } from "./PlayerConfigContext";
  * </AudioPlayer>
  * ```
  */
-export function PlayerRoot(props: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...usePlayerRootProps(props)} />;
-}
+export const PlayerRoot = /* @__PURE__ */ forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(function PlayerRoot(props, ref) {
+  return <div {...usePlayerRootProps(props)} ref={ref} />;
+});
 
 /**
  * `<PlayerRoot>`'s props, for a container of your own — a `<section>`, or one

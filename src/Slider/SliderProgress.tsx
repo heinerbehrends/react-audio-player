@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from "react";
+import { forwardRef, type HTMLAttributes } from "react";
 import { fillStyles } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
 
@@ -34,7 +34,10 @@ const hoisted = {
  * keyed by `href`; React 18 renders it in place, once per fill, and passes
  * `href` and `precedence` through as inert attributes.
  */
-export function SliderProgress(props: HTMLAttributes<HTMLDivElement>) {
+export const SliderProgress = /* @__PURE__ */ forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(function SliderProgress(props, ref) {
   const { orientation } = useSliderContext();
   return (
     <>
@@ -43,8 +46,9 @@ export function SliderProgress(props: HTMLAttributes<HTMLDivElement>) {
         data-part="progress"
         data-orientation={orientation}
         {...props}
+        ref={ref}
         style={{ ...fillStyles, ...props.style }}
       />
     </>
   );
-}
+});

@@ -1,10 +1,14 @@
-import type { HTMLAttributes } from "react";
+/* eslint-disable react-refresh/only-export-components --
+   The parts attach to the root through a pure `Object.assign`, so that an
+   unused compound component tree-shakes; the rule does not read the result as
+   a component. */
+import { forwardRef, type HTMLAttributes } from "react";
 import {
-  backgroundStyles,
   rootStylesFor,
   sliderCustomProperties,
 } from "../Slider/calculateStyle";
 import { SliderProgress } from "../Slider/SliderProgress";
+import { SliderBackground } from "../Slider/SliderBackground";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider } from "../Slider/SliderContext";
@@ -12,16 +16,6 @@ import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { VOLUME_MODE } from "../Slider/sliderModes";
 import { useIsVolumeAvailable } from "../store/volumeAvailable";
-
-function VolumeBackground(props: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      data-part="background"
-      {...props}
-      style={{ ...backgroundStyles, ...props.style }}
-    />
-  );
-}
 
 type VolumeProps = HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
@@ -34,38 +28,39 @@ type VolumeProps = HTMLAttributes<HTMLDivElement> & {
   orientation?: "horizontal" | "vertical";
 };
 
-function VolumeContainer({
-  children,
-  orientation = "horizontal",
-  ...props
-}: VolumeProps) {
-  // iOS accepts the write and ignores it, so the slider would move nothing (D3).
-  const slider = useSlider({
-    config: VOLUME_MODE,
-    disabled: !useIsVolumeAvailable(),
-    orientation,
-  });
+const VolumeContainer = /* @__PURE__ */ forwardRef<HTMLDivElement, VolumeProps>(
+  function Volume({ children, orientation = "horizontal", ...props }, ref) {
+    // iOS accepts the write and ignores it, so the slider would move nothing (D3).
+    const slider = useSlider({
+      config: VOLUME_MODE,
+      disabled: !useIsVolumeAvailable(),
+      orientation,
+    });
 
-  return (
-    <SliderProvider value={slider}>
-      <div
-        {...sliderRootAttributes(slider)}
-        {...props}
-        style={{
-          ...rootStylesFor(props.hidden),
-          ...sliderCustomProperties(slider),
-          ...props.style,
-        }}
-      >
-        {children}
-      </div>
-    </SliderProvider>
-  );
-}
+    return (
+      <SliderProvider value={slider}>
+        <div
+          {...sliderRootAttributes(slider)}
+          {...props}
+          ref={ref}
+          style={{
+            ...rootStylesFor(props.hidden),
+            ...sliderCustomProperties(slider),
+            ...props.style,
+          }}
+        >
+          {children}
+        </div>
+      </SliderProvider>
+    );
+  },
+);
 
-type VolumeComponent = React.FC<VolumeProps> & {
+type VolumeComponent = React.ForwardRefExoticComponent<
+  VolumeProps & React.RefAttributes<HTMLDivElement>
+> & {
   Progress: typeof SliderProgress;
-  Background: typeof VolumeBackground;
+  Background: typeof SliderBackground;
   Control: typeof SliderControl;
   Thumb: typeof SliderThumb;
 };
@@ -96,8 +91,12 @@ type VolumeComponent = React.FC<VolumeProps> & {
 // Property assignment, not `Object.assign`: the call is a side-effecting
 // expression a bundler cannot drop, so a consumer importing one component got
 // the whole library (P1-a). Used for every compound root here.
-export const Volume = VolumeContainer as VolumeComponent;
-Volume.Progress = SliderProgress;
-Volume.Background = VolumeBackground;
-Volume.Control = SliderControl;
-Volume.Thumb = SliderThumb;
+export const Volume: VolumeComponent = /* @__PURE__ */ Object.assign(
+  VolumeContainer,
+  {
+    Progress: SliderProgress,
+    Background: SliderBackground,
+    Control: SliderControl,
+    Thumb: SliderThumb,
+  },
+);

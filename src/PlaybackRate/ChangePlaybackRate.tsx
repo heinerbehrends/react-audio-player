@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components --
    The hook below is what the component is made of; splitting them to keep fast
    refresh would let the two drift. */
+import { forwardRef } from "react";
 import {
   useComposedButtonProps,
   type ButtonPropsBag,
@@ -26,15 +27,16 @@ type IncreaseDecreaseProps = {
  *
  * Carries `data-part="rate-change"`, and no `data-state`: a step has none.
  */
-export function ChangePlaybackRate({
-  amount,
-  children,
-  ...props
-}: IncreaseDecreaseProps) {
+export const ChangePlaybackRate = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  IncreaseDecreaseProps
+>(function ChangePlaybackRate({ amount, children, ...props }, ref) {
   return (
-    <button {...usePlaybackRateChangeProps(amount, props)}>{children}</button>
+    <button {...usePlaybackRateChangeProps(amount, props)} ref={ref}>
+      {children}
+    </button>
   );
-}
+});
 
 /**
  * `PlaybackRate.Change`'s props, for a `<button>` of your own: the

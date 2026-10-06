@@ -35,6 +35,7 @@ nothing to migrate from.
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part, `data-state` where the DOM does not say it, and
   `data-slider` on each slider root, since the three share their part names
+- A `ref` on every part that renders an element, forwarded to that element
 - `<TimelineBuffered>`, a separate import: how much has downloaded ahead of the
   position, as a bar behind the timeline's fill
 - `--progress` (0–1) and `--offset` custom properties on every slider root. The
@@ -69,6 +70,5 @@ Documented in the README; each has a ticket under `issues/`.
 - In Firefox a paused seek to the end of the track fires `onEnded`
 - Nothing has been measured in Safari yet, including the playback-rate range
 - No `<source>` fallback yet; one format is loaded per track
-- No part forwards a `ref`; `audioRef` reaches the `<audio>` element
 
 [0.1.0-beta.0]: https://github.com/heinerbehrends/react-audio-player/releases/tag/v0.1.0-beta.0

@@ -1,9 +1,14 @@
+/* eslint-disable react-refresh/only-export-components --
+   The parts attach to the root through a pure `Object.assign`, so that an
+   unused compound component tree-shakes; the rule does not read the result as
+   a component. */
+import { forwardRef } from "react";
 import {
-  backgroundStyles,
   rootStylesFor,
   sliderCustomProperties,
 } from "../Slider/calculateStyle";
 import { SliderProgress } from "../Slider/SliderProgress";
+import { SliderBackground } from "../Slider/SliderBackground";
 import { SliderControl } from "../Slider/SliderControl";
 import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider } from "../Slider/SliderContext";
@@ -11,22 +16,6 @@ import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 import { RATE_MODE } from "../Slider/sliderModes";
-
-function PlaybackRateBackground({
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      data-part="background"
-      {...props}
-      style={{
-        ...backgroundStyles,
-        ...style,
-      }}
-    />
-  );
-}
 
 type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
@@ -51,13 +40,19 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   step?: number;
 };
 
-function PlaybackRateSliderRoot({
-  children,
-  maxValue = RATE_BOUNDS.maxValue,
-  minValue = RATE_BOUNDS.minValue,
-  step = 0.1,
-  ...props
-}: PlaybackRateSliderProps) {
+const PlaybackRateSliderRoot = /* @__PURE__ */ forwardRef<
+  HTMLDivElement,
+  PlaybackRateSliderProps
+>(function PlaybackRateSlider(
+  {
+    children,
+    maxValue = RATE_BOUNDS.maxValue,
+    minValue = RATE_BOUNDS.minValue,
+    step = 0.1,
+    ...props
+  },
+  ref,
+) {
   const slider = useSlider({ config: RATE_MODE, minValue, maxValue, step });
 
   return (
@@ -65,6 +60,7 @@ function PlaybackRateSliderRoot({
       <div
         {...sliderRootAttributes(slider)}
         {...props}
+        ref={ref}
         // After the spread, and merged: the root styles carry `position:
         // relative`, which the thumb's `transform` is placed against.
         style={{
@@ -77,10 +73,12 @@ function PlaybackRateSliderRoot({
       </div>
     </SliderProvider>
   );
-}
+});
 
-type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
-  Background: typeof PlaybackRateBackground;
+type PlaybackRateSliderComponent = React.ForwardRefExoticComponent<
+  PlaybackRateSliderProps & React.RefAttributes<HTMLDivElement>
+> & {
+  Background: typeof SliderBackground;
   Progress: typeof SliderProgress;
   Control: typeof SliderControl;
   Thumb: typeof SliderThumb;
@@ -103,9 +101,10 @@ type PlaybackRateSliderComponent = React.FC<PlaybackRateSliderProps> & {
  * `data-orientation="horizontal"`, and sets `--progress` and `--offset` as
  * custom properties, which `.Progress` draws from and your own fills can read.
  */
-export const PlaybackRateSlider =
-  PlaybackRateSliderRoot as PlaybackRateSliderComponent;
-PlaybackRateSlider.Background = PlaybackRateBackground;
-PlaybackRateSlider.Progress = SliderProgress;
-PlaybackRateSlider.Control = SliderControl;
-PlaybackRateSlider.Thumb = SliderThumb;
+export const PlaybackRateSlider: PlaybackRateSliderComponent =
+  /* @__PURE__ */ Object.assign(PlaybackRateSliderRoot, {
+    Background: SliderBackground,
+    Progress: SliderProgress,
+    Control: SliderControl,
+    Thumb: SliderThumb,
+  });

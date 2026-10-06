@@ -18,7 +18,14 @@ export default defineConfig({
       js: ".mjs",
     };
   },
-  minify: true,
+  // Not `minify: true`: its whitespace pass strips every comment, `@__PURE__`
+  // included, and without those a consumer's bundler cannot drop an unused
+  // `forwardRef` part. The consumer minifies anyway.
+  minify: false,
+  esbuildOptions(options) {
+    options.minifySyntax = true;
+    options.minifyIdentifiers = true;
+  },
   sourcemap: true,
   banner: { js: '"use client";' },
   async onSuccess() {

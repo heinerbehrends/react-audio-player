@@ -657,9 +657,10 @@ Where the browser has no Media Session API, it does nothing.
 
 ## Styling
 
-Every part takes `className` and `style`. Every part also carries a `data-part`
-attribute, so you can style from plain CSS without threading a class through
-every element:
+Every part takes `className`, `style` and a `ref`, which reaches the part's own
+element: focus the play button after a track change, or anchor a tooltip to
+`.Control`. Every part also carries a `data-part` attribute, so you can style
+from plain CSS without threading a class through every element:
 
 | Part                     | `data-part`    |
 | ------------------------ | -------------- |
@@ -1263,8 +1264,6 @@ Additive, in the order they are likely to land. None changes what ships today.
 
 - `<source>` fallback, with the `AudioFile` shape shown under
   [`<AudioPlayer>`](#audioplayer)
-- A `ref` on every part, for focus management and measurement; `audioRef`
-  reaches the `<audio>` element today
 - Playlist components, skip and loop (`onEnded` already supports a userland
   playlist)
 - Caption and subtitle support

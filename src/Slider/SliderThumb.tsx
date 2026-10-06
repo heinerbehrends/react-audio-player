@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { composeEventHandlers } from "../Shared/composeEventHandlers";
 import { calculateDragStyle } from "./calculateStyle";
 import { useSliderContext } from "./SliderContext";
@@ -15,7 +16,10 @@ type SliderThumbProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
  * with a class and it self-centres. Render it as a sibling of `.Control`, never
  * inside it.
  */
-export function SliderThumb(props: SliderThumbProps) {
+export const SliderThumb = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  SliderThumbProps
+>(function SliderThumb(props, ref) {
   // Destructured like `SliderControl`: `react-hooks/refs` treats a context object
   // holding a ref callback as ref-like, and flags every member read off it.
   const { onThumbPointerDown, ...slider } = useSliderContext();
@@ -26,6 +30,7 @@ export function SliderThumb(props: SliderThumbProps) {
       type="button"
       data-part="thumb"
       {...props}
+      ref={ref}
       onPointerDown={composeEventHandlers(
         props.onPointerDown,
         onThumbPointerDown,
@@ -38,4 +43,4 @@ export function SliderThumb(props: SliderThumbProps) {
       style={{ ...style, ...props.style }}
     />
   );
-}
+});

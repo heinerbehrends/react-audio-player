@@ -1,4 +1,6 @@
+import { forwardRef } from "react";
 import { composeEventHandlers } from "../Shared/composeEventHandlers";
+import { useMergedRef } from "../Shared/useMergedRef";
 import { useSliderContext } from "./SliderContext";
 import { progressStyles, containerStyles } from "./calculateStyle";
 
@@ -25,9 +27,13 @@ type SliderControlProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
  * `tabIndex` and the handlers are not overridable: your `onPointerDown` and
  * `onKeyDown` run alongside the library's rather than replacing them.
  */
-export function SliderControl({ children, ...props }: SliderControlProps) {
+export const SliderControl = /* @__PURE__ */ forwardRef<
+  HTMLButtonElement,
+  SliderControlProps
+>(function SliderControl({ children, ...props }, forwardedRef) {
   const { setSliderRef, aria, onTrackPointerDown, onKeyDown } =
     useSliderContext();
+  const ref = useMergedRef(setSliderRef, forwardedRef);
 
   const style = {
     ...progressStyles,
@@ -39,7 +45,7 @@ export function SliderControl({ children, ...props }: SliderControlProps) {
     <button
       type="button"
       data-part="control"
-      ref={setSliderRef}
+      ref={ref}
       {...aria}
       {...props}
       // After the spread and composed rather than replaced: these carry the
@@ -57,4 +63,4 @@ export function SliderControl({ children, ...props }: SliderControlProps) {
       {children}
     </button>
   );
-}
+});
