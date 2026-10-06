@@ -1,5 +1,4 @@
 import type { SliderComponent } from "../AudioElement/sideEffectActions";
-import { SLIDER_MODES } from "./sliderModes";
 import type { SliderValue } from "./useSlider";
 
 export type SliderRootAttributes = {
@@ -27,7 +26,7 @@ export function sliderRootAttributes(
 ): SliderRootAttributes {
   return {
     "data-part": "root",
-    "data-slider": SLIDER_MODES[slider.mode].component,
+    "data-slider": slider.component,
     "data-state": slider.dragState,
     "data-orientation": slider.orientation,
   };

@@ -3,6 +3,12 @@ import { act, renderHook } from "@testing-library/react";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
 import { useSlider, type UseSliderOptions } from "../../src/Slider/useSlider";
+import {
+  RATE_MODE,
+  SEEK_MODE,
+  VOLUME_MODE,
+  type SliderMode,
+} from "../../src/Slider/sliderModes";
 import { createTestStore, type TestStore } from "../store/createTestStore";
 import type { MediaFields } from "../store/mediaElementFake";
 
@@ -42,8 +48,13 @@ type Harness = {
   renders: () => number;
 };
 
+const CONFIGS = { seek: SEEK_MODE, volume: VOLUME_MODE, rate: RATE_MODE };
+
+/** The hook's options, with the mode named rather than its config passed. */
+type SliderOptions = Omit<UseSliderOptions, "config"> & { mode: SliderMode };
+
 function renderSlider(
-  options: UseSliderOptions,
+  { mode, ...options }: SliderOptions,
   element: Partial<MediaFields> = {},
 ): Harness {
   const store = createTestStore({ readyState: 1, duration: 100, ...element });
@@ -51,7 +62,7 @@ function renderSlider(
   const { result } = renderHook(
     () => {
       renders += 1;
-      return useSlider(options);
+      return useSlider({ config: CONFIGS[mode], ...options });
     },
     {
       wrapper: ({ children }: { children: React.ReactNode }) => (

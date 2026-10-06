@@ -4,18 +4,17 @@ import { constant, useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useIsDisabled } from "../store/derived";
-import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
+import type { SliderComponent } from "../AudioElement/sideEffectActions";
 import {
   ARROW_KEYS,
   JUMP_KEYS,
-  SLIDER_MODES,
   isArrowKey,
   isJumpKey,
   type SliderMode,
+  type SliderModeConfig,
 } from "./sliderModes";
 import { positionOf } from "./pointerPosition";
 import { useLabels } from "../Player/PlayerConfigContext";
-import { useIsVolumeAvailable } from "../store/volumeAvailable";
 
 declare const process: { env: { NODE_ENV?: string } };
 
@@ -36,6 +35,7 @@ export type SliderAriaAttributes = {
 
 export type SliderValue = {
   mode: SliderMode;
+  component: SliderComponent;
   value: number;
   minValue: number;
   maxValue: number;
@@ -53,7 +53,10 @@ export type SliderValue = {
 };
 
 export type UseSliderOptions = {
-  mode: SliderMode;
+  /** The slider's own config, imported by its root alone. */
+  config: SliderModeConfig;
+  /** Disabled for a reason only the root knows: volume on iOS. */
+  disabled?: boolean;
   orientation?: Orientation;
   minValue?: number;
   maxValue?: number;
@@ -107,20 +110,18 @@ function valueToShow({
  * callback, and an unstable one re-attaches the node.
  */
 export function useSlider({
-  mode,
+  config,
+  disabled = false,
   orientation = "horizontal",
   minValue: minValueOption,
   maxValue: maxValueOption,
   step: stepOption,
 }: UseSliderOptions): SliderValue {
-  const config = SLIDER_MODES[mode];
+  const { mode } = config;
   const store = usePlayerStore();
   const labels = useLabels();
   const handleMediaKeys = useHandleMediaKeys();
   const isErrored = useIsDisabled();
-  // iOS accepts the write and ignores it, so the slider would move nothing (D3).
-  const isVolumeInert = !useIsVolumeAvailable() && mode === "volume";
-
   const isSeek = mode === "seek";
   // The one place the mode picks its atoms (C4).
   const valueAtom = isSeek
@@ -140,15 +141,12 @@ export function useSlider({
   // `useIsSeekable()` is this same test, inlined so that the duration is read
   // once. Only the seek slider needs it: its range *is* the duration, so
   // without one it announces `min=0 max=0 now=0` (A5).
-  const isDisabled = isErrored || (isSeek && !(duration > 0)) || isVolumeInert;
+  const isDisabled = isErrored || (isSeek && !(duration > 0)) || disabled;
 
-  const minValue =
-    minValueOption ?? (mode === "rate" ? RATE_BOUNDS.minValue : 0);
+  const minValue = minValueOption ?? config.defaultBounds?.minValue ?? 0;
   // In `"seek"` the duration is the default, not the rule: a caller's
   // `maxValue` wins in every mode. `<Timeline>` passes none.
-  const maxValue =
-    maxValueOption ??
-    (isSeek ? duration : mode === "rate" ? RATE_BOUNDS.maxValue : 1);
+  const maxValue = maxValueOption ?? config.defaultBounds?.maxValue ?? duration;
   const step = stepOption ?? 0;
 
   const [geometry, setGeometry] = useState({ sliderStart: 0, sliderLength: 0 });
@@ -486,6 +484,7 @@ export function useSlider({
 
   return {
     mode,
+    component: config.component,
     value: displayValue,
     minValue,
     maxValue,

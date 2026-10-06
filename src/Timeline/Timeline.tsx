@@ -10,6 +10,7 @@ import { SliderControl } from "../Slider/SliderControl";
 import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
+import { SEEK_MODE } from "../Slider/sliderModes";
 
 function TimelineBackground(props: HTMLAttributes<HTMLDivElement>) {
   return (
@@ -41,7 +42,7 @@ const TimelineRoot: React.FC<TimelineProps> = ({
   ...props
 }) => {
   const slider = useSlider({
-    mode: "seek",
+    config: SEEK_MODE,
     ...(step === undefined ? {} : { step }),
   });
 

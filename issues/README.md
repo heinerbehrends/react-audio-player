@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**15 open · 0 part-done · 107 resolved · 4 rejected**
+**15 open · 0 part-done · 108 resolved · 4 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -162,12 +162,13 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Performance
 
-0 open of 4.
+0 open of 5.
 
 - [x] [P1-a](resolved/performance/P1-a-tree-shaking-is-broken-importing-only-playbutton.md) Tree-shaking is broken — importing only `<PlayButton>` costs 66 % of the library — P1
 - [x] [P1-b](resolved/performance/P1-b-a-volume-rate-drag-costs-2-4.md) A volume/rate drag costs 2.4× a seek drag — the mode Phase 5 never traced — P1
 - [x] [P2-a](resolved/performance/P2-a-the-250-ms-transition-is-correctly-composited.md) The 250 ms transition is correctly composited, but promotes 4 unrelated elements to their own layers — P2
 - [x] [P3](resolved/performance/P3-the-tree-shaking-win-has-no-automated-guard.md) The tree-shaking win has no automated guard — P2
+- [x] [P4](resolved/performance/P4-the-timeline-bundle-carried-the-volume-and-rate-sliders.md) The timeline bundle carried the volume and rate sliders' code — P3
 
 ## Packaging
 

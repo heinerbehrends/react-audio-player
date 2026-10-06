@@ -85,6 +85,9 @@ const FOREIGN_STRINGS = {
   "PlayButton only": ["Volume slider", "Timeline slider", "Playback rate"],
   "MuteButton only": ["Timeline slider", "Playback rate", "Show time"],
   "Time only": ["Volume slider", "Timeline slider", "Playback rate"],
+  // Each slider root imports its own mode config, so the timeline carries
+  // neither the volume nor the rate slider's strings.
+  "Timeline only": ["Volume slider", "Playback rate slider", "Muted, "],
   "AudioPlayer only": ["mediaSession"],
 };
 

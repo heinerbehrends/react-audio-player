@@ -10,6 +10,7 @@ import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
+import { RATE_MODE } from "../Slider/sliderModes";
 
 function PlaybackRateBackground({
   style,
@@ -57,7 +58,7 @@ function PlaybackRateSliderRoot({
   step = 0.1,
   ...props
 }: PlaybackRateSliderProps) {
-  const slider = useSlider({ mode: "rate", minValue, maxValue, step });
+  const slider = useSlider({ config: RATE_MODE, minValue, maxValue, step });
 
   return (
     <SliderProvider value={slider}>

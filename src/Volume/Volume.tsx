@@ -10,6 +10,8 @@ import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
+import { VOLUME_MODE } from "../Slider/sliderModes";
+import { useIsVolumeAvailable } from "../store/volumeAvailable";
 
 function VolumeBackground(props: HTMLAttributes<HTMLDivElement>) {
   return (
@@ -37,7 +39,12 @@ function VolumeContainer({
   orientation = "horizontal",
   ...props
 }: VolumeProps) {
-  const slider = useSlider({ mode: "volume", orientation });
+  // iOS accepts the write and ignores it, so the slider would move nothing (D3).
+  const slider = useSlider({
+    config: VOLUME_MODE,
+    disabled: !useIsVolumeAvailable(),
+    orientation,
+  });
 
   return (
     <SliderProvider value={slider}>
