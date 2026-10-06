@@ -47,7 +47,9 @@ describe("audioFile.live", () => {
     expect(store.isLive.get()).toBe(true);
   });
 
-  // The keys reach the write path from any button, so the guard is there too.
+  // The keys and `seek()` reach the write path from anywhere, so the guard is
+  // there too. It reads the store's projection, which takes the mark at
+  // `durationchange`, so the timeline and the keys cannot disagree.
   it.each([
     [{ type: "SET_TIME_FORWARD", value: 10 }],
     [{ type: "SET_TIME_BACKWARD", value: 10 }],
@@ -60,6 +62,7 @@ describe("audioFile.live", () => {
       readyState: 1,
     });
     element.dataset["live"] = "";
+    element.emit("durationchange");
 
     store.send(action);
 

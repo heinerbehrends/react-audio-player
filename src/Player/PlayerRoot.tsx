@@ -46,8 +46,7 @@ export function usePlayerRootProps<P extends React.HTMLAttributes<HTMLElement>>(
   return {
     "data-part": "player",
     role: "region",
-    // The title first: `labels` is shared by every player on a page, and two
-    // regions both named "audio player" are what A10 was about.
+    // The title first: `labels` is shared by every player on a page.
     "aria-label": audioFile.title ?? labels?.player ?? "audio player",
     tabIndex: -1,
     ...props,

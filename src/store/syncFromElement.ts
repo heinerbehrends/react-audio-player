@@ -17,6 +17,9 @@ export const HAVE_NOTHING = 0;
  */
 export const NETWORK_IDLE = 1;
 
+/** `MediaError.MEDIA_ERR_NETWORK`: the fetch failed after it had started. */
+const MEDIA_ERR_NETWORK = 2;
+
 /**
  * The write side of the projection atoms. Only `createPlayerStore` holds this
  * bundle, and it reaches `syncFromElement` only through `attach`.
@@ -135,13 +138,29 @@ const projectReadyState: SyncHandler = (element, atoms) => {
  * plays the track to the end with `readyState` at `HAVE_ENOUGH_DATA`.
  *
  * `HAVE_NOTHING` is the test instead — an element holding data can still play
- * what it has, which is also the right answer for a network failure part-way
- * through. A 404 or an unsupported format reports `HAVE_NOTHING`, so the case
- * that must disable the controls still does.
+ * what it has. A 404 or an unsupported format reports `HAVE_NOTHING`, so the
+ * case that must disable the controls still does.
+ *
+ * The exception is a network failure once playback has stopped on it, paused
+ * or out of data: the element fetches nothing more. Chromium pauses before
+ * `error`; Firefox plays out the buffer, then ends or stalls.
  */
 function isUnusable(element: SyncableMediaElement): boolean {
-  return element.error !== null && element.readyState === HAVE_NOTHING;
+  const { error } = element;
+  if (error === null) return false;
+  if (element.readyState === HAVE_NOTHING) return true;
+  return (
+    error.code === MEDIA_ERR_NETWORK &&
+    (element.paused || element.readyState < HAVE_FUTURE_DATA)
+  );
 }
+
+/** Latches the error when the element is unusable, and writes nothing else. */
+const projectError: SyncHandler = (element, atoms) => {
+  if (!isUnusable(element)) return;
+  atoms.mediaErrorCode.set(element.error?.code ?? null);
+  atoms.loadState.set("error");
+};
 
 /**
  * Reads the whole projection off the element in one pass. Used by `attach`,
@@ -204,9 +223,15 @@ export const HANDLERS = {
     atoms.loadState.set("ready");
   },
   // The stall signal: `waiting` and `stalled` mark the rung dropping below
-  // playable, the rest mark it recovering.
-  waiting: projectReadyState,
-  stalled: projectReadyState,
+  // playable, the rest mark it recovering. A stall on a dead fetch is final.
+  waiting: (element, atoms, pinned) => {
+    projectReadyState(element, atoms, pinned);
+    projectError(element, atoms, pinned);
+  },
+  stalled: (element, atoms, pinned) => {
+    projectReadyState(element, atoms, pinned);
+    projectError(element, atoms, pinned);
+  },
   playing: projectReadyState,
   canplay: projectReadyState,
   canplaythrough: projectReadyState,
@@ -226,21 +251,21 @@ export const HANDLERS = {
     atoms.rate.set(element.playbackRate);
   },
   play: projectPaused,
-  pause: projectPaused,
+  pause: (element, atoms, pinned) => {
+    projectPaused(element, atoms, pinned);
+    projectError(element, atoms, pinned);
+  },
   // Both, not just `paused`: the element parks past `duration` and the final
   // `timeupdate` is not ordered against this event, so `useIsAtEnd` would race
   // it. Chrome reports `currentTime` slightly *greater* than `duration` here.
   ended: (element, atoms, pinned) => {
     projectPaused(element, atoms, pinned);
     projectTime(element, atoms, pinned);
+    projectError(element, atoms, pinned);
   },
   // Corroborated against the element rather than trusted: see `isUnusable`.
   // An error the element plays through is left to it, so nothing latches.
-  error: (element, atoms) => {
-    if (!isUnusable(element)) return;
-    atoms.mediaErrorCode.set(element.error?.code ?? null);
-    atoms.loadState.set("error");
-  },
+  error: projectError,
   // The reset rows. `prime` re-reads `playbackRate` because the media load
   // algorithm resets it to `defaultPlaybackRate` without reliably firing
   // `ratechange`. These events are queued tasks, while the same algorithm
@@ -250,8 +275,9 @@ export const HANDLERS = {
   loadstart: prime,
   // Where `preload="none"` goes idle, after `loadstart` has primed to
   // `"loading"`.
-  suspend: (element, atoms) => {
+  suspend: (element, atoms, pinned) => {
     atoms.loadState.set(loadStateOf(element));
+    projectError(element, atoms, pinned);
   },
   // Keyed on `HTMLMediaElementEventMap`, so a misspelled event name is a build
   // error rather than a listener that silently never fires.

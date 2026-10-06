@@ -1,5 +1,5 @@
 import "./App.css";
-import { useId } from "react";
+import { useCallback, useEffect, useId, useRef } from "react";
 import {
   AudioPlayer,
   ErrorMessage,
@@ -26,19 +26,37 @@ const STATION = {
 };
 
 export default function App() {
+  const audioRef = useRef<HTMLAudioElement>(null);
   return (
     // `preload: "none"`: a stream never ends, so without it every visit
     // downloads radio until the tab closes, whether anyone listens or not.
-    <AudioPlayer audioFile={STATION} audioProps={{ preload: "none" }}>
-      <Station />
+    <AudioPlayer
+      audioFile={STATION}
+      audioProps={{ preload: "none" }}
+      audioRef={audioRef}
+    >
+      <Station audioRef={audioRef} />
     </AudioPlayer>
   );
 }
 
 // Its own component because the hooks work only inside the player.
-function Station() {
+function Station({
+  audioRef,
+}: {
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+}) {
   const titleId = useId();
   const buffering = useIsBuffering();
+  const { play } = useAudioPlayer();
+
+  // The library reports a dropped stream; reconnecting is the app's call.
+  // `load()` starts the stream afresh, which for a station means live again.
+  const reconnect = useCallback(() => {
+    audioRef.current?.load();
+    play();
+  }, [audioRef, play]);
+  useReconnectOnStall(buffering, reconnect);
 
   return (
     <PlayerRoot className="live" aria-labelledby={titleId}>
@@ -113,10 +131,27 @@ function Station() {
       </div>
 
       <ErrorMessage className="live-error">
-        The station is not answering. Reload the page to try again.
+        The station is not answering.{" "}
+        <button className="live-retry" onClick={reconnect}>
+          Try again
+        </button>
       </ErrorMessage>
     </PlayerRoot>
   );
+}
+
+// A connection that answers and then sends nothing raises no error: the
+// browser waits on it for good. So a stall this long reconnects. The fresh
+// connection reads as loading, not buffering, so a station that is down stops
+// here instead of retrying in a loop.
+const STALL_LIMIT_MS = 15_000;
+
+function useReconnectOnStall(buffering: boolean, reconnect: () => void) {
+  useEffect(() => {
+    if (!buffering) return;
+    const timer = setTimeout(reconnect, STALL_LIMIT_MS);
+    return () => clearTimeout(timer);
+  }, [buffering, reconnect]);
 }
 
 // `useIsLive()` is the library's word that there is no end to seek towards.

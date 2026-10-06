@@ -97,14 +97,14 @@ export const backgroundStyles = {
  * The root's `width` lives in `styles.css`: a layout opinion, and unreachable
  * by a consumer's class while it was inline.
  *
- * `minmax(0, 1fr)`, not `1fr`: a bare `1fr` never shrinks below its content, so
- * an SVG or canvas drawn into `.Control` grew the slider past the height it was
- * given, to whatever its aspect ratio implied (S31). The cell still sizes to its
- * content where the root has no height.
+ * Rows `minmax(0, 1fr)`: a bare `1fr` never shrinks below its content, so an
+ * SVG or canvas in `.Control` grew the slider past its height. Columns stay
+ * `1fr`: a zero minimum collapsed a vertical slider in a `width: min-content`
+ * box.
  */
 export const rootStyles = {
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr)",
+  gridTemplateColumns: "1fr",
   gridTemplateRows: "minmax(0, 1fr)",
   position: "relative",
 } as const;

@@ -434,6 +434,103 @@ describe("syncFromElement", () => {
       expect(atoms.mediaErrorCode.get()).toBeNull();
     });
 
+    /**
+     * A dropped connection stops the fetch for good, so once playback
+     * stops on it the player is unusable, buffer or not. Each test replays the
+     * order a browser was measured firing in.
+     */
+    describe("a network failure part-way through", () => {
+      it("plays the buffer out before it latches (Firefox)", () => {
+        const element = createMediaElementFake({
+          readyState: 4,
+          paused: false,
+        });
+        const atoms = createAtoms();
+        syncFromElement(element, atoms);
+
+        element.error = { code: 2 } as MediaError;
+        element.emit("error");
+        expect(atoms.loadState.get()).toBe("ready");
+
+        element.paused = true;
+        element.ended = true;
+        element.emit("pause");
+        element.emit("ended");
+
+        expect(atoms.loadState.get()).toBe("error");
+        expect(atoms.mediaErrorCode.get()).toBe(2);
+      });
+
+      // Seen once in a loaded E2E run: no jump to `ended`, just a stall.
+      it("latches when the buffer runs dry instead (Firefox, under load)", () => {
+        const element = createMediaElementFake({
+          readyState: 4,
+          paused: false,
+        });
+        const atoms = createAtoms();
+        syncFromElement(element, atoms);
+        element.error = { code: 2 } as MediaError;
+        element.emit("error");
+
+        element.readyState = 2;
+        element.emit("waiting");
+
+        expect(atoms.loadState.get()).toBe("error");
+        expect(atoms.mediaErrorCode.get()).toBe(2);
+      });
+
+      it("latches at once on an element that already paused (Chromium)", () => {
+        const element = createMediaElementFake({
+          readyState: 2,
+          paused: false,
+        });
+        const atoms = createAtoms();
+        syncFromElement(element, atoms);
+
+        element.paused = true;
+        element.error = { code: 2 } as MediaError;
+        element.emit("error");
+
+        expect(atoms.loadState.get()).toBe("error");
+        expect(atoms.mediaErrorCode.get()).toBe(2);
+      });
+
+      /** Only the network: the Firefox decode false positive also ends paused. */
+      it("leaves a decode error with data alone on pause", () => {
+        const element = createMediaElementFake({
+          readyState: 4,
+          paused: false,
+        });
+        const atoms = createAtoms();
+        syncFromElement(element, atoms);
+
+        element.error = { code: 3 } as MediaError;
+        element.emit("error");
+        element.paused = true;
+        element.emit("pause");
+
+        expect(atoms.loadState.get()).toBe("ready");
+        expect(atoms.mediaErrorCode.get()).toBeNull();
+      });
+
+      it("recovers on the reload a retry starts", () => {
+        const element = createMediaElementFake({ readyState: 2, paused: true });
+        const atoms = createAtoms();
+        syncFromElement(element, atoms);
+        element.error = { code: 2 } as MediaError;
+        element.emit("error");
+
+        // What `load()` does before it queues these.
+        element.error = null;
+        element.readyState = 0;
+        element.emit("emptied");
+        element.emit("loadstart");
+
+        expect(atoms.loadState.get()).toBe("loading");
+        expect(atoms.mediaErrorCode.get()).toBeNull();
+      });
+    });
+
     /** The event carries nothing on its own; the element's `error` is the fact. */
     it("ignores an error event the element does not corroborate", () => {
       const element = createMediaElementFake();

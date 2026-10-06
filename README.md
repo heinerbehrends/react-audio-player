@@ -943,11 +943,38 @@ type AudioError =
 unusable, and only a retry or a different `src` will help. `"network"` is worth
 retrying; `"unsupported"` is not.
 
-Reported only when the element also has no data to play, which is what a browser
+Reported when the element also has no data to play, which is what a browser
 reports for a source it cannot use. An `error` raised by an element that still
 holds a buffer is ignored, because such an element can and does keep playing:
 Firefox on a machine with no audio output device raises `MEDIA_ERR_DECODE`
 milliseconds after `play()` and then plays the track to the end.
+
+The exception is a connection that drops part-way through: the element fetches
+nothing more, so `"network"` is reported once playback stops on it. Firefox
+plays out what it has first; Chromium retries for a while, then stops.
+
+Nothing retries for you. `load()` on the element starts the source afresh,
+which for a live stream means live again, and the error clears with it:
+
+```jsx
+function Retry({ audioRef }) {
+  const { play } = useAudioPlayer();
+  const retry = () => {
+    audioRef.current?.load();
+    play();
+  };
+  return (
+    <ErrorMessage>
+      The station is not answering. <button onClick={retry}>Try again</button>
+    </ErrorMessage>
+  );
+}
+```
+
+A connection that answers and then sends nothing raises no error at all: the
+browser waits on it for good, and `useIsBuffering()` stays `true`. How long to
+wait before calling `retry` yourself is yours to decide. The live example in
+`examples/live` reconnects after 15 seconds.
 
 `kind: "playback"` means the resource is fine and the browser refused the
 command. `reason` is the `DOMException` name, almost always

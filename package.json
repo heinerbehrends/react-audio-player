@@ -44,7 +44,8 @@
     "testE2E:local": "playwright test --config playwright.local.config.ts",
     "test": "vitest",
     "test:run": "vitest run",
-    "type-check": "tsc --noEmit --project tsconfig.app.json && tsc --noEmit --project tsconfig.test.json && tsc --noEmit --project tsconfig.node.json && tsc --noEmit --project tsconfig.demo.json",
+    "type-check": "pnpm tsc7 --noEmit --project tsconfig.app.json && pnpm tsc7 --noEmit --project tsconfig.test.json && pnpm tsc7 --noEmit --project tsconfig.node.json && pnpm tsc7 --noEmit --project tsconfig.demo.json",
+    "tsc7": "node node_modules/typescript-7/bin/tsc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-exports": "attw --pack . --profile esm-only --exclude-entrypoints styles.css",
@@ -79,6 +80,7 @@
     "rollup": "^4.44.0",
     "tsup": "^8.5.1",
     "typescript": "~6.0.3",
+    "typescript-7": "npm:typescript@7.0.2",
     "typescript-eslint": "^8.68.0",
     "vite": "^8.2.2",
     "vitest": "^4.1.11"

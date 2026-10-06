@@ -8,10 +8,14 @@ import { createMediaElementFake } from "../store/mediaElementFake";
 
 /**
  * The write path takes the store snapshot as an argument, so these need no
- * mock. Only `TOGGLE_MUTE` and `UNMUTE` read it; every other case leaves it at
- * the default.
+ * mock. The default is a loaded, seekable track.
  */
-const defaultContext: SideEffectContext = { lastAudibleVolume: 1 };
+const defaultContext: SideEffectContext = {
+  lastAudibleVolume: 1,
+  isSeekable: true,
+};
+/** Before metadata, or a live stream: the store's duration is 0. */
+const unseekable: SideEffectContext = { ...defaultContext, isSeekable: false };
 
 const handleSideEffect = (
   action: SideEffectAction,
@@ -62,6 +66,7 @@ describe("handleSideEffect", () => {
     audioElement.volume = 0.3;
 
     handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement, {
+      ...defaultContext,
       lastAudibleVolume: 0.8,
     });
 
@@ -76,6 +81,7 @@ describe("handleSideEffect", () => {
     audioElement.volume = 0;
 
     handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement, {
+      ...defaultContext,
       lastAudibleVolume: 0.8,
     });
 
@@ -94,6 +100,7 @@ describe("handleSideEffect", () => {
     audioElement.volume = 0;
 
     handleSideEffect({ type: "UNMUTE" }, audioElement, {
+      ...defaultContext,
       lastAudibleVolume: 0.6,
     });
 
@@ -268,6 +275,7 @@ describe("handleSideEffect", () => {
       handleSideEffect(
         { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
         beforeMetadata,
+        unseekable,
       );
 
       expect(beforeMetadata.currentTime).toBe(5);
@@ -279,9 +287,35 @@ describe("handleSideEffect", () => {
         currentTime: 5,
       }) as unknown as HTMLAudioElement;
 
-      handleSideEffect({ type: "SET_TIME_FORWARD", value: 10 }, beforeMetadata);
+      handleSideEffect(
+        { type: "SET_TIME_FORWARD", value: 10 },
+        beforeMetadata,
+        unseekable,
+      );
 
       expect(beforeMetadata.currentTime).toBe(5);
+    });
+
+    // `seek()` and the `s` key reach these too, not only the timeline.
+    it("leaves an unseekable source where it is on a timeline write", () => {
+      audioElement.currentTime = 10;
+
+      handleSideEffect(
+        { type: "CHANGE_VALUE", component: "timeline", value: 0 },
+        audioElement,
+        unseekable,
+      );
+
+      expect(audioElement.currentTime).toBe(10);
+    });
+
+    it("pauses an unseekable source on STOP_AUDIO without a rewind", () => {
+      audioElement.currentTime = 10;
+
+      handleSideEffect({ type: "STOP_AUDIO" }, audioElement, unseekable);
+
+      expect(audioElement.currentTime).toBe(10);
+      expect(audioElement.pause).toHaveBeenCalled();
     });
 
     it("clamps a volume nudged past 1 by the keyboard", () => {

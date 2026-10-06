@@ -238,13 +238,17 @@ test.describe("Waveform", () => {
     const box = (await timeline.boundingBox())!;
     await page.mouse.click(box.x + box.width * 0.6, box.y + 10);
 
-    // `aria-valuenow` is in whole seconds, so compare fractions.
+    // In seconds: `aria-valuenow` is floored, so it can sit up to a second
+    // short, plus a pixel's worth of click. A fraction's tolerance would
+    // depend on the track's length.
     const max = Number(await timeline.getAttribute("aria-valuemax"));
     await expect
-      .poll(
-        async () => Number(await timeline.getAttribute("aria-valuenow")) / max,
+      .poll(async () =>
+        Math.abs(
+          Number(await timeline.getAttribute("aria-valuenow")) - 0.6 * max,
+        ),
       )
-      .toBeCloseTo(0.6, 2);
+      .toBeLessThanOrEqual(2);
   });
 
   // S31: with a bare `1fr` grid the SVG's aspect ratio set the row's minimum,
@@ -296,5 +300,15 @@ test.describe("Live radio", () => {
     await play(example).click();
 
     await expect(example.getByRole("alert")).toBeVisible();
+
+    // Back on air: the button reconnects without a page load.
+    await page.unroute(STREAM);
+    await page.route(STREAM, (route) =>
+      route.fulfill({ path: "public/The-Race.mp3", contentType: "audio/mpeg" }),
+    );
+    await example.getByRole("button", { name: "Try again" }).click();
+
+    await expect(example.getByRole("alert")).toHaveCount(0);
+    await expect(example.locator(".live-status")).toContainText("Listening");
   });
 });

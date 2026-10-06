@@ -220,6 +220,7 @@ export const labels = {
   seekBackward: "Seek backward by 10 seconds",
   playAudio: "Play audio",
   pauseAudio: "Pause audio",
+  playError: "Error loading audio",
   timeline: "Timeline slider",
   volume: "Volume slider",
   playbackRate: "Playback rate slider",

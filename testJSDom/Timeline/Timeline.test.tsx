@@ -142,7 +142,7 @@ describe("Timeline", () => {
     const root = container.querySelector('[data-part="root"]') as HTMLElement;
     expect(root).toHaveStyle({
       display: "grid",
-      gridTemplateColumns: "minmax(0, 1fr)",
+      gridTemplateColumns: "1fr",
       gridTemplateRows: "minmax(0, 1fr)",
       position: "relative",
     });

@@ -2,7 +2,7 @@
 id: P2-a
 title: "The 250 ms transition is correctly composited, but promotes 4 unrelated elements to their own layers"
 epic: performance
-status: open
+status: resolved
 severity: P2
 origin: review
 breaking: false
@@ -28,3 +28,14 @@ The 250 ms progress transition is correctly composited — measured: compositor-
 ## Beta assessment (2026-10-01)
 
 **Not blocking.** Tracked from **G0**.
+
+## Resolution
+
+**Superseded by S33** (2026-10-06). The library no longer ships a progress
+transition: S32 moved it from inline style to `styles.css`, and S33 removed it,
+because a seek glided instead of jumping. No transition runs during playback,
+so the extra layers and the ~5 MB of texture are gone with it.
+
+The README keeps an opt-in glide snippet. A consumer who adds it takes on the
+cost measured above, and the advice against `will-change: transform` still
+holds for them.

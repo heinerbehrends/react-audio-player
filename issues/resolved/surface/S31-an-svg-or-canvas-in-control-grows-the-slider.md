@@ -29,6 +29,11 @@ tracks. Where the root has a height, the content no longer outgrows it; where
 it has none, the cell still sizes to its content. The waveform example dropped
 its two `min-height: 0` rules.
 
+The columns went back to `1fr` the same day. Content at `width: 100%` adds
+nothing to a column's minimum, so `minmax(0, 1fr)` changed no layout measured
+there. It did collapse a vertical slider with no width of its own to 0px
+inside a `width: min-content` box, in Chromium and Firefox.
+
 **Verified by** — an E2E test in `testE2E/demo/examples.spec.ts`: the waveform's
 timeline is 72px tall. It fails at 518.75px with `1fr` restored. The jsdom
 style assertions in `calculateStyle.test.ts`, `Timeline.test.tsx` and

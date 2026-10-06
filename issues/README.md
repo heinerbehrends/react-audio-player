@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**22 open · 0 part-done · 101 resolved · 3 rejected**
+**20 open · 0 part-done · 103 resolved · 3 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -83,9 +83,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-15 open of 34.
+14 open of 34.
 
-- [ ] [B12](features/B12-a-stream-that-drops-mid-listen-never-reports-an-error.md) A stream that drops mid-listen never reports an error, and nothing can retry it — P1
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
 - [ ] [F15](features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3
@@ -105,6 +104,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F3](resolved/features/F3-audiofile-is-src-and-the-readme-example.md) `AudioFile` is `{src}` and the README example does not compile — P0
 - [x] [F4](resolved/features/F4-play-rejection-is-dropped.md) `play()` rejection is dropped — P0
 - [x] [B11](resolved/features/B11-firefox-reports-a-live-mp3-or-opus-stream-as-finite.md) Firefox reports a live MP3 or Opus stream as a growing finite track — P1
+- [x] [B12](resolved/features/B12-a-stream-that-drops-mid-listen-never-reports-an-error.md) A stream that drops mid-listen never reports an error, and nothing can retry it — P1
 - [x] [F5](resolved/features/F5-no-buffering-state-at-all.md) No buffering state at all — P1
 - [x] [F6](resolved/features/F6-media-session-api-entirely-absent.md) Media Session API entirely absent — P1
 - [x] [F7](resolved/features/F7-ended-is-unobservable-and-actively-erased.md) `ended` is unobservable and actively erased — P2
@@ -162,11 +162,11 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Performance
 
-2 open of 4.
+1 open of 4.
 
 - [ ] [P1-b](performance/P1-b-a-volume-rate-drag-costs-2-4.md) A volume/rate drag costs 2.4× a seek drag — the mode Phase 5 never traced — P1
-- [ ] [P2-a](performance/P2-a-the-250-ms-transition-is-correctly-composited.md) The 250 ms transition is correctly composited, but promotes 4 unrelated elements to their own layers — P2
 - [x] [P1-a](resolved/performance/P1-a-tree-shaking-is-broken-importing-only-playbutton.md) Tree-shaking is broken — importing only `<PlayButton>` costs 66 % of the library — P1
+- [x] [P2-a](resolved/performance/P2-a-the-250-ms-transition-is-correctly-composited.md) The 250 ms transition is correctly composited, but promotes 4 unrelated elements to their own layers — P2
 - [x] [P3](resolved/performance/P3-the-tree-shaking-win-has-no-automated-guard.md) The tree-shaking win has no automated guard — P2
 
 ## Packaging

@@ -55,32 +55,19 @@ function stepRate(
     writeRate(audioElement, target);
 }
 
-/**
- * A finite duration is what makes a position on the track meaningful: it is
- * `NaN` before metadata and `Infinity` on a live stream — or finite on a
- * stream marked `data-live` (B11). `useIsSeekable()` is the same test, so
- * `SeekButton` is already `aria-disabled` whenever this is false — but the
- * media keys are player-wide and reach these actions from any button, so the
- * guard belongs here too.
- */
-function isSeekable(audioElement: HTMLAudioElement) {
-  return (
-    Number.isFinite(audioElement.duration) &&
-    audioElement.dataset["live"] === undefined
-  );
-}
-
 function writeTime(audioElement: HTMLAudioElement, value: number) {
   if (!Number.isFinite(value)) return;
   audioElement.currentTime = value;
 }
 
 /**
- * The store state the write path needs. A snapshot rather than an accessor:
- * only `TOGGLE_MUTE` and `UNMUTE` read it.
+ * The store state the write path needs, as a snapshot rather than an accessor.
  */
 export type SideEffectContext = {
+  /** For `TOGGLE_MUTE` and `UNMUTE`. */
   lastAudibleVolume: number;
+  /** The store's `useIsSeekable()`, so a seek and the timeline always agree. */
+  isSeekable: boolean;
 };
 
 /**
@@ -120,7 +107,7 @@ export function handleSideEffect(
       break;
     }
     case "STOP_AUDIO": {
-      audioElement.currentTime = 0;
+      if (context.isSeekable) audioElement.currentTime = 0;
       audioElement.pause();
       break;
     }
@@ -139,6 +126,7 @@ export function handleSideEffect(
     case "CHANGE_VALUE": {
       switch (action.component) {
         case "timeline": {
+          if (!context.isSeekable) break;
           writeTime(audioElement, action.value);
           break;
         }
@@ -200,7 +188,7 @@ export function handleSideEffect(
     case "SET_TIME_FORWARD": {
       // Guarding the result is not enough: `Math.min(currentTime + 5, Infinity)`
       // is finite, so `writeTime` would let a live stream seek.
-      if (!isSeekable(audioElement)) break;
+      if (!context.isSeekable) break;
       writeTime(
         audioElement,
         Math.min(
@@ -213,7 +201,7 @@ export function handleSideEffect(
     case "SET_TIME_BACKWARD": {
       // A rewind names a position on the track just as much as a jump forward,
       // and `SeekButton` is disabled in both directions for that reason.
-      if (!isSeekable(audioElement)) break;
+      if (!context.isSeekable) break;
       writeTime(
         audioElement,
         Math.max(audioElement.currentTime - action.value, 0),
@@ -221,12 +209,12 @@ export function handleSideEffect(
       break;
     }
     case "SET_TIME_TO_START": {
-      if (!isSeekable(audioElement)) break;
+      if (!context.isSeekable) break;
       audioElement.currentTime = 0;
       break;
     }
     case "SET_TIME_TO_PERCENT": {
-      if (!isSeekable(audioElement)) break;
+      if (!context.isSeekable) break;
       writeTime(audioElement, audioElement.duration * action.percent);
       break;
     }

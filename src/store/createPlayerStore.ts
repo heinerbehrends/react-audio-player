@@ -131,6 +131,7 @@ export function createPlayerStore(): PlayerStore {
 
     const started = handleSideEffect(action, element, {
       lastAudibleVolume: atoms.lastAudibleVolume.get(),
+      isSeekable: atoms.duration.get() > 0,
     });
     if (!started) return;
 
