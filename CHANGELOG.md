@@ -28,6 +28,9 @@ nothing to migrate from.
   browser ignores `volume` writes
 - Keyboard shortcuts bound to every focused control, with `KeyToActionMap` to
   rebind or unbind them
+- `usePlayerRootProps()`, for your own container: a named region that a click
+  focuses, with the keyboard shortcuts on everything inside it, and Space for
+  play/pause while the container itself has focus
 - `useMediaKeyHandler()`, the shortcuts as an `onKeyDown` for controls of your
   own, on one element or a container
 - `labels` for every name and readout the library writes, with
@@ -40,8 +43,7 @@ nothing to migrate from.
   both Chromium and Firefox; rate steps stop at the ends and never move the
   rate against their direction
 - Track swaps carry on playing: a new `src` starts by itself if the player was
-  playing, or if the track ended while playing and the user has not acted since.
-  It stays paused otherwise. Only an autoplay refusal stops the next swap from
+  playing or the track ran to its end, until a pause. It stays paused otherwise. Only an autoplay refusal stops the next swap from
   playing; a track that fails to load does not
 - `audioFile.live`, for live MP3 and Opus streams, which Firefox reports as a
   finite, growing track rather than an endless one

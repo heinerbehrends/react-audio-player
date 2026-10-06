@@ -1,6 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { useMediaKeyHandler, usePlayButtonProps } from "../../src/index";
+import {
+  useMediaKeyHandler,
+  usePlayButtonProps,
+  usePlayerRootProps,
+} from "../../src/index";
 import { renderWithStore } from "../store/renderWithStore";
 
 function LibraryButton() {
@@ -89,5 +93,139 @@ describe("useMediaKeyHandler", () => {
 
     fireEvent.keyDown(screen.getByText("custom"), { key: "x" });
     expect(element.play).toHaveBeenCalledTimes(1);
+  });
+});
+
+function Root(props: React.HTMLAttributes<HTMLElement>) {
+  return (
+    <div {...usePlayerRootProps(props)}>
+      <button>custom</button>
+      <LibraryButton />
+    </div>
+  );
+}
+
+/**
+ * The container the library does not render (A10): a named landmark that a
+ * click focuses, so the shortcuts work from anywhere inside it.
+ */
+describe("usePlayerRootProps", () => {
+  it("is a named region that clicks focus and Tab skips", () => {
+    renderWithStore(<Root />, loaded);
+
+    const root = screen.getByRole("region", { name: "audio player" });
+    expect(root).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("takes its name from labels.player", () => {
+    renderWithStore(<Root />, { ...loaded, labels: { player: "Hörbuch" } });
+
+    expect(screen.getByRole("region", { name: "Hörbuch" })).toBeInTheDocument();
+  });
+
+  it("passes the caller's props through", () => {
+    renderWithStore(
+      <>
+        <h2 id="title">Down the Rabbit-Hole</h2>
+        <Root className="player" aria-labelledby="title" />
+      </>,
+      loaded,
+    );
+
+    const root = screen.getByRole("region", { name: "Down the Rabbit-Hole" });
+    expect(root).toHaveClass("player");
+  });
+
+  it("runs the shortcuts from inside, and from the root itself", () => {
+    const { element } = renderWithStore(<Root />, loaded);
+
+    fireEvent.keyDown(screen.getByText("custom"), { key: "k" });
+    expect(element.play).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(screen.getByRole("region"), { key: "m" });
+    expect(element.muted).toBe(true);
+  });
+
+  it("runs the caller's onKeyDown first, and preventDefault opts out", () => {
+    const { element } = renderWithStore(
+      <Root
+        onKeyDown={(event) => {
+          if (event.key === "k") event.preventDefault();
+        }}
+      />,
+      loaded,
+    );
+
+    fireEvent.keyDown(screen.getByText("custom"), { key: "k" });
+    expect(element.play).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(screen.getByText("custom"), { key: "m" });
+    expect(element.muted).toBe(true);
+  });
+
+  describe("Space", () => {
+    it("plays and pauses with the container itself focused", () => {
+      const { element } = renderWithStore(<Root />, loaded);
+
+      const notPrevented = fireEvent.keyDown(screen.getByRole("region"), {
+        key: " ",
+      });
+
+      expect(element.play).toHaveBeenCalledTimes(1);
+      // The page would otherwise scroll.
+      expect(notPrevented).toBe(false);
+    });
+
+    // A1: on a button, Space is how the button gets pressed.
+    it.each(["custom", "library"])(
+      "is left to the %s button it is pressed on",
+      (name) => {
+        const { element } = renderWithStore(<Root />, loaded);
+
+        const notPrevented = fireEvent.keyDown(screen.getByText(name), {
+          key: " ",
+        });
+
+        expect(element.play).not.toHaveBeenCalled();
+        expect(notPrevented).toBe(true);
+      },
+    );
+
+    it("gives way to a binding of the caller's", () => {
+      const { element } = renderWithStore(<Root />, {
+        ...loaded,
+        customKeyboardShortcuts: { " ": { type: "TOGGLE_MUTE" } },
+      });
+
+      fireEvent.keyDown(screen.getByRole("region"), { key: " " });
+
+      expect(element.play).not.toHaveBeenCalled();
+      expect(element.muted).toBe(true);
+    });
+
+    it("stays off when the caller unbinds it", () => {
+      const { element } = renderWithStore(<Root />, {
+        ...loaded,
+        customKeyboardShortcuts: { " ": null },
+      });
+
+      const notPrevented = fireEvent.keyDown(screen.getByRole("region"), {
+        key: " ",
+      });
+
+      expect(element.play).not.toHaveBeenCalled();
+      expect(notPrevented).toBe(true);
+    });
+
+    it("leaves modifier combinations to the browser", () => {
+      const { element } = renderWithStore(<Root />, loaded);
+
+      fireEvent.keyDown(screen.getByRole("region"), {
+        key: " ",
+        ctrlKey: true,
+      });
+
+      expect(element.play).not.toHaveBeenCalled();
+    });
   });
 });

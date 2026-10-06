@@ -39,11 +39,9 @@ export type TimePart = "elapsed" | "remaining" | "duration";
  */
 export type PlayerLabels = {
   /**
-   * The `<audio>` element's name. Default: "audio player".
-   *
-   * Not announced: without `controls` the element has no accessible object in
-   * Chromium or Firefox. Name the player with `role="region"` on your own
-   * container instead (A16).
+   * The player's name, on the container `usePlayerRootProps` builds. Default:
+   * "audio player". Also set on the `<audio>` element, where it is not
+   * announced: without `controls` that has no accessible object (A16).
    */
   player?: string;
 

@@ -41,3 +41,6 @@ dropping it before 1.0 remains open to whoever next touches `PlayerLabels`.
 
 **Verified by** — reading the comment in `dist/index.d.ts` after a build; it
 sits on the leaf, where tsup keeps it.
+
+**Follow-up (2026-10-06):** `labels.player` has a job again: it names the
+container `usePlayerRootProps()` builds. The doc comment and the README say so.

@@ -92,6 +92,38 @@ test.describe("Playlist", () => {
     await expect.poll(() => isPlaying(example)).toBe(false);
   });
 
+  // `tabIndex={-1}` on the root: a click on something that is not a control
+  // focuses the player rather than the page, so the shortcuts still work.
+  test("the shortcuts work after a click on the cover", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Playlist" });
+
+    await example.locator(".playlist-cover").click();
+    await expect(
+      example.getByRole("region", { name: "Down the Rabbit-Hole" }),
+    ).toBeFocused();
+    await page.keyboard.press("k");
+
+    await expect.poll(() => isPlaying(example)).toBe(true);
+    // Space too, with the container itself focused.
+    await page.keyboard.press(" ");
+    await expect.poll(() => isPlaying(example)).toBe(false);
+  });
+
+  // A1: on a button, Space presses it rather than toggling playback.
+  test("Space on a focused button presses it", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Playlist" });
+
+    await example.getByRole("button", { name: "Next track" }).focus();
+    await page.keyboard.press(" ");
+
+    await expect(
+      example.getByRole("button", { name: /The Pool of Tears/ }),
+    ).toHaveAttribute("aria-current", "true");
+    expect(await isPlaying(example)).toBe(false);
+  });
+
   test("a track chosen from the list plays, even when paused", async ({
     page,
   }) => {

@@ -44,7 +44,10 @@ export type { PlayerLabels, TimePart } from "./Shared/playerLabels";
 export type { SliderAriaState } from "./Slider/sliderModes";
 export type { KeyboardAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
-export { useMediaKeyHandler } from "./KeyboardControls/handleMediaKeys";
+export {
+  useMediaKeyHandler,
+  usePlayerRootProps,
+} from "./KeyboardControls/handleMediaKeys";
 export type {
   AudioPlayerState,
   AudioPlayerControls,

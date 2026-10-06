@@ -76,11 +76,23 @@ controls into a slider root, add your own `role="group"` and `aria-label`; props
 are spread through.
 
 `<AudioPlayer>` itself renders no element, so nothing names or bounds the
-player as a whole: two players on a page announce identically. Give your own
-container `role="region"` and an `aria-label` — or `aria-labelledby` pointing
-at the track title — and each player becomes a named landmark. The library
-will not add a wrapper later, since one would break every layout composed
-around it rendering nothing.
+player as a whole: two players on a page announce identically. Spread
+`usePlayerRootProps()` onto your own container and each player becomes a
+named landmark:
+
+```jsx
+function Root({ children }) {
+  return <div {...usePlayerRootProps({ className: "player" })}>{children}</div>;
+}
+```
+
+It gives the container `role="region"`, a name from `labels.player` (or pass
+`aria-labelledby` pointing at the track title), `tabIndex={-1}` and the
+keyboard shortcuts. The `-1` means a click on the cover or the title focuses
+the player, so the shortcuts keep working, without adding a tab stop: keyboard
+users reach it through its controls, and no focus ring appears on a click. The
+library will not add a wrapper itself, since one would break every layout
+composed around it rendering nothing.
 
 The volume slider announces the mute as well as the volume — "Muted, 80%" — since
 the two are separate on the element and the arrow keys change the volume without
@@ -198,9 +210,9 @@ raw values, `Intl` is yours.
 | `rateSet`    | `({ rate }) => string`        | `"Set playback rate to 1.5x"`                                          |
 | `rateChange` | `({ amount }) => string`      | `"Increase playback rate by 0.25x"`                                    |
 
-`player` names the `<audio>` element, which has no accessible object without
-`controls`, so Chromium and Firefox never announce it. Name the player on your
-own container instead — see [Accessibility](#accessibility).
+`player` names the container `usePlayerRootProps()` builds — see
+[Accessibility](#accessibility). It is also set on the `<audio>` element, which
+has no accessible object without `controls`, so it is not announced there.
 | `rateGroup` | `string` | `"Playback rate options"` |
 | `timelineSlider` | `string` | `"Timeline slider"` |
 | `volumeSlider` | `string` | `"Volume slider"` |
@@ -434,12 +446,15 @@ function Playlist() {
 ```
 
 The player carries on across a swap. If it was playing, the new track starts by
-itself; if it was paused, it stays paused. A track that ended while playing
-counts as playing for the swap that follows from the end — so this playlist
-plays through — but not once the user clicks, presses a key or seeks: Previous
-after the last track arrives paused. A track that fails to load does not stop
-the list; a browser that refuses autoplay does. Next and previous buttons only
-change the index.
+itself; if the user paused it, it stays paused. A track that ran to its end
+counts as playing: the content stopped, not the listener. So this playlist plays
+through, and Previous after the last track plays too, whenever it is pressed. A
+track that fails to load does not stop the list; a browser that refuses
+autoplay does. Next and previous buttons only change the index.
+
+For a player that should rest at the end — a new `src` that is not navigation,
+such as a refreshed signed URL, should arrive paused — call `pause()` from
+`useAudioPlayer()` when `onEnded` does not advance. A pause ends the carry-on.
 
 To start a track from a paused player — a click in a track list — call `play()`
 in the same handler as the change. The order does not matter; the player
@@ -1114,7 +1129,9 @@ bar.
 Available on every focusable control. A slider's own keys take precedence over
 the shortcuts below.
 
-For controls of your own, such as a playlist's previous and next buttons,
+On the container from [`usePlayerRootProps()`](#accessibility) they reach
+every control inside it, your own included, and work after a click anywhere
+on the player. For controls of your own without that container,
 `useMediaKeyHandler()` returns the same handler as an `onKeyDown`. Put it on
 one element, or on a container to cover everything inside:
 
@@ -1155,8 +1172,11 @@ Media keys (`MediaPlayPause`, `MediaStop`, `MediaMute`, `MediaVolumeUp`,
 `MediaVolumeDown`) map to the same actions. Combinations with Ctrl, Cmd or Alt
 are left to the browser and to assistive technology.
 
-`Space` is not bound, so it keeps activating the focused button. Pass
-`customKeyboardShortcuts={{ " ": { type: "TOGGLE_PLAY" } }}` if you want it.
+`Space` keeps activating the focused button. On the container from
+`usePlayerRootProps()` it plays and pauses while the container itself has
+focus, say after a click on the cover, where it would otherwise scroll the
+page. Bind `" "` in `customKeyboardShortcuts` to change that everywhere, or
+set it to `null` to leave Space alone on the container too.
 
 A binding is a `KeyboardAction`, or `null` to unbind — `KeyToActionMap` is
 `Record<string, KeyboardAction | null>`. `customKeyboardShortcuts={{ p: null }}`

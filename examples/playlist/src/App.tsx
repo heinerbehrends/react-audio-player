@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   AudioPlayer,
   MediaSession,
@@ -7,7 +7,7 @@ import {
   Time,
   Timeline,
   useAudioPlayer,
-  useMediaKeyHandler,
+  usePlayerRootProps,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
 
@@ -33,7 +33,7 @@ const TRACKS = [
 ];
 
 // The player carries on across a track change by itself: playing stays playing,
-// a track that ended moves on to the next, and paused stays paused.
+// a track that ran to its end counts as playing, and paused stays paused.
 export default function App() {
   const [index, setIndex] = useState(0);
 
@@ -57,7 +57,14 @@ type PlayerProps = {
 // Its own component because `useAudioPlayer()` works only inside the player.
 function Player({ index, setIndex }: PlayerProps) {
   const { play } = useAudioPlayer();
-  const onKeyDown = useMediaKeyHandler();
+  const titleId = useId();
+  // Named by the chapter playing. A click anywhere focuses it, and the
+  // shortcuts reach previous, next and the track list too, which are this
+  // example's own buttons rather than the library's.
+  const rootProps = usePlayerRootProps({
+    className: "playlist",
+    "aria-labelledby": titleId,
+  });
   const hasPrevious = index > 0;
   const hasNext = index < TRACKS.length - 1;
   const previous = () => {
@@ -68,9 +75,7 @@ function Player({ index, setIndex }: PlayerProps) {
   };
 
   return (
-    // The shortcuts reach previous, next and the track list too, which are this
-    // example's own buttons rather than the library's.
-    <div className="playlist" onKeyDown={onKeyDown}>
+    <div {...rootProps}>
       {/* The lock screen and media keys; previous and next appear only while
           there is a track to go to. */}
       <MediaSession
@@ -87,7 +92,9 @@ function Player({ index, setIndex }: PlayerProps) {
           height={72}
         />
         <div>
-          <p className="playlist-title">{TRACKS[index].title}</p>
+          <p className="playlist-title" id={titleId}>
+            {TRACKS[index].title}
+          </p>
           <p className="playlist-meta">
             {BOOK.album} · Chapter {index + 1}
           </p>

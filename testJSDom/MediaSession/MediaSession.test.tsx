@@ -15,7 +15,6 @@ import {
   renderWithStore,
   type RenderWithStoreResult,
 } from "../store/renderWithStore";
-import { createTestStore } from "../store/createTestStore";
 import { TestProviders } from "../testComponents";
 
 // jsdom has no Media Session API. The fake holds the metadata, the playback
@@ -293,31 +292,6 @@ describe("MediaSession action handlers", () => {
     press("nexttrack");
     expect(onPreviousTrack).toHaveBeenCalledTimes(1);
     expect(onNextTrack).toHaveBeenCalledTimes(1);
-  });
-
-  /**
-   * F14. A track button on the lock screen is the user's choice, like a click,
-   * so a track that ended while playing does not start the one it swaps to.
-   */
-  it("expires the intent a natural end held before a track button", () => {
-    const testStore = createTestStore({ readyState: 1 });
-    const { store, element } = testStore;
-    store.send({ type: "PLAY" });
-    element.paused = false;
-    element.emit("play");
-    element.paused = true;
-    element.ended = true;
-    element.emit("pause");
-    element.emit("ended");
-    element.play.mockClear();
-    renderWithStore(
-      <MediaSession onPreviousTrack={() => store.continuePlayback()} />,
-      { testStore },
-    );
-
-    press("previoustrack");
-
-    expect(element.play).not.toHaveBeenCalled();
   });
 
   it("calls the latest inline handler and drops the button when it goes", () => {

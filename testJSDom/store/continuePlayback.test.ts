@@ -119,46 +119,31 @@ describe("continuePlayback", () => {
   });
 
   /**
-   * F14. The end kept the intent for the swap it causes, not for one the user
-   * makes later — Previous after the last track, Next with the consumer's
-   * autoplay switched off.
+   * F14, as decided: a track that ran to its end counts as playing for every
+   * later swap, until a pause — Previous after the last track plays. A click,
+   * a key or a seek in between changes nothing.
    */
-  it.each([
-    ["a click", () => document.dispatchEvent(new Event("pointerdown"))],
-    ["a key", () => document.dispatchEvent(new Event("keydown"))],
-  ] as const)("stays paused when %s follows the end", (_input, act) => {
+  it("plays on a swap long after the end, whatever happened in between", async () => {
     const harness = playing();
     endNaturally(harness);
-    act();
-
-    harness.store.continuePlayback();
-
-    expect(harness.element.play).not.toHaveBeenCalled();
-  });
-
-  /** Chrome fires no `pause` on a paused seek back from the end. */
-  it("stays paused after a seek back from the end", () => {
-    const harness = playing();
-    endNaturally(harness);
-    harness.element.ended = false;
+    document.dispatchEvent(new Event("pointerdown"));
     harness.element.emit("seeking");
-
-    harness.store.continuePlayback();
-
-    expect(harness.element.play).not.toHaveBeenCalled();
-  });
-
-  it("plays after the end when the user then asks to", () => {
-    const harness = playing();
-    endNaturally(harness);
-    document.dispatchEvent(new Event("pointerdown"));
-    harness.store.send({ type: "PLAY" });
-    harness.element.play.mockClear();
-    document.dispatchEvent(new Event("pointerdown"));
+    await settle();
 
     harness.store.continuePlayback();
 
     expect(harness.element.play).toHaveBeenCalledTimes(1);
+  });
+
+  /** The way out, for a player that should stop at the end: `pause()`. */
+  it("stays paused when a pause follows the end", () => {
+    const harness = playing();
+    endNaturally(harness);
+    harness.store.send({ type: "PAUSE" });
+
+    harness.store.continuePlayback();
+
+    expect(harness.element.play).not.toHaveBeenCalled();
   });
 
   /** B4: Firefox fires `ended` on a paused seek to the end, and no `pause`. */

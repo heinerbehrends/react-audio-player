@@ -8,9 +8,9 @@ type AudioPlayerProps = {
   children: React.ReactNode;
   /**
    * The track. Changing `src` swaps it and returns the player to loading. If it
-   * was playing, or the track ended while playing, the new one starts by itself;
-   * if it was paused, it stays paused. A playlist is your own state driving this
-   * prop, advanced from `onEnded`.
+   * was playing, or the track ran to its end, the new one starts by itself; if it
+   * was paused, it stays paused. A playlist is your own state driving this prop,
+   * advanced from `onEnded`.
    *
    * Safe to pass as an inline literal; nothing memoises on its identity.
    */

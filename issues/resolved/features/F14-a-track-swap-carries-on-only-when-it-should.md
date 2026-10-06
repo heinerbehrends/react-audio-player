@@ -59,3 +59,24 @@ A media-session track button is neither a pointer nor a key on the page, so
 `expireEndedIntent()` before the consumer's callback. Verified by `expires the
 intent a natural end held before a track button` in
 `testJSDom/MediaSession/MediaSession.test.tsx`.
+
+## Reverted by decision (2026-10-06)
+
+The end-intent expiry is gone; the `NotAllowedError`-only rule and the test
+infrastructure stay. Measured on "AudioPlayer only", the expiry cost 116 B
+gzipped, 4.5% of the core, and what it prevented is not clearly a bug: a track
+that ran to its end was stopped by the content, not the listener, so Previous
+or Next starting playback afterwards is a reasonable reading of intent. The
+rule is now one sentence in the README: a track that ran to its end counts as
+playing for every later swap, until a pause.
+
+The case that does surprise is a `src` change that is not navigation, such as
+a refreshed signed URL long after the end. The README names it and the fix:
+call `pause()` from `useAudioPlayer()` when `onEnded` does not advance.
+`<MediaSession>`'s track buttons no longer call `expireEndedIntent`, which is
+removed. A 30 s window (68 B less than the expiry) was measured and rejected:
+it kept the cost for a rule harder to explain.
+
+**Verified by** — `plays on a swap long after the end, whatever happened in
+between` and `stays paused when a pause follows the end` in
+`testJSDom/store/continuePlayback.test.ts`.

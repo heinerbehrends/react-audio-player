@@ -7,6 +7,7 @@ import {
   Time,
   Timeline,
   Volume,
+  usePlayerRootProps,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
 
@@ -18,7 +19,7 @@ export default function App() {
         title: "The Race",
       }}
     >
-      <div className="basic">
+      <Root>
         <PlayButton className="basic-play">
           <PlayButton.Paused>
             <svg viewBox="0 0 14 14" aria-hidden="true">
@@ -78,7 +79,13 @@ export default function App() {
             </Volume>
           </div>
         </div>
-      </div>
+      </Root>
     </AudioPlayer>
   );
+}
+
+// A named region that a click focuses, so the shortcuts work from anywhere on
+// the bar. Its own component because the hook works only inside the player.
+function Root({ children }: { children: React.ReactNode }) {
+  return <div {...usePlayerRootProps({ className: "basic" })}>{children}</div>;
 }
