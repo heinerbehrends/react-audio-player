@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AudioPlayer, useIsLive } from "../../src/index";
 import { createTestStore } from "./createTestStore";
@@ -80,5 +80,26 @@ describe("audioFile.live", () => {
     );
 
     expect(screen.getByText(expected)).toBeInTheDocument();
+  });
+
+  // The mark leaves with the stream: `data-live` goes in the same commit as
+  // the new `src`, so the `loadstart` that follows reads it gone. jsdom
+  // loads nothing, so the test fires that event itself.
+  it("clears on a swap from a live stream to a plain file", () => {
+    const { container, rerender } = render(
+      <AudioPlayer audioFile={{ src: "station.mp3", live: true }}>
+        <Badge />
+      </AudioPlayer>,
+    );
+    expect(screen.getByText("live")).toBeInTheDocument();
+
+    rerender(
+      <AudioPlayer audioFile={{ src: "episode.mp3" }}>
+        <Badge />
+      </AudioPlayer>,
+    );
+    fireEvent(container.querySelector("audio")!, new Event("loadstart"));
+
+    expect(screen.getByText("not live")).toBeInTheDocument();
   });
 });

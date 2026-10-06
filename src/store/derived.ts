@@ -105,7 +105,7 @@ export function useIsSeekable(): boolean {
 
 /**
  * Whether the track is a live stream — the element reports an unbounded
- * duration. For a "LIVE" badge, hiding the clock, or swapping the timeline for
+ * duration, or `audioFile.live` says so. For a "LIVE" badge, hiding the clock, or swapping the timeline for
  * a "listen live" control.
  *
  * Not the inverse of `useIsSeekable()`, which is also false before metadata:
@@ -114,7 +114,7 @@ export function useIsSeekable(): boolean {
  *
  * False before metadata, and false again after a `src` swap to an ordinary
  * file. A stream that later reports a finite duration — a recording that
- * finished — clears it on `durationchange`.
+ * finished — clears it on `durationchange`, unless `audioFile.live` is set.
  */
 export function useIsLive(): boolean {
   const store = usePlayerStore();

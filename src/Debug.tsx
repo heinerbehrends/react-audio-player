@@ -1,6 +1,11 @@
 import { usePlayerStore } from "./store/PlayerStoreContext";
 import { useStore } from "./store/atom";
-import { usePlayerState, useVolumeState } from "./store/derived";
+import {
+  useIsBuffering,
+  useIsLive,
+  usePlayerState,
+  useVolumeState,
+} from "./store/derived";
 import { useSliderContext } from "./Slider/SliderContext";
 
 /** Renders inside a slider root, so it reads that slider's own context. */
@@ -47,6 +52,8 @@ function DebugStore() {
   const loadState = useStore(store.loadState);
   const playerState = usePlayerState();
   const volumeState = useVolumeState();
+  const buffering = useIsBuffering();
+  const live = useIsLive();
 
   return (
     <>
@@ -62,6 +69,8 @@ function DebugStore() {
       <p>Last Audible Volume: {lastAudibleVolume.toFixed(2)}</p>
       <p>Rate: {rate.toFixed(2)}</p>
       <p>Paused: {String(paused)}</p>
+      <p>Buffering: {String(buffering)}</p>
+      <p>Live: {String(live)}</p>
     </>
   );
 }

@@ -301,6 +301,21 @@ describe("useIsBuffering", () => {
     expect(result.current).toBe(false);
   });
 
+  // `preload="none"` loads nothing until play, so the wait after the first
+  // press is the stall, not a load.
+  it("is true after the first press on an idle element", () => {
+    const harness = renderDerived(useIsBuffering, {
+      readyState: 0,
+      networkState: 1,
+    });
+    expect(harness.result.current).toBe(false);
+
+    drive(harness, "play", { paused: false, networkState: 2 });
+    drive(harness, "waiting", {});
+
+    expect(harness.result.current).toBe(true);
+  });
+
   it("stays false for an errored element", () => {
     const { result } = renderDerived(useIsBuffering, {
       readyState: 0,

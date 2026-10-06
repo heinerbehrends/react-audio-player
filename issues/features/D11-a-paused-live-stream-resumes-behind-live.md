@@ -38,8 +38,6 @@ error elsewhere.
   behaviour change nobody asked for yet.
 - **Docs:** a README paragraph under "Live streams", with the recipe.
 
-The live example ships with plain pause until this is decided.
-
 ## Decision (2026-10-06): not a problem
 
 **Heard by hand** in Chromium and Firefox against Radio Mast's streams: the

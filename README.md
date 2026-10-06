@@ -90,8 +90,9 @@ controls in `<PlayerRoot>` and each player becomes a named landmark:
 
 It renders a `<div data-part="player">` with `role="region"`, named by
 `audioFile.title` (without one, by `labels.player`; `aria-label` or
-`aria-labelledby` override both), `tabIndex={-1}` and the keyboard shortcuts. The `-1` means a click on the cover or the title focuses
-the player, so the shortcuts keep working, without adding a tab stop: keyboard
+`aria-labelledby` override both), `tabIndex={-1}` and the keyboard shortcuts.
+The `-1` means a click on the cover or the title focuses the player, so the
+shortcuts keep working, without adding a tab stop: keyboard
 users reach it through its controls, and no focus ring appears on a click. For
 a container of your own — a `<section>`, or one another component library
 renders — spread `usePlayerRootProps()` onto it instead. Both are opt-in:
@@ -204,28 +205,29 @@ raw values, `Intl` is yours.
 
 ### The table
 
-| Entry        | Type                          | Default                                                                |
-| ------------ | ----------------------------- | ---------------------------------------------------------------------- |
-| `player`     | `string`                      | `"audio player"`                                                       |
-| `play`       | `Record<PlayerState, string>` | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio" |
-| `mute`       | `Record<VolumeState, string>` | "Unmute" when muted, "Mute" otherwise                                  |
-| `timeToggle` | `({ time, shown }) => string` | `"1:23 elapsed, show time remaining"`                                  |
-| `seek`       | `({ amount }) => string`      | `"Seek forward by 10 seconds"`                                         |
-| `rateSet`    | `({ rate }) => string`        | `"Set playback rate to 1.5x"`                                          |
-| `rateChange` | `({ amount }) => string`      | `"Increase playback rate by 0.25x"`                                    |
+| Entry            | Type                                 | Default                                                                 |
+| ---------------- | ------------------------------------ | ----------------------------------------------------------------------- |
+| `player`         | `string`                             | `"audio player"`                                                        |
+| `play`           | `Record<PlayerState, string>`        | "Play audio" / "Pause audio" / "Loading audio" / "Error loading audio"  |
+| `mute`           | `Record<VolumeState, string>`        | "Unmute" when muted, "Mute" otherwise                                   |
+| `timeToggle`     | `({ time, shown }) => string`        | `"1:23 elapsed, show time remaining"`                                   |
+| `seek`           | `({ amount }) => string`             | `"Seek forward by 10 seconds"`                                          |
+| `rateSet`        | `({ rate }) => string`               | `"Set playback rate to 1.5x"`                                           |
+| `rateChange`     | `({ amount }) => string`             | `"Increase playback rate by 0.25x"`                                     |
+| `rateGroup`      | `string`                             | `"Playback rate options"`                                               |
+| `timelineSlider` | `string`                             | `"Timeline slider"`                                                     |
+| `volumeSlider`   | `string`                             | `"Volume slider"`                                                       |
+| `rateSlider`     | `string`                             | `"Playback rate slider"`                                                |
+| `timelineValue`  | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"`                                               |
+| `volumeValue`    | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"`                                                |
+| `rateValue`      | `(state: SliderAriaState) => string` | `"1.5x"`                                                                |
+| `time`           | `({ seconds, part }) => string`      | `"1:30"`, `"-1:30"` — see [what `time` cannot do](#what-time-cannot-do) |
+| `rateDisplay`    | `({ rate }) => string`               | `"1.5x"`                                                                |
 
 `player` names [`<PlayerRoot>`](#accessibility) when `audioFile` has no
-`title` — see [Accessibility](#accessibility). It is also set on the `<audio>` element, which
-has no accessible object without `controls`, so it is not announced there.
-| `rateGroup` | `string` | `"Playback rate options"` |
-| `timelineSlider` | `string` | `"Timeline slider"` |
-| `volumeSlider` | `string` | `"Volume slider"` |
-| `rateSlider` | `string` | `"Playback rate slider"` |
-| `timelineValue` | `(state: SliderAriaState) => string` | `"Position 0:30 of 2:00"` |
-| `volumeValue` | `(state: SliderAriaState) => string` | `"Muted, 80%"` / `"80%"` |
-| `rateValue` | `(state: SliderAriaState) => string` | `"1.5x"` |
-| `time` | `({ seconds, part }) => string` | `"1:30"`, `"-1:30"` — see [what `time` cannot do](#what-time-cannot-do) |
-| `rateDisplay` | `({ rate }) => string` | `"1.5x"` |
+`title` — see [Accessibility](#accessibility). It is also set on the `<audio>`
+element, which has no accessible object without `controls`, so it is not
+announced there.
 
 `SliderAriaState` is `{ value, maxValue, muted }` — one payload for all three
 sliders, so each uses what it needs. The timeline reads `value` and `maxValue` as
@@ -756,7 +758,8 @@ root's `data-orientation` for that rule to match.
 Nothing animates. The position arrives in `timeupdate` steps, about four a
 second, and the fill and the thumb both jump to each one — and straight to the
 target of a seek. To smooth playback, add a transition and drop it for a drag,
-knowing that a seek will glide too:
+knowing that a seek will glide too, and that the thumb, which is positioned
+inline, still steps:
 
 ```css
 .player [data-slider="timeline"] [data-part="progress"] {
@@ -866,8 +869,8 @@ that have one, and `aria-pressed` on `.Set`.
 Your handlers run first and the library's second, and `preventDefault()` in
 yours opts out of ours. Adding `onClick` after the spread replaces the library's
 instead, which silently breaks playback; passing it in is the only spelling that
-composes. Where `amount`, `rate` or `defaultValue` is needed it is a leading argument rather than
-a key of the bag, because React would pass an unrecognised lowercase attribute
+composes. Where `amount`, `rate` or `defaultValue` is needed it is a leading
+argument rather than a key of the bag, because React would pass an unrecognised lowercase attribute
 through to the DOM — `<button rate="1.5">` in your page source.
 
 **Spread the bag last.** The gate, the handlers and `type` are the library's and
@@ -1060,10 +1063,12 @@ this hook is the only place the two are told apart. A stream that later reports
 a finite length, such as a recording that finished, stops being live on
 `durationchange`, unless `audioFile.live` says otherwise.
 
-Play after a pause rejoins the station live: what you hear does not fall
-behind. `currentTime` carries on from where it stopped, so it counts listening
-time and says nothing about lag. Heard in Chromium and Firefox against Radio
-Mast's reference streams, after short pauses and five-minute ones.
+Play after a pause rejoined the station live in Chromium and Firefox, against
+Radio Mast's reference streams, after short pauses and five-minute ones. That
+is the browser and the server, not this library: a server that holds a paused
+connection open may resume where it stopped. `currentTime` carries on from
+where it stopped either way, so it counts listening time and says nothing
+about lag.
 
 ### Live streams in Firefox
 
@@ -1124,7 +1129,8 @@ player is still in play mode, so your button keeps offering Pause and pressing i
 still works. `playerState === "loading"` means the track is on its way and has
 not arrived; `isBuffering` means it ran out of data. Under `preload="none"` a
 player waiting for its first press is `"paused"`, since nothing is loading, and
-the wait after the press is `isBuffering`.
+the wait after the press is `isBuffering`. A track swap that carries on playing
+starts a fresh load, so its wait is `"loading"`.
 
 Seeking into unbuffered audio while paused does not report as buffering.
 
@@ -1191,8 +1197,8 @@ the shortcuts below.
 Inside [`<PlayerRoot>`](#accessibility) they reach every control, your own
 included — a playlist's previous and next buttons — and work after a click
 anywhere on the player. A key a library control already handled stops there,
-so nothing runs twice, and keys typed into a text field, `<select>` or
-`contenteditable` are left alone. They work only while focus is inside the
+so nothing runs twice, and keys pressed in any `<input>` (a checkbox
+included), `<textarea>`, `<select>` or `contenteditable` are left alone. They work only while focus is inside the
 player: the shortcuts are never page-wide.
 
 On a focused slider the arrow keys adjust its value, and `Home` and `End` jump to
@@ -1216,8 +1222,8 @@ Media keys (`MediaPlayPause`, `MediaStop`, `MediaMute`, `MediaVolumeUp`,
 are left to the browser and to assistive technology.
 
 `Space` keeps activating the focused button. On `<PlayerRoot>` it plays and
-pauses while the root itself has focus, say after a click on the cover, where it would otherwise scroll the
-page. Bind `" "` in `customKeyboardShortcuts` to change that everywhere, or
+pauses while the root itself has focus, say after a click on the cover, where
+it would otherwise scroll the page. Bind `" "` in `customKeyboardShortcuts` to change that everywhere, or
 set it to `null` to leave Space alone on the container too.
 
 A binding is a `KeyboardAction`, or `null` to unbind — `KeyToActionMap` is

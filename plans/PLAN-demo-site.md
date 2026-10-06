@@ -116,14 +116,10 @@ Spiked on 2026-10-05 in a throwaway page against `src/`, Chromium, and deleted:
 - `ArrowRight` still steps 5 s, `role="slider"` and `aria-valuetext`
   ("Position 2:54 of 4:43") are intact, and the focus ring wraps the whole
   waveform.
-- The played part is a second copy of the bars clipped with
-  `clip-path: inset(0 ${(1 - played) * 100}% 0 0)`, `played` from
-  `useCurrentTime() / duration`, with the same `250ms linear` transition as
-  `.Progress`. Its edge lines up with the thumb.
-- `.Progress` cannot do the clipping: it scales with `scaleX`, which squashes
-  bars instead of cutting them. The userland clip re-renders the waveform about
-  four times a second. A `--progress` custom property on the root (**S20**)
-  would make it CSS alone — optional, not a prerequisite.
+- The played part is a second copy of the bars inside `<Timeline.Progress>`,
+  clipped with `clip-path: inset(0 calc((1 - var(--progress)) * 100%) 0 0)`
+  and its `scaleX` turned off, since scaling squashes bars instead of cutting
+  them. CSS alone, with no transition: its edge lines up with the thumb.
 
 **Peaks are precomputed, not decoded at runtime.** A runtime decode fetches the
 whole file twice and adds Web Audio code that is not the point of the example.

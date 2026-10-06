@@ -42,8 +42,9 @@ nothing to migrate from.
   both Chromium and Firefox; rate steps stop at the ends and never move the
   rate against their direction
 - Track swaps carry on playing: a new `src` starts by itself if the player was
-  playing or the track ran to its end, until a pause. It stays paused otherwise. Only an autoplay refusal stops the next swap from
-  playing; a track that fails to load does not
+  playing or the track ran to its end, until a pause. It stays paused
+  otherwise. Only an autoplay refusal stops the next swap from playing; a track
+  that fails to load does not
 - `audioFile.live`, for live MP3 and Opus streams, which Firefox reports as a
   finite, growing track rather than an endless one
 - `<MediaSession>`: the lock screen, media keys and system media controls, with

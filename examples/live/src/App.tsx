@@ -11,7 +11,6 @@ import {
   Volume,
   useAudioPlayer,
   useIsBuffering,
-  useIsLive,
 } from "react-headless-audio-player";
 
 // Radio Mast's reference stream: free to use, and on air around the clock.
@@ -154,12 +153,9 @@ function useReconnectOnStall(buffering: boolean, reconnect: () => void) {
   }, [buffering, reconnect]);
 }
 
-// `useIsLive()` is the library's word that there is no end to seek towards.
 // Green while you hear it: playing, and not stalled.
 function OnAir({ buffering }: { buffering: boolean }) {
-  const live = useIsLive();
   const { playerState } = useAudioPlayer();
-  if (!live) return null;
 
   return (
     <span
@@ -180,9 +176,7 @@ function Status({ buffering }: { buffering: boolean }) {
     ? "Listening"
     : playerState === "playing"
       ? "Buffering…"
-      : playerState === "paused"
-        ? "Paused"
-        : "";
+      : "";
 
   return (
     <p className="live-status">

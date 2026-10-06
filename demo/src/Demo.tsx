@@ -62,7 +62,7 @@ const EXAMPLES: Example[] = [
     id: "live",
     title: "Live radio",
     summary:
-      "A station with no end: useIsLive() for the badge, useIsBuffering() for the spinner, <ErrorMessage> for a station that is down, and audioFile.live for Firefox, which reports an MP3 stream as a growing track.",
+      "A station with no end: useIsBuffering() for the spinner and a reconnect after a long stall, <ErrorMessage> with a retry for a station that is down, and audioFile.live for Firefox, which reports an MP3 stream as a growing track.",
     App: LiveApp,
     files: [
       { name: "App.tsx", code: liveApp },

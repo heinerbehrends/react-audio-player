@@ -32,6 +32,8 @@ function App() {
   const players = Number(searchParams.get("players") ?? 1);
   // `?preload=none`: a player that loads nothing until play is pressed (S34).
   const preload = searchParams.get("preload") ?? undefined;
+  // `?live`: marks the source live, as `audioFile.live` does for a stream.
+  const live = searchParams.has("live");
 
   if (players > 1) {
     return (
@@ -55,6 +57,7 @@ function App() {
       src={src}
       volumeOrientation={volumeOrientation}
       preload={preload}
+      live={live}
       showDebug
     />
   );
@@ -65,6 +68,7 @@ type PlayerProps = {
   title?: string;
   volumeOrientation: "horizontal" | "vertical";
   preload?: string | undefined;
+  live?: boolean;
   showDebug?: boolean;
 };
 
@@ -73,6 +77,7 @@ function Player({
   title = "Test tone",
   volumeOrientation,
   preload,
+  live,
   showDebug,
 }: PlayerProps) {
   return (
@@ -81,6 +86,7 @@ function Player({
         src,
         title,
         artist: "react-headless-audio-player",
+        ...(live ? { live } : {}),
       }}
       {...(preload === undefined ? {} : { audioProps: { preload } })}
     >

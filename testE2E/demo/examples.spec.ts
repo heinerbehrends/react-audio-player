@@ -79,7 +79,7 @@ test.describe("Playlist", () => {
   });
 
   // Previous and next are the example's own buttons, so only
-  // `useMediaKeyHandler` on the root gives them the shortcuts.
+  // `<PlayerRoot>` around them gives them the shortcuts.
   test("the shortcuts work with a custom button focused", async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name: "Playlist" });

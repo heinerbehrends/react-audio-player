@@ -64,9 +64,12 @@ describe("PlayButton", () => {
       fireEvent.click(screen.getByRole("button", { name: "Play audio" }));
       expect(element.play).toHaveBeenCalled();
 
+      // The fetch starts only now, and the element waits on it: that wait is
+      // a stall in play mode, not a load.
       element.paused = false;
       element.networkState = 2;
       emit("play");
+      emit("waiting");
       expect(screen.getByRole("button")).toHaveAccessibleName("Pause audio");
     });
 

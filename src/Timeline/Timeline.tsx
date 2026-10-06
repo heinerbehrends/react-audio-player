@@ -86,9 +86,10 @@ type TimelineComponent = React.FC<TimelineProps> & {
  *
  * Carries `data-part="root"`, `data-slider="timeline"`,
  * `data-state="idle|dragging"` and `data-orientation="horizontal"`. All three
- * sliders share their part names, so scope by `data-slider`. Also sets `--progress` (the filled fraction, `0`–`1`)
- * and `--offset` (the thumb position, in `px`) as custom properties, which
- * `.Progress` draws from and your own fills can read.
+ * sliders share their part names, so scope by `data-slider`. Also sets
+ * `--progress` (the filled fraction, `0`–`1`) and `--offset` (the thumb
+ * position, in `px`) as custom properties, which `.Progress` draws from and
+ * your own fills can read.
  *
  * @example
  * ```jsx
