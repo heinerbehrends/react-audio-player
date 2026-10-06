@@ -76,23 +76,27 @@ controls into a slider root, add your own `role="group"` and `aria-label`; props
 are spread through.
 
 `<AudioPlayer>` itself renders no element, so nothing names or bounds the
-player as a whole: two players on a page announce identically. Spread
-`usePlayerRootProps()` onto your own container and each player becomes a
-named landmark:
+player as a whole: two players on a page announce identically. Wrap your
+controls in `<PlayerRoot>` and each player becomes a named landmark:
 
 ```jsx
-function Root({ children }) {
-  return <div {...usePlayerRootProps({ className: "player" })}>{children}</div>;
-}
+<AudioPlayer audioFile={track}>
+  <PlayerRoot className="player">
+    <PlayButton>…</PlayButton>
+    <Timeline>…</Timeline>
+  </PlayerRoot>
+</AudioPlayer>
 ```
 
-It gives the container `role="region"`, a name from `labels.player` (or pass
-`aria-labelledby` pointing at the track title), `tabIndex={-1}` and the
-keyboard shortcuts. The `-1` means a click on the cover or the title focuses
+It renders a `<div data-part="player">` with `role="region"`, a name from
+`labels.player` (or pass `aria-labelledby` pointing at the track title),
+`tabIndex={-1}` and the keyboard shortcuts. The `-1` means a click on the cover or the title focuses
 the player, so the shortcuts keep working, without adding a tab stop: keyboard
-users reach it through its controls, and no focus ring appears on a click. The
-library will not add a wrapper itself, since one would break every layout
-composed around it rendering nothing.
+users reach it through its controls, and no focus ring appears on a click. For
+a container of your own — a `<section>`, or one another component library
+renders — spread `usePlayerRootProps()` onto it instead. Both are opt-in:
+`<AudioPlayer>` will not render a wrapper itself, since one would break every
+layout composed around it rendering nothing.
 
 The volume slider announces the mute as well as the volume — "Muted, 80%" — since
 the two are separate on the element and the arrow keys change the volume without
@@ -210,7 +214,7 @@ raw values, `Intl` is yours.
 | `rateSet`    | `({ rate }) => string`        | `"Set playback rate to 1.5x"`                                          |
 | `rateChange` | `({ amount }) => string`      | `"Increase playback rate by 0.25x"`                                    |
 
-`player` names the container `usePlayerRootProps()` builds — see
+`player` names [`<PlayerRoot>`](#accessibility) — see
 [Accessibility](#accessibility). It is also set on the `<audio>` element, which
 has no accessible object without `controls`, so it is not announced there.
 | `rateGroup` | `string` | `"Playback rate options"` |
@@ -1129,28 +1133,12 @@ bar.
 Available on every focusable control. A slider's own keys take precedence over
 the shortcuts below.
 
-On the container from [`usePlayerRootProps()`](#accessibility) they reach
-every control inside it, your own included, and work after a click anywhere
-on the player. For controls of your own without that container,
-`useMediaKeyHandler()` returns the same handler as an `onKeyDown`. Put it on
-one element, or on a container to cover everything inside:
-
-```jsx
-function Player() {
-  const onKeyDown = useMediaKeyHandler();
-  return (
-    <div className="player" onKeyDown={onKeyDown}>
-      <PlayButton>…</PlayButton>
-      <button onClick={next}>Next</button>
-    </div>
-  );
-}
-```
-
-A key a library control already handled stops there, so nothing runs twice.
-Keys typed into a text field, `<select>` or `contenteditable` are left alone.
-It works only inside `<AudioPlayer>`, and only while focus is inside the
-container: the shortcuts are never page-wide.
+Inside [`<PlayerRoot>`](#accessibility) they reach every control, your own
+included — a playlist's previous and next buttons — and work after a click
+anywhere on the player. A key a library control already handled stops there,
+so nothing runs twice, and keys typed into a text field, `<select>` or
+`contenteditable` are left alone. They work only while focus is inside the
+player: the shortcuts are never page-wide.
 
 On a focused slider the arrow keys adjust its value, and `Home` and `End` jump to
 the ends of its range. Those two are slider-only: everywhere else they stay the
@@ -1172,9 +1160,8 @@ Media keys (`MediaPlayPause`, `MediaStop`, `MediaMute`, `MediaVolumeUp`,
 `MediaVolumeDown`) map to the same actions. Combinations with Ctrl, Cmd or Alt
 are left to the browser and to assistive technology.
 
-`Space` keeps activating the focused button. On the container from
-`usePlayerRootProps()` it plays and pauses while the container itself has
-focus, say after a click on the cover, where it would otherwise scroll the
+`Space` keeps activating the focused button. On `<PlayerRoot>` it plays and
+pauses while the root itself has focus, say after a click on the cover, where it would otherwise scroll the
 page. Bind `" "` in `customKeyboardShortcuts` to change that everywhere, or
 set it to `null` to leave Space alone on the container too.
 

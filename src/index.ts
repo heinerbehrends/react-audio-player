@@ -1,4 +1,6 @@
 export { AudioPlayer } from "./Player/AudioPlayer";
+// Opt-in: `AudioPlayer` renders no element of its own (A10).
+export { PlayerRoot } from "./Player/PlayerRoot";
 export { PlayButton } from "./Player/PlayButton";
 export { MuteButton } from "./Player/MuteButton";
 export { SeekButton } from "./Player/SeekButton";
@@ -13,6 +15,7 @@ export { Time } from "./TimeDisplay/TimeDisplay";
 export { MediaSession } from "./MediaSession/MediaSession";
 // Individually, not through a barrel: a module importing from every part is the
 // aggregated surface that cost 4,025 B → 1,137 B gzipped in P1-a.
+export { usePlayerRootProps } from "./Player/PlayerRoot";
 export { usePlayButtonProps } from "./Player/PlayButton";
 export { useMuteButtonProps } from "./Player/MuteButton";
 export { useSeekButtonProps } from "./Player/SeekButton";
@@ -44,10 +47,7 @@ export type { PlayerLabels, TimePart } from "./Shared/playerLabels";
 export type { SliderAriaState } from "./Slider/sliderModes";
 export type { KeyboardAction } from "./AudioElement/sideEffectActions";
 export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
-export {
-  useMediaKeyHandler,
-  usePlayerRootProps,
-} from "./KeyboardControls/handleMediaKeys";
+
 export type {
   AudioPlayerState,
   AudioPlayerControls,

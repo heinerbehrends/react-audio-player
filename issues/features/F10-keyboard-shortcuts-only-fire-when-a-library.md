@@ -17,8 +17,8 @@ readers will assume page-wide. Suggested: a `keyTarget="document"` prop.
 
 The shortcuts fire only when a library control has focus, but the default map (`j`/`k`/`l`, `0`–`9`, `<`/`>`) is YouTube's _global_ vocabulary, so readers assume page-wide. Suggested: a `keyTarget="document"` prop. Deferred because a document-level listener is the library reaching outside its own DOM, and needs an opt-in story for two players on a page.
 
-**Narrowed (2026-10-06):** `useMediaKeyHandler()` now gives the shortcuts to
-controls of the consumer's own, on one element or a container, so "a library
-button has focus" is no longer the limit. What stays open is page-wide
-shortcuts: focus anywhere on the page, which still needs the opt-in story for
-two players.
+**Narrowed (2026-10-06):** `<PlayerRoot>` (and `usePlayerRootProps()`) puts
+the shortcuts on a container, so they reach the consumer's own controls inside
+it and work after a click anywhere on the player. "A library button has focus"
+is no longer the limit. What stays open is page-wide shortcuts: focus anywhere
+on the page, which still needs the opt-in story for two players.

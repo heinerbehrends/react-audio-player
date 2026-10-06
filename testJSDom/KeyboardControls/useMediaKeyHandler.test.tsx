@@ -1,7 +1,8 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { useMediaKeyHandler } from "../../src/KeyboardControls/handleMediaKeys";
 import {
-  useMediaKeyHandler,
+  PlayerRoot,
   usePlayButtonProps,
   usePlayerRootProps,
 } from "../../src/index";
@@ -96,12 +97,12 @@ describe("useMediaKeyHandler", () => {
   });
 });
 
-function Root(props: React.HTMLAttributes<HTMLElement>) {
+function Root(props: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...usePlayerRootProps(props)}>
+    <PlayerRoot {...props}>
       <button>custom</button>
       <LibraryButton />
-    </div>
+    </PlayerRoot>
   );
 }
 
@@ -109,12 +110,31 @@ function Root(props: React.HTMLAttributes<HTMLElement>) {
  * The container the library does not render (A10): a named landmark that a
  * click focuses, so the shortcuts work from anywhere inside it.
  */
-describe("usePlayerRootProps", () => {
+describe("<PlayerRoot>", () => {
   it("is a named region that clicks focus and Tab skips", () => {
     renderWithStore(<Root />, loaded);
 
     const root = screen.getByRole("region", { name: "audio player" });
     expect(root).toHaveAttribute("tabindex", "-1");
+    expect(root).toHaveAttribute("data-part", "player");
+  });
+
+  // The hook is what the component is made of, for an element of your own.
+  it("is the same through usePlayerRootProps on a <section>", () => {
+    function Section() {
+      return (
+        <section {...usePlayerRootProps({ className: "player" })}>
+          <button>custom</button>
+        </section>
+      );
+    }
+    const { element } = renderWithStore(<Section />, loaded);
+
+    const root = screen.getByRole("region", { name: "audio player" });
+    expect(root.tagName).toBe("SECTION");
+    expect(root).toHaveClass("player");
+    fireEvent.keyDown(screen.getByText("custom"), { key: "k" });
+    expect(element.play).toHaveBeenCalledTimes(1);
   });
 
   it("takes its name from labels.player", () => {

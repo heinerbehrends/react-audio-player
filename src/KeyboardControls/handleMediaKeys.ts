@@ -1,5 +1,4 @@
-import { useLabels, usePlayerConfig } from "../Player/PlayerConfigContext";
-import { composeEventHandlers } from "../Shared/composeEventHandlers";
+import { usePlayerConfig } from "../Player/PlayerConfigContext";
 import type {
   KeyboardAction,
   SideEffectAction,
@@ -112,23 +111,12 @@ export function useHandleMediaKeys() {
 }
 
 /**
- * The player's keyboard shortcuts as an `onKeyDown` handler, for controls of
- * your own. Put it on one element, or on a container to cover every control
- * inside it: a key a library control already handled stops there, so nothing
- * runs twice. Keys typed into a text field, `<select>` or `contenteditable`
- * are left alone.
- *
- * Follows `customKeyboardShortcuts`, like every library control.
- *
- * @example
- * ```jsx
- * const onKeyDown = useMediaKeyHandler();
- * <div className="player" onKeyDown={onKeyDown}>…</div>
- * ```
+ * The shortcuts as an `onKeyDown` for a container, which `usePlayerRootProps`
+ * builds on. Keys typed into a text field, `<select>` or `contenteditable`
+ * are left alone; no library control is editable, so they skip the check.
  */
 export function useMediaKeyHandler() {
   const handleMediaKeys = useHandleMediaKeys();
-  // Only here: no library control is editable, so they skip the check.
   return (event: React.KeyboardEvent) => {
     const target = event.target as HTMLElement;
     if (
@@ -137,59 +125,5 @@ export function useMediaKeyHandler() {
     ) {
       handleMediaKeys(event as React.KeyboardEvent<HTMLButtonElement>);
     }
-  };
-}
-
-/**
- * Props for the element that holds your player: a named landmark that clicks
- * focus, with the keyboard shortcuts on everything inside it.
- *
- * - `role="region"` and `aria-label`, from `labels.player`, so two players
- *   on a page announce apart (A10). Pass `aria-labelledby` to name it by the
- *   track title instead.
- * - `tabIndex={-1}`: a click on the cover or the title focuses the player, so
- *   the shortcuts work, without adding a tab stop. Keyboard users reach it
- *   through its controls.
- * - `onKeyDown` from `useMediaKeyHandler`, composed after your own. Space
- *   also plays and pauses while the container itself has focus; on a button
- *   inside, it presses the button. A `" "` in `customKeyboardShortcuts` wins.
- *
- * Spread it onto your container, passing your own props in the call.
- *
- * @example
- * ```jsx
- * <div {...usePlayerRootProps({ className: "player" })}>…</div>
- * ```
- */
-export function usePlayerRootProps<P extends React.HTMLAttributes<HTMLElement>>(
-  props?: P,
-) {
-  const labels = useLabels();
-  const { customKeyboardShortcuts } = usePlayerConfig();
-  const { send } = usePlayerStore();
-  const onKeyDown = useMediaKeyHandler();
-  return {
-    role: "region",
-    "aria-label": labels?.player ?? "audio player",
-    tabIndex: -1,
-    ...props,
-    onKeyDown: composeEventHandlers(
-      props?.onKeyDown,
-      (event: React.KeyboardEvent) => {
-        // Space presses a focused button (A1), so it is bound only here, where
-        // the focus is on the container and Space would only scroll the page.
-        if (
-          event.key === " " &&
-          event.target === event.currentTarget &&
-          !(customKeyboardShortcuts && " " in customKeyboardShortcuts) &&
-          !(event.ctrlKey || event.metaKey || event.altKey)
-        ) {
-          send({ type: "TOGGLE_PLAY" });
-          event.preventDefault();
-          return;
-        }
-        onKeyDown(event);
-      },
-    ),
   };
 }

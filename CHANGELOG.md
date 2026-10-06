@@ -28,11 +28,9 @@ nothing to migrate from.
   browser ignores `volume` writes
 - Keyboard shortcuts bound to every focused control, with `KeyToActionMap` to
   rebind or unbind them
-- `usePlayerRootProps()`, for your own container: a named region that a click
-  focuses, with the keyboard shortcuts on everything inside it, and Space for
-  play/pause while the container itself has focus
-- `useMediaKeyHandler()`, the shortcuts as an `onKeyDown` for controls of your
-  own, on one element or a container
+- `<PlayerRoot>` and `usePlayerRootProps()`: an opt-in container that is a
+  named region a click focuses, with the keyboard shortcuts on every control
+  inside it, your own included, and Space for play/pause while it has focus
 - `labels` for every name and readout the library writes, with
   `PlayerLabels` and `TimePart` types
 - `data-part` on every part and `data-state` where the DOM does not say it

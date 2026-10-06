@@ -38,7 +38,7 @@ follows from this.
 passed through. Now that the absence is a documented contract, a one-line
 assertion there would be the place to guard it.
 
-**Follow-up (2026-10-06):** still no wrapper, but `usePlayerRootProps()` now
+**Follow-up (2026-10-06):** still no wrapper, but an opt-in `<PlayerRoot>` (and `usePlayerRootProps()`) now
 builds the consumer's container: `role="region"`, a name from `labels.player`,
 `tabIndex={-1}` so a click focuses it, and the keyboard shortcuts. The README's
 Accessibility section shows it.
