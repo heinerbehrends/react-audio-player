@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**23 open · 0 part-done · 100 resolved · 2 rejected**
+**21 open · 0 part-done · 101 resolved · 3 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -44,9 +44,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-1 open of 34.
+0 open of 34.
 
-- [ ] [S34](surface/S34-preload-none-reads-as-loading.md) 'Under `preload="none"` the player says "Loading audio" before anything loads' — P2
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
 - [x] [S3](resolved/surface/S3-no-use-client-directive-breaks-the-next.md) 'No `"use client"` directive — breaks the Next.js App Router' — P0
@@ -71,6 +70,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S27](resolved/surface/S27-the-time-readouts-depend-on-a-toggle-they-may-not-have.md) The time readouts depend on a toggle they may not have — P2, **breaking**
 - [x] [S28](resolved/surface/S28-a-stylesheet-cannot-restyle-the-progress-fill.md) A stylesheet cannot restyle the progress fill — P2, **breaking**
 - [x] [S29](resolved/surface/S29-progress-leaves-its-range-and-waits-for-measurement.md) `--progress` leaves its range, and waits for a measurement it does not need — P2
+- [x] [S34](resolved/surface/S34-preload-none-reads-as-loading.md) 'Under `preload="none"` the player says "Loading audio" before anything loads' — P2
 - [x] [S20](resolved/surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3
@@ -83,7 +83,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-15 open of 33.
+14 open of 33.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
@@ -99,7 +99,6 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
 - [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [ ] [D9](features/D9-publish-the-refusals.md) Publish the refusals
-- [ ] [D11](features/D11-a-paused-live-stream-resumes-behind-live.md) A paused live stream resumes behind live, and nothing says so
 - [x] [F1](resolved/features/F1-no-way-to-read-player-state.md) No way to read player state — P0
 - [x] [F2](resolved/features/F2-audiofiles-is-an-array-that-ignores-index.md) `audioFiles` is an array that ignores index 1+ — P0
 - [x] [F3](resolved/features/F3-audiofile-is-src-and-the-readme-example.md) `AudioFile` is `{src}` and the README example does not compile — P0
@@ -118,6 +117,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [D1](resolved/features/D1-polymorphism-aschild-or-a-render-prop.md) Polymorphism for the buttons: `asChild`, or a `render` prop
 - [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [x] [D4](resolved/features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
+- [-] [D11](features/D11-a-paused-live-stream-resumes-behind-live.md) A paused live stream resumes behind live, and nothing says so — rejected
 
 ## Architecture & style
 

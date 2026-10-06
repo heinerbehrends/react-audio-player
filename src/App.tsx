@@ -30,6 +30,8 @@ function App() {
   // Two independent players on one page, so the per-instance store factory gets
   // exercised.
   const players = Number(searchParams.get("players") ?? 1);
+  // `?preload=none`: a player that loads nothing until play is pressed (S34).
+  const preload = searchParams.get("preload") ?? undefined;
 
   if (players > 1) {
     return (
@@ -48,13 +50,21 @@ function App() {
     );
   }
 
-  return <Player src={src} volumeOrientation={volumeOrientation} showDebug />;
+  return (
+    <Player
+      src={src}
+      volumeOrientation={volumeOrientation}
+      preload={preload}
+      showDebug
+    />
+  );
 }
 
 type PlayerProps = {
   src: string;
   title?: string;
   volumeOrientation: "horizontal" | "vertical";
+  preload?: string | undefined;
   showDebug?: boolean;
 };
 
@@ -62,6 +72,7 @@ function Player({
   src,
   title = "Test tone",
   volumeOrientation,
+  preload,
   showDebug,
 }: PlayerProps) {
   return (
@@ -71,6 +82,7 @@ function Player({
         title,
         artist: "react-headless-audio-player",
       }}
+      {...(preload === undefined ? {} : { audioProps: { preload } })}
     >
       <MediaSession />
       <Timeline style={{ height: "40px" }}>

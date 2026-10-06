@@ -7,9 +7,11 @@ import { usePlayerStore } from "./PlayerStoreContext";
  * The player's state, decided in this order: error, then loading, then
  * play/pause.
  *
- * `"loading"` means metadata has not arrived; the controls still work there, and
- * a track change re-enters it. A mid-track stall stays `"playing"` —
- * `useIsBuffering()` reports that.
+ * `"loading"` means metadata is on its way; the controls still work there, and
+ * a track change re-enters it. A `preload="none"` player waiting for its first
+ * press is `"paused"`: nothing is on its way (S34). A mid-track stall stays
+ * `"playing"` — `useIsBuffering()` reports that, and the wait after that first
+ * press.
  */
 export type PlayerState = "loading" | "error" | "paused" | "playing";
 

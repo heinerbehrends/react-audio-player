@@ -5,7 +5,8 @@
   --muted: #78716c;
   --line: #e7e5e4;
   --hover: #f5f5f4;
-  --accent: #dc2626;
+  --live: #16a34a;
+  --error: #dc2626;
   --focus: #2563eb;
   /* What sits on --text: the page behind the player. */
   --surface: #ffffff;
@@ -25,7 +26,8 @@
     --muted: #a8a29e;
     --line: #44403c;
     --hover: #292524;
-    --accent: #f87171;
+    --live: #4ade80;
+    --error: #f87171;
     --focus: #60a5fa;
     --surface: #1c1917;
   }
@@ -78,7 +80,7 @@
   position: absolute;
   inset: -4px;
   border: 2px solid transparent;
-  border-top-color: var(--accent);
+  border-top-color: var(--live);
   border-radius: 50%;
   animation: live-spin 0.8s linear infinite;
 }
@@ -127,10 +129,11 @@
   background: currentColor;
 }
 
-/* On air: red, and the dot pulses. */
+/* Green while you hear the station, and the dot pulses; grey while paused,
+   connecting or buffering. */
 .live-badge[data-on-air] {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--live);
+  color: var(--live);
 }
 
 .live-badge[data-on-air]::before {
@@ -242,7 +245,7 @@
 
 .live-error {
   margin-top: 12px;
-  color: var(--accent);
+  color: var(--error);
   font-size: 0.85rem;
 }
 

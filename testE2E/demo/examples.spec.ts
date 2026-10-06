@@ -264,9 +264,10 @@ test.describe("Live radio", () => {
   // The station is a third party's. Served from the repo instead, so a run
   // does not depend on it; `audioFile.live` makes even a file live.
   const STREAM = "https://streams.radiomast.io/**";
-  // By part, not name: under `preload: "none"` the button is named "Loading
-  // audio" until pressed, though nothing loads (S34).
-  const play = (example: Locator) => example.locator('[data-part="play"]');
+  // By name: under `preload: "none"` it said "Loading audio" until pressed,
+  // though nothing loaded (S34).
+  const play = (example: Locator) =>
+    example.getByRole("button", { name: labels.playAudio });
 
   test("plays on air, with no timeline", async ({ page }) => {
     await page.route(STREAM, (route) =>

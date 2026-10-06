@@ -1033,6 +1033,11 @@ this hook is the only place the two are told apart. A stream that later reports
 a finite length, such as a recording that finished, stops being live on
 `durationchange`, unless `audioFile.live` says otherwise.
 
+Play after a pause rejoins the station live: what you hear does not fall
+behind. `currentTime` carries on from where it stopped, so it counts listening
+time and says nothing about lag. Heard in Chromium and Firefox against Radio
+Mast's reference streams, after short pauses and five-minute ones.
+
 ### Live streams in Firefox
 
 Firefox reports some live streams as a finite track: for MP3 and Opus, the
@@ -1089,8 +1094,10 @@ function Spinner() {
 
 It is independent of `playerState`, which stays `"playing"` through a stall: the
 player is still in play mode, so your button keeps offering Pause and pressing it
-still works. `playerState === "loading"` means the track has not loaded yet;
-`isBuffering` means it loaded and then ran out of data.
+still works. `playerState === "loading"` means the track is on its way and has
+not arrived; `isBuffering` means it ran out of data. Under `preload="none"` a
+player waiting for its first press is `"paused"`, since nothing is loading, and
+the wait after the press is `isBuffering`.
 
 Seeking into unbuffered audio while paused does not report as buffering.
 

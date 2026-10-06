@@ -12,6 +12,12 @@ export const HAVE_FUTURE_DATA = 3;
 export const HAVE_NOTHING = 0;
 
 /**
+ * `HTMLMediaElement.NETWORK_IDLE`: a source is chosen and nothing is being
+ * fetched.
+ */
+export const NETWORK_IDLE = 1;
+
+/**
  * The write side of the projection atoms. Only `createPlayerStore` holds this
  * bundle, and it reaches `syncFromElement` only through `attach`.
  */
@@ -59,6 +65,7 @@ export type SyncableMediaElement = {
   playbackRate: number;
   paused: boolean;
   readyState: number;
+  networkState: number;
   error: MediaError | null;
   dataset: DOMStringMap;
   addEventListener: (type: string, listener: () => void) => void;
@@ -165,9 +172,20 @@ export function prime(
   // Cleared when the element is usable, so a `src` swap away from a broken
   // track leaves no stale code behind for `useAudioError` to report.
   atoms.mediaErrorCode.set(unusable ? (element.error?.code ?? null) : null);
-  atoms.loadState.set(
-    unusable ? "error" : element.readyState >= 1 ? "ready" : "loading",
-  );
+  atoms.loadState.set(loadStateOf(element));
+}
+
+/**
+ * `"ready"` at `readyState: 0` too while the element is idle. Under
+ * `preload="none"` nothing arrives until `play()`, so `"loading"` named a wait
+ * that was not happening, and the play button said "Loading audio" (S34). The
+ * wait after the press is real, and `isBuffering` covers it.
+ */
+function loadStateOf(element: SyncableMediaElement): LoadState {
+  if (isUnusable(element)) return "error";
+  return element.readyState >= 1 || element.networkState === NETWORK_IDLE
+    ? "ready"
+    : "loading";
 }
 
 /**
@@ -230,6 +248,11 @@ export const HANDLERS = {
   // unconditional `loadState` read cannot revive a stale error.
   emptied: prime,
   loadstart: prime,
+  // Where `preload="none"` goes idle, after `loadstart` has primed to
+  // `"loading"`.
+  suspend: (element, atoms) => {
+    atoms.loadState.set(loadStateOf(element));
+  },
   // Keyed on `HTMLMediaElementEventMap`, so a misspelled event name is a build
   // error rather than a listener that silently never fires.
 } satisfies Partial<Record<keyof HTMLMediaElementEventMap, SyncHandler>>;

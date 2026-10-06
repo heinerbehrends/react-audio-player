@@ -31,6 +31,7 @@ export type MediaFields = {
   paused: boolean;
   ended: boolean;
   readyState: number;
+  networkState: number;
   error: MediaError | null;
 };
 
@@ -45,6 +46,10 @@ const DEFAULTS: MediaFields = {
   // 0 = HAVE_NOTHING, so a bare fake primes to "loading". Tests that want
   // "ready" pass `readyState: 1` (HAVE_METADATA).
   readyState: 0,
+  // 2 = NETWORK_LOADING: a bare fake is mid-load. 1 (NETWORK_IDLE) at
+  // `readyState: 0` is `preload="none"` waiting for play, which primes
+  // "ready" (S34).
+  networkState: 2,
   error: null,
 };
 

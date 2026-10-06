@@ -10,6 +10,8 @@ const states: Record<string, Partial<MediaFields>> = {
   paused: { readyState: 1, paused: true },
   playing: { readyState: 1, paused: false },
   loading: { readyState: 0 },
+  // `preload="none"` before the first press: nothing loaded, nothing fetching.
+  idle: { readyState: 0, networkState: 1 },
   error: { readyState: 0, error: {} as MediaError },
 };
 
@@ -25,6 +27,8 @@ describe("PlayButton", () => {
       ["paused", "Play audio", undefined],
       ["playing", "Pause audio", undefined],
       ["loading", "Loading audio", undefined],
+      // S34: a player waiting for its first press is not loading.
+      ["idle", "Play audio", undefined],
       ["error", "Error loading audio", "true"],
     ])("renders correctly in %s state", (state, name, ariaDisabled) => {
       renderWithStore(
@@ -47,6 +51,23 @@ describe("PlayButton", () => {
       } else {
         expect(button).not.toHaveAttribute("aria-disabled");
       }
+    });
+
+    it("plays an idle element on click, before anything has loaded", () => {
+      const { element, emit } = renderWithStore(
+        <PlayButton>
+          <span>Play Icon</span>
+        </PlayButton>,
+        { element: states["idle"] },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Play audio" }));
+      expect(element.play).toHaveBeenCalled();
+
+      element.paused = false;
+      element.networkState = 2;
+      emit("play");
+      expect(screen.getByRole("button")).toHaveAccessibleName("Pause audio");
     });
 
     it("plays a paused element on click", () => {

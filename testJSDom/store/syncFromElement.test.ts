@@ -45,6 +45,7 @@ const DOCUMENTED_EVENTS: SyncEvent[] = [
   "error",
   "emptied",
   "loadstart",
+  "suspend",
   "waiting",
   "stalled",
   "playing",
@@ -505,6 +506,55 @@ describe("syncFromElement", () => {
       element.emit("loadedmetadata");
       expect(atoms.loadState.get()).toBe("ready");
     });
+
+    /**
+     * S34. `preload="none"`: `loadstart` while fetching, then `suspend` as the
+     * element goes idle with nothing loaded. "loading" there named the play
+     * button "Loading audio" on a player waiting for its first press.
+     */
+    it("is ready once a preload='none' element goes idle", () => {
+      const element = createMediaElementFake({
+        readyState: 0,
+        networkState: 2,
+      });
+      const atoms = createAtoms();
+      syncFromElement(element, atoms);
+
+      element.emit("loadstart");
+      expect(atoms.loadState.get()).toBe("loading");
+
+      element.networkState = 1;
+      element.emit("suspend");
+      expect(atoms.loadState.get()).toBe("ready");
+    });
+
+    it("stays loading on a suspend that is not idle", () => {
+      const element = createMediaElementFake({
+        readyState: 0,
+        networkState: 2,
+      });
+      const atoms = createAtoms();
+      syncFromElement(element, atoms);
+
+      element.emit("suspend");
+
+      expect(atoms.loadState.get()).toBe("loading");
+    });
+
+    it("keeps an error through a later suspend", () => {
+      const element = createMediaElementFake({
+        readyState: 0,
+        networkState: 1,
+      });
+      const atoms = createAtoms();
+      syncFromElement(element, atoms);
+
+      element.error = { code: 2 } as MediaError;
+      element.emit("error");
+      element.emit("suspend");
+
+      expect(atoms.loadState.get()).toBe("error");
+    });
   });
 });
 
@@ -530,6 +580,15 @@ describe("prime", () => {
     expect(atoms.muted.get()).toBe(true);
     expect(atoms.rate.get()).toBe(1.25);
     expect(atoms.paused.get()).toBe(false);
+    expect(atoms.loadState.get()).toBe("ready");
+  });
+
+  // S34: attached after the `suspend` of a `preload="none"` element.
+  it("lands ready on an idle element with nothing loaded", () => {
+    const atoms = createAtoms();
+
+    prime(createMediaElementFake({ readyState: 0, networkState: 1 }), atoms);
+
     expect(atoms.loadState.get()).toBe("ready");
   });
 

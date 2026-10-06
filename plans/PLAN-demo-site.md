@@ -94,7 +94,7 @@ commercial use around the clock. The MP3 one, since Firefox needs
 download radio for every visitor. Its E2E tests route the stream to
 `The-Race.mp3` and to a refused connection, so CI does not depend on a third
 party. Found on the way: **S34** (`preload="none"` reads as loading) and
-**D11** (a paused stream resumes behind live).
+**D11** (whether a paused stream falls behind live: it does not).
 
 ## The waveform, verified
 

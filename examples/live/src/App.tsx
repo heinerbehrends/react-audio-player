@@ -75,7 +75,7 @@ function Station() {
           </p>
         </div>
 
-        <OnAir />
+        <OnAir buffering={buffering} />
       </div>
 
       <div className="live-foot">
@@ -119,9 +119,9 @@ function Station() {
   );
 }
 
-// `useIsLive()` is the library's word that there is no end to seek towards;
-// the dot says whether you are hearing it.
-function OnAir() {
+// `useIsLive()` is the library's word that there is no end to seek towards.
+// Green while you hear it: playing, and not stalled.
+function OnAir({ buffering }: { buffering: boolean }) {
   const live = useIsLive();
   const { playerState } = useAudioPlayer();
   if (!live) return null;
@@ -129,7 +129,7 @@ function OnAir() {
   return (
     <span
       className="live-badge"
-      data-on-air={playerState === "playing" || undefined}
+      data-on-air={(playerState === "playing" && !buffering) || undefined}
     >
       Live
     </span>
