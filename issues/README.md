@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 0 part-done · 100 resolved · 2 rejected**
+**23 open · 0 part-done · 100 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -44,8 +44,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-0 open of 33.
+1 open of 34.
 
+- [ ] [S34](surface/S34-preload-none-reads-as-loading.md) 'Under `preload="none"` the player says "Loading audio" before anything loads' — P2
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
 - [x] [S3](resolved/surface/S3-no-use-client-directive-breaks-the-next.md) 'No `"use client"` directive — breaks the Next.js App Router' — P0
@@ -82,7 +83,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-14 open of 32.
+15 open of 33.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [F11](features/F11-no-persistence.md) No persistence — P3
@@ -98,6 +99,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
 - [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [ ] [D9](features/D9-publish-the-refusals.md) Publish the refusals
+- [ ] [D11](features/D11-a-paused-live-stream-resumes-behind-live.md) A paused live stream resumes behind live, and nothing says so
 - [x] [F1](resolved/features/F1-no-way-to-read-player-state.md) No way to read player state — P0
 - [x] [F2](resolved/features/F2-audiofiles-is-an-array-that-ignores-index.md) `audioFiles` is an array that ignores index 1+ — P0
 - [x] [F3](resolved/features/F3-audiofile-is-src-and-the-readme-example.md) `AudioFile` is `{src}` and the README example does not compile — P0

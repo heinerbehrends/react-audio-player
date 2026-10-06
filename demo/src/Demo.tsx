@@ -8,6 +8,9 @@ import playlistCss from "../../examples/playlist/src/App.css?raw";
 import WaveformApp from "../../examples/waveform/src/App";
 import waveformApp from "../../examples/waveform/src/App.tsx?raw";
 import waveformCss from "../../examples/waveform/src/App.css?raw";
+import LiveApp from "../../examples/live/src/App";
+import liveApp from "../../examples/live/src/App.tsx?raw";
+import liveCss from "../../examples/live/src/App.css?raw";
 
 const REPO = "https://github.com/heinerbehrends/react-audio-player";
 
@@ -53,6 +56,17 @@ const EXAMPLES: Example[] = [
     files: [
       { name: "App.tsx", code: waveformApp },
       { name: "App.css", code: waveformCss },
+    ],
+  },
+  {
+    id: "live",
+    title: "Live radio",
+    summary:
+      "A station with no end: useIsLive() for the badge, useIsBuffering() for the spinner, <ErrorMessage> for a station that is down, and audioFile.live for Firefox, which reports an MP3 stream as a growing track.",
+    App: LiveApp,
+    files: [
+      { name: "App.tsx", code: liveApp },
+      { name: "App.css", code: liveCss },
     ],
   },
 ];

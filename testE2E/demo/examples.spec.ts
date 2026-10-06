@@ -259,3 +259,41 @@ test.describe("Waveform", () => {
       .toBe(72);
   });
 });
+
+test.describe("Live radio", () => {
+  // The station is a third party's. Served from the repo instead, so a run
+  // does not depend on it; `audioFile.live` makes even a file live.
+  const STREAM = "https://streams.radiomast.io/**";
+  // By part, not name: under `preload: "none"` the button is named "Loading
+  // audio" until pressed, though nothing loads (S34).
+  const play = (example: Locator) => example.locator('[data-part="play"]');
+
+  test("plays on air, with no timeline", async ({ page }) => {
+    await page.route(STREAM, (route) =>
+      route.fulfill({ path: "public/The-Race.mp3", contentType: "audio/mpeg" }),
+    );
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Live radio" });
+
+    await play(example).click();
+
+    await expect(example.locator(".live-badge")).toHaveAttribute(
+      "data-on-air",
+      "true",
+    );
+    await expect(example.locator(".live-status")).toContainText("Listening");
+    await expect(
+      example.getByRole("slider", { name: labels.timeline }),
+    ).toHaveCount(0);
+  });
+
+  test("says so when the station does not answer", async ({ page }) => {
+    await page.route(STREAM, (route) => route.abort("connectionrefused"));
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Live radio" });
+
+    await play(example).click();
+
+    await expect(example.getByRole("alert")).toBeVisible();
+  });
+});

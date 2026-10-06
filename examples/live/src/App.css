@@ -1,0 +1,267 @@
+/* Scoped to `.live`: on the demo page every example shares one document. */
+
+.live {
+  --text: #1c1917;
+  --muted: #78716c;
+  --line: #e7e5e4;
+  --hover: #f5f5f4;
+  --accent: #dc2626;
+  --focus: #2563eb;
+  /* What sits on --text: the page behind the player. */
+  --surface: #ffffff;
+  color-scheme: light dark;
+
+  max-width: 480px;
+  margin: 0 auto;
+  color: var(--text);
+  font:
+    15px/1.4 system-ui,
+    sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .live {
+    --text: #f5f5f4;
+    --muted: #a8a29e;
+    --line: #44403c;
+    --hover: #292524;
+    --accent: #f87171;
+    --focus: #60a5fa;
+    --surface: #1c1917;
+  }
+}
+
+.live :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.live p {
+  margin: 0;
+}
+
+.live a {
+  color: inherit;
+}
+
+.live-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.live-play {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--surface);
+  cursor: pointer;
+}
+
+.live-play svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* A ring that spins while the stream stalls; the button stays a pause button,
+   since pressing it still works. */
+.live-play[data-buffering]::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: live-spin 0.8s linear infinite;
+}
+
+@keyframes live-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.live-station {
+  flex: 1;
+  min-width: 0;
+}
+
+.live-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.live-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.live-badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* On air: red, and the dot pulses. */
+.live-badge[data-on-air] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.live-badge[data-on-air]::before {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.live-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.live-status {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The right margin is half the thumb, which overhangs the track at full
+   volume. */
+.live-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 6px;
+}
+
+.live-mute {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.live-mute:hover {
+  background: var(--hover);
+}
+
+.live-mute svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.live-wave {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+/* A slider root has no height of its own; this gives the track something to
+   measure. */
+.live-slider {
+  width: 88px;
+  height: 20px;
+}
+
+/* No `styles.css` here, so the button's own chrome is reset by hand. Its
+   padding is what makes the track thin while the whole 20px stays clickable. */
+.live-control {
+  box-sizing: border-box;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.live-track,
+.live-fill {
+  border-radius: 2px;
+}
+
+.live-track {
+  background: var(--line);
+}
+
+.live-fill {
+  background: var(--text);
+}
+
+/* The thumb's horizontal position is inline; its vertical one is ours. */
+.live-thumb {
+  top: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: grab;
+}
+
+.live-error {
+  margin-top: 12px;
+  color: var(--accent);
+  font-size: 0.85rem;
+}
+
+/* The spinner says something, so it slows rather than stops; the pulse is
+   decoration. */
+@media (prefers-reduced-motion: reduce) {
+  .live-play[data-buffering]::after {
+    animation-duration: 3s;
+  }
+
+  .live-badge[data-on-air]::before {
+    animation: none;
+  }
+}
+
+/* Phones have hardware volume buttons, and iOS ignores a volume set from
+   script. Important, because the root's `display: grid` is inline. */
+@media (max-width: 400px) {
+  .live-slider {
+    display: none !important;
+  }
+}

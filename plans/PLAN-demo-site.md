@@ -6,7 +6,7 @@ so the examples are the product page. This plan settles where the examples live
 and how one copy of each serves the demo page, the sandboxes and CI, then lands
 them in five phases.
 
-## Status: phases 1 and 2 built 2026-10-05, phase 3 on 2026-10-06; the site is live at https://heinerbehrends.github.io/react-audio-player/.
+## Status: phases 1 and 2 built 2026-10-05, phase 3 and live radio on 2026-10-06; the site is live at https://heinerbehrends.github.io/react-audio-player/.
 
 ---
 
@@ -85,9 +85,16 @@ gives, and the three custom ones show the parts take any markup.
 `useCurrentSecond()` and `seek()`. That is possible today, and building it is
 the best evidence for which parts of **D6** earn a place in the library.
 
-**Live radio is not in this plan.** It wants **D4**'s `isLive` signal to read
-cleanly, and a third-party stream URL that will still answer in six months. A
-dead stream is a worse demo than none. A fifth example once both exist.
+**Live radio, added 2026-10-06** as a fifth example, once both its
+prerequisites existed: **D4**'s `useIsLive()`, and a stream likely to still
+answer in six months — Radio Mast's reference streams
+(<https://www.radiomast.io/reference-streams>), offered free for personal and
+commercial use around the clock. The MP3 one, since Firefox needs
+`audioFile.live` for it (**B11**). `preload: "none"`, so the demo page does not
+download radio for every visitor. Its E2E tests route the stream to
+`The-Race.mp3` and to a refused connection, so CI does not depend on a third
+party. Found on the way: **S34** (`preload="none"` reads as loading) and
+**D11** (a paused stream resumes behind live).
 
 ## The waveform, verified
 
@@ -255,7 +262,7 @@ announcement. Phases 1–4 need nothing from npm.
 
 - **A documentation site.** The README stays the reference; the demo is the
   showcase. A generated API site is a separate decision.
-- **Live radio and HLS.** Above; HLS is **D7**'s README recipe.
+- **HLS.** **D7**'s README recipe.
 - **A mini-player.** Mostly a layout exercise, and the playlist covers the
   library surface it would show. A styling variant of the playlist if wanted.
 - **Library changes.** None are required. S20's `--progress` would tidy the
