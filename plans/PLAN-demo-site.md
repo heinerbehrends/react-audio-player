@@ -229,11 +229,10 @@ Each phase is one commit with its checks, in this order.
   bars sit inside `.Control` with a full-height playhead for a thumb, and no
   bar beneath. The peaks are mean power, not RMS: this track's RMS stays
   within 0.75–0.95 of its maximum and drew bars of one height.
-- Found on the way: an SVG with a `viewBox` in the one-cell grid sets the
+- Found on the way: an SVG with a `viewBox` in the one-cell grid set the
   row's minimum from its aspect ratio, and grew the timeline to 519 px at
-  830 px wide. `min-height: 0` on the bars and on `.Control` — commented in
-  the example's CSS. Any consumer drawing an SVG into a slider hits this; a
-  line in the README's Timeline section would save them the search.
+  830 px wide. **S31**, fixed the same day: the slider grids are
+  `minmax(0, 1fr)`.
 
 ### Phase 4 — podcast
 

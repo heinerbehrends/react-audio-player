@@ -193,8 +193,8 @@ describe("Timeline", () => {
     const root = container.querySelector('[data-part="root"]') as HTMLElement;
     expect(root).toHaveStyle({
       display: "grid",
-      gridTemplateColumns: "1fr",
-      gridTemplateRows: "1fr",
+      gridTemplateColumns: "minmax(0, 1fr)",
+      gridTemplateRows: "minmax(0, 1fr)",
       position: "relative",
     });
     // S8: `width` moved to `styles.css`, where a class can beat it.

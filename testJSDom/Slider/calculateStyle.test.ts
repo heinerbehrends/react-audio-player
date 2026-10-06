@@ -113,8 +113,8 @@ describe("calculateStyle", () => {
     it("has correct container styles", () => {
       expect(containerStyles).toEqual({
         display: "grid",
-        gridTemplateColumns: "1fr",
-        gridTemplateRows: "1fr",
+        gridTemplateColumns: "minmax(0, 1fr)",
+        gridTemplateRows: "minmax(0, 1fr)",
         height: "100%",
         position: "relative",
       });

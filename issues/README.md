@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**21 open · 0 part-done · 97 resolved · 2 rejected**
+**21 open · 0 part-done · 98 resolved · 2 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -44,7 +44,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-0 open of 30.
+0 open of 31.
 
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
@@ -76,6 +76,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S23](resolved/surface/S23-packaging-is-otherwise-clean.md) Packaging is otherwise clean — P3
 - [x] [S26](resolved/surface/S26-the-hidden-attribute-does-not-hide-a-slider.md) The `hidden` attribute does not hide a slider — P3
 - [x] [S30](resolved/surface/S30-time-toggle-readout-follows-an-overridable-data-state.md) `Time.Toggle`'s readout follows a `data-state` the caller can replace — P3
+- [x] [S31](resolved/surface/S31-an-svg-or-canvas-in-control-grows-the-slider.md) An SVG or canvas inside `.Control` grows the slider past its height — P3
 
 ## Features
 

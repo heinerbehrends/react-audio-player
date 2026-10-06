@@ -246,4 +246,16 @@ test.describe("Waveform", () => {
       )
       .toBeCloseTo(0.6, 2);
   });
+
+  // S31: with a bare `1fr` grid the SVG's aspect ratio set the row's minimum,
+  // and the bars grew the timeline to 519px at this width.
+  test("the bars keep the height the timeline is given", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Waveform" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+
+    await expect
+      .poll(async () => (await timeline.boundingBox())?.height)
+      .toBe(72);
+  });
 });

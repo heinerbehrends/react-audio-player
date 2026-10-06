@@ -121,8 +121,8 @@ describe("Volume", () => {
     ) as HTMLElement;
     expect(container).toHaveStyle({
       display: "grid",
-      gridTemplateColumns: "1fr",
-      gridTemplateRows: "1fr",
+      gridTemplateColumns: "minmax(0, 1fr)",
+      gridTemplateRows: "minmax(0, 1fr)",
       // S12: `Thumb` is `position: absolute`, so without this its containing
       // block is whichever ancestor happens to be positioned.
       position: "relative",
