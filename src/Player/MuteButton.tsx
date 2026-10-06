@@ -11,15 +11,14 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels } from "./PlayerConfigContext";
 
 type MuteButtonComponentProps = {
+  /** The button's content, such as `MuteButton.Muted` and `MuteButton.HighVolume`. */
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * `MuteButton`'s props, for a `<button>` of your own: the "Mute"/"Unmute" name,
- * the toggle, the error gate and the media keys.
- *
- * Spread it last, onto a `<button>`, and pass your own handlers in the call —
- * after the spread they replace the library's rather than composing with it.
+ * `MuteButton`'s props for a `<button>` of your own: the name, the click, the
+ * error gate and the keyboard shortcuts. Pass your props in the call and spread
+ * the result last.
  */
 export function useMuteButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -66,10 +65,7 @@ function useToggleMute() {
   return () => send({ type: "TOGGLE_MUTE" });
 }
 
-/**
- * Renders `children` while the player is silent: muted, or within 0.001 of zero
- * volume — a slider dragged to the end rarely lands on exactly 0.
- */
+/** Renders `children` while muted, or while the volume is within 0.001 of zero. */
 function Muted({ children }: MutedProps): React.ReactElement | null {
   const volumeState = useVolumeState();
   if (volumeState !== "muted") return null;
@@ -80,7 +76,7 @@ type LowVolumeProps = {
   children: React.ReactNode;
 };
 
-/** Renders `children` while audible and below 0.5. */
+/** Renders `children` while audible and below half volume. */
 function LowVolume({ children }: LowVolumeProps): React.ReactElement | null {
   const volumeState = useVolumeState();
   if (volumeState !== "low") return null;
@@ -92,9 +88,8 @@ type HighVolumeProps = {
 };
 
 /**
- * Renders `children` while audible and at or above 0.5, which counts as high.
- * The three parts are mutually exclusive and exhaustive, so a button using all
- * three always shows exactly one icon.
+ * Renders `children` while audible at half volume or above. The three parts
+ * together always show exactly one.
  */
 function HighVolume({ children }: HighVolumeProps): React.ReactElement | null {
   const volumeState = useVolumeState();
@@ -111,18 +106,11 @@ type MuteButtonComponent = React.ForwardRefExoticComponent<
 };
 
 /**
- * Mute/unmute. Named "Mute" or "Unmute" for what pressing it will do, and that
- * name is the only place the state appears — no `aria-pressed`. Translate both
- * with `AudioPlayer`'s `labels.mute`, or override this one button with your own
- * `aria-label`.
- *
- * Unmuting restores the volume the player was last audible at: mute at 80 % and
- * unmuting returns to 80 %, not to full.
- *
- * Live while loading — `muted` is settable before metadata. Only an error
- * disables it, via `aria-disabled`.
- *
- * Carries `data-part="mute"` and `data-state="muted|low|high"`.
+ * Mutes and unmutes. Renders a `<button>` named "Mute" or "Unmute" for what
+ * pressing does; the name is where the state is announced, so there is no
+ * `aria-pressed`. Unmuting restores the last audible volume. Only an error
+ * disables it, with `aria-disabled`. Carries `data-part="mute"` and
+ * `data-state="muted" | "low" | "high"`.
  */
 export const MuteButton: MuteButtonComponent = /* @__PURE__ */ Object.assign(
   MuteButtonRoot,

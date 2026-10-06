@@ -7,21 +7,17 @@ import {
 
 export type SliderMode = "seek" | "volume" | "rate";
 /**
- * What `aria-valuetext` is composed from: the announced value, plus the element
- * state it has to reflect.
- *
- * One payload for all three sliders, so `labels.timelineValue`,
- * `labels.volumeValue` and `labels.rateValue` can be indexed by mode. Each uses
- * what it needs — the timeline reads `value` and `maxValue` as seconds, volume
- * reads `value` as 0–1 and `muted`, rate reads `value` alone.
- *
- * `value` is **quantized** — whole seconds for the timeline, hundredths for the
- * other two — and is the same number as `aria-valuenow`. Handing an entry the
- * raw float is how the two drift apart (A13).
+ * What a slider's `aria-valuetext` entry receives. The same payload for all
+ * three sliders: the timeline reads `value` and `maxValue` as whole seconds,
+ * the volume slider reads `value` as `0`–`1` and `muted`, and the rate slider
+ * reads `value` alone.
  */
 export type SliderAriaState = {
+  /** The value being announced, the same number as `aria-valuenow`. */
   value: number;
+  /** The top of the range; the duration, for the timeline. */
   maxValue: number;
+  /** Whether the element is muted. */
   muted: boolean;
 };
 

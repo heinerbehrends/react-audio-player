@@ -18,10 +18,11 @@ import { VOLUME_MODE } from "../Slider/sliderModes";
 import { useIsVolumeAvailable } from "../store/volumeAvailable";
 
 type VolumeProps = HTMLAttributes<HTMLDivElement> & {
+  /** The slider parts: `.Control`, and any of `.Background`, `.Progress` and `.Thumb`. */
   children: React.ReactNode;
   /**
-   * Which axis the slider runs along. Vertical fills from the bottom and takes
-   * its length from the root's height.
+   * The axis the slider runs along. A vertical slider fills from the bottom and
+   * takes its length from the root's height.
    *
    * @defaultValue "horizontal"
    */
@@ -66,31 +67,14 @@ type VolumeComponent = React.ForwardRefExoticComponent<
 };
 
 /**
- * The volume slider, on a 0–1 range. Compose it from `.Control` (required) and
- * any of `.Background`, `.Progress` and `.Thumb`.
- *
- * **Give the root a height**, or the track measures zero and the slider is
- * silently inert.
- *
- * Dragging or clicking to zero also mutes, and moving back above zero unmutes.
- * The arrow keys change the volume without unmuting, so the announced value
- * composes both — "Muted, 80%".
- *
- * Live while loading; only an error disables it.
- *
- * The root is a plain `<div>` with no ARIA role: the slider semantics are on
- * `.Control`, which is already named "Volume slider" (A11). Add your own
- * `role`/`aria-label` if you compose more controls in.
- *
- * Carries `data-part="root"`, `data-slider="volume"`,
- * `data-state="idle|dragging"` and `data-orientation="horizontal|vertical"` —
- * the axis, where a root-level layout rule can read it; `aria-orientation` is
- * on `.Control`, a child. Also sets `--progress` and `--offset` as custom
- * properties, which `.Progress` draws from and your own fills can read.
+ * The volume slider, `0`–`1`. Renders a `<div>` root for `.Control` and any of
+ * `.Background`, `.Progress` and `.Thumb`; give it a height, or the slider is
+ * silently inert. Reaching zero mutes. A drag or click above zero unmutes; the
+ * arrow keys do not, so the announced value includes the mute: "Muted, 80%".
+ * Disabled on iOS, where the browser ignores volume writes. Carries
+ * `data-part="root"`, `data-slider="volume"`, `data-state="idle" | "dragging"`
+ * and `data-orientation`, and sets `--progress` and `--offset`.
  */
-// Property assignment, not `Object.assign`: the call is a side-effecting
-// expression a bundler cannot drop, so a consumer importing one component got
-// the whole library (P1-a). Used for every compound root here.
 export const Volume: VolumeComponent = /* @__PURE__ */ Object.assign(
   VolumeContainer,
   {

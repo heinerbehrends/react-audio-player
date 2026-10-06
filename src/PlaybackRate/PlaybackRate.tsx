@@ -12,6 +12,7 @@ import {
 } from "./SetPlaybackRate";
 
 type PlaybackRateProps = {
+  /** The rate controls: `.Set`, `.Change`, `.Current` and `.Display`. */
   children: React.ReactNode;
 } & React.HTMLAttributes<HTMLSpanElement>;
 
@@ -45,16 +46,10 @@ type PlaybackRateComponent = React.ForwardRefExoticComponent<
 };
 
 /**
- * A labelled group for a set of rate controls — an inline `<span role="group">`,
- * nothing more. Optional; `.Set`, `.Change`, `.Current` and `.Display` all work
- * outside it.
- *
- * Use it when the buttons form one cluster, so assistive technology announces
- * them as a set. The one `role="group"` in the library: the slider roots each
- * wrap a single control that is already named, and this wraps several (A11).
- *
- * Translate the group name with `AudioPlayer`'s `labels.rateGroup`, or pass your
- * own `aria-label` to override this one group.
+ * Groups rate controls so assistive technology announces them as a set. Renders
+ * a `<span role="group">` named "Playback rate options", and nothing more;
+ * `.Set`, `.Change`, `.Current` and `.Display` also work outside it. Carries
+ * `data-part="root"`.
  */
 export const PlaybackRate: PlaybackRateComponent =
   /* @__PURE__ */ Object.assign(PlaybackRateRoot, {

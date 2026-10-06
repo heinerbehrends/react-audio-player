@@ -17,10 +17,11 @@ import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
 import { SEEK_MODE } from "../Slider/sliderModes";
 
 type TimelineProps = HTMLAttributes<HTMLDivElement> & {
+  /** The slider parts: `.Control`, and any of `.Background`, `.Progress` and `.Thumb`. */
   children?: React.ReactNode;
   /**
-   * Snap seeks to a multiple of this many seconds. Omitted or `0` seeks
-   * continuously, which is the default.
+   * Snaps seeks and arrow-key steps to a multiple of this many seconds. `0`
+   * seeks continuously, with a 5-second arrow step.
    *
    * @defaultValue 0
    */
@@ -63,26 +64,13 @@ type TimelineComponent = React.ForwardRefExoticComponent<
 };
 
 /**
- * The scrub bar. Compose it from `.Control` (required) and any of
- * `.Background`, `.Progress` and `.Thumb`, in any order or markup.
- *
- * **Give the root a height.** It has none of its own, and a zero-height track
- * measures zero, which leaves the slider silently inert.
- *
- * There is no `maxValue` — the range is the duration, read from the element.
- * Until one is known, before metadata or on a live stream, the slider is
- * `aria-disabled` and ignores input. `useIsSeekable()` is the same test.
- *
- * The root is a plain `<div>` with no ARIA role: the slider semantics live on
- * `.Control` (A11). Add your own `role="group"` and `aria-label` if you compose
- * other controls in beside it.
- *
- * Carries `data-part="root"`, `data-slider="timeline"`,
- * `data-state="idle|dragging"` and `data-orientation="horizontal"`. All three
- * sliders share their part names, so scope by `data-slider`. Also sets
- * `--progress` (the filled fraction, `0`–`1`) and `--offset` (the thumb
- * position, in `px`) as custom properties, which `.Progress` draws from and
- * your own fills can read.
+ * The scrub bar. Renders a `<div>` root for `.Control` and any of
+ * `.Background`, `.Progress` and `.Thumb`. Give it a height: a zero-height
+ * track measures zero and the slider is silently inert. Its range is the
+ * duration, so it is disabled until one is known and on a live stream. Carries
+ * `data-part="root"`, `data-slider="timeline"`, `data-state="idle" | "dragging"`
+ * and `data-orientation="horizontal"`, and sets `--progress` (`0`–`1`) and
+ * `--offset` (the thumb position, in `px`).
  *
  * @example
  * ```jsx

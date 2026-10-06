@@ -51,36 +51,25 @@ export function useComposedButtonProps(
   };
 }
 
-/** Always present in a props hook's result: the consumer's, or the library's. */
+/** The props every button hook returns, on top of the caller's own. */
 export type ButtonBagBase = ComposedButtonProps & {
+  /** Always `"button"`, so the element never submits a form. */
   readonly type: React.ButtonHTMLAttributes<HTMLButtonElement>["type"];
+  /** The accessible name, from `labels` or the English default. */
   readonly "aria-label": string;
-  /**
-   * A stable selector, because `aria-label` is not one: the label is the
-   * documented way to localise a control (A15), so
-   * `button[aria-label="Play audio"]` breaks the day the app ships in German.
-   */
+  /** A stable selector for the control; `aria-label` is translatable, so it is not one. */
   readonly "data-part": string;
 };
 
 /**
- * What the button props hooks return: the consumer's props with the library's
- * on top.
- *
- * Generic in `P`, because a plain `ButtonHTMLAttributes` parameter rejects
- * `data-*` with TS2353 — JSX exempts those attributes, a function argument does
- * not. `P` also keeps the consumer's keys in the result, so `bag["data-testid"]`
- * still reads as `string`.
+ * A button hook's result: the caller's props `P` with the library's on top.
+ * Generic so the caller's own keys, `data-*` included, stay typed in the result.
  */
 export type ButtonPropsBag<P> = Omit<P, keyof ButtonBagBase> & ButtonBagBase;
 
 /**
- * The bag of a button whose state the DOM does not already carry — play/pause,
- * mute and the time toggle. The other three have no state or announce it with
- * `aria-pressed`, and S9's rule refuses a second spelling of either.
- *
- * `State` is public API: once a hook hands out `data-state="loading"`, renaming
- * that value breaks a consumer's stylesheet.
+ * A `ButtonPropsBag` with `data-state`, for the buttons whose state the DOM does
+ * not already carry. The values are API: a stylesheet selects on them.
  */
 export type StatefulButtonPropsBag<
   P,

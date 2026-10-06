@@ -10,22 +10,17 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels } from "../Player/PlayerConfigContext";
 
 type IncreaseDecreaseProps = {
-  /** How much to add to the current rate. Negative slows down. */
+  /** How much to add to the rate. Negative slows down. */
   amount: number;
+  /** The button's content. */
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * Steps the rate by a fixed amount, relative to whatever it is now. Named
- * "Increase playback rate by 0.25x" or "Decrease…", following the sign;
- * translate it with `AudioPlayer`'s `labels.rateChange`.
- *
- * Clamped to the library's 0.125–8 range, so holding it down stops at the
- * ends, and never moves the rate against its own direction.
- *
- * Live while loading; only an error disables it.
- *
- * Carries `data-part="rate-change"`, and no `data-state`: a step has none.
+ * Steps the rate by a fixed amount. Renders a `<button>` named "Increase
+ * playback rate by 0.25x" or "Decrease playback rate by 0.25x", following the
+ * sign. Stops at `0.125` and `8`, and never moves the rate against its own
+ * direction. Only an error disables it. Carries `data-part="rate-change"`.
  */
 export const ChangePlaybackRate = /* @__PURE__ */ forwardRef<
   HTMLButtonElement,
@@ -39,12 +34,9 @@ export const ChangePlaybackRate = /* @__PURE__ */ forwardRef<
 });
 
 /**
- * `PlaybackRate.Change`'s props, for a `<button>` of your own: the
- * "Increase/Decrease playback rate by {n}x" name, the step, the error gate and
- * the media keys.
- *
- * Spread it last, onto a `<button>`, and pass your own handlers in the call —
- * after the spread they replace the library's rather than composing with it.
+ * `PlaybackRate.Change`'s props for a `<button>` of your own: the name, the
+ * step, the error gate and the keyboard shortcuts. Pass your props in the call
+ * and spread the result last.
  */
 export function usePlaybackRateChangeProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,

@@ -18,21 +18,19 @@ export const progressFillRules =
   ':where([data-part="progress"][data-orientation]){width:100%;height:100%;transform:scaleX(var(--progress,0));transform-origin:left}' +
   ':where([data-part="progress"][data-orientation="vertical"]){transform:scaleY(var(--progress,0));transform-origin:bottom}';
 
-// React 19's resource props, which `@types/react` 18 does not declare.
+// React 19's resource props, which `@types/react` 18 does not declare. React
+// 19 hoists the `<style>` into `<head>` once, keyed by `href`; React 18 renders
+// it in place, once per fill, with the two props as inert attributes.
 const hoisted = {
   href: "react-headless-audio-player-progress",
   precedence: "default",
 } as React.StyleHTMLAttributes<HTMLStyleElement>;
 
 /**
- * The fill all three sliders share. Its size and transform come from
- * `progressFillRules` rather than inline, so a plain stylesheet rule can
- * replace them (S28).
- *
- * The rules ship in a `<style>` rendered beside the fill, so they need no
- * import and are in the server markup. React 19 hoists it into `<head>` once,
- * keyed by `href`; React 18 renders it in place, once per fill, and passes
- * `href` and `precedence` through as inert attributes.
+ * The filled part of the track. Renders a `<div data-part="progress">` scaled
+ * by the root's `--progress`. Its size and transform come from a
+ * zero-specificity rule the library renders itself, so any rule of yours on
+ * `[data-part="progress"]` replaces them.
  */
 export const SliderProgress = /* @__PURE__ */ forwardRef<
   HTMLDivElement,

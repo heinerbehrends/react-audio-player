@@ -11,6 +11,7 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels } from "./PlayerConfigContext";
 
 type PlayButtonProps = {
+  /** The button's content, such as `PlayButton.Playing` and `PlayButton.Paused`. */
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
@@ -24,11 +25,9 @@ const ariaLabelMap = {
 };
 
 /**
- * `PlayButton`'s props, for a `<button>` of your own: the four-name label (A4),
- * play/pause, the error gate and the media keys.
- *
- * Spread it last, onto a `<button>`, and pass your own handlers in the call —
- * after the spread they replace the library's rather than composing with it.
+ * `PlayButton`'s props for a `<button>` of your own: the name, the click, the
+ * error gate and the keyboard shortcuts. Pass your props in the call and spread
+ * the result last.
  */
 export function usePlayButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -70,7 +69,7 @@ function useHandleClick() {
   return () => send({ type: "TOGGLE_PLAY" });
 }
 
-/** Renders `children` only while the element is playing. */
+/** Renders `children` while playing. */
 function Playing({
   children,
 }: {
@@ -85,10 +84,8 @@ function Playing({
 }
 
 /**
- * Renders `children` whenever the element is **not** playing — including loading
- * and errored, not only paused. The pair is exhaustive, so a button using both
- * always shows an icon. To tell the other states apart, read
- * `useAudioPlayer().playerState`.
+ * Renders `children` while not playing: paused, loading or errored. To tell
+ * those apart, read `useAudioPlayer().playerState`.
  */
 function Paused({
   children,
@@ -110,20 +107,11 @@ type PlayButtonComponent = React.ForwardRefExoticComponent<
 };
 
 /**
- * Play/pause, as one button.
- *
- * The accessible name is the only place its state appears — "Play audio", "Pause
- * audio", "Loading audio" or "Error loading audio". No `aria-pressed` (A4).
- * Translate all four with `AudioPlayer`'s `labels.play`, or override this one
- * button with your own `aria-label`.
- *
- * Pressable while loading: `play()` before metadata is legal and the browser
- * queues it. Only an error disables it, with `aria-disabled` rather than the
- * native attribute — so style that from `[aria-disabled="true"]`, not
- * `:disabled`. An autoplay refusal does not disable it; read it with
- * `useAudioError()`.
- *
- * Carries `data-part="play"` and `data-state="playing|paused|loading|error"`.
+ * Plays and pauses. Renders a `<button>` named "Play audio", "Pause audio",
+ * "Loading audio" or "Error loading audio"; the name is where the state is
+ * announced, so there is no `aria-pressed`. Pressable while loading; only an
+ * error disables it, with `aria-disabled`. Carries `data-part="play"` and
+ * `data-state="playing" | "paused" | "loading" | "error"`.
  */
 export const PlayButton: PlayButtonComponent = /* @__PURE__ */ Object.assign(
   PlayButtonRoot,

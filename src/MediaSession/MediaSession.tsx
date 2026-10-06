@@ -76,19 +76,14 @@ function reportError(what: string, error: unknown) {
 }
 
 type MediaSessionProps = {
-  /**
-   * Shows a previous-track button on the system controls and runs when it is
-   * pressed. Without it, there is no button.
-   */
+  /** Adds a previous-track button to the system controls, and runs when it is pressed. */
   onPreviousTrack?: () => void;
-  /**
-   * Shows a next-track button on the system controls and runs when it is
-   * pressed. Without it, there is no button.
-   */
+  /** Adds a next-track button to the system controls, and runs when it is pressed. */
   onNextTrack?: () => void;
   /**
-   * Seconds the system's skip buttons move, in both directions, when the system
-   * does not name a distance itself. Defaults to `10`.
+   * Seconds the system's skip buttons move when the system names no distance.
+   *
+   * @defaultValue 10
    */
   seekOffset?: number;
 };
@@ -285,14 +280,11 @@ function useMediaSession(props: MediaSessionProps) {
 
 /**
  * Publishes the track to the operating system's media controls: the lock
- * screen, the notification shade, the desktop media overlay. Renders nothing.
- * Render it inside `<AudioPlayer>`, once per player that should own those
- * controls; leave it out for a sound effect or a preview clip.
- *
- * Reads `title`, `artist`, `album` and `artwork` from `audioFile`. With none of
- * them set, the session carries no metadata. Play, pause and the skip and seek
- * buttons drive the player; previous and next appear only with their handlers.
- * Where the browser has no Media Session API it does nothing.
+ * screen, the notification shade and the desktop overlay. Renders nothing.
+ * Shows `title`, `artist`, `album` and `artwork` from `audioFile`; play, pause,
+ * seek and skip drive the player, and previous and next appear only with their
+ * handlers. Render one per player that should own those controls. Does nothing
+ * where the browser has no Media Session API.
  */
 export function MediaSession(props: MediaSessionProps): null {
   useMediaSession(props);

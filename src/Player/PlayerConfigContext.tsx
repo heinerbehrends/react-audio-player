@@ -5,28 +5,23 @@ import { createContext, useContext } from "react";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../Shared/playerLabels";
 
-/**
- * The track `<AudioPlayer>` plays. Changing `src` swaps it and returns the
- * player to loading.
- */
+/** The track `<AudioPlayer>` plays. A new `src` swaps the track. */
 export type AudioFile = {
+  /** The URL of the audio. */
   src: string;
   /**
-   * Marks the source as a live stream: no timeline, seeking or remaining time.
-   * Needed for MP3 and Opus streams in Firefox, which reports them as a finite,
-   * growing track; elsewhere a stream's endless duration says so (B11).
+   * Marks a live stream, which disables the timeline and seeking. Needed for
+   * MP3 and Opus streams in Firefox, which reports them as a finite, growing
+   * track; other streams are detected from their unbounded duration.
    */
   live?: boolean;
-  /** The track title on the lock screen. Read by `<MediaSession>`. */
+  /** The title. Shown by `<MediaSession>`, and `<PlayerRoot>`'s name. */
   title?: string;
-  /** The artist on the lock screen. Read by `<MediaSession>`. */
+  /** The artist, shown by `<MediaSession>`. */
   artist?: string;
-  /** The album on the lock screen. Read by `<MediaSession>`. */
+  /** The album, shown by `<MediaSession>`. */
   album?: string;
-  /**
-   * Cover images for the lock screen; the operating system picks a size. Read by
-   * `<MediaSession>`.
-   */
+  /** Cover art, shown by `<MediaSession>`; the system picks a size. */
   artwork?: MediaImage[];
 };
 

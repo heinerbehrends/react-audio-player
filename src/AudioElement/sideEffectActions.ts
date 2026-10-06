@@ -66,14 +66,14 @@ type DecreaseVolumeAction = {
 type IncreasePlaybackRateAction = {
   type: "INCREASE_PLAYBACK_RATE";
   value: number;
-  /** The sending slider's own ceiling; `RATE_LIMITS.maxValue` when omitted. */
+  /** The fastest rate the step may reach. Defaults to the library's maximum, `8`. */
   maxValue?: number;
 };
 
 type DecreasePlaybackRateAction = {
   type: "DECREASE_PLAYBACK_RATE";
   value: number;
-  /** The sending slider's own floor; `RATE_LIMITS.minValue` when omitted. */
+  /** The slowest rate the step may reach. Defaults to the library's minimum, `0.125`. */
   minValue?: number;
 };
 
@@ -105,14 +105,13 @@ type SetTimeToPercentAction = {
   percent: number;
 };
 
+// Listed rather than derived with `Exclude`, so a new internal action cannot
+// widen the public surface by default. `CHANGE_VALUE` stays out: it is the
+// slider commit, a value in one component's units that means nothing without
+// the gesture behind it.
 /**
- * What a key may be bound to, and the only action type the package exports.
- *
- * `CHANGE_VALUE` is deliberately absent: it is the slider commit path, a value
- * in one component's units that means nothing without the gesture behind it.
- *
- * Listed rather than derived with `Exclude`, so a new internal action cannot
- * widen the public surface by default.
+ * An action a keyboard shortcut performs. Bind one to a key through
+ * `AudioPlayer`'s `customKeyboardShortcuts`.
  */
 export type KeyboardAction =
   | PlayAction

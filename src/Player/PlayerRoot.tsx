@@ -8,25 +8,12 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels, usePlayerConfig } from "./PlayerConfigContext";
 
 /**
- * The element that holds your player: a named landmark that a click focuses,
- * with the keyboard shortcuts on everything inside it, your own buttons
- * included. Opt-in: `<AudioPlayer>` renders no element of its own (A10).
- *
- * - `role="region"`, named by `audioFile.title`, so two players on a page
- *   announce apart. Without a title, by `labels.player`.
- * - `tabIndex={-1}`: a click on the cover or the title focuses the player, so
- *   the shortcuts keep working, without adding a tab stop.
- * - Space plays and pauses while the root itself has focus; on a button inside,
- *   it presses the button. A `" "` in `customKeyboardShortcuts` wins.
- *
- * Carries `data-part="player"`. Render it inside `<AudioPlayer>`.
- *
- * @example
- * ```jsx
- * <AudioPlayer audioFile={track}>
- *   <PlayerRoot className="player">…</PlayerRoot>
- * </AudioPlayer>
- * ```
+ * A container for the player. Renders a `<div role="region">` named by
+ * `audioFile.title`, or by `labels.player` without one, with the keyboard
+ * shortcuts on everything inside it, your own buttons included. It has
+ * `tabIndex={-1}`, so a click on it focuses the player without adding a tab
+ * stop, and Space plays and pauses while it has focus. Carries
+ * `data-part="player"`.
  */
 export const PlayerRoot = /* @__PURE__ */ forwardRef<
   HTMLDivElement,
@@ -36,9 +23,8 @@ export const PlayerRoot = /* @__PURE__ */ forwardRef<
 });
 
 /**
- * `<PlayerRoot>`'s props, for a container of your own — a `<section>`, or one
- * another component library renders. Spread it onto the element, passing your
- * own props in the call.
+ * `<PlayerRoot>`'s props for a container of your own. Pass your props in the
+ * call and spread the result onto the element.
  */
 export function usePlayerRootProps<P extends React.HTMLAttributes<HTMLElement>>(
   props?: P,

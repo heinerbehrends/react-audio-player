@@ -36,17 +36,8 @@ function bufferedEnd({ buffered, currentTime }: HTMLMediaElement) {
 
 /**
  * How much has downloaded ahead of the position, as a bar behind the fill.
- * Render it inside `<Timeline.Control>`. Carries `data-part="buffered"` and
- * `--buffered`, the fraction from `0` to `1`.
- *
- * @example
- * ```jsx
- * <Timeline.Control>
- *   <Timeline.Background />
- *   <TimelineBuffered />
- *   <Timeline.Progress />
- * </Timeline.Control>
- * ```
+ * Renders a `<div data-part="buffered">` scaled by its own `--buffered`,
+ * `0`–`1`. Render it inside `<Timeline.Control>`.
  */
 export const TimelineBuffered = /* @__PURE__ */ forwardRef<
   HTMLDivElement,

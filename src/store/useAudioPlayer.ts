@@ -7,79 +7,64 @@ import { useAudioError } from "./derived";
 import type { AudioError, PlayerState, VolumeState } from "./derived";
 
 /**
- * The write half of `useAudioPlayer()`. Every method keeps its identity for the
- * lifetime of the player, so they are safe in a dependency array.
+ * The control methods of `useAudioPlayer()`. Each keeps its identity for the
+ * lifetime of the player, so it is safe in a dependency array.
  */
 export type AudioPlayerControls = {
+  /** Starts playback. */
   play: () => void;
+  /** Pauses playback. */
   pause: () => void;
+  /** Plays when paused, pauses when playing. */
   toggle: () => void;
-  /** Absolute, in seconds. The browser clamps to the track. */
+  /** Seeks to a position in seconds. The browser clamps it to the track. */
   seek: (seconds: number) => void;
-  /** Relative, in seconds. Negative rewinds. */
+  /** Seeks relative to the position, in seconds. Negative rewinds. */
   seekBy: (seconds: number) => void;
-  /** 0–1. Setting it to zero mutes, exactly as it does on the slider. */
+  /** Sets the volume, `0`–`1`. Zero mutes; a value above zero unmutes. */
   setVolume: (volume: number) => void;
+  /** Mutes, or unmutes to the last audible volume. */
   toggleMute: () => void;
-  /** Clamped to 0.125–8, the range that stays audible in Chromium and Firefox. */
+  /** Sets the playback rate, clamped to `0.125`–`8`. */
   setRate: (rate: number) => void;
 };
 
 /**
- * The read half of `useAudioPlayer()`. The playback position is deliberately
- * absent — see `useCurrentSecond()`.
+ * The state half of `useAudioPlayer()`. The playback position is not part of
+ * it; see `useCurrentSecond()`.
  */
 export type AudioPlayerState = {
+  /** The track length in seconds; `0` before metadata and on a live stream. */
   duration: number;
+  /** Whether playback is paused. */
   paused: boolean;
+  /** The volume, `0`–`1`. */
   volume: number;
+  /** Whether the element is muted. */
   muted: boolean;
+  /** The playback rate; `1` is normal speed. */
   rate: number;
+  /** Error, loading, paused or playing. */
   playerState: PlayerState;
+  /** Which icon a mute button should show. */
   volumeState: VolumeState;
-  /** The track is errored. Loading does not disable — see `useIsDisabled()`. */
+  /** Whether the track has failed to load. Loading does not disable. */
   isDisabled: boolean;
-  /**
-   * The duration is known and non-zero, so a position can be named. False before
-   * `loadedmetadata` and on a live stream. Gates the timeline and the seek
-   * buttons — see `useIsSeekable()`.
-   */
+  /** Whether a position can be named: the duration is known. See `useIsSeekable()`. */
   isSeekable: boolean;
-  /**
-   * The track is a live stream: the element reports an unbounded duration.
-   * `isSeekable` is false for it too, and stays false — see `useIsLive()`.
-   */
+  /** Whether the track is a live stream. See `useIsLive()`. */
   isLive: boolean;
-  /**
-   * Playback wants to advance and cannot — the spinner condition. Independent
-   * of `playerState`, which stays `"playing"` through a stall because the
-   * player is still in play mode.
-   */
+  /** Whether playback is waiting for data. See `useIsBuffering()`. */
   isBuffering: boolean;
-  /**
-   * The last failure, or `null`. `kind: "media"` means the resource is
-   * unusable; `kind: "playback"` means the browser refused the command.
-   */
+  /** The last failure, or `null`. See `useAudioError()`. */
   error: AudioError | null;
 };
 
 /**
- * The player's state and its controls, in one flat object. For UI the
- * components do not cover: a mini-player, a waveform, analytics.
- *
- * Must be called inside an `<AudioPlayer>`; it throws outside one. The control
- * methods keep their identity for the lifetime of the player, so they are safe
- * in a dependency array.
- *
- * The playback position is deliberately absent — it changes about four times a
- * second and would re-render every caller at that rate. Use `useCurrentSecond()`
- * or `useCurrentTime()`.
- *
- * @example
- * ```jsx
- * const { paused, play, pause } = useAudioPlayer();
- * <button onClick={paused ? play : pause}>{paused ? "Play" : "Pause"}</button>
- * ```
+ * The player's state and controls in one object, for UI the components do not
+ * cover. Must be called inside `<AudioPlayer>`. The playback position is left
+ * out because it changes about four times a second; read it with
+ * `useCurrentSecond()` or `useCurrentTime()`.
  */
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const store = usePlayerStore();
@@ -149,12 +134,8 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
 }
 
 /**
- * The playback position in whole seconds, for a clock.
- *
- * Separate from `useAudioPlayer()` because the position changes about four times
- * a second: folding it in would re-render every caller at that rate. Quantising
- * to the second cuts that to about once a second. For the raw value, use
- * `useCurrentTime()`.
+ * The playback position in whole seconds, re-rendering about once a second.
+ * For a clock. For the raw position, use `useCurrentTime()`.
  */
 export function useCurrentSecond(): number {
   const store = usePlayerStore();
@@ -162,12 +143,9 @@ export function useCurrentSecond(): number {
 }
 
 /**
- * The raw fractional position in seconds, updating at the element's own rate —
- * roughly 4 Hz, not on a timer of its own.
- *
- * For anything that draws rather than reads: a waveform playhead, a custom
- * progress bar. For a clock use `useCurrentSecond()`, which re-renders a quarter
- * as often.
+ * The playback position in seconds as the element reports it, about four times
+ * a second. For a waveform or a custom progress bar; a clock should use
+ * `useCurrentSecond()`.
  */
 export function useCurrentTime(): number {
   const store = usePlayerStore();

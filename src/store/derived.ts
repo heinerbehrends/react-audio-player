@@ -4,48 +4,35 @@ import { HAVE_FUTURE_DATA } from "./syncFromElement";
 import { usePlayerStore } from "./PlayerStoreContext";
 
 /**
- * The player's state, decided in this order: error, then loading, then
- * play/pause.
- *
- * `"loading"` means metadata is on its way; the controls still work there, and
- * a track change re-enters it. A `preload="none"` player waiting for its first
- * press is `"paused"`: nothing is on its way (S34). A mid-track stall stays
- * `"playing"` — `useIsBuffering()` reports that, and the wait after that first
- * press.
+ * The player's overall state, in order of precedence: `"error"`, then
+ * `"loading"` while metadata is on its way, then `"paused"` or `"playing"`.
+ * The controls still work while loading. A stall mid-track stays `"playing"`;
+ * `useIsBuffering()` reports it.
  */
 export type PlayerState = "loading" | "error" | "paused" | "playing";
 
 /**
- * Why a resource is unusable, from the element's `MediaError.code`.
- *
- * `"aborted"` — the fetch was stopped. `"network"` — it failed after starting.
- * `"decode"` — the bytes arrived and could not be decoded. `"unsupported"` — the
- * format or `src` was rejected outright, which is also what an empty or 404'd
- * `src` reports. `"unknown"` — a code outside the spec's four.
+ * Why the resource is unusable, from the element's `MediaError.code`:
+ * `"aborted"` the fetch was stopped, `"network"` it failed after starting,
+ * `"decode"` the data could not be decoded, `"unsupported"` the format or `src`
+ * was rejected, which a 404 also reports, and `"unknown"` any other code.
  */
 export type MediaErrorReason =
   "aborted" | "network" | "decode" | "unsupported" | "unknown";
 
 /**
- * The two ways playback fails, separated because they need different handling.
- *
- * `kind: "media"` — the resource is unusable; only a different `src` or a retry
- * will help. `kind: "playback"` — the resource is fine and the browser refused
- * the command, almost always autoplay policy, and `reason` is the
- * `DOMException` name. Controls stay enabled for that one, since a user gesture
- * is what lifts it.
+ * A playback failure. `kind: "media"` means the resource is unusable and only a
+ * retry or another `src` will help. `kind: "playback"` means the browser
+ * refused `play()`, usually autoplay policy, and `reason` is the
+ * `DOMException` name; the controls stay enabled, since a user gesture lifts it.
  */
 export type AudioError =
   | { kind: "media"; reason: MediaErrorReason }
   | { kind: "playback"; reason: string };
 
 /**
- * Which of three icons a mute button should show. Mutually exclusive and
- * exhaustive.
- *
- * `"muted"` covers a muted element and a volume within 0.001 of zero — a slider
- * dragged to the end rarely lands on exactly 0. The low/high boundary is 0.5,
- * and 0.5 counts as high.
+ * Which icon a mute button should show. `"muted"` covers a muted element and a
+ * volume within 0.001 of zero; `"low"` is below 0.5 and `"high"` is 0.5 or more.
  */
 export type VolumeState = "muted" | "low" | "high";
 
@@ -89,12 +76,9 @@ export function useIsDisabled(): boolean {
 }
 
 /**
- * Whether a position on the track can be named — the duration is known and
- * non-zero. Gates the timeline slider, which would otherwise announce
- * `min=0 max=0 now=0` and take arrow keys into it (A5), and `SeekButton`.
- *
- * False before `loadedmetadata` and on a live stream, whose `readyState` is
- * healthy — so no load-state check reaches it.
+ * Whether a position on the track can be named: the duration is known and
+ * non-zero. False before `loadedmetadata` and on a live stream. This is the
+ * test that disables the timeline and `SeekButton`.
  */
 export function useIsSeekable(): boolean {
   const store = usePlayerStore();
@@ -104,17 +88,10 @@ export function useIsSeekable(): boolean {
 }
 
 /**
- * Whether the track is a live stream — the element reports an unbounded
- * duration, or `audioFile.live` says so. For a "LIVE" badge, hiding the clock, or swapping the timeline for
- * a "listen live" control.
- *
- * Not the inverse of `useIsSeekable()`, which is also false before metadata:
- * that one says a position cannot be named *yet*, this one says it never will
- * be. Gate the timeline on the first and the badge on the second.
- *
- * False before metadata, and false again after a `src` swap to an ordinary
- * file. A stream that later reports a finite duration — a recording that
- * finished — clears it on `durationchange`, unless `audioFile.live` is set.
+ * Whether the track is a live stream: the element reports an unbounded
+ * duration, or `audioFile.live` is set. False before metadata, so it is not the
+ * inverse of `useIsSeekable()`: that one says a position cannot be named yet,
+ * this one says it never will be.
  */
 export function useIsLive(): boolean {
   const store = usePlayerStore();
@@ -128,10 +105,7 @@ const MEDIA_ERROR_REASONS: Record<number, MediaErrorReason> = {
   4: "unsupported",
 };
 
-/**
- * The last failure, or `null`. A media error wins when both are set, being the
- * more fundamental of the two.
- */
+/** The last failure, or `null`. A media error wins when both kinds are set. */
 export function useAudioError(): AudioError | null {
   const store = usePlayerStore();
   const code = useStore(store.mediaErrorCode);
@@ -147,12 +121,8 @@ export function useAudioError(): AudioError | null {
 }
 
 /**
- * True while playback wants to advance and cannot — the spinner condition.
- * Derived from `readyState` rather than tracked, so there is no flag to get
- * stuck on.
- *
- * Independent of `usePlayerState`, which stays `"playing"` through a stall: the
- * player is still in play mode, so the button must still offer Pause. A seek
+ * Whether playback wants to advance and has no data to: the spinner condition.
+ * Independent of `PlayerState`, which stays `"playing"` through a stall. A seek
  * while paused does not count.
  */
 export function useIsBuffering(): boolean {
@@ -165,15 +135,10 @@ export function useIsBuffering(): boolean {
 }
 
 /**
- * Whether the position is the end of the track — for an end-of-track card, a
- * Replay button, or greying out "next".
- *
- * A statement about position, not about history: dragging to the end reports
- * `true` with nothing having played, and it clears as soon as the position
- * moves. Use `onEnded` for the edge, this for the level.
- *
- * Stays `false` under `audioProps={{ loop: true }}`, where the element wraps to
- * 0 rather than resting at the end.
+ * Whether the position is at the end of the track. A statement about position,
+ * not history: dragging to the end reports `true`, and it clears as soon as the
+ * position moves. For the moment a track finishes, use `onEnded`. Stays `false`
+ * with `loop`, where the element wraps to `0` instead.
  */
 export function useIsAtEnd(): boolean {
   const store = usePlayerStore();
@@ -186,17 +151,16 @@ export function useIsAtEnd(): boolean {
 }
 
 /**
- * The two numbers behind `Time.Elapsed` and `Time.Remaining`, in seconds.
- *
- * Both come off `currentSecond`, the store's 1 Hz clock, so no interval races
- * the ~4 Hz event source. `remaining` is clamped at `0` and is a **magnitude** —
- * render your own `-`, exactly as a `labels.time` entry does.
- *
- * Reach for this when `labels.time` cannot express what you need: it is keyed by
- * `part`, so two readouts of the same part cannot differ. Render your own
- * `<time>` from these and `formatTime`.
+ * The numbers behind `Time.Elapsed` and `Time.Remaining`, in whole seconds,
+ * updating once a second. For a readout of your own that `labels.time` cannot
+ * express; format them with `formatTime`.
  */
-export function useTimeDisplay(): { elapsed: number; remaining: number } {
+export function useTimeDisplay(): {
+  /** The position. */
+  elapsed: number;
+  /** The time left, as a magnitude clamped at `0`. Write the `-` yourself. */
+  remaining: number;
+} {
   const store = usePlayerStore();
   const currentSecond = useStore(store.currentSecond);
   const duration = useStore(store.duration);

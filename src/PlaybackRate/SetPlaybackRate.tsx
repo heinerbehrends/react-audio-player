@@ -12,31 +12,17 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels } from "../Player/PlayerConfigContext";
 
 type SetPlaybackRateProps = {
-  /**
-   * The rate to set — `1` is normal speed, `2` is double.
-   *
-   * **Not clamped to the slider's range.** This names an explicit rate, so
-   * `rate={8}` sets 8 where `PlaybackRateSlider` would stop at 4. Like every
-   * rate write it is clamped to the library's 0.125–8, the range that stays
-   * audible in Chromium and Firefox.
-   */
+  /** The rate to set; `1` is normal speed. Clamped to `0.125`–`8`, not to `PlaybackRateSlider`'s range. */
   rate: number;
+  /** The button's content. */
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * Sets one specific rate — the "1x / 1.5x / 2x" row of buttons. Named "Set
- * playback rate to {rate}x"; translate it with `AudioPlayer`'s `labels.rateSet`.
- *
- * A toggle button: `aria-pressed` is `"true"` on the rate in effect, within
- * 0.001, and `"false"` on the others, so the row announces as a set of choices.
- * The only button here with one — its name is fixed, so it has no other state
- * channel, while the rest carry theirs in a changing name (A4).
- *
- * Live while loading; only an error disables it.
- *
- * Carries `data-part="rate-set"`, and no `data-state`: style the current rate
- * from `[aria-pressed="true"]`, which already says it.
+ * Sets one rate: a "1x / 1.5x / 2x" button. Renders a `<button>` named "Set
+ * playback rate to 1.5x", with `aria-pressed="true"` on the rate in effect and
+ * `"false"` on the others; style the current one from `[aria-pressed="true"]`.
+ * Only an error disables it. Carries `data-part="rate-set"`.
  */
 export const SetPlaybackRate = /* @__PURE__ */ forwardRef<
   HTMLButtonElement,
@@ -49,18 +35,16 @@ export const SetPlaybackRate = /* @__PURE__ */ forwardRef<
   );
 });
 
-/** `aria-pressed` is always present too — the library's, or the consumer's. */
+/** A `ButtonPropsBag` with `aria-pressed`. */
 type SetPlaybackRateBag<P> = ButtonPropsBag<P> & {
+  /** `true` on the rate in effect, `false` on the others. */
   readonly "aria-pressed": React.AriaAttributes["aria-pressed"];
 };
 
 /**
- * `PlaybackRate.Set`'s props, for a `<button>` of your own: the "Set playback
- * rate to {rate}x" name, `aria-pressed`, the write, the error gate and the
- * media keys.
- *
- * Spread it last, onto a `<button>`, and pass your own handlers in the call —
- * after the spread they replace the library's rather than composing with it.
+ * `PlaybackRate.Set`'s props for a `<button>` of your own: the name,
+ * `aria-pressed`, the click, the error gate and the keyboard shortcuts. Pass
+ * your props in the call and spread the result last.
  */
 export function usePlaybackRateSetProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -87,22 +71,17 @@ export function usePlaybackRateSetProps<
 }
 
 type CurrentIndicatorProps = {
-  /** The rate to compare against, matched within 0.001. */
+  /** The rate to mark, matched within 0.001. */
   rate: number;
+  /** The marker. Always in the DOM, hidden while the rate is not current. */
   children: React.ReactNode;
 };
 
 /**
- * A marker for the rate in effect — a tick or dot beside a `.Set` button.
- *
- * Always renders `children`, in a wrapper span that is `visibility: hidden` when
- * the rate does not match, so the marker keeps its box and the row does not
- * reflow as it moves. The wrapper is unconditional for that same reason (S17).
- *
- * The content is therefore in the DOM in both states: a presence check cannot
- * tell them apart, and nothing unreachable should go in it. `visibility: hidden`
- * keeps the hidden marker out of the accessibility tree, leaving `.Set`'s
- * `aria-pressed` as the announced signal.
+ * Marks the rate in effect: a tick or dot beside a `.Set` button. Renders a
+ * `<span>` that is `visibility: hidden` while `rate` is not current, so the
+ * marker keeps its space and the row does not reflow. The announced state is
+ * `.Set`'s `aria-pressed`.
  */
 export const CurrentIndicator = /* @__PURE__ */ forwardRef<
   HTMLSpanElement,
@@ -119,16 +98,8 @@ export const CurrentIndicator = /* @__PURE__ */ forwardRef<
 type RateDisplayProps = React.HTMLAttributes<HTMLSpanElement>;
 
 /**
- * The current rate as text, rounded to two decimals and suffixed with `x` —
- * "1x", "1.76x". Selectable as `[data-part="rate-display"]`.
- *
- * The text is its own accessible name. No `aria-label`: a `<span>` is
- * `role="generic"`, where a name is as likely to be dropped as to replace the
- * value — the same reason `Time.*` carries none (A12). Pass your own if the
- * context needs spelling out.
- *
- * Translate the text with `AudioPlayer`'s `labels.rateDisplay`, which receives
- * the rounded number.
+ * The current rate as text, to two decimals: "1x", "1.76x". Renders a
+ * `<span data-part="rate-display">`. The text is its own accessible name.
  */
 export const RateDisplay = /* @__PURE__ */ forwardRef<
   HTMLSpanElement,

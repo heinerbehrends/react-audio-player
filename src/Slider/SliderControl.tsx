@@ -5,27 +5,18 @@ import { useSliderContext } from "./SliderContext";
 import { progressStyles, containerStyles } from "./calculateStyle";
 
 type SliderControlProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** Parts to layer inside the track, such as `.Background` and `.Progress`. */
   children?: React.ReactNode;
 };
 
 /**
- * The track, and the slider itself: this `<button>` carries `role="slider"`, the
- * `aria-value*` attributes, the tab stop, the arrow keys and `Home`/`End`.
- *
- * **Required**, exactly one per slider, and it is what measures the track. Omit
- * it and the slider is inert: no role, no aria, no tab stop, and clicks do
- * nothing — the root logs an error for it in development. Do not nest `.Thumb`
- * inside it: that is a `<button>` in a `<button>`, which React warns about.
- *
- * One focusable, value-announcing element per slider is deliberate, and differs
- * from the APG/Radix arrangement where the thumb carries the role.
- *
- * `aria-label` and `aria-valuetext` are overridable here, per instance. To
- * translate every slider at once use `AudioPlayer`'s `labels` —
- * `timelineSlider` / `volumeSlider` / `rateSlider` for the name, and
- * `timelineValue` / `volumeValue` / `rateValue` for the spoken value. `role`,
- * `tabIndex` and the handlers are not overridable: your `onPointerDown` and
- * `onKeyDown` run alongside the library's rather than replacing them.
+ * The slider itself. Renders a `<button role="slider">` with the `aria-value*`
+ * attributes, the tab stop, the arrow keys and Home/End, and measures the
+ * track. Required, exactly one per slider: without it the root renders and does
+ * nothing, and logs an error in development. Do not nest `.Thumb` inside it.
+ * `aria-label` and `aria-valuetext` can be overridden per instance, and your
+ * `onPointerDown` and `onKeyDown` run alongside the library's. Carries
+ * `data-part="control"`.
  */
 export const SliderControl = /* @__PURE__ */ forwardRef<
   HTMLButtonElement,

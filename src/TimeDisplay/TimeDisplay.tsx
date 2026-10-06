@@ -34,11 +34,8 @@ type ToggleProps = Omit<
 };
 
 /**
- * `children` and `dangerouslySetInnerHTML` are omitted because the readout's
- * own text occupies that slot: JSX children are `createElement`'s third
- * argument, so anything passed through the props bag was silently discarded and
- * the two together throw. Omitting them turns both into compile errors that
- * point at `labels.time`, which is where per-readout text belongs (A15, S16).
+ * A `<time>` element's attributes, without `children`: the readout renders its
+ * own text. Change that text with `labels.time`.
  */
 type TimeProps = Omit<
   React.TimeHTMLAttributes<HTMLTimeElement>,
@@ -58,14 +55,10 @@ const Toggle = /* @__PURE__ */ forwardRef<HTMLButtonElement, ToggleProps>(
 );
 
 /**
- * `Time.Toggle`'s props, for a `<button>` of your own: the state, the name
- * ("1:23 elapsed, show time remaining"), the toggle, the error gate and the
- * media keys. Render the readout yourself from `data-state`:
- * `Time.Elapsed` or `Time.Remaining`. Pass no `data-state` of your own — it
- * replaces the bag's, which then no longer says which readout is showing.
- *
- * Spread it last, onto a `<button>`, and pass your own handlers in the call —
- * after the spread they replace the library's rather than composing with it.
+ * `Time.Toggle`'s props for a `<button>` of your own. Render `Time.Elapsed` or
+ * `Time.Remaining` inside it from the result's `data-state`, and pass no
+ * `data-state` of your own. Pass your props in the call and spread the result
+ * last.
  */
 export function useTimeToggleProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -182,69 +175,31 @@ const Duration = /* @__PURE__ */ forwardRef<HTMLTimeElement, TimeProps>(
 );
 
 /**
- * The time readouts and the toggle between them.
- *
- * A namespace object, not a component: there is no `<Time>` to render, only
- * `Time.Elapsed`, `Time.Remaining`, `Time.Duration` and `Time.Toggle` (S2).
- * Each readout always shows its own number; the toggle shows one of the first
- * two and switches on press.
- *
- * @example
- * ```jsx
- * <Time.Toggle defaultValue="remaining" />
- * <span> / </span>
- * <Time.Duration />
- * ```
+ * The time readouts and the toggle between them. A namespace, not a component:
+ * render `Time.Elapsed`, `Time.Remaining`, `Time.Duration` or `Time.Toggle`.
  */
 export const Time = {
   /**
-   * The position, as `M:SS` or `H:MM:SS`, in a `<time data-part="elapsed">`.
-   *
-   * Updates once a second, not at the element's ~4 Hz.
-   *
-   * The time is its own accessible name. No `aria-label`: on a `<time>` one
-   * replaces the value rather than adding to it (A12). Pass your own if the
-   * context needs spelling out.
-   *
-   * No `format` prop: the formatting is `AudioPlayer`'s `labels.time`, which names
-   * all three readouts at once and is handed raw seconds (S16).
+   * The position, as `M:SS` or `H:MM:SS`. Renders a `<time data-part="elapsed">`
+   * that updates once a second. The text is its own accessible name.
    */
   Elapsed,
   /**
-   * The time left, negative-signed — `-1:30` — in a
-   * `<time data-part="remaining">`.
-   *
-   * Never counts past zero, and
-   * reads `0:00` — unsigned — both before the duration is known and once the track
-   * has finished, where a "-0:00" would read as a glitch. No `aria-label`, for the
-   * reason given on `Time.Elapsed`.
-   *
-   * A `labels.time` entry receives the **magnitude** here, with `part:
-   * "remaining"` — it writes its own `-`, and the zero cases arrive as `0`.
+   * The time left, as `-1:30`. Renders a `<time data-part="remaining">` that
+   * reads `0:00` before the duration is known and once the track has ended.
    */
   Remaining,
   /**
-   * The track length, in a `<time data-part="duration">`.
-   *
-   * Reads `0:00` until metadata arrives, and for a live stream. No `aria-label`,
-   * for the reason given on `Time.Elapsed`.
+   * The track length. Renders a `<time data-part="duration">` that reads `0:00`
+   * until metadata arrives, and on a live stream.
    */
   Duration,
   /**
-   * A button showing the elapsed or the remaining time, switching between them
-   * when pressed. Renders the readout itself, as `Time.Elapsed` or
-   * `Time.Remaining` would, so it takes no children. For a readout that never
-   * switches, render one of those on its own.
-   *
-   * Named by the time on screen, then what pressing does — "1:23 elapsed, show
-   * time remaining" — so the name contains the visible text (WCAG 2.5.3, A17).
-   * The name is the only place the state appears; no `aria-pressed` (A4).
-   * Translate it with `AudioPlayer`'s `labels.timeToggle`.
-   *
-   * The choice is this toggle's own: two toggles switch independently.
-   *
-   * Carries `data-part="time-toggle"` and `data-state="elapsed|remaining"` — the
-   * readout showing, not the one pressing will show.
+   * Shows the elapsed or the remaining time and switches on press. Renders a
+   * `<button>` containing the readout, so it takes no children, named by the
+   * time shown and then what pressing does: "1:23 elapsed, show time remaining".
+   * Carries `data-part="time-toggle"` and `data-state="elapsed" | "remaining"`,
+   * the readout showing.
    */
   Toggle,
 };

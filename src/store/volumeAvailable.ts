@@ -32,12 +32,9 @@ const subscribe = () => () => {};
 const serverSnapshot = () => true;
 
 /**
- * Whether the volume slider can do anything here: `false` on iOS, where
- * `<Volume.Control>` is already `aria-disabled`. Use it to leave `<Volume>`
- * out altogether and keep `<MuteButton>`, which still works.
- *
- * The one hook that works outside `<AudioPlayer>`: it asks the browser, not
- * the player.
+ * Whether this browser lets a page set the volume. `false` on iOS, where
+ * `<Volume.Control>` is disabled; use it to leave `<Volume>` out and keep
+ * `<MuteButton>`. The one hook that works outside `<AudioPlayer>`.
  */
 export function useIsVolumeAvailable(): boolean {
   return useSyncExternalStore(subscribe, isVolumeAvailable, serverSnapshot);

@@ -2,26 +2,15 @@ import type { PlayerState, VolumeState } from "../store/derived";
 import type { TimeDisplayState } from "../TimeDisplay/TimeDisplay";
 import type { SliderAriaState } from "../Slider/sliderModes";
 
-/**
- * Which of the three readouts a `time` entry is being asked for. An entry
- * ignoring it returns the same text for elapsed and remaining, and a
- * `Time.Toggle` then appears not to switch.
- */
+/** Which readout a `labels.time` entry is formatting. */
 export type TimePart = "elapsed" | "remaining" | "duration";
 
 /**
- * Every string the library speaks, all optional. Pass it to `AudioPlayer` as
- * `labels`; an entry you leave out keeps its English default, and a per-instance
- * `aria-label` still beats both.
- *
- * Two shapes, one rule: **a fixed set of states takes an object of strings, a
- * number in the text takes a function.** The object half survives the React
- * Server Component boundary — a function cannot cross it — so a `de.json` drops
- * straight in and only an app needing the number entries needs `"use client"`.
- *
- * Entries receive **raw** numbers, never preformatted text: `0.8`, not `"80%"`.
- * `Intl` is yours, which is the only way to get "80 %" with a non-breaking space
- * or "1,5x" with a decimal comma.
+ * Every string the library renders or announces, for `AudioPlayer`'s `labels`
+ * prop. Each entry is optional and falls back to its English default; a
+ * per-instance `aria-label` wins over both. A fixed set of states takes an
+ * object of strings. Text with a number in it takes a function, which receives
+ * the raw number so `Intl` can format it.
  *
  * @example
  * ```tsx
@@ -39,84 +28,78 @@ export type TimePart = "elapsed" | "remaining" | "duration";
  */
 export type PlayerLabels = {
   /**
-   * The player's name, on `<PlayerRoot>` when `audioFile` has no `title`.
-   * Default: "audio player". Also set on the `<audio>` element, where it is
-   * not announced: without `controls` that has no accessible object (A16).
+   * `<PlayerRoot>`'s name when `audioFile` has no `title`.
+   *
+   * @defaultValue "audio player"
    */
   player?: string;
 
   /**
-   * `PlayButton`'s four names, keyed by its `data-state`. The name is the
-   * button's only state channel, so all four are required (A4).
+   * `PlayButton`'s name, one per `data-state`. All four are required: the name
+   * is where the state is announced.
    */
   play?: Record<PlayerState, string>;
   /**
-   * `MuteButton`'s name, keyed by its `data-state`. Three states, two names:
-   * `low` and `high` both mean audible, so pressing mutes.
-   *
-   * The state says what _is_, the name says what _pressing does_ — so
-   * `muted: "Ton einschalten"` ("unmute") is right, not inverted.
+   * `MuteButton`'s name, one per `data-state`. The name says what pressing does,
+   * so the `muted` entry is the "Unmute" text.
    */
   mute?: Record<VolumeState, string>;
   /**
-   * `Time.Toggle`'s name. `time` is the readout's text exactly as shown;
-   * `shown` is the readout showing, not the one pressing will show. Start with
-   * `time`, so the name contains what is on screen (WCAG 2.5.3).
+   * `Time.Toggle`'s name. `time` is the readout as shown and `shown` is the
+   * readout showing. Start with `time`, so the name contains the visible text.
    */
   timeToggle?: (state: { time: string; shown: TimeDisplayState }) => string;
 
-  /** `SeekButton`'s name. `amount` is signed, in seconds. */
+  /** `SeekButton`'s name. `amount` is in seconds, negative for a rewind. */
   seek?: (state: { amount: number }) => string;
-  /** `PlaybackRate.Set`'s name, for the rate that button sets. */
+  /** `PlaybackRate.Set`'s name, for the `rate` it sets. */
   rateSet?: (state: { rate: number }) => string;
-  /** `PlaybackRate.Change`'s name. `amount` is signed. */
+  /** `PlaybackRate.Change`'s name. `amount` is negative for a slow-down. */
   rateChange?: (state: { amount: number }) => string;
-  /** `PlaybackRate`'s group name. Default: "Playback rate options". */
+  /**
+   * `PlaybackRate`'s group name.
+   *
+   * @defaultValue "Playback rate options"
+   */
   rateGroup?: string;
 
-  /** The timeline slider's name. Default: "Timeline slider". */
+  /**
+   * The timeline slider's name.
+   *
+   * @defaultValue "Timeline slider"
+   */
   timelineSlider?: string;
-  /** The volume slider's name. Default: "Volume slider". */
+  /**
+   * The volume slider's name.
+   *
+   * @defaultValue "Volume slider"
+   */
   volumeSlider?: string;
-  /** The rate slider's name. Default: "Playback rate slider". */
+  /**
+   * The rate slider's name.
+   *
+   * @defaultValue "Playback rate slider"
+   */
   rateSlider?: string;
   /**
-   * The timeline slider's `aria-valuetext`. `value` is the position and
-   * `maxValue` the duration, both in seconds; `muted` is unused.
-   *
-   * Format both ends yourself — overriding `time` does not reach here. One local
-   * clock helper called from both is the intended shape.
+   * The timeline's `aria-valuetext`. `value` is the position and `maxValue` the
+   * duration, in whole seconds. `labels.time` does not reach here.
    */
   timelineValue?: (state: SliderAriaState) => string;
   /**
-   * The volume slider's `aria-valuetext`. `value` is 0–1, and `muted` is the
-   * element's own flag — a muted player at 0.05 is a reachable state, so write
-   * both into the sentence. `maxValue` is unused.
+   * The volume slider's `aria-valuetext`. `value` is `0`–`1`; `muted` is the
+   * element's flag, which a volume above zero does not rule out.
    */
   volumeValue?: (state: SliderAriaState) => string;
-  /**
-   * The rate slider's `aria-valuetext`. `value` is the rate; `maxValue` and
-   * `muted` are unused.
-   *
-   * All three value entries share one payload so `useSlider` can index them by
-   * mode without knowing which slider it is.
-   */
+  /** The rate slider's `aria-valuetext`. `value` is the rate, to two decimals. */
   rateValue?: (state: SliderAriaState) => string;
 
   /**
-   * The text in `Time.Elapsed`, `Time.Remaining` and `Time.Duration`.
-   *
-   * `seconds` is a **magnitude in whole seconds** — finite, never negative, `0`
-   * while loading and at the end, and always the number the default clock would
-   * render, so flooring and rounding agree. The library owns which number; you
-   * own how it reads, **sign included**, so a `remaining` part has to write its
-   * own `-`. An entry ignoring `part` renders two identical readouts and a
-   * `Time.Toggle` that looks dead.
+   * The text of `Time.Elapsed`, `Time.Remaining` and `Time.Duration`.
+   * `seconds` is whole and never negative, `0` while loading; `part` says which
+   * readout is asking. Write the `-` for `"remaining"` yourself.
    */
   time?: (state: { seconds: number; part: TimePart }) => string;
-  /**
-   * `PlaybackRate.Display`'s text. `rate` is already rounded to two decimals, so
-   * what is announced and what is shown stay one number.
-   */
+  /** `PlaybackRate.Display`'s text. `rate` is rounded to two decimals. */
   rateDisplay?: (state: { rate: number }) => string;
 };

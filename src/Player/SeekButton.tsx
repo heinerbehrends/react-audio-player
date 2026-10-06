@@ -10,26 +10,17 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels } from "./PlayerConfigContext";
 
 type SeekButtonComponentProps = {
+  /** The button's content. */
   children: React.ReactNode;
-  /**
-   * How far to jump, **in seconds**. Negative rewinds, and the accessible name
-   * follows the sign. The browser clamps the result to the track.
-   */
+  /** How far to jump, in seconds. Negative rewinds. The browser clamps the result to the track. */
   amount: number;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * A fixed-distance jump, forward or back.
- *
- * The one button that needs a duration, in both directions — a rewind is
- * computed against the duration too. So it is `aria-disabled` before metadata
- * and on a live stream, where there is no end to jump towards.
- * `useIsSeekable()` is the same test.
- *
- * Named "Seek forward by 10 seconds"; translate it with `AudioPlayer`'s
- * `labels.seek`, which receives the signed `amount`.
- *
- * Carries `data-part="seek"`, and no `data-state`: a jump has none.
+ * Jumps by a fixed number of seconds. Renders a `<button>` named "Seek forward
+ * by 10 seconds", following the sign of `amount`. Disabled with `aria-disabled`
+ * until the duration is known and on a live stream, the same test as
+ * `useIsSeekable()`. Carries `data-part="seek"`.
  */
 export const SeekButton = /* @__PURE__ */ forwardRef<
   HTMLButtonElement,
@@ -43,11 +34,9 @@ export const SeekButton = /* @__PURE__ */ forwardRef<
 });
 
 /**
- * `SeekButton`'s props, for a `<button>` of your own: the name following the
- * sign of `amount`, the jump, the seekable gate and the media keys.
- *
- * Spread it last, onto a `<button>`, and pass your own handlers in the call —
- * after the spread they replace the library's rather than composing with it.
+ * `SeekButton`'s props for a `<button>` of your own: the name, the jump, the
+ * seekable gate and the keyboard shortcuts. Pass your props in the call and
+ * spread the result last.
  */
 export function useSeekButtonProps<
   P extends React.ButtonHTMLAttributes<HTMLButtonElement>,

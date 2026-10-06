@@ -12,10 +12,9 @@ export type HandleMediaKeysArgs = {
 };
 
 /**
- * Keys to the action they perform, merged over `defaultKeyToActionMap`.
- *
- * `null` unbinds: `{ p: null }` drops the default binding and lets `p` through
- * to the browser. That is how a shortcut is turned off, player-wide.
+ * Keys, as `KeyboardEvent.key` values, to the action each performs. Merged over
+ * the default bindings, so a key you leave out keeps its default; `null`
+ * unbinds a key and lets it reach the browser.
  */
 export type KeyToActionMap = {
   [key: string]: KeyboardAction | null;

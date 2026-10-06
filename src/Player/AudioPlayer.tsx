@@ -5,70 +5,49 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../Shared/playerLabels";
 
 type AudioPlayerProps = {
+  /** The player's UI, rendered after the `<audio>` element. */
   children: React.ReactNode;
   /**
-   * The track. Changing `src` swaps it and returns the player to loading. If it
-   * was playing, or the track ran to its end, the new one starts by itself; if it
-   * was paused, it stays paused. A playlist is your own state driving this prop,
-   * advanced from `onEnded`.
-   *
-   * Safe to pass as an inline literal; nothing memoises on its identity.
+   * The track. A new `src` swaps it: a playing player carries on with the new
+   * track, a paused one stays paused. An inline literal is fine.
    */
   audioFile: AudioFile;
   /**
-   * Merged over the default key map: a key you do not name keeps its default.
-   *
-   * Bound to any focused library control, not to the document.
+   * Shortcuts merged over the defaults. They work on the focused library
+   * control, or anywhere inside `<PlayerRoot>`; never page-wide.
    */
   customKeyboardShortcuts?: KeyToActionMap;
   /**
-   * Your own strings, for every name and readout the library writes. Every entry
-   * is optional and falls back to the English default, so a partial bag is fine
-   * and passing none changes nothing.
-   *
-   * A per-instance `aria-label` still wins over the entry for that control.
-   *
-   * Safe to pass as an inline literal; nothing memoises on its identity, and
-   * swapping it re-renders every control — which is how a locale switch works.
+   * Your own strings for every name and readout. Each entry is optional, and a
+   * per-instance `aria-label` still wins. An inline literal is fine.
    */
   labels?: PlayerLabels;
   /**
-   * Fired once when the track finishes, with the element parked at the end.
-   *
-   * The hook for a playlist: change `audioFile` from it and the next track
-   * plays, since this one ended while playing.
-   *
-   * This is the edge, "the track just finished". For the level, "the position is
-   * the end", use `useIsAtEnd()`.
+   * Called once when the track plays to its end. Change `audioFile` here to
+   * advance a playlist. For the state rather than the event, use `useIsAtEnd()`.
    */
   onEnded?: () => void;
   /**
-   * Forwarded to the underlying `<audio>`: `preload`, `loop`, `controlsList`,
-   * `crossOrigin`, and anything else the library does not model. `<track>`
-   * captions go through its `children`.
-   *
-   * `src` and `onEnded` are excluded — both have dedicated props.
+   * Attributes for the `<audio>` element: `preload`, `loop`, `crossOrigin`,
+   * `<track>` children and anything else the library does not model. `src` and
+   * `onEnded` have their own props.
    */
   audioProps?: Omit<
     React.AudioHTMLAttributes<HTMLAudioElement>,
     "src" | "onEnded"
   >;
   /**
-   * A ref to the `<audio>` element, for Web Audio
-   * (`createMediaElementSource`), HLS.js/dash.js, or Media Session. Prefer a
-   * stable ref: an inline callback re-runs the forwarding effect every render.
+   * A ref to the `<audio>` element, for Web Audio or HLS.js. Prefer a stable
+   * ref; an inline callback re-runs on every render.
    */
   audioRef?: React.Ref<HTMLAudioElement>;
 };
 
 /**
- * The player root: the store, the config, and the `<audio>` element. Renders no
- * controls and no wrapper beyond that element — layout is entirely `children`,
- * so name and bound the player with `role="region"` on your own container (A10).
- *
- * **Every other export must be rendered inside one**, hooks included; they throw
- * outside it. The one exception is `useIsVolumeAvailable()`, which asks the
- * browser rather than the player. Several players on a page are independent.
+ * The player root. Creates the store and renders the `<audio>` element, and no
+ * other element: the layout is your `children`. Every other export must be
+ * rendered inside one, hooks included; `useIsVolumeAvailable()` is the one
+ * exception.
  *
  * @example
  * ```jsx

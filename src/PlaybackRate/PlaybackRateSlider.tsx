@@ -18,22 +18,22 @@ import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 import { RATE_MODE } from "../Slider/sliderModes";
 
 type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
+  /** The slider parts: `.Control`, and any of `.Background`, `.Progress` and `.Thumb`. */
   children: React.ReactNode;
   /**
-   * Fastest rate the slider reaches. The arrow keys and `End` clamp to it.
+   * The fastest rate the slider reaches, up to `8`.
    *
    * @defaultValue 4
    */
   maxValue?: number;
   /**
-   * Slowest rate the slider reaches.
+   * The slowest rate the slider reaches, down to `0.125`.
    *
    * @defaultValue 0.5
    */
   minValue?: number;
   /**
-   * Snap to a multiple of this. `0` is continuous, and makes the arrow keys fall
-   * back to a 0.1 step — an arrow needs a discrete one.
+   * Snaps to a multiple of this. `0` is continuous, with a 0.1 arrow-key step.
    *
    * @defaultValue 0.1
    */
@@ -85,21 +85,13 @@ type PlaybackRateSliderComponent = React.ForwardRefExoticComponent<
 };
 
 /**
- * A slider for the playback rate, announced as a multiplier ("1.5x"). Compose it
- * from `.Control` (required) and any of `.Background`, `.Progress` and `.Thumb`.
- *
- * **Give the root a height**, or the track measures zero and the slider is
- * silently inert.
- *
- * Clamps to its own `minValue`/`maxValue`. `PlaybackRate.Set` does not, since it
- * names an explicit rate — so the two can disagree if you use both. Live while
- * loading; only an error disables it.
- *
- * The root is a plain `<div>` with no ARIA role, like the other two sliders: the
- * semantics are on `.Control` (A11). Carries `data-part="root"`,
- * `data-slider="rate"`, `data-state="idle|dragging"` and
- * `data-orientation="horizontal"`, and sets `--progress` and `--offset` as
- * custom properties, which `.Progress` draws from and your own fills can read.
+ * A slider for the playback rate, announced as "1.5x". Renders a `<div>` root
+ * for `.Control` and any of `.Background`, `.Progress` and `.Thumb`; give it a
+ * height, or the slider is silently inert. It stays within
+ * `minValue`–`maxValue`; `PlaybackRate.Set` does not, so the two can disagree.
+ * Only an error disables it. Carries `data-part="root"`, `data-slider="rate"`,
+ * `data-state="idle" | "dragging"` and `data-orientation="horizontal"`, and sets
+ * `--progress` and `--offset`.
  */
 export const PlaybackRateSlider: PlaybackRateSliderComponent =
   /* @__PURE__ */ Object.assign(PlaybackRateSliderRoot, {

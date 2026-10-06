@@ -1,7 +1,6 @@
 /**
- * `M:SS` below an hour, `H:MM:SS` at or above one. Non-finite and negative
- * inputs render as `0:00`: `duration` is `NaN` before metadata and `Infinity`
- * for a live stream, and `duration - currentSecond` can go negative.
+ * Formats seconds as `M:SS`, or `H:MM:SS` from an hour up. Non-finite and
+ * negative input formats as `0:00`.
  */
 export function formatTime(time: number) {
   const clamped = Number.isFinite(time) && time > 0 ? time : 0;
