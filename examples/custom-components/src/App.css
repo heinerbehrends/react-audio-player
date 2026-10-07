@@ -1,0 +1,53 @@
+/* The layout only; the look is `ui.css`'s. Scoped to
+   `.custom-components`: on the demo page every example shares one document. */
+
+.custom-components {
+  display: grid;
+  gap: 14px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.custom-components p {
+  margin: 0;
+}
+
+.custom-components-title {
+  flex: 1;
+  font-weight: 600;
+}
+
+.custom-components-timeline {
+  width: 100%;
+}
+
+.custom-components-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-components-time {
+  flex: none;
+  min-width: 5em;
+}
+
+.custom-components-transport {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.custom-components-rates,
+.custom-components-volume {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.custom-components-volume-slider {
+  width: 88px;
+}

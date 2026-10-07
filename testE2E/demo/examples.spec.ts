@@ -357,3 +357,60 @@ test.describe("Live radio", () => {
     await expect(example.locator(".live-status")).toContainText("Listening");
   });
 });
+
+test.describe("Custom components", () => {
+  const audio = (example: Locator) =>
+    example.locator("audio").evaluate((element: HTMLAudioElement) => ({
+      currentTime: element.currentTime,
+      playbackRate: element.playbackRate,
+    }));
+
+  // Its timeline is a native range, so it gets no `aria-valuenow` to read.
+  test("plays", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Custom components" });
+    const position = example.getByRole("slider", { name: "Position" });
+
+    await expect(position).toBeEnabled();
+    await example.getByRole("button", { name: labels.playAudio }).click();
+    await expect
+      .poll(async () => Number(await position.inputValue()))
+      .toBeGreaterThan(0);
+  });
+
+  test("the slider seeks and the rate buttons set the rate", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Custom components" });
+    const position = example.getByRole("slider", { name: "Position" });
+    await expect(position).toBeEnabled();
+
+    await position.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect
+      .poll(async () => (await audio(example)).currentTime)
+      .toBeCloseTo(5, 0);
+
+    const faster = example.getByRole("button", { name: /1\.5/ });
+    await faster.click();
+    await expect(faster).toHaveAttribute("aria-pressed", "true");
+    expect((await audio(example)).playbackRate).toBe(1.5);
+  });
+
+  // The root's props on the custom card bring the shortcuts.
+  test("the shortcuts work from a custom button", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Custom components" });
+    await expect(
+      example.getByRole("slider", { name: "Position" }),
+    ).toBeEnabled();
+
+    await example.getByRole("button", { name: /1\.5/ }).focus();
+    await page.keyboard.press("k");
+
+    await expect(
+      example.getByRole("button", { name: labels.pauseAudio }),
+    ).toBeVisible();
+  });
+});

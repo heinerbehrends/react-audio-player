@@ -1,0 +1,141 @@
+/* The components' styles. Its classes all start with `ui-`, so
+   they cannot collide with another example on the demo page. */
+
+.ui-card,
+.ui-button,
+.ui-slider {
+  --ui-text: #111827;
+  --ui-muted: #6b7280;
+  --ui-surface: #ffffff;
+  --ui-border: #e5e7eb;
+  --ui-hover: #f3f4f6;
+  --ui-primary: #4f46e5;
+  --ui-on-primary: #ffffff;
+  --ui-track: #e5e7eb;
+  --ui-focus: #4f46e5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ui-card,
+  .ui-button,
+  .ui-slider {
+    --ui-text: #f9fafb;
+    --ui-muted: #9ca3af;
+    --ui-surface: #111827;
+    --ui-border: #374151;
+    --ui-hover: #1f2937;
+    --ui-primary: #818cf8;
+    --ui-on-primary: #111827;
+    --ui-track: #374151;
+    --ui-focus: #a5b4fc;
+  }
+}
+
+.ui-card {
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid var(--ui-border);
+  border-radius: 16px;
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  color-scheme: light dark;
+  font:
+    15px/1.4 system-ui,
+    sans-serif;
+}
+
+.ui-card:focus-visible,
+.ui-button:focus-visible,
+.ui-slider:focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+.ui-button {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.ui-pill {
+  border-radius: 999px;
+}
+
+.ui-circle {
+  width: 40px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.8rem;
+}
+
+.ui-ghost:hover,
+.ui-ghost[aria-pressed="true"] {
+  background: var(--ui-hover);
+}
+
+.ui-ghost[aria-pressed="true"] {
+  border-color: var(--ui-border);
+}
+
+.ui-solid {
+  background: var(--ui-primary);
+  color: var(--ui-on-primary);
+}
+
+.ui-solid.ui-circle {
+  width: 52px;
+  height: 52px;
+}
+
+.ui-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* The library gates a control with `aria-disabled` rather than `disabled`,
+   which would take it out of the tab order. */
+.ui-button[aria-disabled="true"],
+.ui-slider:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ui-slider {
+  appearance: none;
+  box-sizing: border-box;
+  height: 20px;
+  margin: 0;
+  background:
+    linear-gradient(var(--ui-primary), var(--ui-primary)) 0 50% / var(--ui-fill)
+      4px no-repeat,
+    linear-gradient(var(--ui-track), var(--ui-track)) 0 50% / 100% 4px no-repeat;
+  cursor: pointer;
+}
+
+.ui-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--ui-primary);
+}
+
+.ui-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--ui-primary);
+}

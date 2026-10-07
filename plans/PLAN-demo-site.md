@@ -308,9 +308,13 @@ have a home:
 
 And four that need an example of their own, in order of value:
 
-- **design-system**: the props hooks (`usePlayButtonProps()` and the rest)
+- **custom-components** (named design-system until it was built): the props hooks (`usePlayButtonProps()` and the rest)
   spread onto another library's `Button`, which is what the hooks are for and
-  what no example shows yet.
+  what no example shows yet. Built 2026-10-07 with hooks only: `<AudioPlayer>`
+  is the one library component, and a local `ui.tsx` stands in for a design
+  system so the example installs nothing else. With no slider hooks, its
+  timeline and volume are the custom native-range `Slider` driven by
+  `useAudioPlayer()` and `useCurrentTime()`.
 - **localised**: a player in German through `labels`, with `labels.time`
   writing its own sign, and the same through an i18n library's `t()`.
 - **keyboard**: `customKeyboardShortcuts` rebinding and unbinding keys, with

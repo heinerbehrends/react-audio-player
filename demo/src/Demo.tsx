@@ -14,6 +14,11 @@ import waveformCss from "../../examples/waveform/src/App.css?raw";
 import LiveApp from "../../examples/live/src/App";
 import liveApp from "../../examples/live/src/App.tsx?raw";
 import liveCss from "../../examples/live/src/App.css?raw";
+import CustomComponentsApp from "../../examples/custom-components/src/App";
+import customComponentsApp from "../../examples/custom-components/src/App.tsx?raw";
+import customComponentsUi from "../../examples/custom-components/src/ui.tsx?raw";
+import customComponentsCss from "../../examples/custom-components/src/App.css?raw";
+import customComponentsUiCss from "../../examples/custom-components/src/ui.css?raw";
 
 const REPO = "https://github.com/heinerbehrends/react-audio-player";
 
@@ -81,6 +86,19 @@ const EXAMPLES: Example[] = [
     files: [
       { name: "App.tsx", code: liveApp },
       { name: "App.css", code: liveCss },
+    ],
+  },
+  {
+    id: "custom-components",
+    title: "Custom components",
+    summary:
+      "Your own Button, Slider and Card, with no part of the library on screen. The props hooks put each button's behaviour on your Button, and useAudioPlayer() drives its Slider.",
+    App: CustomComponentsApp,
+    files: [
+      { name: "App.tsx", code: customComponentsApp },
+      { name: "ui.tsx", code: customComponentsUi },
+      { name: "App.css", code: customComponentsCss },
+      { name: "ui.css", code: customComponentsUiCss },
     ],
   },
 ];
