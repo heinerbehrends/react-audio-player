@@ -358,21 +358,36 @@ test.describe("Live radio", () => {
   });
 });
 
+// The player is labelled in German through `labels`, so its names are not the
+// suite's English ones.
 test.describe("Custom components", () => {
   const audio = (example: Locator) =>
     example.locator("audio").evaluate((element: HTMLAudioElement) => ({
       currentTime: element.currentTime,
       playbackRate: element.playbackRate,
+      paused: element.paused,
     }));
+  const play = "Audio abspielen";
+  const pause = "Audio pausieren";
 
   // Its timeline is a native range, so it gets no `aria-valuenow` to read.
-  test("plays", async ({ page }) => {
+  test("plays, with every name in German", async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name: "Custom components" });
     const position = example.getByRole("slider", { name: "Position" });
 
     await expect(position).toBeEnabled();
-    await example.getByRole("button", { name: labels.playAudio }).click();
+    // A string entry, a function entry with a number in it, and the rate
+    // button's own text, all from `labels.ts`.
+    await expect(
+      example.getByRole("button", { name: "30 Sekunden vor" }),
+    ).toBeVisible();
+    await expect(
+      example.getByRole("button", { name: "Geschwindigkeit 1,5× einstellen" }),
+    ).toHaveText("1,5×");
+
+    await example.getByRole("button", { name: play }).click();
+    await expect(example.getByRole("button", { name: pause })).toBeVisible();
     await expect
       .poll(async () => Number(await position.inputValue()))
       .toBeGreaterThan(0);
@@ -392,7 +407,7 @@ test.describe("Custom components", () => {
       .poll(async () => (await audio(example)).currentTime)
       .toBeCloseTo(5, 0);
 
-    const faster = example.getByRole("button", { name: /1\.5/ });
+    const faster = example.getByRole("button", { name: /1,5/ });
     await faster.click();
     await expect(faster).toHaveAttribute("aria-pressed", "true");
     expect((await audio(example)).playbackRate).toBe(1.5);
@@ -406,11 +421,39 @@ test.describe("Custom components", () => {
       example.getByRole("slider", { name: "Position" }),
     ).toBeEnabled();
 
-    await example.getByRole("button", { name: /1\.5/ }).focus();
+    await example.getByRole("button", { name: /1,5/ }).focus();
     await page.keyboard.press("k");
 
+    await expect(example.getByRole("button", { name: pause })).toBeVisible();
+  });
+
+  // `shortcuts.ts`: a rebound key, a key given a new action, and an unbound
+  // one. The defaults would seek 10 s on `l`, jump to 20 % on `2` and play on
+  // `p`.
+  test("its own keys work, and an unbound key does nothing", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Custom components" });
     await expect(
-      example.getByRole("button", { name: labels.pauseAudio }),
-    ).toBeVisible();
+      example.getByRole("slider", { name: "Position" }),
+    ).toBeEnabled();
+    const faster = example.getByRole("button", { name: /1,5/ });
+    await faster.focus();
+
+    await page.keyboard.press("f");
+    await expect
+      .poll(async () => (await audio(example)).currentTime)
+      .toBeCloseTo(30, 0);
+
+    await page.keyboard.press("2");
+    await expect(faster).toHaveAttribute("aria-pressed", "true");
+    expect((await audio(example)).playbackRate).toBe(1.5);
+
+    await page.keyboard.press("p");
+    // Long enough for a wrongly started track to report itself.
+    await page.waitForTimeout(300);
+    expect((await audio(example)).paused).toBe(true);
+    await expect(example.getByRole("button", { name: play })).toBeVisible();
   });
 });

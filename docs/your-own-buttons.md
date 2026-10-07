@@ -29,6 +29,10 @@ that have one and `aria-pressed` on `.Set`.
 `usePlayerRootProps()` does the same for [`<PlayerRoot>`](accessibility.md#naming-the-player),
 onto a container of your own.
 
+The [custom-components example](../examples/custom-components) is a whole
+player built this way: its `ui.tsx` stands in for a design system, and no part
+of the library is on screen.
+
 ## Pass your props in
 
 ```jsx

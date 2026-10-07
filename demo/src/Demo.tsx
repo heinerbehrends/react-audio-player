@@ -16,6 +16,8 @@ import liveApp from "../../examples/live/src/App.tsx?raw";
 import liveCss from "../../examples/live/src/App.css?raw";
 import CustomComponentsApp from "../../examples/custom-components/src/App";
 import customComponentsApp from "../../examples/custom-components/src/App.tsx?raw";
+import customComponentsLabels from "../../examples/custom-components/src/labels.ts?raw";
+import customComponentsShortcuts from "../../examples/custom-components/src/shortcuts.ts?raw";
 import customComponentsUi from "../../examples/custom-components/src/ui.tsx?raw";
 import customComponentsCss from "../../examples/custom-components/src/App.css?raw";
 import customComponentsUiCss from "../../examples/custom-components/src/ui.css?raw";
@@ -92,10 +94,12 @@ const EXAMPLES: Example[] = [
     id: "custom-components",
     title: "Custom components",
     summary:
-      "Your own Button, Slider and Card, with no part of the library on screen. The props hooks put each button's behaviour on your Button, and useAudioPlayer() drives its Slider.",
+      "Your own Button, Slider and Card, with no part of the library on screen: the props hooks put each button's behaviour on your Button, and useAudioPlayer() drives its Slider. Named in German through labels, with its own keys through customKeyboardShortcuts and the list beside the player.",
     App: CustomComponentsApp,
     files: [
       { name: "App.tsx", code: customComponentsApp },
+      { name: "labels.ts", code: customComponentsLabels },
+      { name: "shortcuts.ts", code: customComponentsShortcuts },
       { name: "ui.tsx", code: customComponentsUi },
       { name: "App.css", code: customComponentsCss },
       { name: "ui.css", code: customComponentsUiCss },

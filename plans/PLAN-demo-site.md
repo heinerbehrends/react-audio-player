@@ -315,10 +315,15 @@ And four that need an example of their own, in order of value:
   system so the example installs nothing else. With no slider hooks, its
   timeline and volume are the custom native-range `Slider` driven by
   `useAudioPlayer()` and `useCurrentTime()`.
-- **localised**: a player in German through `labels`, with `labels.time`
-  writing its own sign, and the same through an i18n library's `t()`.
-- **keyboard**: `customKeyboardShortcuts` rebinding and unbinding keys, with
-  the active map shown beside the player.
+- **localised** and **keyboard**: folded into **custom-components** on
+  2026-10-07 rather than built on their own. All three are "fit the player to
+  your app" and configure the same root, so they make one scenario, with one
+  file each so a guide can link its own: `ui.tsx` for the buttons, `labels.ts`
+  for a whole player in German with `labels.time` writing its own sign, and
+  `shortcuts.ts` for five rebound keys and one unbound, with the panel beside
+  the player built from the same array as the map. The i18n-library variant
+  stays in the guide's prose, so the example installs nothing else. Two guide
+  rows that had no example now point at this one.
 - **hls**: hls.js attached through `audioRef`. This replaces D7's README recipe
   and reverses "HLS" under "Not in this plan" below; it adds hls.js as the
   example's own dependency, never the library's.

@@ -57,6 +57,10 @@ the key reach the browser:
 Bind `" "` to change what Space does on `<PlayerRoot>`, or set it to `null` to
 leave Space alone there too.
 
+The [custom-components example](../examples/custom-components) rebinds five
+keys and unbinds one in its `shortcuts.ts`, and builds the list it shows beside
+the player from the same array as the map.
+
 The map is player-wide rather than per control: a key that works on one button
 and not its neighbour would be a bug. The slider commit, which carries a value
 in one component's units, is not bindable.

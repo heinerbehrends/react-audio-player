@@ -10,7 +10,9 @@ on the root:
 ```
 
 Every entry is optional, and one you leave out keeps its English default, so a
-partial object is fine.
+partial object is fine. The
+[custom-components example](../examples/custom-components) is a whole player
+in German, every entry in its `labels.ts`.
 
 ## Strings or functions
 

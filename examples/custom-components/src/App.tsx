@@ -15,6 +15,8 @@ import {
   useTimeToggleProps,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
+import { formatPercent, formatRate, german } from "./labels";
+import { BINDINGS, shortcuts } from "./shortcuts";
 import { Button, Card, Slider } from "./ui";
 
 const EPISODE = {
@@ -26,10 +28,15 @@ const RATES = [1, 1.5, 2];
 
 // `<AudioPlayer>` holds the state and renders only the `<audio>` element.
 // Everything on screen is a component of your own, given the player's behaviour
-// by a hook.
+// by a hook. The root also takes the two things that fit the player to an app:
+// its words, in `labels.ts`, and its keys, in `shortcuts.ts`.
 export default function App() {
   return (
-    <AudioPlayer audioFile={EPISODE}>
+    <AudioPlayer
+      audioFile={EPISODE}
+      labels={german}
+      customKeyboardShortcuts={shortcuts}
+    >
       <Player />
     </AudioPlayer>
   );
@@ -56,7 +63,7 @@ function Player() {
         <div
           className="custom-components-rates"
           role="group"
-          aria-label="Playback speed"
+          aria-label="Wiedergabegeschwindigkeit"
         >
           {RATES.map((rate) => (
             <RateButton key={rate} rate={rate} />
@@ -64,6 +71,8 @@ function Player() {
         </div>
         <VolumeControls />
       </div>
+
+      <Shortcuts />
     </Card>
   );
 }
@@ -109,8 +118,9 @@ function TimeToggle() {
 }
 
 function RateButton({ rate }: { rate: number }) {
-  // `aria-pressed` marks the rate in effect, which the CSS styles.
-  return <Button {...usePlaybackRateSetProps(rate)}>{rate}×</Button>;
+  // `aria-pressed` marks the rate in effect, which the CSS styles. The text
+  // is formatted by the same helper as its name, so both read "1,5×".
+  return <Button {...usePlaybackRateSetProps(rate)}>{formatRate(rate)}</Button>;
 }
 
 // There are no slider hooks, so the timeline is your own slider
@@ -130,7 +140,7 @@ function Scrubber() {
       max={duration}
       step="any"
       disabled={!isSeekable}
-      valueText={`${formatTime(time)} of ${formatTime(duration)}`}
+      valueText={`${formatTime(time)} von ${formatTime(duration)}`}
       onValueChange={(value) => {
         setDragged(value);
         seek(value);
@@ -171,16 +181,38 @@ function VolumeControls() {
       {volumeAvailable && (
         <Slider
           className="custom-components-volume-slider"
-          label="Volume"
+          label="Lautstärke"
           value={shown}
           max={1}
           // The step of the library's volume shortcuts, so a value they set
           // is one the slider can show.
           step={0.025}
-          valueText={`${Math.round(shown * 100)}%`}
+          valueText={formatPercent(shown)}
           onValueChange={setVolume}
         />
       )}
+    </div>
+  );
+}
+
+// The player's own keys, beside it, from the list the map is built from.
+function Shortcuts() {
+  return (
+    <div className="custom-components-shortcuts">
+      <p className="custom-components-shortcuts-title">Tastenkürzel</p>
+      <dl>
+        {BINDINGS.map(({ key, label }) => (
+          <div key={key}>
+            <dt>
+              <kbd>{key.toUpperCase()}</kbd>
+            </dt>
+            <dd>{label}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="custom-components-shortcuts-note">
+        Alle anderen Tasten behalten ihre Standardbelegung.
+      </p>
     </div>
   );
 }
