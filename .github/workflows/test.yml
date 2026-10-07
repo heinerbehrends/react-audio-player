@@ -173,6 +173,21 @@ jobs:
       - name: Run tests
         run: pnpm test:run
 
+      # The runner has no audio output device. Without one Firefox raises
+      # `MEDIA_ERR_DECODE` the instant `play()` runs and then drives a fake
+      # clock: a stall never lowers `readyState`, and a cut connection cannot
+      # report a network error because the error slot is already taken. The
+      # library ignores that decode error (B12), so only the specs that depend
+      # on a real sink fail — buffering.spec and network-drop.spec, Firefox
+      # only. A PulseAudio null sink is a device as far as Firefox is concerned;
+      # verified in the playwright:v1.62.1-noble image, where the same specs
+      # fail without it and pass with it.
+      - name: Give Firefox an audio device
+        run: |
+          sudo apt-get install -y pulseaudio
+          pulseaudio --start --exit-idle-time=-1
+          pactl load-module module-null-sink sink_name=ci
+
       - name: Run E2E tests
         run: pnpm testE2E
 

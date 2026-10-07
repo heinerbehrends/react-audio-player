@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**16 open · 0 part-done · 112 resolved · 5 rejected**
+**16 open · 0 part-done · 113 resolved · 5 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -149,7 +149,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Tests
 
-2 open of 14.
+2 open of 15.
 
 - [ ] [T13](tests/T13-nothing-has-run-in-safari.md) Nothing has run in Safari — P2
 - [ ] [T12](tests/T12-e2e-specs-locate-elements-by-english-aria-label.md) E2E specs locate elements by English `aria-label` — P3
@@ -161,6 +161,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [T6](resolved/tests/T6-the-grab-offset-composition-block-is-arithmetic.md) 'The "grab-offset composition" block is arithmetic, not a test' — P1
 - [x] [T7](resolved/tests/T7-fixed-waitfortimeout-as-the-only-synchronisation.md) Fixed `waitForTimeout` as the only synchronisation — P1
 - [x] [T8](resolved/tests/T8-tobecloseto-x-0-25-14-assertions-with.md) `toBeCloseTo(x, 0.25)` — 14 assertions with a fractional `numDigits` — P1
+- [x] [T14](resolved/tests/T14-ci-has-been-red-since-october-5-three-causes.md) CI has been red since 5 October: three causes, none in the library — P1
 - [x] [T9](resolved/tests/T9-two-rate-button-tests-assert-on-the.md) Two rate-button tests assert on the mock, not the element — P2
 - [x] [T10](resolved/tests/T10-handlesideeffect-null-guard-asserts-nothing.md) `handleSideEffect` null guard asserts nothing — P2
 - [x] [T11](resolved/tests/T11-change-detector-tests.md) Change-detector tests — P2

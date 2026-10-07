@@ -16,7 +16,9 @@ export default defineConfig({
     baseURL: "http://localhost:5173",
 
     // https://playwright.dev/docs/trace-viewer
-    trace: "on-first-retry",
+    // Every failing attempt, not only the first retry: a flake that passes on
+    // retry left a trace of the pass and nothing of the failure.
+    trace: "retain-on-failure",
 
     viewport: { width: 1280, height: 720 },
 

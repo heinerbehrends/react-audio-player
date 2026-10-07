@@ -205,6 +205,11 @@ export async function getAudioState(page: Page) {
   });
 }
 
+/**
+ * Pauses the shared element and returns it to the start, and resolves only
+ * once both have taken: the seek to 0 is asynchronous, and a test that acts on
+ * the element while it is still in flight can lose its own seek to it.
+ */
 export async function resetAudioState(page: Page) {
   await page.evaluate(() => {
     const audio = document.querySelector("audio");
@@ -213,6 +218,16 @@ export async function resetAudioState(page: Page) {
       audio.pause();
     }
   });
+  await page.waitForFunction(
+    () => {
+      const audio = document.querySelector("audio");
+      return (
+        !audio || (audio.paused && !audio.seeking && audio.currentTime === 0)
+      );
+    },
+    undefined,
+    { timeout: WAIT_TIMEOUT_MS },
+  );
 }
 
 export const labels = {

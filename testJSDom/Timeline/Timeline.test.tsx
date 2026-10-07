@@ -64,9 +64,10 @@ describe("Timeline", () => {
       ]) {
         expect(style.getPropertyValue(property)).toBe("");
       }
-      // Anywhere in the document: React 19 hoists it into `<head>`.
+      // Anywhere in the document. React 18 renders it in place with `href`;
+      // React 19 hoists it into `<head>` and renames the key to `data-href`.
       const rules = document.querySelector(
-        'style[href="react-headless-audio-player-progress"]',
+        'style[href="react-headless-audio-player-progress"], style[data-href="react-headless-audio-player-progress"]',
       );
       expect(rules?.textContent).toContain("scaleX(var(--progress,0))");
     });

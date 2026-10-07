@@ -1,4 +1,4 @@
-import { test, Page } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import {
   expectNear,
   getAudioState,
@@ -41,14 +41,23 @@ test("jumps to correct position when playing", async () => {
 
   const seekButton = page.getByLabel(labels.seekForward);
   await seekButton.waitFor({ state: "visible" });
-  await seekButton.click({
-    position: { x: 0, y: 0 },
-    force: true,
+  await seekButton.click();
+
+  // Let the seek land before anything else touches the element. Reading
+  // straight after the pause click lost the seek on CI: the page is shared
+  // with the test above, so its seek, the reset's seek to 0 and this one all
+  // reached Chromium inside ~150 ms, and the position read back as 0.
+  await page.waitForFunction(() => {
+    const audio = document.querySelector("audio");
+    return !!audio && !audio.seeking && audio.currentTime >= 10;
   });
 
   await page.getByRole("button", { name: labels.pauseAudio }).click();
 
-  const expectedTime = 10;
+  // The seek is the subject; the playback between it and the pause click is
+  // not. A missed seek reads near 0 and a wrong target near 20, so a bound of
+  // two seconds still catches both without timing the clicks.
   const { currentTime } = await getAudioState(page);
-  expectNear(currentTime, expectedTime);
+  expect(currentTime).toBeGreaterThanOrEqual(10);
+  expect(currentTime).toBeLessThan(12);
 });
