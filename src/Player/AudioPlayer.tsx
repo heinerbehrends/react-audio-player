@@ -25,6 +25,7 @@ type AudioPlayerProps = {
   /**
    * Called once when the track plays to its end. Change `audioFile` here to
    * advance a playlist. For the state rather than the event, use `useIsAtEnd()`.
+   * Firefox also fires it when a paused seek lands on the end; Chrome does not.
    */
   onEnded?: () => void;
   /**

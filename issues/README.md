@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**16 open · 0 part-done · 111 resolved · 5 rejected**
+**16 open · 0 part-done · 112 resolved · 5 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,11 +13,12 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-1 open of 6.
+1 open of 7.
 
-- [ ] [G4](release/G4-the-readme-is-a-reference-dump-not-documentation.md) The README is a reference dump, not documentation — P0
+- [ ] [G6](release/G6-the-readme-has-no-badges.md) The README has no badges — P3
 - [x] [G0](resolved/release/G0-beta-release-checklist.md) Beta release checklist — P0
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
+- [x] [G4](resolved/release/G4-the-readme-is-a-reference-dump-not-documentation.md) The README is a reference dump, not documentation — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
 - [x] [G3](resolved/release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
 - [x] [G5](resolved/release/G5-review-every-public-doc-comment.md) Review every public doc comment — P1
