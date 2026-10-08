@@ -58,3 +58,10 @@ wrapper-component fatigue is real.
 **No playlist, so previous/next are yours.** `<MediaSession>` shows the
 previous- and next-track buttons only when `onPreviousTrack` / `onNextTrack` are
 passed; the library holds one track and has nothing to derive them from (B2).
+
+## From B8 (2026-10-08)
+
+**No `<source>` fallback.** One file per track. Every current browser plays MP3
+and AAC, and a consumer who wants Opus where it plays picks the file with
+`canPlayType` before passing `src`. The recipe is in
+`docs/recipes/audio-element.md`.

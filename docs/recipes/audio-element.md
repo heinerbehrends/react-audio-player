@@ -28,12 +28,15 @@ a stable ref; an inline callback re-runs the forwarding effect on every render.
 
 ## One format per track
 
-One source is loaded per track. `<source>` fallback is planned, and will widen
-the type rather than change it:
+One source is loaded per track; `<source>` children are not supported. Every
+current browser plays MP3 and AAC, so one file is usually enough. To serve a
+smaller format where it plays, pick the file before passing it:
 
-```ts
-type AudioSource = { src: string; type?: string };
-type AudioFile = AudioSource | { sources: AudioSource[] };
+```jsx
+const opus = new Audio().canPlayType('audio/ogg; codecs="opus"') !== "";
+
+<AudioPlayer audioFile={{ src: opus ? track.opus : track.mp3, title: track.title }}>
 ```
 
-Everything passing `{ src }` today keeps working unchanged.
+Unlike `<source>`, this does not move on to the next file when the first one
+fails to load.

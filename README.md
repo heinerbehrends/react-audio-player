@@ -307,7 +307,6 @@ or unbind a key, see
 
 Additive, in the order they are likely to land. None changes what ships today.
 
-- `<source>` fallback, widening `AudioFile` rather than changing it
 - Playlist components, skip and loop
 - Caption and subtitle support
 

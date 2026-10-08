@@ -43,7 +43,8 @@ each ticket.
 - [ ] **B11** — what `duration` does Safari report on a live MP3, AAC and
       Opus stream, and does `useIsLive()` hold? Safari plays HLS natively, so
       check the `.m3u8` variants too.
-- [ ] **B8** — codec fallback: which formats does Safari play without `<source>`?
+- [ ] **B8** (rejected) — does Safari's `canPlayType` answer the Opus check in
+      `docs/recipes/audio-element.md` truthfully?
 - [ ] **B9** — buffered ranges as Safari reports them.
 - [ ] **D7** — HLS plays natively in Safari, so the recipe differs there.
 - [ ] **F10** — keyboard shortcuts with Safari's focus rules. Safari does not
