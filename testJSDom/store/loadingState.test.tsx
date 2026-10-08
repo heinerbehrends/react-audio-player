@@ -93,7 +93,7 @@ describe("the error gate", () => {
 describe("loading, on its own", () => {
   /**
    * The regression this exists to catch. A gate on the load state disabled Play
-   * before metadata — and because changing `audioFile.src` re-enters loading, it
+   * before metadata — and because changing `track.src` re-enters loading, it
    * did so on every playlist advance, not only at startup.
    */
   it("leaves the five non-seeking controls enabled", () => {

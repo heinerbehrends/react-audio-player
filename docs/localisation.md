@@ -4,7 +4,7 @@ Every string the library renders or announces is overridable through one prop
 on the root:
 
 ```jsx
-<AudioPlayer audioFile={{ src: "audio.mp3" }} labels={german}>
+<AudioPlayer track={{ src: "audio.mp3" }} labels={german}>
   {/* Player UI components */}
 </AudioPlayer>
 ```
@@ -49,7 +49,7 @@ The state keys are the values the components put on `data-state`, and
 | `rateDisplay`    | `({ rate }) => string`               | `"1.5x"`                                                               |
 
 `player` names [`<PlayerRoot>`](accessibility.md#naming-the-player) when
-`audioFile` has no `title`. It is also set on the `<audio>` element, where it
+`track` has no `title`. It is also set on the `<audio>` element, where it
 is not announced.
 
 `SliderAriaState` is `{ value, maxValue, muted }`, one payload for all three
@@ -167,7 +167,7 @@ which is all a locale switch needs. An inline literal is fine:
 const { t } = useTranslation();
 
 <AudioPlayer
-  audioFile={{ src: "audio.mp3" }}
+  track={{ src: "audio.mp3" }}
   labels={{
     play: {
       playing: t("player.pause"),
@@ -183,4 +183,4 @@ const { t } = useTranslation();
 
 With `exactOptionalPropertyTypes` on, an entry may be absent but not
 present-and-`undefined`, so `labels={{ play: maybeUndefined }}` is an error:
-leave the key out. The same applies to `customKeyboardShortcuts`.
+leave the key out. The same applies to `shortcuts`.

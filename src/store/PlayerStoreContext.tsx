@@ -2,7 +2,7 @@
    The provider and its hook are one unit. Splitting them so this file exports
    only a component would mean exporting the context object, which the
    null-default guard below relies on keeping private. */
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { createPlayerStore, type PlayerStore } from "./createPlayerStore";
 
 // No default value: with one, the missing-provider guard below could never
@@ -18,14 +18,26 @@ type PlayerStoreProviderProps = {
    * the fake. Read once, so its identity is as stable as a created store's.
    */
   store?: PlayerStore;
+  /** `AudioPlayer`'s `rateRange`. Ignored with `store`, which keeps its own. */
+  rateRange?: readonly [number, number] | undefined;
 };
 
 /** Render-inert: the store is created once, so the context value never changes. */
 export function PlayerStoreProvider({
   children,
   store: injected,
+  rateRange,
 }: PlayerStoreProviderProps) {
-  const [store] = useState(() => injected ?? createPlayerStore());
+  // Created with the range rather than given it afterwards, so the slider's
+  // first render reads the prop and not the default.
+  const [store] = useState(() => injected ?? createPlayerStore({ rateRange }));
+
+  // A later change lands an effect after the render. The tuple is usually an
+  // inline literal, so this runs on every root render; the store compares the
+  // ends by value and does nothing when they have not moved.
+  useEffect(() => {
+    if (!injected) store.setRateRange(rateRange);
+  }, [injected, store, rateRange]);
 
   return (
     <PlayerStoreContext.Provider value={store}>

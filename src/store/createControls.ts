@@ -1,5 +1,5 @@
 import { areNumbersClose } from "../Shared/areNumbersClose";
-import { RATE_LIMITS, type SideEffectAction } from "./sideEffectActions";
+import type { RateRange, SideEffectAction } from "./sideEffectActions";
 
 /*
  * Media properties throw on an out-of-range write rather than clamping, so each
@@ -8,8 +8,9 @@ import { RATE_LIMITS, type SideEffectAction } from "./sideEffectActions";
  * - `volume` — [0, 1]; outside throws `IndexSizeError`
  * - `playbackRate` — `0` or [0.0625, 16] in Chromium; a non-zero rate below
  *   1/16, or anything above 16, throws `NotSupportedError`. Firefox clamps
- *   silently (G2). The library writes only `RATE_LIMITS`, narrower than both,
- *   where neither engine cuts the sound (C14)
+ *   silently (G2). The library writes only the player's `rateRange`, which is
+ *   itself clamped to `RATE_LIMITS`, narrower than both, where neither engine
+ *   cuts the sound (C14)
  * - `currentTime` — any finite number, clamped to [0, duration] by the browser;
  *   `NaN` throws `TypeError`
  *
@@ -26,33 +27,19 @@ function writeVolume(audioElement: HTMLAudioElement, value: number) {
   audioElement.volume = clamp(value, 0, 1);
 }
 
-function writeRate(audioElement: HTMLAudioElement, value: number) {
-  if (!Number.isFinite(value)) return;
-  audioElement.playbackRate = clamp(
-    value,
-    RATE_LIMITS.minValue,
-    RATE_LIMITS.maxValue,
-  );
-}
-
 /**
- * Moves the rate by `delta`, stopping at `bound`, and never against its own
- * direction: a rate already past the bound — a narrower slider's, or one set
- * outside the library — stays put rather than jumping back to it.
+ * Every rate write, a step included, lands inside `rateRange`. A rate outside
+ * it — written through `audioRef` — is pulled back in by the next write rather
+ * than left where it is: with one range per player there is no narrower
+ * control a step could wrongly snap back to (F15).
  */
-function stepRate(
+function writeRate(
   audioElement: HTMLAudioElement,
-  delta: number,
-  bound: number,
+  value: number,
+  { minValue, maxValue }: RateRange,
 ) {
-  const rate = audioElement.playbackRate;
-  const target = clamp(
-    delta > 0 ? Math.min(rate + delta, bound) : Math.max(rate + delta, bound),
-    RATE_LIMITS.minValue,
-    RATE_LIMITS.maxValue,
-  );
-  if (delta > 0 ? target > rate : target < rate)
-    writeRate(audioElement, target);
+  if (!Number.isFinite(value)) return;
+  audioElement.playbackRate = clamp(value, minValue, maxValue);
 }
 
 function writeTime(audioElement: HTMLAudioElement, value: number) {
@@ -68,6 +55,8 @@ export type SideEffectContext = {
   lastAudibleVolume: number;
   /** The store's `useIsSeekable()`, so a seek and the timeline always agree. */
   isSeekable: boolean;
+  /** The player's `rateRange`, which every rate write clamps to. */
+  rateRange: RateRange;
 };
 
 /**
@@ -142,14 +131,14 @@ export function handleSideEffect(
           break;
         }
         case "rate": {
-          writeRate(audioElement, action.value);
+          writeRate(audioElement, action.value, context.rateRange);
           break;
         }
       }
       break;
     }
     case "SET_PLAYBACK_RATE": {
-      writeRate(audioElement, action.playbackRate);
+      writeRate(audioElement, action.playbackRate, context.rateRange);
       break;
     }
     case "INCREASE_VOLUME": {
@@ -166,23 +155,25 @@ export function handleSideEffect(
       break;
     }
     case "INCREASE_PLAYBACK_RATE": {
-      stepRate(
+      writeRate(
         audioElement,
-        action.value,
-        action.maxValue ?? RATE_LIMITS.maxValue,
+        audioElement.playbackRate + action.value,
+        context.rateRange,
       );
       break;
     }
     case "DECREASE_PLAYBACK_RATE": {
-      stepRate(
+      writeRate(
         audioElement,
-        -action.value,
-        action.minValue ?? RATE_LIMITS.minValue,
+        audioElement.playbackRate - action.value,
+        context.rateRange,
       );
       break;
     }
     case "RESET_PLAYBACK_RATE": {
-      audioElement.playbackRate = 1;
+      // Clamped like any other write: a range that excludes 1x resets to its
+      // nearest end.
+      writeRate(audioElement, 1, context.rateRange);
       break;
     }
     case "SET_TIME_FORWARD": {

@@ -34,20 +34,23 @@ On a focused slider the arrow keys adjust its value instead, and `Home` and
 `End` jump to the ends of its range. Those two are slider-only: everywhere else
 they stay the browser's.
 
+The rate keys stop at the ends of `<AudioPlayer>`'s `rateRange`, `0.5`–`4` by
+default, as every other rate control does.
+
 `Space` keeps activating the focused button. On `<PlayerRoot>` it plays and
 pauses while the root itself has focus, say after a click on the cover, where
 it would otherwise scroll the page.
 
 ## Rebinding and unbinding
 
-`customKeyboardShortcuts` is merged over the defaults, so a key you do not name
+`shortcuts` is merged over the defaults, so a key you do not name
 keeps its binding. A binding is a `KeyboardAction`, or `null` to unbind and let
 the key reach the browser:
 
 ```jsx
 <AudioPlayer
-  audioFile={track}
-  customKeyboardShortcuts={{
+  track={track}
+  shortcuts={{
     p: null,
     f: { type: "SET_TIME_FORWARD", value: 30 },
   }}

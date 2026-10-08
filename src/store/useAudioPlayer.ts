@@ -25,7 +25,7 @@ export type AudioPlayerControls = {
   setVolume: (volume: number) => void;
   /** Mutes, or unmutes to the last audible volume. */
   toggleMute: () => void;
-  /** Sets the playback rate, clamped to `0.125`–`8`; `0` becomes `0.125`, so pause instead. */
+  /** Sets the playback rate, clamped to `rateRange`; `0` becomes its slowest, so pause instead. */
   setRate: (rate: number) => void;
 };
 

@@ -43,7 +43,7 @@ export { useIsVolumeAvailable } from "./store/volumeAvailable";
 // a consumer rendering their own `<time>` has to re-derive `remaining` and
 // re-implement the default (S16).
 export { formatTime } from "./Shared/formatTime";
-export type { AudioFile } from "./Player/PlayerConfigContext";
+export type { Track } from "./Player/PlayerConfigContext";
 export type { PlayerLabels, TimePart } from "./Shared/playerLabels";
 export type { SliderAriaState } from "./Slider/sliderModes";
 export type { KeyboardAction } from "./AudioElement/sideEffectActions";

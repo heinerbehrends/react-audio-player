@@ -214,8 +214,8 @@ it("re-renders the controls when labels is swapped at runtime", () => {
     return (
       <PlayerStoreProvider store={harness.store}>
         <PlayerConfigProvider
-          audioFile={{ src: "test-audio.mp3" }}
-          customKeyboardShortcuts={undefined}
+          track={{ src: "test-audio.mp3" }}
+          shortcuts={undefined}
           labels={labels}
         >
           <PlayButton>Play</PlayButton>

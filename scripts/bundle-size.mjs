@@ -63,11 +63,12 @@ const BUDGETS = [
   // The root every consumer imports, then the root with the part only some do:
   // the part is unusable without the root, and alone would count the store
   // twice. The lock screen is a part so that the first row never pays (F6).
-  { name: "AudioPlayer only", imports: "{ AudioPlayer }", max: 2600 },
+  // Raised from 2600 and 3700 for `rateRange` (F15), which is core by design.
+  { name: "AudioPlayer only", imports: "{ AudioPlayer }", max: 2900 },
   {
     name: "AudioPlayer + MediaSession",
     imports: "{ AudioPlayer, MediaSession }",
-    max: 3700,
+    max: 3900,
   },
   // Raised from 8500 for `<PlayerRoot>` and `usePlayerRootProps`, and from
   // 8700 for a `ref` on every part: new public API, each part paying only for

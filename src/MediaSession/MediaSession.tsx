@@ -89,7 +89,7 @@ type MediaSessionProps = {
 };
 
 function useMediaSession(props: MediaSessionProps) {
-  const { audioFile } = usePlayerConfig();
+  const { track } = usePlayerConfig();
   const store = usePlayerStore();
   const [self] = useState(() => Symbol("MediaSession"));
 
@@ -123,9 +123,9 @@ function useMediaSession(props: MediaSessionProps) {
     };
   }, [self]);
 
-  // Keyed on content, not identity: `audioFile` is documented as safe to pass
+  // Keyed on content, not identity: `track` is documented as safe to pass
   // inline, and `artwork` is an array.
-  const { title, artist, album, artwork } = audioFile;
+  const { title, artist, album, artwork } = track;
   const metadataKey = JSON.stringify({ title, artist, album, artwork });
 
   useEffect(() => {
@@ -281,7 +281,7 @@ function useMediaSession(props: MediaSessionProps) {
 /**
  * Publishes the track to the operating system's media controls: the lock
  * screen, the notification shade and the desktop overlay. Renders nothing.
- * Shows `title`, `artist`, `album` and `artwork` from `audioFile`; play, pause,
+ * Shows `title`, `artist`, `album` and `artwork` from `track`; play, pause,
  * seek and skip drive the player, and previous and next appear only with their
  * handlers. Render one per player that should own those controls. Does nothing
  * where the browser has no Media Session API.

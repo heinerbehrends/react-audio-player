@@ -84,10 +84,10 @@ describe("useMediaKeyHandler", () => {
     expect(element.play).not.toHaveBeenCalled();
   });
 
-  it("follows customKeyboardShortcuts", () => {
+  it("follows shortcuts", () => {
     const { element } = renderWithStore(<Player />, {
       ...loaded,
-      customKeyboardShortcuts: { k: null, x: { type: "TOGGLE_PLAY" } },
+      shortcuts: { k: null, x: { type: "TOGGLE_PLAY" } },
     });
 
     fireEvent.keyDown(screen.getByText("custom"), { key: "k" });
@@ -142,7 +142,7 @@ describe("<PlayerRoot>", () => {
   it("takes its name from the track title, over labels.player", () => {
     renderWithStore(<Root />, {
       ...loaded,
-      audioFile: { src: "race.mp3", title: "The Race" },
+      track: { src: "race.mp3", title: "The Race" },
       labels: { player: "Hörbuch" },
     });
 
@@ -248,7 +248,7 @@ describe("<PlayerRoot>", () => {
     it("gives way to a binding of the caller's", () => {
       const { element } = renderWithStore(<Root />, {
         ...loaded,
-        customKeyboardShortcuts: { " ": { type: "TOGGLE_MUTE" } },
+        shortcuts: { " ": { type: "TOGGLE_MUTE" } },
       });
 
       fireEvent.keyDown(screen.getByRole("region"), { key: " " });
@@ -260,7 +260,7 @@ describe("<PlayerRoot>", () => {
     it("stays off when the caller unbinds it", () => {
       const { element } = renderWithStore(<Root />, {
         ...loaded,
-        customKeyboardShortcuts: { " ": null },
+        shortcuts: { " ": null },
       });
 
       const notPrevented = fireEvent.keyDown(screen.getByRole("region"), {

@@ -50,8 +50,8 @@ function wrapper(harness: ReturnType<typeof createTestStore>) {
     return (
       <PlayerStoreProvider store={harness.store}>
         <PlayerConfigProvider
-          audioFile={{ src: "test-audio.mp3" }}
-          customKeyboardShortcuts={undefined}
+          track={{ src: "test-audio.mp3" }}
+          shortcuts={undefined}
           labels={undefined}
         >
           {children}

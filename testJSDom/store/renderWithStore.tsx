@@ -7,7 +7,7 @@ import { act } from "@testing-library/react";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
-import type { AudioFile } from "../../src/Player/PlayerConfigContext";
+import type { Track } from "../../src/Player/PlayerConfigContext";
 import type { PlayerLabels } from "../../src/Shared/playerLabels";
 import { createTestStore, type TestStore } from "./createTestStore";
 import type { MediaFields } from "./mediaElementFake";
@@ -17,8 +17,8 @@ type RenderWithStoreOptions = Omit<RenderOptions, "wrapper"> & {
   testStore?: TestStore | undefined;
   /** Otherwise: the element fields to prime from. */
   element?: Partial<MediaFields> | undefined;
-  audioFile?: AudioFile | undefined;
-  customKeyboardShortcuts?: KeyToActionMap | undefined;
+  track?: Track | undefined;
+  shortcuts?: KeyToActionMap | undefined;
   labels?: PlayerLabels | undefined;
 };
 
@@ -28,7 +28,7 @@ export type RenderWithStoreResult = RenderResult &
     emit: (event: string) => void;
   };
 
-const defaultAudioFile: AudioFile = { src: "test-audio.mp3" };
+const defaultTrack: Track = { src: "test-audio.mp3" };
 
 /**
  * Mounts a component against a store and the static config, instead of a full
@@ -40,8 +40,8 @@ export function renderWithStore(
   {
     testStore,
     element,
-    audioFile = defaultAudioFile,
-    customKeyboardShortcuts,
+    track = defaultTrack,
+    shortcuts,
     labels,
     ...renderOptions
   }: RenderWithStoreOptions = {},
@@ -52,11 +52,7 @@ export function renderWithStore(
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <PlayerStoreProvider store={harness.store}>
-      <PlayerConfigProvider
-        audioFile={audioFile}
-        customKeyboardShortcuts={customKeyboardShortcuts}
-        labels={labels}
-      >
+      <PlayerConfigProvider track={track} shortcuts={shortcuts} labels={labels}>
         {children}
       </PlayerConfigProvider>
     </PlayerStoreProvider>

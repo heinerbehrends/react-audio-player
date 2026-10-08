@@ -1,8 +1,7 @@
 import { formatTime } from "../Shared/formatTime";
-import type { SideEffectAction } from "../AudioElement/sideEffectActions";
-import {
-  RATE_BOUNDS,
-  type SliderComponent,
+import type {
+  SideEffectAction,
+  SliderComponent,
 } from "../AudioElement/sideEffectActions";
 
 export type SliderMode = "seek" | "volume" | "rate";
@@ -68,18 +67,18 @@ export type SliderModeConfig = {
    */
   defaultArrowStep: number;
   /**
-   * `bounds` are the slider's own, not the mode's defaults: under
-   * `<PlaybackRateSlider maxValue={2}>` an arrow press clamping at the library
-   * ceiling pushed the element past the end of its own track. Only `"rate"` uses
-   * them (C1).
+   * The arrow-key step. No bounds travel with it: the write path clamps every
+   * rate step to the player's `rateRange`, which is also the slider's range,
+   * so an arrow press cannot push the thumb past its own track (F15).
    */
-  increase: (amount: number, bounds: SliderBounds) => SideEffectAction;
-  decrease: (amount: number, bounds: SliderBounds) => SideEffectAction;
-  /** The range without `minValue` / `maxValue`; `"seek"`'s is the duration. */
-  defaultBounds?: SliderBounds;
+  increase: (amount: number) => SideEffectAction;
+  decrease: (amount: number) => SideEffectAction;
+  /**
+   * The range without `minValue` / `maxValue`: `"volume"`'s is `0`–`1`, and
+   * `"seek"`'s is the duration. `"rate"`'s root passes the store's.
+   */
+  defaultBounds?: { minValue: number; maxValue: number };
 };
-
-export type SliderBounds = { minValue: number; maxValue: number };
 
 const percent = (value: number) => `${Math.round(value * 100)}%`;
 
@@ -142,17 +141,8 @@ export const RATE_MODE = {
   // Already rounded: it is handed the quantized value.
   ariaValueText: ({ value }) => `${value}x`,
   defaultArrowStep: 0.1,
-  increase: (amount, { maxValue }) => ({
-    type: "INCREASE_PLAYBACK_RATE",
-    value: amount,
-    maxValue,
-  }),
-  decrease: (amount, { minValue }) => ({
-    type: "DECREASE_PLAYBACK_RATE",
-    value: amount,
-    minValue,
-  }),
-  defaultBounds: RATE_BOUNDS,
+  increase: (amount) => ({ type: "INCREASE_PLAYBACK_RATE", value: amount }),
+  decrease: (amount) => ({ type: "DECREASE_PLAYBACK_RATE", value: amount }),
 } satisfies SliderModeConfig;
 
 /**

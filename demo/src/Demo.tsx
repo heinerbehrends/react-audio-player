@@ -83,7 +83,7 @@ const EXAMPLES: Example[] = [
     id: "live",
     title: "Live radio",
     summary:
-      "A station with no end: useIsBuffering() for the spinner and a reconnect after a long stall, <ErrorMessage> with a retry for a station that is down, and audioFile.live for Firefox, which reports an MP3 stream as a growing track.",
+      "A station with no end: useIsBuffering() for the spinner and a reconnect after a long stall, <ErrorMessage> with a retry for a station that is down, and track.live for Firefox, which reports an MP3 stream as a growing track.",
     App: LiveApp,
     files: [
       { name: "App.tsx", code: liveApp },
@@ -94,7 +94,7 @@ const EXAMPLES: Example[] = [
     id: "custom-components",
     title: "Custom components",
     summary:
-      "Your own Button, Slider and Card, with no part of the library on screen: the props hooks put each button's behaviour on your Button, and useAudioPlayer() drives its Slider. Named in German through labels, with its own keys through customKeyboardShortcuts and the list beside the player.",
+      "Your own Button, Slider and Card, with no part of the library on screen: the props hooks put each button's behaviour on your Button, and useAudioPlayer() drives its Slider. Named in German through labels, with its own keys through the shortcuts prop and the list beside the player.",
     App: CustomComponentsApp,
     files: [
       { name: "App.tsx", code: customComponentsApp },

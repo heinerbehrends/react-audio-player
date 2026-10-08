@@ -89,7 +89,7 @@ export function useIsSeekable(): boolean {
 
 /**
  * Whether the track is a live stream: the element reports an unbounded
- * duration, or `audioFile.live` is set. False before metadata, so it is not the
+ * duration, or `track.live` is set. False before metadata, so it is not the
  * inverse of `useIsSeekable()`: that one says a position cannot be named yet,
  * this one says it never will be.
  */

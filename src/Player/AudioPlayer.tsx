@@ -1,6 +1,6 @@
 import { AudioElement } from "../AudioElement/AudioElement";
 import { PlayerStoreProvider } from "../store/PlayerStoreContext";
-import { PlayerConfigProvider, type AudioFile } from "./PlayerConfigContext";
+import { PlayerConfigProvider, type Track } from "./PlayerConfigContext";
 import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../Shared/playerLabels";
 
@@ -11,19 +11,27 @@ type AudioPlayerProps = {
    * The track. A new `src` swaps it: a playing player carries on with the new
    * track, a paused one stays paused. An inline literal is fine.
    */
-  audioFile: AudioFile;
+  track: Track;
   /**
    * Shortcuts merged over the defaults. They work on the focused library
    * control, or anywhere inside `<PlayerRoot>`; never page-wide.
    */
-  customKeyboardShortcuts?: KeyToActionMap;
+  shortcuts?: KeyToActionMap;
+  /**
+   * The playback rates the player can reach, as `[slowest, fastest]`. Every
+   * rate control clamps to it, and `<PlaybackRateSlider>` spans it. Each end
+   * is kept within `0.125`–`8`, the range audible in every browser.
+   *
+   * @defaultValue [0.5, 4]
+   */
+  rateRange?: readonly [number, number];
   /**
    * Your own strings for every name and readout. Each entry is optional, and a
    * per-instance `aria-label` still wins. An inline literal is fine.
    */
   labels?: PlayerLabels;
   /**
-   * Called once when the track plays to its end. Change `audioFile` here to
+   * Called once when the track plays to its end. Change `track` here to
    * advance a playlist. For the state rather than the event, use `useIsAtEnd()`.
    * Firefox also fires it when a paused seek lands on the end; Chrome does not.
    */
@@ -52,7 +60,7 @@ type AudioPlayerProps = {
  *
  * @example
  * ```jsx
- * <AudioPlayer audioFile={{ src: "/track.mp3" }}>
+ * <AudioPlayer track={{ src: "/track.mp3" }}>
  *   <PlayButton>
  *     <PlayButton.Playing>⏸</PlayButton.Playing>
  *     <PlayButton.Paused>▶</PlayButton.Paused>
@@ -62,20 +70,17 @@ type AudioPlayerProps = {
  */
 export function AudioPlayer({
   children,
-  audioFile,
-  customKeyboardShortcuts,
+  track,
+  shortcuts,
+  rateRange,
   labels,
   onEnded,
   audioProps,
   audioRef,
 }: AudioPlayerProps) {
   return (
-    <PlayerStoreProvider>
-      <PlayerConfigProvider
-        audioFile={audioFile}
-        customKeyboardShortcuts={customKeyboardShortcuts}
-        labels={labels}
-      >
+    <PlayerStoreProvider rateRange={rateRange}>
+      <PlayerConfigProvider track={track} shortcuts={shortcuts} labels={labels}>
         <AudioElement {...audioProps} onEnded={onEnded} audioRef={audioRef} />
         {children}
       </PlayerConfigProvider>

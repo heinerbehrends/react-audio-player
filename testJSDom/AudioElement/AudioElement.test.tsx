@@ -36,7 +36,7 @@ describe("AudioElement", () => {
 
   it("sets the src from the config's audio file", () => {
     renderInPlayer(<AudioElement />, {
-      audioFile: { src: "test-audio.mp3" },
+      track: { src: "test-audio.mp3" },
     });
 
     expect(screen.getByLabelText("audio player")).toHaveAttribute(
@@ -112,7 +112,7 @@ describe("AudioElement", () => {
   });
 
   it("does not let a forwarded prop override the store's own src", () => {
-    renderInPlayer(<AudioElement />, { audioFile: { src: "from-config.mp3" } });
+    renderInPlayer(<AudioElement />, { track: { src: "from-config.mp3" } });
 
     expect(screen.getByLabelText("audio player")).toHaveAttribute(
       "src",
@@ -167,8 +167,8 @@ describe("AudioElement src swap", () => {
       <StrictMode>
         <PlayerStoreProvider store={store}>
           <PlayerConfigProvider
-            audioFile={{ src }}
-            customKeyboardShortcuts={undefined}
+            track={{ src }}
+            shortcuts={undefined}
             labels={undefined}
           >
             <AudioElement />

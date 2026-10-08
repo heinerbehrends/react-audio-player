@@ -29,7 +29,7 @@ same on a `<video>`. Four files name `HTMLAudioElement`: `AudioElement.tsx`,
 - Defaults that say "video": the play button announces "Play audio" today, so
   every video player would have to override `labels`.
 - Neutral names alongside the audio ones: `<MediaPlayer>`, `mediaRef`.
-  `<AudioPlayer>`, `audioFile` and `audioRef` stay, so nothing breaks.
+  `<AudioPlayer>`, `track` and `audioRef` stay, so nothing breaks.
 - Measure the cost on "AudioPlayer only", which has almost no headroom; an
   audio player must not pay for video.
 

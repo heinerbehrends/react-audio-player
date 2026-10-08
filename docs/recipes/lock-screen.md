@@ -7,7 +7,7 @@ sound effect, a preview clip or a notification chime, which should not take
 over the lock screen.
 
 ```jsx
-<AudioPlayer audioFile={{ src, title, artist, album, artwork }}>
+<AudioPlayer track={{ src, title, artist, album, artwork }}>
   <MediaSession
     onPreviousTrack={() => setIndex((i) => i - 1)}
     onNextTrack={() => setIndex((i) => i + 1)}
@@ -26,7 +26,7 @@ The [playlist example](../../examples/playlist) uses it.
 
 ## The card
 
-The card shows `title`, `artist`, `album` and `artwork` from `audioFile`. With
+The card shows `title`, `artist`, `album` and `artwork` from `track`. With
 none of them set there is no card text, rather than "Untitled". An artwork
 `src` the browser rejects as a URL drops the card and logs an error in
 development; the player keeps working.

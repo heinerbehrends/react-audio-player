@@ -372,11 +372,10 @@ export function useSlider({
           return;
         }
         const amount = step || config.defaultArrowStep;
-        const bounds = { minValue, maxValue };
         store.send(
           ARROW_KEYS[event.key] === "increase"
-            ? config.increase(amount, bounds)
-            : config.decrease(amount, bounds),
+            ? config.increase(amount)
+            : config.decrease(amount),
         );
         event.preventDefault();
         event.stopPropagation();

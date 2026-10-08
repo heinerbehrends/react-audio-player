@@ -14,7 +14,7 @@ import { AUDIO_BASE } from "./audio";
 export default function App() {
   return (
     <AudioPlayer
-      audioFile={{
+      track={{
         src: `${AUDIO_BASE}The-Race.mp3`,
         title: "The Race",
       }}

@@ -12,7 +12,7 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useLabels } from "../Player/PlayerConfigContext";
 
 type SetPlaybackRateProps = {
-  /** The rate to set; `1` is normal speed. Clamped to `0.125`–`8`, not to `PlaybackRateSlider`'s range. */
+  /** The rate to set; `1` is normal speed. Clamped to `AudioPlayer`'s `rateRange`. */
   rate: number;
   /** The button's content. */
   children: React.ReactNode;

@@ -56,8 +56,13 @@ type SliderOptions = Omit<UseSliderOptions, "config"> & { mode: SliderMode };
 function renderSlider(
   { mode, ...options }: SliderOptions,
   element: Partial<MediaFields> = {},
+  /** The player's `rateRange`, which the write path clamps rate steps to. */
+  rateRange?: [number, number],
 ): Harness {
-  const store = createTestStore({ readyState: 1, duration: 100, ...element });
+  const store = createTestStore(
+    { readyState: 1, duration: 100, ...element },
+    { rateRange },
+  );
   let renders = 0;
   const { result } = renderHook(
     () => {
@@ -68,8 +73,8 @@ function renderSlider(
       wrapper: ({ children }: { children: React.ReactNode }) => (
         <PlayerStoreProvider store={store.store}>
           <PlayerConfigProvider
-            audioFile={{ src: "test-audio.mp3" }}
-            customKeyboardShortcuts={undefined}
+            track={{ src: "test-audio.mp3" }}
+            shortcuts={undefined}
             labels={undefined}
           >
             {children}
@@ -925,15 +930,17 @@ describe("Home and End", () => {
 });
 
 /**
- * C1. The rate bounds were written down in three places, and the arrow-key
- * clamp hardcoded 0.5 and 4 — so it ignored a narrower slider. `RATE_BOUNDS` is
- * now the one default, and a slider sends its own bounds with the action.
+ * C1, then F15. The rate bounds were once written down in three places, and
+ * the arrow-key clamp hardcoded 0.5 and 4. Now there is one `rateRange` per
+ * player, held by the store: the slider spans it and every rate write clamps
+ * to it, so the arrow keys, End and the `>` shortcut all stop at the same end.
  */
-describe("configured bounds reach the arrow keys", () => {
-  it("stops an arrow press at the slider's own maximum, not the library's", () => {
+describe("the player's rateRange reaches the arrow keys", () => {
+  it("stops an arrow press at the player's maximum", () => {
     const harness = renderSlider(
       { mode: "rate", maxValue: 2, step: 0.1 },
       { playbackRate: 1.95 },
+      [0.5, 2],
     );
 
     act(() => harness.result.current.onKeyDown(keyDown("ArrowUp")));
@@ -941,10 +948,11 @@ describe("configured bounds reach the arrow keys", () => {
     expect(harness.store.element.playbackRate).toBeCloseTo(2, 5);
   });
 
-  it("stops at the slider's own minimum too", () => {
+  it("stops at the player's minimum too", () => {
     const harness = renderSlider(
       { mode: "rate", minValue: 1, step: 0.1 },
       { playbackRate: 1.05 },
+      [1, 4],
     );
 
     act(() => harness.result.current.onKeyDown(keyDown("ArrowDown")));
@@ -952,11 +960,11 @@ describe("configured bounds reach the arrow keys", () => {
     expect(harness.store.element.playbackRate).toBeCloseTo(1, 5);
   });
 
-  /** Before C1 these capped at 2 and 4 respectively. */
   it("agrees with End on where the top of the range is", () => {
     const harness = renderSlider(
       { mode: "rate", maxValue: 2, step: 0.1 },
       { playbackRate: 1 },
+      [0.5, 2],
     );
 
     act(() => harness.result.current.onKeyDown(keyDown("End")));
@@ -969,8 +977,20 @@ describe("configured bounds reach the arrow keys", () => {
     expect(harness.store.element.playbackRate).toBeCloseTo(viaEnd, 5);
   });
 
-  /** No slider sent it, so the library default applies. */
-  it("leaves the global rate shortcut on the library range", () => {
+  /** From any control: the shortcut stops at the same range as the slider. */
+  it("stops the global rate shortcut at the player's range", () => {
+    const harness = renderSlider(
+      { mode: "seek" },
+      { playbackRate: 1.95 },
+      [0.5, 2],
+    );
+
+    act(() => harness.result.current.onKeyDown(keyDown(">")));
+
+    expect(harness.store.element.playbackRate).toBeCloseTo(2, 5);
+  });
+
+  it("defaults the range to 0.5–4", () => {
     const harness = renderSlider({ mode: "seek" }, { playbackRate: 3.95 });
 
     act(() => harness.result.current.onKeyDown(keyDown(">")));

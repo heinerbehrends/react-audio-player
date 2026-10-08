@@ -2,30 +2,30 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
-import type { AudioFile } from "../../src/Player/PlayerConfigContext";
+import type { Track } from "../../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../../src/Shared/playerLabels";
 
-// `audioFile`, `customKeyboardShortcuts` and `labels` are static config, so the
+// `track`, `shortcuts` and `labels` are static config, so the
 // assertion is that they reach `PlayerConfigProvider`. `onEnded` is not config —
 // it is a callback bound straight to the element — so it is asserted on
 // `AudioElement`.
 vi.mock("../../src/Player/PlayerConfigContext", () => ({
   PlayerConfigProvider: ({
     children,
-    audioFile,
-    customKeyboardShortcuts,
+    track,
+    shortcuts,
     labels,
   }: {
     children: React.ReactNode;
-    audioFile: AudioFile;
-    customKeyboardShortcuts?: KeyToActionMap;
+    track: Track;
+    shortcuts?: KeyToActionMap;
     labels?: PlayerLabels;
   }) => (
     <div
       data-testid="player-config-provider"
-      data-audio-src={audioFile.src}
-      data-keyboard-shortcuts={JSON.stringify(customKeyboardShortcuts)}
+      data-audio-src={track.src}
+      data-keyboard-shortcuts={JSON.stringify(shortcuts)}
       // The keys, not the bag: half the entries are functions, which
       // `JSON.stringify` drops.
       data-label-keys={Object.keys(labels ?? {}).join(",")}
@@ -42,11 +42,11 @@ vi.mock("../../src/AudioElement/AudioElement", () => ({
 }));
 
 describe("AudioPlayer", () => {
-  const mockAudioFile = { src: "test1.mp3" };
+  const mockTrack = { src: "test1.mp3" };
 
   it("renders all required components", () => {
     render(
-      <AudioPlayer audioFile={mockAudioFile}>
+      <AudioPlayer track={mockTrack}>
         <div data-testid="child-content">Test Content</div>
       </AudioPlayer>,
     );
@@ -56,9 +56,9 @@ describe("AudioPlayer", () => {
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
   });
 
-  it("passes audioFile to PlayerConfigProvider", () => {
+  it("passes track to PlayerConfigProvider", () => {
     render(
-      <AudioPlayer audioFile={mockAudioFile}>
+      <AudioPlayer track={mockTrack}>
         <div>Test Content</div>
       </AudioPlayer>,
     );
@@ -71,13 +71,13 @@ describe("AudioPlayer", () => {
 
   /**
    * The playlist contract: `onEnded` has to reach the element, since that is the
-   * only place the `ended` event exists. A consumer swapping `audioFile` from
+   * only place the `ended` event exists. A consumer swapping `track` from
    * this callback is the supported way to build a playlist.
    */
   it("passes onEnded through to the element", () => {
     const onEnded = vi.fn();
     render(
-      <AudioPlayer audioFile={mockAudioFile} onEnded={onEnded}>
+      <AudioPlayer track={mockTrack} onEnded={onEnded}>
         <div>Test Content</div>
       </AudioPlayer>,
     );
@@ -93,7 +93,7 @@ describe("AudioPlayer", () => {
       const [index, setIndex] = useState(0);
       return (
         <AudioPlayer
-          audioFile={tracks[index]!}
+          track={tracks[index]!}
           onEnded={() => setIndex((i) => i + 1)}
         >
           <div>Test Content</div>
@@ -117,7 +117,7 @@ describe("AudioPlayer", () => {
 });
 
 describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
-  const mockAudioFile = { src: "test.mp3" };
+  const mockTrack = { src: "test.mp3" };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -130,10 +130,7 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
     };
 
     render(
-      <AudioPlayer
-        audioFile={mockAudioFile}
-        customKeyboardShortcuts={customShortcuts}
-      >
+      <AudioPlayer track={mockTrack} shortcuts={customShortcuts}>
         <div>Test Content</div>
       </AudioPlayer>,
     );
@@ -148,7 +145,7 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
   it("passes labels to PlayerConfigProvider", () => {
     render(
       <AudioPlayer
-        audioFile={mockAudioFile}
+        track={mockTrack}
         labels={{ player: "Audioplayer", seek: ({ amount }) => `${amount}` }}
       >
         <div>Test Content</div>

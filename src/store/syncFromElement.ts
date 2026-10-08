@@ -30,7 +30,7 @@ export type ProjectionAtoms = {
   duration: Atom<number>;
   /**
    * Whether the source is a live stream: an unbounded duration, or `data-live`
-   * on the element, which `audioFile.live` sets (B11). Projected on its own
+   * on the element, which `track.live` sets (B11). Projected on its own
    * because `duration` reads `0` for it, which is also what it reads before
    * metadata, so downstream the two cannot be told apart (D4).
    */
@@ -107,7 +107,7 @@ const projectTime: SyncHandler = (element, atoms) => {
  * which `finite()` erases, or `data-live` on a stream Firefox reports as a
  * finite, growing track (B11). `NaN` before metadata is not live.
  *
- * The attribute is read when the duration is, so toggling `audioFile.live` on
+ * The attribute is read when the duration is, so toggling `track.live` on
  * the same `src` takes effect at the next `durationchange`.
  */
 const projectDuration: SyncHandler = (element, atoms) => {

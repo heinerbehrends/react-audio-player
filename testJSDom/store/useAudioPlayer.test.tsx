@@ -13,8 +13,8 @@ function wrapperFor(harness: TestStore) {
   return ({ children }: { children: React.ReactNode }) => (
     <PlayerStoreProvider store={harness.store}>
       <PlayerConfigProvider
-        audioFile={{ src: "test-audio.mp3" }}
-        customKeyboardShortcuts={undefined}
+        track={{ src: "test-audio.mp3" }}
+        shortcuts={undefined}
         labels={undefined}
       >
         {children}

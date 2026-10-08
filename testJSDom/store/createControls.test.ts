@@ -3,19 +3,29 @@ import {
   handleSideEffect as handleSideEffectWithContext,
   type SideEffectContext,
 } from "../../src/AudioElement/handleSideEffect";
-import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions";
+import {
+  RATE_LIMITS,
+  type SideEffectAction,
+} from "../../src/AudioElement/sideEffectActions";
 import { createMediaElementFake } from "../store/mediaElementFake";
 
 /**
  * The write path takes the store snapshot as an argument, so these need no
- * mock. The default is a loaded, seekable track.
+ * mock. The default is a loaded, seekable track with the widest `rateRange`,
+ * so the engine-limit rows below stay about the engines.
  */
 const defaultContext: SideEffectContext = {
   lastAudibleVolume: 1,
   isSeekable: true,
+  rateRange: RATE_LIMITS,
 };
 /** Before metadata, or a live stream: the store's duration is 0. */
 const unseekable: SideEffectContext = { ...defaultContext, isSeekable: false };
+/** A player whose `rateRange` is narrower than the engines allow. */
+const narrow: SideEffectContext = {
+  ...defaultContext,
+  rateRange: { minValue: 1, maxValue: 2 },
+};
 
 const handleSideEffect = (
   action: SideEffectAction,
@@ -196,9 +206,9 @@ describe("handleSideEffect", () => {
     });
 
     /**
-     * C14. Every rate write clamps to `RATE_LIMITS`, 0.125–8: the widest range
-     * that stays audible in Firefox, and inside Chromium's 0.0625–16, so it
-     * also covers G2's throwing values.
+     * C14. Every rate write clamps to the player's `rateRange`, and the widest
+     * one is `RATE_LIMITS`, 0.125–8: the range that stays audible in Firefox,
+     * and inside Chromium's 0.0625–16, so it also covers G2's throwing values.
      */
     it.each([
       ["a negative rate", -1, 0.125],
@@ -239,16 +249,24 @@ describe("handleSideEffect", () => {
     });
 
     /**
-     * The slider's 0.5–4 default is narrower than `RATE_LIMITS`, and is
-     * deliberately not enforced here — `<PlaybackRate.Set rate={8}>` names an
-     * explicit rate and the write path should not silently override it.
+     * F15. One range per player: an explicit rate from `<PlaybackRate.Set>`
+     * or `setRate` is clamped to it like every other write, so no control
+     * reaches a rate the slider cannot show.
      */
-    it("does not impose the slider's 0.5–4 default on an explicit rate", () => {
+    it("clamps an explicit rate to the player's rateRange", () => {
       handleSideEffect(
         { type: "SET_PLAYBACK_RATE", playbackRate: 8 },
         audioElement,
+        narrow,
       );
-      expect(audioElement.playbackRate).toBe(8);
+      expect(audioElement.playbackRate).toBe(2);
+
+      handleSideEffect(
+        { type: "CHANGE_VALUE", component: "rate", value: 0.5 },
+        audioElement,
+        narrow,
+      );
+      expect(audioElement.playbackRate).toBe(1);
     });
 
     it("drops a non-finite seek rather than throwing", () => {
@@ -363,42 +381,35 @@ describe("handleSideEffect", () => {
     });
 
     /**
-     * C14. A step stops at its bound but never moves against its direction:
-     * clamping a rate already past the bound used to turn an increase at 8x
-     * into a drop to 4x.
+     * F15. A rate outside the range can only have been written through
+     * `audioRef`. A step pulls it back to the nearer end, whichever way the
+     * step points: with one range per player there is no narrower control
+     * whose end would be the wrong place to land, which was the case C14's
+     * direction rule existed for.
      */
     it.each([
+      ["an increase past the ceiling", "INCREASE", 3, narrow, 2],
+      ["a decrease below the floor", "DECREASE", 0.75, narrow, 1],
+      ["an increase from above the limits", "INCREASE", 16, defaultContext, 8],
       [
-        "an increase past a narrower slider's ceiling",
-        "INCREASE",
-        3,
-        { maxValue: 2 },
-      ],
-      [
-        "a decrease below a narrower slider's floor",
+        "a decrease from below the limits",
         "DECREASE",
-        0.75,
-        { minValue: 1 },
+        0.0625,
+        defaultContext,
+        0.125,
       ],
-      ["an increase from a rate set above the limits", "INCREASE", 16, {}],
-      ["a decrease from a rate set below the limits", "DECREASE", 0.0625, {}],
-    ] as const)("leaves %s where it is", (_name, direction, from, bounds) => {
-      audioElement.playbackRate = from;
-      handleSideEffect(
-        { type: `${direction}_PLAYBACK_RATE`, value: 0.25, ...bounds },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(from);
-    });
-
-    it("still moves a rate past the bound back towards it", () => {
-      audioElement.playbackRate = 16;
-      handleSideEffect(
-        { type: "DECREASE_PLAYBACK_RATE", value: 0.25 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(8);
-    });
+    ] as const)(
+      "pulls %s back into the range",
+      (_name, direction, from, context, expected) => {
+        audioElement.playbackRate = from;
+        handleSideEffect(
+          { type: `${direction}_PLAYBACK_RATE`, value: 0.25 },
+          audioElement,
+          context,
+        );
+        expect(audioElement.playbackRate).toBe(expected);
+      },
+    );
 
     it("does nothing on a step of 0", () => {
       audioElement.playbackRate = 8;
@@ -409,19 +420,20 @@ describe("handleSideEffect", () => {
       expect(audioElement.playbackRate).toBe(8);
     });
 
-    // C1: a slider with a narrower range sends its own bounds, and they win.
-    it("clamps to the bounds on the action when it carries them", () => {
+    it("stops a step at the player's rateRange", () => {
       audioElement.playbackRate = 1.99;
       handleSideEffect(
-        { type: "INCREASE_PLAYBACK_RATE", value: 0.05, maxValue: 2 },
+        { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
         audioElement,
+        narrow,
       );
       expect(audioElement.playbackRate).toBe(2);
 
       audioElement.playbackRate = 1.01;
       handleSideEffect(
-        { type: "DECREASE_PLAYBACK_RATE", value: 0.05, minValue: 1 },
+        { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
         audioElement,
+        narrow,
       );
       expect(audioElement.playbackRate).toBe(1);
     });
@@ -430,6 +442,15 @@ describe("handleSideEffect", () => {
       audioElement.playbackRate = 2.5;
       handleSideEffect({ type: "RESET_PLAYBACK_RATE" }, audioElement);
       expect(audioElement.playbackRate).toBe(1);
+    });
+
+    it("resets to the nearest end of a range that excludes 1x", () => {
+      audioElement.playbackRate = 2;
+      handleSideEffect({ type: "RESET_PLAYBACK_RATE" }, audioElement, {
+        ...defaultContext,
+        rateRange: { minValue: 1.5, maxValue: 3 },
+      });
+      expect(audioElement.playbackRate).toBe(1.5);
     });
 
     it("clamps SET_TIME_FORWARD at the duration", () => {

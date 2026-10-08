@@ -6,7 +6,7 @@ not model goes through `audioProps`, and `<track>` captions through its
 
 ```jsx
 <AudioPlayer
-  audioFile={{ src: "audio.mp3" }}
+  track={{ src: "audio.mp3" }}
   audioProps={{
     preload: "none",
     // Required for Web Audio: without it `createMediaElementSource` taints.
@@ -20,7 +20,7 @@ not model goes through `audioProps`, and `<track>` captions through its
 ```
 
 `audioProps` takes every `<audio>` attribute except `src` and `onEnded`, which
-are `audioFile.src` and the `onEnded` prop.
+are `track.src` and the `onEnded` prop.
 
 Use `audioRef` for anything that needs the element itself: Web Audio,
 HLS.js or dash.js, a retry through `load()`, or every `buffered` range. Prefer
@@ -35,7 +35,7 @@ smaller format where it plays, pick the file before passing it:
 ```jsx
 const opus = new Audio().canPlayType('audio/ogg; codecs="opus"') !== "";
 
-<AudioPlayer audioFile={{ src: opus ? track.opus : track.mp3, title: track.title }}>
+<AudioPlayer track={{ src: opus ? track.opus : track.mp3, title: track.title }}>
 ```
 
 Unlike `<source>`, this does not move on to the next file when the first one

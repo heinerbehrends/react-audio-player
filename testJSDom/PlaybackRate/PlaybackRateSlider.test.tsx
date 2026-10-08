@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { act, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PlaybackRateSlider } from "../../src/PlaybackRate/PlaybackRateSlider";
 import { renderInPlayer } from "../testComponents";
@@ -68,26 +68,50 @@ describe("PlaybackRateSlider", () => {
     expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemax", "4");
   });
 
-  it("takes a range from props", () => {
+  // F15: the range is the player's, so the slider has no range props.
+  it("takes its range from the player's rateRange", () => {
     renderInPlayer(
-      <PlaybackRateSlider minValue={1} maxValue={2}>
+      <PlaybackRateSlider>
         <PlaybackRateSlider.Control data-testid="set">
           Set
         </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
+      { rateRange: [1, 2] },
     );
 
     expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemin", "1");
     expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemax", "2");
   });
 
+  it("follows a later change to the range", () => {
+    const { store, rerender } = renderInPlayer(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+    );
+
+    act(() => store.setRateRange([0.75, 3]));
+    rerender(
+      <PlaybackRateSlider>
+        <PlaybackRateSlider.Control data-testid="set">
+          Set
+        </PlaybackRateSlider.Control>
+      </PlaybackRateSlider>,
+    );
+
+    expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemin", "0.75");
+    expect(screen.getByTestId("set")).toHaveAttribute("aria-valuemax", "3");
+  });
+
   it("renders Progress from the rate", () => {
     const { container } = renderInPlayer(
-      <PlaybackRateSlider minValue={0.5} maxValue={2.5}>
+      <PlaybackRateSlider>
         <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
         <PlaybackRateSlider.Progress data-testid="progress" />
       </PlaybackRateSlider>,
-      { element: { playbackRate: 1.5 } },
+      { element: { playbackRate: 1.5 }, rateRange: [0.5, 2.5] },
     );
 
     // Half way between 0.5 and 2.5. The fill draws from this (S28).
@@ -96,8 +120,9 @@ describe("PlaybackRateSlider", () => {
     expect(screen.getByTestId("progress").style.transform).toBe("");
   });
 
-  // S29: `PlaybackRate.Set` is not clamped to the slider's bounds.
-  it("clamps --progress for a rate past the slider's maximum", () => {
+  // S29: a rate written past the range through `audioRef` still draws a full
+  // fill rather than one past the end of the track.
+  it("clamps --progress for a rate past the range's maximum", () => {
     const { container } = renderInPlayer(
       <PlaybackRateSlider>
         <PlaybackRateSlider.Control>track</PlaybackRateSlider.Control>
@@ -140,12 +165,12 @@ describe("PlaybackRateSlider", () => {
 
   it("snaps a press on the track to the step", () => {
     const { element } = renderInPlayer(
-      <PlaybackRateSlider minValue={0.5} maxValue={2} step={0.1}>
+      <PlaybackRateSlider step={0.1}>
         <PlaybackRateSlider.Control data-testid="set">
           track
         </PlaybackRateSlider.Control>
       </PlaybackRateSlider>,
-      { element: { playbackRate: 1 } },
+      { element: { playbackRate: 1 }, rateRange: [0.5, 2] },
     );
 
     fireEvent(

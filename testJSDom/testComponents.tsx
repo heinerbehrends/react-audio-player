@@ -3,20 +3,22 @@ import { useState } from "react";
 import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../src/Player/PlayerConfigContext";
 import type { KeyToActionMap } from "../src/KeyboardControls/handleMediaKeys";
-import type { AudioFile } from "../src/Player/PlayerConfigContext";
+import type { Track } from "../src/Player/PlayerConfigContext";
 import type { PlayerLabels } from "../src/Shared/playerLabels";
 import { createTestStore, type TestStore } from "./store/createTestStore";
 import type { MediaFields } from "./store/mediaElementFake";
 
 type TestProvidersProps = {
   children: React.ReactNode;
-  audioFile?: AudioFile | undefined;
-  customKeyboardShortcuts?: KeyToActionMap | undefined;
+  track?: Track | undefined;
+  shortcuts?: KeyToActionMap | undefined;
   labels?: PlayerLabels | undefined;
   /** An existing harness, when the test needs the store it renders against. */
   testStore?: TestStore | undefined;
   /** Otherwise: the fields the attached fake is primed from. */
   element?: Partial<MediaFields> | undefined;
+  /** `AudioPlayer`'s `rateRange`, for the store the harness creates. */
+  rateRange?: [number, number] | undefined;
 };
 
 /**
@@ -26,23 +28,22 @@ type TestProvidersProps = {
  */
 export function TestProviders({
   children,
-  audioFile = { src: "test-audio.mp3" },
-  customKeyboardShortcuts,
+  track = { src: "test-audio.mp3" },
+  shortcuts,
   labels,
   testStore,
   element,
+  rateRange,
 }: TestProvidersProps) {
   const [harness] = useState(
-    () => testStore ?? createTestStore({ readyState: 1, ...element }),
+    () =>
+      testStore ??
+      createTestStore({ readyState: 1, ...element }, { rateRange }),
   );
 
   return (
     <PlayerStoreProvider store={harness.store}>
-      <PlayerConfigProvider
-        audioFile={audioFile}
-        customKeyboardShortcuts={customKeyboardShortcuts}
-        labels={labels}
-      >
+      <PlayerConfigProvider track={track} shortcuts={shortcuts} labels={labels}>
         {children}
       </PlayerConfigProvider>
     </PlayerStoreProvider>
@@ -61,7 +62,10 @@ export function renderInPlayer(
 ) {
   const harness =
     options.testStore ??
-    createTestStore({ readyState: 1, ...(options.element ?? {}) });
+    createTestStore(
+      { readyState: 1, ...(options.element ?? {}) },
+      { rateRange: options.rateRange },
+    );
 
   const result = render(
     <TestProviders {...options} testStore={harness}>

@@ -1,6 +1,7 @@
 import {
   createPlayerStore,
   type PlayerStore,
+  type PlayerStoreOptions,
 } from "../../src/store/createPlayerStore";
 import {
   createMediaElementFake,
@@ -23,9 +24,10 @@ export type TestStore = {
  */
 export function createTestStore(
   overrides: Partial<MediaFields> = {},
+  options: PlayerStoreOptions = {},
 ): TestStore {
   const element = createMediaElementFake(overrides);
-  const store = createPlayerStore();
+  const store = createPlayerStore(options);
   const detach = store.attach(element as unknown as HTMLAudioElement);
 
   return { store, element, detach };

@@ -32,11 +32,7 @@ const RATES = [1, 1.5, 2];
 // its words, in `labels.ts`, and its keys, in `shortcuts.ts`.
 export default function App() {
   return (
-    <AudioPlayer
-      audioFile={EPISODE}
-      labels={german}
-      customKeyboardShortcuts={shortcuts}
-    >
+    <AudioPlayer track={EPISODE} labels={german} shortcuts={shortcuts}>
       <Player />
     </AudioPlayer>
   );

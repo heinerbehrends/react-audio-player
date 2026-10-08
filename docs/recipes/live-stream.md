@@ -13,11 +13,11 @@ Firefox reports MP3 and Opus streams as a finite track whose duration grows as
 it buffers, so the player cannot tell them from a file. Say it is live:
 
 ```jsx
-<AudioPlayer audioFile={{ src: stationUrl, live: true }}>
+<AudioPlayer track={{ src: stationUrl, live: true }}>
 ```
 
 Other streams are detected from their unbounded duration. Nothing overrides
-`live`, and in a playlist it follows the current `audioFile`.
+`live`, and in a playlist it follows the current `track`.
 
 ## Show that it is live
 
@@ -43,7 +43,7 @@ arrives: that one says a position cannot be named yet, this one says it never
 will be. Gate the timeline on the first and the badge on the second.
 
 A stream that later reports a finite length, such as a recording that has
-finished, stops being live, unless `audioFile.live` says otherwise.
+finished, stops being live, unless `track.live` says otherwise.
 
 ## Pausing
 

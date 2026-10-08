@@ -19,8 +19,8 @@ type IncreaseDecreaseProps = {
 /**
  * Steps the rate by a fixed amount. Renders a `<button>` named "Increase
  * playback rate by 0.25x" or "Decrease playback rate by 0.25x", following the
- * sign. Stops at `0.125` and `8`, and never moves the rate against its own
- * direction. Only an error disables it. Carries `data-part="rate-change"`.
+ * sign. Stops at the ends of `AudioPlayer`'s `rateRange`. Only an error
+ * disables it. Carries `data-part="rate-change"`.
  */
 export const ChangePlaybackRate = /* @__PURE__ */ forwardRef<
   HTMLButtonElement,
@@ -67,8 +67,8 @@ export function usePlaybackRateChangeProps<
 // The same two actions the `<` and `>` keys send. They read the rate off the
 // element when the click lands, so there is nothing to subscribe to — a
 // subscription to `rate` re-rendered the button on every `ratechange` — and
-// they stop at `RATE_LIMITS`, so the button and the keys share the same two
-// ends (C8, C14).
+// they stop at the player's `rateRange`, so the button, the keys and the
+// slider share the same two ends (C8, F15).
 function useChangePlaybackRate(amount: number) {
   const { send } = usePlayerStore();
   const value = Math.abs(amount);

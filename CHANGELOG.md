@@ -15,8 +15,8 @@ nothing to migrate from.
 
 ### Added
 
-- `<AudioPlayer>`: the root, with `audioFile`, `onEnded`, `labels`,
-  `customKeyboardShortcuts`, `audioProps` and `audioRef`
+- `<AudioPlayer>`: the root, with `track`, `onEnded`, `labels`,
+  `shortcuts`, `rateRange`, `audioProps` and `audioRef`
 - Compound components for the timeline, volume, playback-rate slider,
   playback-rate presets, time display and errors, plus `<PlayButton>`,
   `<MuteButton>` and `<SeekButton>`
@@ -41,17 +41,19 @@ nothing to migrate from.
 - `--progress` (0–1) and `--offset` custom properties on every slider root. The
   default fill is drawn from `--progress` by a zero-specificity rule, so a
   plain stylesheet rule on `[data-part="progress"]` replaces it
-- Playback rate clamped to 0.125–8 on every write, the widest range audible in
-  both Chromium and Firefox; rate steps stop at the ends and never move the
-  rate against their direction
+- `rateRange` on `<AudioPlayer>`: one range of playback rates per player,
+  `[0.5, 4]` by default. Every rate control clamps to it, the `<` `>` keys and
+  `<PlaybackRate.Change>` stop at its ends, and `<PlaybackRateSlider>` spans
+  it. Each end is kept within 0.125–8, the widest range audible in both
+  Chromium and Firefox
 - Track swaps carry on playing: a new `src` starts by itself if the player was
   playing or the track ran to its end, until a pause. It stays paused
   otherwise. Only an autoplay refusal stops the next swap from playing; a track
   that fails to load does not
-- `audioFile.live`, for live MP3 and Opus streams, which Firefox reports as a
+- `track.live`, for live MP3 and Opus streams, which Firefox reports as a
   finite, growing track rather than an endless one
 - `<MediaSession>`: the lock screen, media keys and system media controls, with
-  metadata from `audioFile`, play, pause, skip and seek, a live scrubber, and
+  metadata from `track`, play, pause, skip and seek, a live scrubber, and
   `onPreviousTrack` / `onNextTrack`. Opt-in, so a player without it pays none of
   its bundle cost
 - An optional stylesheet at `react-headless-audio-player/styles.css`

@@ -5,6 +5,7 @@ import {
   usePlayerStore,
 } from "../../src/store/PlayerStoreContext";
 import { useStore } from "../../src/store/atom";
+import { createPlayerStore } from "../../src/store/createPlayerStore";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -86,5 +87,38 @@ describe("usePlayerStore", () => {
     // The context value never changes, so the only re-render is the parent
     // re-rendering its children.
     expect(renders).toBe(rendersBefore + 1);
+  });
+
+  it("follows a change to the rateRange prop", () => {
+    function Probe() {
+      const { minValue, maxValue } = useStore(usePlayerStore().rateRange);
+      return <span data-testid="range">{`${minValue}–${maxValue}`}</span>;
+    }
+
+    const { rerender, getByTestId } = render(
+      <PlayerStoreProvider rateRange={[0.5, 2]}>
+        <Probe />
+      </PlayerStoreProvider>,
+    );
+    expect(getByTestId("range").textContent).toBe("0.5–2");
+
+    rerender(
+      <PlayerStoreProvider rateRange={[0.75, 3]}>
+        <Probe />
+      </PlayerStoreProvider>,
+    );
+    expect(getByTestId("range").textContent).toBe("0.75–3");
+  });
+
+  it("leaves an injected store's range alone", () => {
+    const store = createPlayerStore({ rateRange: [1, 2] });
+
+    render(
+      <PlayerStoreProvider store={store}>
+        <span />
+      </PlayerStoreProvider>,
+    );
+
+    expect(store.rateRange.get()).toEqual({ minValue: 1, maxValue: 2 });
   });
 });

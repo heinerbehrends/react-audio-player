@@ -10,7 +10,7 @@ import {
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { MediaSession } from "../../src/MediaSession/MediaSession";
 import { PlayButton } from "../../src/Player/PlayButton";
-import type { AudioFile } from "../../src/Player/PlayerConfigContext";
+import type { Track } from "../../src/Player/PlayerConfigContext";
 import {
   renderWithStore,
   type RenderWithStoreResult,
@@ -80,7 +80,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const tagged: AudioFile = {
+const tagged: Track = {
   src: "track.mp3",
   title: "The Race",
   artist: "Someone",
@@ -91,14 +91,14 @@ const tagged: AudioFile = {
 describe("MediaSession", () => {
   it("renders nothing", () => {
     const { container } = renderWithStore(<MediaSession />, {
-      audioFile: tagged,
+      track: tagged,
     });
 
     expect(container).toBeEmptyDOMElement();
   });
 
   it("sets the metadata from all four fields", () => {
-    renderWithStore(<MediaSession />, { audioFile: tagged });
+    renderWithStore(<MediaSession />, { track: tagged });
 
     expect(session.metadata).toBeInstanceOf(FakeMediaMetadata);
     expect(constructed).toEqual([
@@ -112,7 +112,7 @@ describe("MediaSession", () => {
   });
 
   it("sets no metadata for a bare src", () => {
-    renderWithStore(<MediaSession />, { audioFile: { src: "track.mp3" } });
+    renderWithStore(<MediaSession />, { track: { src: "track.mp3" } });
 
     expect(session.metadata).toBeNull();
     expect(constructed).toEqual([]);
@@ -120,13 +120,13 @@ describe("MediaSession", () => {
 
   it("rewrites the metadata when the title changes", () => {
     const { rerender } = render(
-      <TestProviders audioFile={tagged}>
+      <TestProviders track={tagged}>
         <MediaSession />
       </TestProviders>,
     );
 
     rerender(
-      <TestProviders audioFile={{ ...tagged, title: "The Next One" }}>
+      <TestProviders track={{ ...tagged, title: "The Next One" }}>
         <MediaSession />
       </TestProviders>,
     );
@@ -139,13 +139,13 @@ describe("MediaSession", () => {
 
   it("does not rewrite the metadata when an equal literal re-renders", () => {
     const { rerender } = render(
-      <TestProviders audioFile={{ ...tagged }}>
+      <TestProviders track={{ ...tagged }}>
         <MediaSession />
       </TestProviders>,
     );
 
     rerender(
-      <TestProviders audioFile={{ ...tagged, artwork: [...tagged.artwork!] }}>
+      <TestProviders track={{ ...tagged, artwork: [...tagged.artwork!] }}>
         <MediaSession />
       </TestProviders>,
     );
@@ -155,7 +155,7 @@ describe("MediaSession", () => {
 
   it("clears the metadata on unmount", () => {
     const { unmount } = renderWithStore(<MediaSession />, {
-      audioFile: tagged,
+      track: tagged,
     });
 
     unmount();
@@ -171,7 +171,7 @@ describe("MediaSession", () => {
         <MediaSession />
         <PlayButton>Play</PlayButton>
       </>,
-      { audioFile: { ...tagged, artwork: [{ src: "http://[not a url" }] } },
+      { track: { ...tagged, artwork: [{ src: "http://[not a url" }] } },
     );
 
     expect(screen.getByRole("button")).toBeInTheDocument();
@@ -186,15 +186,15 @@ describe("MediaSession", () => {
     Reflect.deleteProperty(navigator, "mediaSession");
 
     expect(() =>
-      renderWithStore(<MediaSession />, { audioFile: tagged }).unmount(),
+      renderWithStore(<MediaSession />, { track: tagged }).unmount(),
     ).not.toThrow();
     expect(constructed).toEqual([]);
   });
 
   it("leaves the session to the instance that claimed it first", () => {
-    renderWithStore(<MediaSession />, { audioFile: tagged });
+    renderWithStore(<MediaSession />, { track: tagged });
     renderWithStore(<MediaSession />, {
-      audioFile: { ...tagged, title: "Second" },
+      track: { ...tagged, title: "Second" },
     });
 
     expect(constructed.map((init) => init.title)).toEqual([tagged.title]);
@@ -461,10 +461,10 @@ describe("MediaSession ownership", () => {
 
   function renderTwo() {
     const first = renderWithStore(<MediaSession />, {
-      audioFile: { src: "first.mp3", title: "First" },
+      track: { src: "first.mp3", title: "First" },
     });
     const second = renderWithStore(<MediaSession onNextTrack={vi.fn()} />, {
-      audioFile: { src: "second.mp3", title: "Second" },
+      track: { src: "second.mp3", title: "Second" },
     });
     return { first, second };
   }
@@ -529,10 +529,10 @@ describe("MediaSession ownership", () => {
 
   it("clears the previous owner's position when the new one has none", () => {
     const first = renderWithStore(<MediaSession />, {
-      audioFile: { src: "first.mp3", title: "First" },
+      track: { src: "first.mp3", title: "First" },
     });
     const live = renderWithStore(<MediaSession />, {
-      audioFile: { src: "live.mp3", title: "Live" },
+      track: { src: "live.mp3", title: "Live" },
       element: { duration: Infinity },
     });
     expect(session.setPositionState!.mock.calls.at(-1)?.[0]).toMatchObject({

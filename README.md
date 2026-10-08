@@ -67,7 +67,7 @@ import "./player.css";
 
 export function Player() {
   return (
-    <AudioPlayer audioFile={{ src: "/episode.mp3", title: "Episode 1" }}>
+    <AudioPlayer track={{ src: "/episode.mp3", title: "Episode 1" }}>
       <PlayerRoot className="player">
         <PlayButton>
           <PlayButton.Playing>Pause</PlayButton.Playing>
@@ -107,7 +107,7 @@ export function Player() {
 part and hook must be rendered inside it.
 
 `<PlayerRoot>` is optional, and worth having: it renders a `<div>` named by
-`audioFile.title`, so screen reader users can tell two players apart, and the
+`track.title`, so screen reader users can tell two players apart, and the
 keyboard shortcuts work anywhere inside it.
 
 Each slider has one required part, `.Control`, the element that carries the
@@ -210,40 +210,41 @@ attributes, units and defaults.
 
 The root. Creates the store and renders the `<audio>` element.
 
-| Prop                      | Type                    | Description                                                                                                                                                      |
-| ------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `audioFile`               | `AudioFile`             | The track: `src`, plus `live`, `title`, `artist`, `album` and `artwork`. A new `src` swaps the track. Required.                                                  |
-| `onEnded`                 | `() => void`            | Called once when the track plays to its end. Change `audioFile` here to advance a playlist.                                                                      |
-| `labels`                  | `PlayerLabels`          | Your own strings for every name and readout. See [Labels and localisation](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/localisation.md). |
-| `customKeyboardShortcuts` | `KeyToActionMap`        | Merged over the default [shortcuts](#keyboard-shortcuts); `null` unbinds a key.                                                                                  |
-| `audioProps`              | `AudioHTMLAttributes`   | Forwarded to the `<audio>` element. Excludes `src` and `onEnded`.                                                                                                |
-| `audioRef`                | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element.                                                                                                                                  |
+| Prop         | Type                    | Description                                                                                                                                                      |
+| ------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `track`      | `Track`                 | The track: `src`, plus `live`, `title`, `artist`, `album` and `artwork`. A new `src` swaps the track. Required.                                                  |
+| `onEnded`    | `() => void`            | Called once when the track plays to its end. Change `track` here to advance a playlist.                                                                          |
+| `labels`     | `PlayerLabels`          | Your own strings for every name and readout. See [Labels and localisation](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/localisation.md). |
+| `shortcuts`  | `KeyToActionMap`        | Merged over the default [shortcuts](#keyboard-shortcuts); `null` unbinds a key.                                                                                  |
+| `rateRange`  | `[number, number]`      | The slowest and fastest rate any control can reach; the rate slider spans it. Default `[0.5, 4]`, kept within `0.125`–`8`.                                       |
+| `audioProps` | `AudioHTMLAttributes`   | Forwarded to the `<audio>` element. Excludes `src` and `onEnded`.                                                                                                |
+| `audioRef`   | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element.                                                                                                                                  |
 
 ### Parts
 
-| Part                                                          | What it is                                                                                                                                                                                          |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<PlayerRoot>`                                                | An optional named container that a click focuses, with the shortcuts on everything inside it.                                                                                                       |
-| `<PlayButton>`                                                | Plays and pauses.                                                                                                                                                                                   |
-| `.Playing`, `.Paused`                                         | Render their children while playing, and while not.                                                                                                                                                 |
-| `<MuteButton>`                                                | Mutes, and unmutes to the last audible volume.                                                                                                                                                      |
-| `.Muted`, `.LowVolume`, `.HighVolume`                         | Render their children while muted, below half volume, and at half volume or above.                                                                                                                  |
-| `<SeekButton amount={10}>`                                    | Jumps by `amount` seconds; negative rewinds.                                                                                                                                                        |
-| `<Timeline step={5}>`                                         | The scrub bar. `step` is in seconds.                                                                                                                                                                |
-| `.Control`                                                    | The slider itself: the tab stop, the arrow keys, `Home` and `End`. Required on every slider.                                                                                                        |
-| `.Background`, `.Progress`, `.Thumb`                          | The track, the fill and the drag handle. Optional, and the same on every slider.                                                                                                                    |
-| `<TimelineBuffered>`                                          | How much has downloaded, behind the fill. A separate import; render it inside `<Timeline.Control>`.                                                                                                 |
-| `<Volume orientation="vertical">`                             | The volume slider, `0`–`1`, with the same parts as `<Timeline>`. Reaching zero mutes. Disabled on iOS.                                                                                              |
-| `<PlaybackRateSlider minValue={0.5} maxValue={4} step={0.1}>` | A rate slider with the same parts; those are the defaults. Widen up to `0.125`–`8`, or `step={0}` for a continuous slider.                                                                          |
-| `<Time.Elapsed>`, `<Time.Remaining>`, `<Time.Duration>`       | The position, the time left as `-1:30`, and the length. Each always shows its own number.                                                                                                           |
-| `<Time.Toggle defaultValue="remaining">`                      | A button showing elapsed or remaining time, switching on press. Each toggle keeps its own choice.                                                                                                   |
-| `<PlaybackRate>`                                              | Groups the rate controls for assistive technology.                                                                                                                                                  |
-| `<PlaybackRate.Set rate={1.5}>`                               | Sets that rate, clamped to `0.125`–`8` but not to the slider's range.                                                                                                                               |
-| `<PlaybackRate.Change amount={0.25}>`                         | Steps the rate by `amount`, stopping at `0.125` and `8`.                                                                                                                                            |
-| `<PlaybackRate.Current rate={1.5}>`                           | Marks that rate while it is in effect, keeping its space while it is not.                                                                                                                           |
-| `<PlaybackRate.Display>`                                      | The current rate as text: "1.5x".                                                                                                                                                                   |
-| `<ErrorMessage>`                                              | Renders its children in a live region while the track has failed to load.                                                                                                                           |
-| `<MediaSession>`                                              | Publishes the track to the lock screen and the system media controls. Renders nothing. See [the guide](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/lock-screen.md). |
+| Part                                                    | What it is                                                                                                                                                                                          |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<PlayerRoot>`                                          | An optional named container that a click focuses, with the shortcuts on everything inside it.                                                                                                       |
+| `<PlayButton>`                                          | Plays and pauses.                                                                                                                                                                                   |
+| `.Playing`, `.Paused`                                   | Render their children while playing, and while not.                                                                                                                                                 |
+| `<MuteButton>`                                          | Mutes, and unmutes to the last audible volume.                                                                                                                                                      |
+| `.Muted`, `.LowVolume`, `.HighVolume`                   | Render their children while muted, below half volume, and at half volume or above.                                                                                                                  |
+| `<SeekButton amount={10}>`                              | Jumps by `amount` seconds; negative rewinds.                                                                                                                                                        |
+| `<Timeline step={5}>`                                   | The scrub bar. `step` is in seconds.                                                                                                                                                                |
+| `.Control`                                              | The slider itself: the tab stop, the arrow keys, `Home` and `End`. Required on every slider.                                                                                                        |
+| `.Background`, `.Progress`, `.Thumb`                    | The track, the fill and the drag handle. Optional, and the same on every slider.                                                                                                                    |
+| `<TimelineBuffered>`                                    | How much has downloaded, behind the fill. A separate import; render it inside `<Timeline.Control>`.                                                                                                 |
+| `<Volume orientation="vertical">`                       | The volume slider, `0`–`1`, with the same parts as `<Timeline>`. Reaching zero mutes. Disabled on iOS.                                                                                              |
+| `<PlaybackRateSlider step={0.1}>`                       | A rate slider with the same parts, spanning the player's `rateRange`. `step={0}` for a continuous slider.                                                                                           |
+| `<Time.Elapsed>`, `<Time.Remaining>`, `<Time.Duration>` | The position, the time left as `-1:30`, and the length. Each always shows its own number.                                                                                                           |
+| `<Time.Toggle defaultValue="remaining">`                | A button showing elapsed or remaining time, switching on press. Each toggle keeps its own choice.                                                                                                   |
+| `<PlaybackRate>`                                        | Groups the rate controls for assistive technology.                                                                                                                                                  |
+| `<PlaybackRate.Set rate={1.5}>`                         | Sets that rate, clamped to the player's `rateRange`.                                                                                                                                                |
+| `<PlaybackRate.Change amount={0.25}>`                   | Steps the rate by `amount`, stopping at the ends of `rateRange`.                                                                                                                                    |
+| `<PlaybackRate.Current rate={1.5}>`                     | Marks that rate while it is in effect, keeping its space while it is not.                                                                                                                           |
+| `<PlaybackRate.Display>`                                | The current rate as text: "1.5x".                                                                                                                                                                   |
+| `<ErrorMessage>`                                        | Renders its children in a live region while the track has failed to load.                                                                                                                           |
+| `<MediaSession>`                                        | Publishes the track to the lock screen and the system media controls. Renders nothing. See [the guide](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/lock-screen.md). |
 
 ## Hooks
 

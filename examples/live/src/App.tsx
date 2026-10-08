@@ -30,7 +30,7 @@ export default function App() {
     // `preload: "none"`: a stream never ends, so without it every visit
     // downloads radio until the tab closes, whether anyone listens or not.
     <AudioPlayer
-      audioFile={STATION}
+      track={STATION}
       audioProps={{ preload: "none" }}
       audioRef={audioRef}
     >

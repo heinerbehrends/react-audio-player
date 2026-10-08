@@ -1,7 +1,7 @@
 # A playlist
 
 The player holds one track. Keep the list and the index in your own state, and
-advance from `onEnded`. Changing `audioFile` reloads the element and resets
+advance from `onEnded`. Changing `track` reloads the element and resets
 every value the player exposes.
 
 ```jsx
@@ -12,7 +12,7 @@ function Playlist() {
 
   return (
     <AudioPlayer
-      audioFile={tracks[index]}
+      track={tracks[index]}
       onEnded={() => setIndex((i) => Math.min(i + 1, tracks.length - 1))}
     >
       {/* Player UI components */}

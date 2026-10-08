@@ -14,24 +14,13 @@ import { SliderThumb } from "../Slider/SliderThumb";
 import { SliderProvider } from "../Slider/SliderContext";
 import { useSlider } from "../Slider/useSlider";
 import { sliderRootAttributes } from "../Slider/sliderRootAttributes";
-import { RATE_BOUNDS } from "../AudioElement/sideEffectActions";
 import { RATE_MODE } from "../Slider/sliderModes";
+import { useStore } from "../store/atom";
+import { usePlayerStore } from "../store/PlayerStoreContext";
 
 type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
   /** The slider parts: `.Control`, and any of `.Background`, `.Progress` and `.Thumb`. */
   children: React.ReactNode;
-  /**
-   * The fastest rate the slider reaches, up to `8`.
-   *
-   * @defaultValue 4
-   */
-  maxValue?: number;
-  /**
-   * The slowest rate the slider reaches, down to `0.125`.
-   *
-   * @defaultValue 0.5
-   */
-  minValue?: number;
   /**
    * Snaps to a multiple of this. `0` is continuous, with a 0.1 arrow-key step.
    *
@@ -43,16 +32,11 @@ type PlaybackRateSliderProps = React.HTMLAttributes<HTMLDivElement> & {
 const PlaybackRateSliderRoot = /* @__PURE__ */ forwardRef<
   HTMLDivElement,
   PlaybackRateSliderProps
->(function PlaybackRateSlider(
-  {
-    children,
-    maxValue = RATE_BOUNDS.maxValue,
-    minValue = RATE_BOUNDS.minValue,
-    step = 0.1,
-    ...props
-  },
-  ref,
-) {
+>(function PlaybackRateSlider({ children, step = 0.1, ...props }, ref) {
+  // The player's range, not a prop of its own: one range for every rate
+  // control, so the slider and the buttons cannot disagree (F15).
+  const store = usePlayerStore();
+  const { minValue, maxValue } = useStore(store.rateRange);
   const slider = useSlider({ config: RATE_MODE, minValue, maxValue, step });
 
   return (
@@ -87,11 +71,10 @@ type PlaybackRateSliderComponent = React.ForwardRefExoticComponent<
 /**
  * A slider for the playback rate, announced as "1.5x". Renders a `<div>` root
  * for `.Control` and any of `.Background`, `.Progress` and `.Thumb`; give it a
- * height, or the slider is silently inert. It stays within
- * `minValue`–`maxValue`; `PlaybackRate.Set` does not, so the two can disagree.
- * Only an error disables it. Carries `data-part="root"`, `data-slider="rate"`,
- * `data-state="idle" | "dragging"` and `data-orientation="horizontal"`, and sets
- * `--progress` and `--offset`.
+ * height, or the slider is silently inert. It spans `AudioPlayer`'s
+ * `rateRange`, `0.5`–`4` by default. Only an error disables it. Carries
+ * `data-part="root"`, `data-slider="rate"`, `data-state="idle" | "dragging"`
+ * and `data-orientation="horizontal"`, and sets `--progress` and `--offset`.
  */
 export const PlaybackRateSlider: PlaybackRateSliderComponent =
   /* @__PURE__ */ Object.assign(PlaybackRateSliderRoot, {

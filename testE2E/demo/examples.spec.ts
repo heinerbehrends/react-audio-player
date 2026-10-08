@@ -311,7 +311,7 @@ test.describe("Waveform", () => {
 
 test.describe("Live radio", () => {
   // The station is a third party's. Served from the repo instead, so a run
-  // does not depend on it; `audioFile.live` makes even a file live.
+  // does not depend on it; `track.live` makes even a file live.
   const STREAM = "https://streams.radiomast.io/**";
   // By name: under `preload: "none"` it said "Loading audio" until pressed,
   // though nothing loaded (S34).

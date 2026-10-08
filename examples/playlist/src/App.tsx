@@ -39,7 +39,7 @@ export default function App() {
 
   return (
     <AudioPlayer
-      audioFile={{ ...BOOK, ...TRACKS[index] }}
+      track={{ ...BOOK, ...TRACKS[index] }}
       onEnded={() => {
         if (index < TRACKS.length - 1) setIndex(index + 1);
       }}

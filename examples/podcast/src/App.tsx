@@ -36,7 +36,7 @@ const RATES = [0.75, 1, 1.25, 1.5, 2];
 
 export default function App() {
   return (
-    <AudioPlayer audioFile={EPISODE}>
+    <AudioPlayer track={EPISODE}>
       <Episode />
     </AudioPlayer>
   );

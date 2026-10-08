@@ -28,7 +28,7 @@ export type TimePart = "elapsed" | "remaining" | "duration";
  */
 export type PlayerLabels = {
   /**
-   * `<PlayerRoot>`'s name when `audioFile` has no `title`.
+   * `<PlayerRoot>`'s name when `track` has no `title`.
    *
    * @defaultValue "audio player"
    */

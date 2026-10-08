@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**14 open · 0 part-done · 114 resolved · 6 rejected**
+**14 open · 0 part-done · 115 resolved · 6 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -47,8 +47,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-1 open of 35.
+2 open of 36.
 
+- [ ] [S36](surface/S36-two-vocabularies-for-one-set-of-operations.md) Two vocabularies for one set of operations — P2, **breaking**
 - [ ] [S35](surface/S35-useplayerrootprops-returns-a-270-line-inferred-type.md) `usePlayerRootProps()` returns a 270-line inferred type — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
@@ -87,10 +88,9 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-7 open of 35.
+6 open of 35.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
-- [ ] [F15](features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
 - [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
@@ -111,6 +111,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [F14](resolved/features/F14-a-track-swap-carries-on-only-when-it-should.md) A track swap carries on only when it should — P2
 - [x] [D10](resolved/features/D10-example-and-excerpt-script-fixes.md) The examples lose focus and reach, and the excerpt script cuts into tags — P3
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
+- [x] [F15](resolved/features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3, **breaking**
 - [x] [B1](resolved/features/B1-playlist-resumption-is-undocumented-and-now-more.md) Playlist resumption is undocumented, and now more visible
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [B4](resolved/features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation

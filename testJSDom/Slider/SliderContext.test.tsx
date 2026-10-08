@@ -67,8 +67,8 @@ describe("usePlayerConfig", () => {
     const { result } = renderHook(() => usePlayerConfig(), {
       wrapper: ({ children }) => (
         <PlayerConfigProvider
-          audioFile={{ src: "test-audio.mp3" }}
-          customKeyboardShortcuts={{ x: { type: "TOGGLE_PLAY" } }}
+          track={{ src: "test-audio.mp3" }}
+          shortcuts={{ x: { type: "TOGGLE_PLAY" } }}
           labels={undefined}
         >
           {children}
@@ -76,8 +76,8 @@ describe("usePlayerConfig", () => {
       ),
     });
 
-    expect(result.current.audioFile).toEqual({ src: "test-audio.mp3" });
-    expect(result.current.customKeyboardShortcuts).toEqual({
+    expect(result.current.track).toEqual({ src: "test-audio.mp3" });
+    expect(result.current.shortcuts).toEqual({
       x: { type: "TOGGLE_PLAY" },
     });
   });

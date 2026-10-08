@@ -33,7 +33,7 @@ function App() {
   const players = Number(searchParams.get("players") ?? 1);
   // `?preload=none`: a player that loads nothing until play is pressed (S34).
   const preload = searchParams.get("preload") ?? undefined;
-  // `?live`: marks the source live, as `audioFile.live` does for a stream.
+  // `?live`: marks the source live, as `track.live` does for a stream.
   const live = searchParams.has("live");
 
   if (players > 1) {
@@ -83,13 +83,15 @@ function Player({
 }: PlayerProps) {
   return (
     <AudioPlayer
-      audioFile={{
+      track={{
         src,
         title,
         artist: "react-headless-audio-player",
         ...(live ? { live } : {}),
       }}
       {...(preload === undefined ? {} : { audioProps: { preload } })}
+      // The rate slider's E2E spec assumes 0.5–2 in steps of 0.1.
+      rateRange={[0.5, 2]}
     >
       <MediaSession />
       <Timeline style={{ height: "40px" }}>
@@ -156,12 +158,7 @@ function Player({
           }}
         />
       </Volume>
-      <PlaybackRateSlider
-        style={{ height: "40px" }}
-        maxValue={2}
-        minValue={0.5}
-        step={0.1}
-      >
+      <PlaybackRateSlider style={{ height: "40px" }} step={0.1}>
         <PlaybackRateSlider.Control
           style={{
             padding: "12px 0",

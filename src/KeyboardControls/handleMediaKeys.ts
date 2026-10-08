@@ -8,7 +8,7 @@ import { usePlayerStore } from "../store/PlayerStoreContext";
 export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
   handleSideEffect: (action: SideEffectAction) => void;
-  customKeyboardShortcuts: KeyToActionMap | undefined;
+  shortcuts: KeyToActionMap | undefined;
 };
 
 /**
@@ -30,7 +30,7 @@ export const defaultKeyToActionMap: KeyToActionMap = {
   // a <button>, and mapping Space here would `preventDefault()` its native
   // activation, so Space would start playback instead of pressing the focused
   // button. `p` and `k` cover play/pause, and a consumer who wants Space can
-  // add it through `customKeyboardShortcuts`.
+  // add it through `shortcuts`.
   s: { type: "STOP_AUDIO" },
   S: { type: "STOP_AUDIO" },
   MediaStop: { type: "STOP_AUDIO" },
@@ -65,7 +65,7 @@ export const defaultKeyToActionMap: KeyToActionMap = {
 };
 
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
-  const { event, handleSideEffect, customKeyboardShortcuts } = args;
+  const { event, handleSideEffect, shortcuts } = args;
 
   // Modifier combinations belong to the browser and to assistive technology:
   // `Ctrl+Option+Arrow` is VoiceOver's own navigation, and swallowing it makes
@@ -77,7 +77,7 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 
   const keyToActionMap = {
     ...defaultKeyToActionMap,
-    ...customKeyboardShortcuts,
+    ...shortcuts,
   };
   const action = keyToActionMap[event.key];
 
@@ -91,14 +91,14 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
 // `store.send` has a permanent identity, so the returned handler needs no
 // `useCallback`.
 export function useHandleMediaKeys() {
-  const { customKeyboardShortcuts } = usePlayerConfig();
+  const { shortcuts } = usePlayerConfig();
   const { send } = usePlayerStore();
 
   return (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const result = handleMediaKeys({
       event,
       handleSideEffect: send,
-      customKeyboardShortcuts,
+      shortcuts,
     });
 
     if (result) {

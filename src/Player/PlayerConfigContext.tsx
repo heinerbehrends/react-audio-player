@@ -6,7 +6,7 @@ import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../Shared/playerLabels";
 
 /** The track `<AudioPlayer>` plays. A new `src` swaps the track. */
-export type AudioFile = {
+export type Track = {
   /** The URL of the audio. */
   src: string;
   /**
@@ -28,12 +28,12 @@ export type AudioFile = {
 /**
  * `AudioPlayer`'s static props, flowing strictly downward. None is state nor a
  * projection of the element, so none belongs in the store — but
- * `customKeyboardShortcuts` is read by seven components with no prop-drilling
+ * `shortcuts` is read by seven components with no prop-drilling
  * path to them, and `labels` by nearly every one. Hence a context.
  */
 export type PlayerConfig = {
-  audioFile: AudioFile;
-  customKeyboardShortcuts: KeyToActionMap | undefined;
+  track: Track;
+  shortcuts: KeyToActionMap | undefined;
   labels: PlayerLabels | undefined;
 };
 
@@ -46,21 +46,19 @@ type PlayerConfigProviderProps = PlayerConfig & {
 };
 
 /**
- * Deliberately unmemoised. The documented usage passes `audioFile` as an inline
+ * Deliberately unmemoised. The documented usage passes `track` as an inline
  * object literal, so a `memo` comparison and a `useMemo` dependency check would
  * both fail on every consumer render and buy nothing. The cost when they bail
  * is seven cheap components rendering.
  */
 export function PlayerConfigProvider({
   children,
-  audioFile,
-  customKeyboardShortcuts,
+  track,
+  shortcuts,
   labels,
 }: PlayerConfigProviderProps) {
   return (
-    <PlayerConfigContext.Provider
-      value={{ audioFile, customKeyboardShortcuts, labels }}
-    >
+    <PlayerConfigContext.Provider value={{ track, shortcuts, labels }}>
       {children}
     </PlayerConfigContext.Provider>
   );

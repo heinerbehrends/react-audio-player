@@ -31,8 +31,8 @@ export function AudioElement({
   audioRef,
   ...props
 }: AudioElementProps) {
-  const { audioFile, labels } = usePlayerConfig();
-  const { src, live } = audioFile ?? {};
+  const { track, labels } = usePlayerConfig();
+  const { src, live } = track ?? {};
 
   const store = usePlayerStore();
   const [element, setElement] = useState<HTMLAudioElement | null>(null);

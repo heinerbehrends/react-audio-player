@@ -1,5 +1,9 @@
 import { handleSideEffect } from "../AudioElement/handleSideEffect";
-import type { SideEffectAction } from "../AudioElement/sideEffectActions";
+import {
+  normalizeRateRange,
+  type RateRange,
+  type SideEffectAction,
+} from "../AudioElement/sideEffectActions";
 import { atom, readable, type ReadableAtom } from "./atom";
 import {
   HANDLERS,
@@ -37,6 +41,15 @@ export type PlayerStore = {
   /** The attached element, for an opt-in part that reads it directly. */
   element: ReadableAtom<HTMLAudioElement | null>;
 
+  /**
+   * The player's `rateRange`, normalised. Held here rather than in the config
+   * context because the write path clamps to it, and the rate slider reads
+   * the same atom for its range, so the two cannot disagree.
+   */
+  rateRange: ReadableAtom<RateRange>;
+  /** Replaces `rateRange` from the prop. A no-op when both ends are unchanged. */
+  setRateRange: (range: readonly [number, number] | undefined) => void;
+
   send: (action: SideEffectAction) => void;
   /**
    * Freezes `lastAudibleVolume` for the duration of a volume drag and returns
@@ -56,7 +69,14 @@ export type PlayerStore = {
   continuePlayback: () => void;
 };
 
-export function createPlayerStore(): PlayerStore {
+export type PlayerStoreOptions = {
+  /** The `rateRange` prop at creation, so the first render already has it. */
+  rateRange?: readonly [number, number] | undefined;
+};
+
+export function createPlayerStore({
+  rateRange: initialRateRange,
+}: PlayerStoreOptions = {}): PlayerStore {
   const atoms: ProjectionAtoms = {
     currentTime: atom(0),
     currentSecond: atom(0),
@@ -128,6 +148,26 @@ export function createPlayerStore(): PlayerStore {
 
   const playbackError = atom<string | null>(null);
 
+  const rateRange = atom<RateRange>(normalizeRateRange(initialRateRange));
+  const setRateRange = (range: readonly [number, number] | undefined) => {
+    const next = normalizeRateRange(range);
+    const current = rateRange.get();
+    // Compared by value: a fresh object per call would defeat the atom's
+    // `Object.is` bail-out and re-render the slider on every effect run.
+    if (
+      next.minValue === current.minValue &&
+      next.maxValue === current.maxValue
+    ) {
+      return;
+    }
+    rateRange.set(next);
+    // Now, not at the next write: the slider would draw it past its end.
+    const rate = element?.playbackRate;
+    if (rate !== undefined && (rate < next.minValue || rate > next.maxValue)) {
+      send({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
+    }
+  };
+
   const send = (action: SideEffectAction) => {
     if (action.type === "PLAY") playWanted = true;
     if (action.type === "PAUSE" || action.type === "STOP_AUDIO") {
@@ -140,6 +180,7 @@ export function createPlayerStore(): PlayerStore {
     const started = handleSideEffect(action, element, {
       lastAudibleVolume: atoms.lastAudibleVolume.get(),
       isSeekable: atoms.duration.get() > 0,
+      rateRange: rateRange.get(),
     });
     // Volume and rate read back at once, while their events arrive a task
     // later. Projecting now lands in the same render as the caller's own
@@ -184,6 +225,8 @@ export function createPlayerStore(): PlayerStore {
     loadState: readable(atoms.loadState),
     playbackError: readable(playbackError),
     element: readable(elementAtom),
+    rateRange: readable(rateRange),
+    setRateRange,
     send,
     holdAudibleVolume,
     attach,

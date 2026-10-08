@@ -9,10 +9,10 @@ function Badge() {
 
 /**
  * B11. Firefox reports a live MP3 or Opus stream as a finite track whose
- * duration grows with the buffer, so `audioFile.live` marks the element
+ * duration grows with the buffer, so `track.live` marks the element
  * `data-live` and the store reads it with the duration.
  */
-describe("audioFile.live", () => {
+describe("track.live", () => {
   it("is live whatever duration the element reports", () => {
     const { store, element } = createTestStore({
       duration: 12,
@@ -72,9 +72,9 @@ describe("audioFile.live", () => {
   it.each([
     [{ src: "station.mp3", live: true }, "live"],
     [{ src: "episode.mp3" }, "not live"],
-  ])("reaches useIsLive from AudioPlayer for %o", (audioFile, expected) => {
+  ])("reaches useIsLive from AudioPlayer for %o", (track, expected) => {
     render(
-      <AudioPlayer audioFile={audioFile}>
+      <AudioPlayer track={track}>
         <Badge />
       </AudioPlayer>,
     );
@@ -87,14 +87,14 @@ describe("audioFile.live", () => {
   // loads nothing, so the test fires that event itself.
   it("clears on a swap from a live stream to a plain file", () => {
     const { container, rerender } = render(
-      <AudioPlayer audioFile={{ src: "station.mp3", live: true }}>
+      <AudioPlayer track={{ src: "station.mp3", live: true }}>
         <Badge />
       </AudioPlayer>,
     );
     expect(screen.getByText("live")).toBeInTheDocument();
 
     rerender(
-      <AudioPlayer audioFile={{ src: "episode.mp3" }}>
+      <AudioPlayer track={{ src: "episode.mp3" }}>
         <Badge />
       </AudioPlayer>,
     );

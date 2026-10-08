@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { labels, waitForPlaying } from "../test-utils";
 
 /**
- * `audioFile.live` on a finite file: the projection a stream gets from an
+ * `track.live` on a finite file: the projection a stream gets from an
  * endless duration, read off the element through each browser's own event
  * order. Firefox, which reports an MP3 stream as a finite track, is the engine
  * the mark exists for.

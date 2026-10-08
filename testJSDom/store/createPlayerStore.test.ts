@@ -247,4 +247,40 @@ describe("createPlayerStore", () => {
       expect(store.rate.get()).toBe(1.5);
     });
   });
+
+  describe("setRateRange", () => {
+    function playingAt(playbackRate: number) {
+      const element = createMediaElementFake({ readyState: 1, playbackRate });
+      const store = createPlayerStore();
+      store.attach(element as unknown as HTMLAudioElement);
+      return { element, store };
+    }
+
+    it("pulls a rate outside a narrower range in, and projects it", () => {
+      const { element, store } = playingAt(3);
+
+      store.setRateRange([0.5, 2]);
+
+      expect(element.playbackRate).toBe(2);
+      expect(store.rate.get()).toBe(2);
+    });
+
+    it("leaves a rate inside the new range alone", () => {
+      const { element, store } = playingAt(1.5);
+
+      store.setRateRange([1, 2]);
+
+      expect(element.playbackRate).toBe(1.5);
+    });
+
+    it("keeps the same range object when the ends have not moved", () => {
+      const { store } = playingAt(1);
+      store.setRateRange([0.75, 3]);
+      const range = store.rateRange.get();
+
+      store.setRateRange([0.75, 3]);
+
+      expect(store.rateRange.get()).toBe(range);
+    });
+  });
 });

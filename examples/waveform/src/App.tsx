@@ -36,7 +36,7 @@ function Bars({ className }: { className: string }) {
 
 export default function App() {
   return (
-    <AudioPlayer audioFile={TRACK}>
+    <AudioPlayer track={TRACK}>
       <PlayerRoot className="waveform">
         <div className="waveform-head">
           <PlayButton className="waveform-play">

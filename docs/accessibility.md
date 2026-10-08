@@ -37,7 +37,7 @@ whole: two players on a page announce identically. Wrap your controls in
 `<PlayerRoot>` and each player becomes a named landmark:
 
 ```jsx
-<AudioPlayer audioFile={track}>
+<AudioPlayer track={track}>
   <PlayerRoot className="player">
     <PlayButton>…</PlayButton>
     <Timeline>…</Timeline>
@@ -46,7 +46,7 @@ whole: two players on a page announce identically. Wrap your controls in
 ```
 
 It renders a `<div data-part="player" role="region">` named by
-`audioFile.title`, or by `labels.player` without one; `aria-label` or
+`track.title`, or by `labels.player` without one; `aria-label` or
 `aria-labelledby` override both. It also carries `tabIndex={-1}` and the
 [keyboard shortcuts](keyboard.md): a click on the cover or the title focuses the
 player, so the shortcuts keep working, without adding a tab stop or a focus
@@ -107,7 +107,7 @@ Your handlers run alongside the library's rather than replacing them: yours
 first, the library's second, and `preventDefault()` in yours opts out of the
 library's. On a `<button>` that also cancels `Enter` and `Space` activation, so
 scope it to the key you are handling; to turn a media shortcut off, unbind it
-with `customKeyboardShortcuts` instead.
+with `shortcuts` instead.
 
 Every control accepts the [keyboard shortcuts](keyboard.md) while focused,
 whether or not it is disabled: the shortcuts belong to the player, not to the

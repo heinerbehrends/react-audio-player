@@ -24,8 +24,8 @@ function renderMediaKeys(element: Partial<MediaFields> = {}) {
     wrapper: ({ children }: { children: React.ReactNode }) => (
       <PlayerStoreProvider store={harness.store}>
         <PlayerConfigProvider
-          audioFile={{ src: "test-audio.mp3" }}
-          customKeyboardShortcuts={undefined}
+          track={{ src: "test-audio.mp3" }}
+          shortcuts={undefined}
           labels={undefined}
         >
           {children}
@@ -48,7 +48,7 @@ describe("handleMediaKeys", () => {
   let defaultArgs: {
     event: React.KeyboardEvent<HTMLButtonElement>;
     handleSideEffect: (action: SideEffectAction) => void;
-    customKeyboardShortcuts: KeyToActionMap;
+    shortcuts: KeyToActionMap;
   };
 
   beforeEach(() => {
@@ -59,7 +59,7 @@ describe("handleMediaKeys", () => {
         preventDefault: vi.fn(),
       } as unknown as React.KeyboardEvent<HTMLButtonElement>,
       handleSideEffect: mockHandleSideEffect,
-      customKeyboardShortcuts: {
+      shortcuts: {
         "`": { type: "TOGGLE_PLAY" },
       },
     };
@@ -273,7 +273,7 @@ describe("handleMediaKeys", () => {
 
   describe("Custom keyboard shortcuts", () => {
     it("should handle custom shortcuts that override default ones while preserving other defaults", () => {
-      defaultArgs.customKeyboardShortcuts = {
+      defaultArgs.shortcuts = {
         x: { type: "TOGGLE_PLAY" },
       };
 
@@ -308,7 +308,7 @@ describe("handleMediaKeys", () => {
      * way left to turn a shortcut off.
      */
     it("unbinds a default and lets the key through", () => {
-      defaultArgs.customKeyboardShortcuts = { p: null };
+      defaultArgs.shortcuts = { p: null };
 
       defaultArgs.event.key = "p";
       const result = handleMediaKeys(defaultArgs);
@@ -320,7 +320,7 @@ describe("handleMediaKeys", () => {
     });
 
     it("unbinds one key without disturbing its neighbours", () => {
-      defaultArgs.customKeyboardShortcuts = { p: null };
+      defaultArgs.shortcuts = { p: null };
 
       defaultArgs.event.key = "k";
       const result = handleMediaKeys(defaultArgs);
@@ -332,7 +332,7 @@ describe("handleMediaKeys", () => {
     });
 
     it("should handle custom shortcuts with different actions", () => {
-      defaultArgs.customKeyboardShortcuts = {
+      defaultArgs.shortcuts = {
         z: { type: "SET_TIME_FORWARD", value: 30 },
       };
 
@@ -359,7 +359,7 @@ describe("handleMediaKeys", () => {
     });
 
     it("should handle multiple custom shortcuts", () => {
-      defaultArgs.customKeyboardShortcuts = {
+      defaultArgs.shortcuts = {
         x: { type: "TOGGLE_PLAY" },
         y: { type: "STOP_AUDIO" },
         z: { type: "SET_TIME_FORWARD", value: 30 },
@@ -435,7 +435,7 @@ describe("what a key can be bound to", () => {
     const map: KeyToActionMap = {
       a: { type: "TOGGLE_PLAY" },
       b: { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
-      c: { type: "INCREASE_PLAYBACK_RATE", value: 0.1, maxValue: 2 },
+      c: { type: "INCREASE_PLAYBACK_RATE", value: 0.1 },
       d: { type: "STOP_AUDIO" },
       // `null` unbinds — see `KeyToActionMap`.
       e: null,
