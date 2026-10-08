@@ -66,8 +66,8 @@ export function useSeekButtonProps<
   } as ButtonPropsBag<P>;
 }
 
-// `store.send` has a permanent identity, so no `useCallback` is needed.
+// The controls have a permanent identity, so no `useCallback` is needed.
 function useSeek(amount: number) {
-  const { send } = usePlayerStore();
-  return () => send({ type: "SET_TIME_FORWARD", value: amount });
+  const { seekBy } = usePlayerStore().controls;
+  return () => seekBy(amount);
 }

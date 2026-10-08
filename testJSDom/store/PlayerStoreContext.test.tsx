@@ -28,7 +28,7 @@ describe("usePlayerStore", () => {
 
     expect(result.current.loadState.get()).toBe("loading");
     expect(typeof result.current.attach).toBe("function");
-    expect(typeof result.current.send).toBe("function");
+    expect(typeof result.current.controls.play).toBe("function");
   });
 
   it("keeps the same store across re-renders", () => {

@@ -26,8 +26,9 @@ nothing to migrate from.
   `useCurrentTime()`
 - `useIsVolumeAvailable()`, and a volume slider that disables itself where the
   browser ignores `volume` writes
-- Keyboard shortcuts bound to every focused control, with `KeyToActionMap` to
-  rebind or unbind them
+- Keyboard shortcuts bound to every focused control. `shortcuts` rebinds or
+  unbinds them; a binding is a function given the player's state and controls,
+  and letters match either case
 - `<PlayerRoot>` and `usePlayerRootProps()`: an opt-in container that is a
   named region a click focuses, with the keyboard shortcuts on every control
   inside it, your own included, and Space for play/pause while it has focus

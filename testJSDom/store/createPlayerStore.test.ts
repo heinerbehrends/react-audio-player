@@ -130,11 +130,11 @@ describe("createPlayerStore", () => {
     });
   });
 
-  describe("send", () => {
+  describe("controls", () => {
     it("does nothing before an element is attached", () => {
       const store = createPlayerStore();
 
-      expect(() => store.send({ type: "PLAY" })).not.toThrow();
+      expect(() => store.controls.play()).not.toThrow();
     });
 
     it("reaches the attached element", () => {
@@ -142,7 +142,7 @@ describe("createPlayerStore", () => {
       const element = createMediaElementFake();
       store.attach(element);
 
-      store.send({ type: "PLAY" });
+      store.controls.play();
 
       expect(element.play).toHaveBeenCalled();
     });
@@ -152,7 +152,7 @@ describe("createPlayerStore", () => {
       const element = createMediaElementFake({ currentTime: 50 });
       store.attach(element);
 
-      store.send({ type: "SET_TIME_TO_START" });
+      store.controls.seek(0);
 
       expect(element.currentTime).toBe(0);
       // No media event was dispatched, so the projection has not moved yet.
@@ -165,7 +165,7 @@ describe("createPlayerStore", () => {
       const detach = store.attach(element);
 
       detach();
-      store.send({ type: "PLAY" });
+      store.controls.play();
 
       expect(element.play).not.toHaveBeenCalled();
     });
@@ -177,7 +177,7 @@ describe("createPlayerStore", () => {
 
       store.attach(first)();
       store.attach(second);
-      store.send({ type: "PLAY" });
+      store.controls.play();
 
       expect(first.play).not.toHaveBeenCalled();
       expect(second.play).toHaveBeenCalled();
@@ -229,7 +229,7 @@ describe("createPlayerStore", () => {
       const listener = vi.fn();
       store.volume.subscribe(listener);
 
-      store.send({ type: "CHANGE_VALUE", component: "volume", value: 0.4 });
+      store.controls.setVolume(0.4);
       expect(store.volume.get()).toBe(0.4);
       expect(listener).toHaveBeenCalledTimes(1);
 
@@ -242,7 +242,7 @@ describe("createPlayerStore", () => {
       const store = createPlayerStore();
       store.attach(element as unknown as HTMLAudioElement);
 
-      store.send({ type: "CHANGE_VALUE", component: "rate", value: 1.5 });
+      store.controls.setRate(1.5);
 
       expect(store.rate.get()).toBe(1.5);
     });

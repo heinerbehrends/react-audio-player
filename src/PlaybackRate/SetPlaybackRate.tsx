@@ -119,8 +119,8 @@ export const RateDisplay = /* @__PURE__ */ forwardRef<
 });
 
 function useSetPlaybackRate(rate: number) {
-  const { send } = usePlayerStore();
-  return () => send({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
+  const { setRate } = usePlayerStore().controls;
+  return () => setRate(rate);
 }
 
 function useIsCurrent(rate: number) {

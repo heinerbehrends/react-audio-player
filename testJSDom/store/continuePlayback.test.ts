@@ -37,7 +37,7 @@ describe("continuePlayback", () => {
   /** Playing as a real element would be after `play()` and its event. */
   function playing() {
     const harness = createTestStore({ readyState: 1 });
-    harness.store.send({ type: "PLAY" });
+    harness.store.controls.play();
     harness.element.paused = false;
     harness.element.emit("play");
     harness.element.play.mockClear();
@@ -68,7 +68,7 @@ describe("continuePlayback", () => {
    */
   it("plays when play() was sent just before the swap", () => {
     const { store, element } = createTestStore({ readyState: 1 });
-    store.send({ type: "PLAY" });
+    store.controls.play();
     element.play.mockClear();
 
     store.continuePlayback();
@@ -78,7 +78,7 @@ describe("continuePlayback", () => {
 
   it("stays paused after pause() is sent", () => {
     const { store, element } = playing();
-    store.send({ type: "PAUSE" });
+    store.controls.pause();
     element.paused = true;
     element.emit("pause");
 
@@ -139,7 +139,7 @@ describe("continuePlayback", () => {
   it("stays paused when a pause follows the end", () => {
     const harness = playing();
     endNaturally(harness);
-    harness.store.send({ type: "PAUSE" });
+    harness.store.controls.pause();
 
     harness.store.continuePlayback();
 
@@ -162,7 +162,7 @@ describe("continuePlayback", () => {
     ["playing", false, 0],
   ] as const)("follows TOGGLE_PLAY from %s", (_state, paused, plays) => {
     const { store, element } = createTestStore({ readyState: 1, paused });
-    store.send({ type: "TOGGLE_PLAY" });
+    store.controls.toggle();
     element.play.mockClear();
 
     store.continuePlayback();
@@ -177,7 +177,7 @@ describe("continuePlayback", () => {
   it("plays when the swap aborted a pending play()", async () => {
     const { store, element } = createTestStore({ readyState: 1 });
     const play = pendingPlay(element);
-    store.send({ type: "PLAY" });
+    store.controls.play();
     element.paused = true;
     play.reject("AbortError");
     await settle();
@@ -192,7 +192,7 @@ describe("continuePlayback", () => {
   it("does not ask again after an autoplay refusal", async () => {
     const { store, element } = createTestStore({ readyState: 1 });
     const play = pendingPlay(element);
-    store.send({ type: "PLAY" });
+    store.controls.play();
     element.paused = true;
     play.reject("NotAllowedError");
     await settle();
@@ -207,7 +207,7 @@ describe("continuePlayback", () => {
   it("plays the next track after one that failed to load", async () => {
     const { store, element } = createTestStore({ readyState: 1 });
     const play = pendingPlay(element);
-    store.send({ type: "PLAY" });
+    store.controls.play();
     play.reject("NotSupportedError");
     await settle();
     element.play.mockClear();

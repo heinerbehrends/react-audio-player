@@ -2,7 +2,7 @@ import { act, render } from "@testing-library/react";
 import { useState } from "react";
 import { PlayerStoreProvider } from "../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../src/Player/PlayerConfigContext";
-import type { KeyToActionMap } from "../src/KeyboardControls/handleMediaKeys";
+import type { Shortcuts } from "../src/KeyboardControls/handleMediaKeys";
 import type { Track } from "../src/Player/PlayerConfigContext";
 import type { PlayerLabels } from "../src/Shared/playerLabels";
 import { createTestStore, type TestStore } from "./store/createTestStore";
@@ -11,7 +11,7 @@ import type { MediaFields } from "./store/mediaElementFake";
 type TestProvidersProps = {
   children: React.ReactNode;
   track?: Track | undefined;
-  shortcuts?: KeyToActionMap | undefined;
+  shortcuts?: Shortcuts | undefined;
   labels?: PlayerLabels | undefined;
   /** An existing harness, when the test needs the store it renders against. */
   testStore?: TestStore | undefined;

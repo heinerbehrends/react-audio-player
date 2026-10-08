@@ -54,14 +54,16 @@ counts listening time and says nothing about lag.
 
 ## Reconnecting
 
-Nothing retries for you. `load()` on the element starts the stream afresh,
-which for a station means live again, and clears the error:
+Nothing retries for you. `reload()` loads the stream afresh, which for a
+station means live again, and clears the error. It plays again only if
+playback was still wanted, and a failure has usually stopped it, so a retry
+button plays as well:
 
 ```jsx
-function Retry({ audioRef }) {
-  const { play } = useAudioPlayer();
+function Retry() {
+  const { reload, play } = useAudioControls();
   const retry = () => {
-    audioRef.current?.load();
+    reload();
     play();
   };
   return (

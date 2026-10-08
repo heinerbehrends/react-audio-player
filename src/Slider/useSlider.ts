@@ -4,12 +4,12 @@ import { constant, useStore } from "../store/atom";
 import { usePlayerStore } from "../store/PlayerStoreContext";
 import { useHandleMediaKeys } from "../KeyboardControls/handleMediaKeys";
 import { useIsDisabled } from "../store/derived";
-import type { SliderComponent } from "../AudioElement/sideEffectActions";
 import {
   ARROW_KEYS,
   JUMP_KEYS,
   isArrowKey,
   isJumpKey,
+  type SliderComponent,
   type SliderMode,
   type SliderModeConfig,
 } from "./sliderModes";
@@ -246,13 +246,11 @@ export function useSlider({
     [geometry, minValue, maxValue, orientation, step],
   );
 
-  // `CHANGE_VALUE` carries the value rather than the geometry, so it is computed
+  // The commit carries the value rather than the geometry, so it is computed
   // once, here, where the geometry lives. The mute-at-zero coupling rides on it
-  // — one rule in `handleSideEffect` rather than one per gesture (C2).
+  // — one rule in `setVolume` rather than one per gesture (C2).
   const send = useCallback(
-    (value: number) => {
-      store.send({ type: "CHANGE_VALUE", component: config.component, value });
-    },
+    (value: number) => config.commit(store.controls, value),
     [store, config],
   );
 
@@ -301,7 +299,7 @@ export function useSlider({
       if (config.unmutesOnGrab) {
         // Grabbing the thumb of a silenced player makes it audible again, at the
         // remembered volume — which is why the hold can come after.
-        store.send({ type: "UNMUTE" });
+        store.controls.setMuted(false);
       }
       holdAudibleVolume();
       beginDrag(valueAt(clientXY - grabOffset), grabOffset);
@@ -372,10 +370,9 @@ export function useSlider({
           return;
         }
         const amount = step || config.defaultArrowStep;
-        store.send(
-          ARROW_KEYS[event.key] === "increase"
-            ? config.increase(amount)
-            : config.decrease(amount),
+        config.step(
+          store.controls,
+          ARROW_KEYS[event.key] === "increase" ? amount : -amount,
         );
         event.preventDefault();
         event.stopPropagation();

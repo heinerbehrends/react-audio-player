@@ -3,7 +3,7 @@ import { act, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { AudioPlayer } from "../../src/Player/AudioPlayer";
 import type { Track } from "../../src/Player/PlayerConfigContext";
-import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
+import type { Shortcuts } from "../../src/KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../../src/Shared/playerLabels";
 
 // `track`, `shortcuts` and `labels` are static config, so the
@@ -19,15 +19,15 @@ vi.mock("../../src/Player/PlayerConfigContext", () => ({
   }: {
     children: React.ReactNode;
     track: Track;
-    shortcuts?: KeyToActionMap;
+    shortcuts?: Shortcuts;
     labels?: PlayerLabels;
   }) => (
     <div
       data-testid="player-config-provider"
       data-audio-src={track.src}
-      data-keyboard-shortcuts={JSON.stringify(shortcuts)}
-      // The keys, not the bag: half the entries are functions, which
+      // The keys, not the bags: the entries are functions, which
       // `JSON.stringify` drops.
+      data-shortcut-keys={Object.keys(shortcuts ?? {}).join(",")}
       data-label-keys={Object.keys(labels ?? {}).join(",")}
     >
       {children}
@@ -124,9 +124,9 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
   });
 
   it("passes custom keyboard shortcuts to PlayerConfigProvider", () => {
-    const customShortcuts: KeyToActionMap = {
-      x: { type: "TOGGLE_PLAY" },
-      y: { type: "STOP_AUDIO" },
+    const customShortcuts: Shortcuts = {
+      x: ({ toggle }) => toggle(),
+      y: ({ stop }) => stop(),
     };
 
     render(
@@ -136,10 +136,7 @@ describe("AudioPlayer - Custom Keyboard Shortcuts", () => {
     );
 
     const provider = screen.getByTestId("player-config-provider");
-    expect(provider).toHaveAttribute(
-      "data-keyboard-shortcuts",
-      JSON.stringify(customShortcuts),
-    );
+    expect(provider).toHaveAttribute("data-shortcut-keys", "x,y");
   });
 
   it("passes labels to PlayerConfigProvider", () => {

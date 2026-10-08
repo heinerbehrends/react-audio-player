@@ -44,15 +44,17 @@ it would otherwise scroll the page.
 ## Rebinding and unbinding
 
 `shortcuts` is merged over the defaults, so a key you do not name
-keeps its binding. A binding is a `KeyboardAction`, or `null` to unbind and let
-the key reach the browser:
+keeps its binding. A binding is a function, given what `useAudioPlayer()`
+returns at the moment the key is pressed, or `null` to unbind the key and let it
+reach the browser. Letters match either case, so `p: null` unbinds Shift+P too:
 
 ```jsx
 <AudioPlayer
   track={track}
   shortcuts={{
     p: null,
-    f: { type: "SET_TIME_FORWARD", value: 30 },
+    f: ({ seekBy }) => seekBy(30),
+    r: ({ reload }) => reload(),
   }}
 >
 ```
@@ -65,8 +67,7 @@ keys and unbinds one in its `shortcuts.ts`, and builds the list it shows beside
 the player from the same array as the map.
 
 The map is player-wide rather than per control: a key that works on one button
-and not its neighbour would be a bug. The slider commit, which carries a value
-in one component's units, is not bindable.
+and not its neighbour would be a bug.
 
 To skip a shortcut on one control only, call `preventDefault()` in that
 control's `onKeyDown`; your handler runs first. On a `<button>` that also

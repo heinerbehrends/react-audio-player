@@ -246,7 +246,9 @@ and the checklist below fold `reload` into it. Make the ticket thirteen.
   could disagree were the only reason for them. Buttons and keys now stop at 4
   by default rather than 8. The "AudioPlayer only" budget was raised from
   2600 to 2900 B for it; measured 2741 B.
-- **S36 opened** for the vocabulary consolidation, with the decision recorded.
+- **S36 opened** for the vocabulary consolidation, with the decision recorded,
+  and resolved the same day; the ticket records what was decided while
+  building it.
 - **Renamed (finding 5):** `audioFile` to `track`, the `AudioFile` type to
   `Track`, and `customKeyboardShortcuts` to `shortcuts`. `KeyToActionMap`
   keeps its name until S36 replaces it. No aliases: nothing is published.
@@ -254,13 +256,14 @@ and the checklist below fold `reload` into it. Make the ticket thirteen.
 ## Before tagging beta.0
 
 1. Fix the captions sentence in the recipe and the README table (finding 3).
-2. Document the seek gate, and add `startTime` or the media-fragment recipe
-   (findings 2 and 7).
+2. Add `startTime` or the media-fragment recipe (finding 2). The seek gate is
+   documented on `seek` now (finding 7).
 3. Renames in finding 5: `track` and `shortcuts` done. Slider prop parity
    still open.
-4. Land S36: the twelve verbs, `reload`, and the function form of the
-   shortcut map.
-5. Add `useAudioControls()` (finding 4).
+4. ~~Land S36~~ — done: thirteen verbs with `reload`, function shortcuts that
+   match letters in either case, and `useAudioControls()` (findings 1, 4, 6
+   and code-review 9).
+5. ~~Add `useAudioControls()`~~ — done with S36.
 6. Fix the "Before beta" items of the code review: the `check-docs` member
    gap, the button `type`, the custom-components shortcuts, and the two tests
    that cannot fail.

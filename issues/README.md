@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**14 open · 0 part-done · 115 resolved · 6 rejected**
+**13 open · 0 part-done · 116 resolved · 6 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -47,9 +47,8 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Public surface & DX
 
-2 open of 36.
+1 open of 36.
 
-- [ ] [S36](surface/S36-two-vocabularies-for-one-set-of-operations.md) Two vocabularies for one set of operations — P2, **breaking**
 - [ ] [S35](surface/S35-useplayerrootprops-returns-a-270-line-inferred-type.md) `usePlayerRootProps()` returns a 270-line inferred type — P3
 - [x] [S1](resolved/surface/S1-classname-is-silently-dropped-on-timeline-and.md) `className` is silently dropped on `<Timeline>` and `<Volume>` — while the types accept it — P0
 - [x] [S2](resolved/surface/S2-time-is-a-plain-object-typed-as.md) `Time` is a plain object typed as a component — P0
@@ -76,6 +75,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [S28](resolved/surface/S28-a-stylesheet-cannot-restyle-the-progress-fill.md) A stylesheet cannot restyle the progress fill — P2, **breaking**
 - [x] [S29](resolved/surface/S29-progress-leaves-its-range-and-waits-for-measurement.md) `--progress` leaves its range, and waits for a measurement it does not need — P2
 - [x] [S34](resolved/surface/S34-preload-none-reads-as-loading.md) 'Under `preload="none"` the player says "Loading audio" before anything loads' — P2
+- [x] [S36](resolved/surface/S36-two-vocabularies-for-one-set-of-operations.md) Two vocabularies for one set of operations — P2, **breaking**
 - [x] [S20](resolved/surface/S20-css-custom-properties.md) CSS custom properties — P3
 - [x] [S21](resolved/surface/S21-volumes-exported-type-has-a-duplicated-intersection.md) `Volume`'s exported type has a duplicated intersection — P3
 - [x] [S22](resolved/surface/S22-progress-stacks-above-background-by-accident.md) `Progress` stacks above `Background` by accident — P3

@@ -1,10 +1,8 @@
 import { formatTime } from "../Shared/formatTime";
-import type {
-  SideEffectAction,
-  SliderComponent,
-} from "../AudioElement/sideEffectActions";
+import type { AudioPlayerControls } from "../store/createControls";
 
 export type SliderMode = "seek" | "volume" | "rate";
+export type SliderComponent = "timeline" | "volume" | "rate";
 /**
  * What a slider's `aria-valuetext` entry receives. The same payload for all
  * three sliders: the timeline reads `value` and `maxValue` as whole seconds,
@@ -25,14 +23,13 @@ export type SliderAriaState = {
  * export, so a root imports only its own: the timeline does not carry the
  * volume and rate strings.
  *
- * Mute-at-zero is deliberately not here: it lives in `handleSideEffect`, which a
- * consumer's own `CHANGE_VALUE` also passes through (C2).
+ * Mute-at-zero is deliberately not here: it lives in `setVolume`, which a
+ * consumer's own call also goes through (C2).
  */
 export type SliderModeConfig = {
   mode: SliderMode;
   /**
-   * Which slider this is: what a `CHANGE_VALUE` names, internal since S15, and
-   * the root's `data-slider`, which is public.
+   * Which slider this is: the root's `data-slider`, which is public.
    */
   component: SliderComponent;
   /** The root's export name, for the missing-`.Control` error (S14). */
@@ -71,8 +68,9 @@ export type SliderModeConfig = {
    * rate step to the player's `rateRange`, which is also the slider's range,
    * so an arrow press cannot push the thumb past its own track (F15).
    */
-  increase: (amount: number) => SideEffectAction;
-  decrease: (amount: number) => SideEffectAction;
+  step: (controls: AudioPlayerControls, delta: number) => void;
+  /** What a gesture writes: `seek`, `setVolume` or `setRate`. */
+  commit: (controls: AudioPlayerControls, value: number) => void;
   /**
    * The range without `minValue` / `maxValue`: `"volume"`'s is `0`–`1`, and
    * `"seek"`'s is the duration. `"rate"`'s root passes the store's.
@@ -101,8 +99,8 @@ export const SEEK_MODE = {
   ariaValueText: ({ value, maxValue }) =>
     `Position ${formatTime(value)} of ${formatTime(maxValue)}`,
   defaultArrowStep: 5,
-  increase: (amount) => ({ type: "SET_TIME_FORWARD", value: amount }),
-  decrease: (amount) => ({ type: "SET_TIME_BACKWARD", value: amount }),
+  step: (controls, delta) => controls.seekBy(delta),
+  commit: (controls, value) => controls.seek(value),
 } satisfies SliderModeConfig;
 
 export const VOLUME_MODE = {
@@ -123,8 +121,8 @@ export const VOLUME_MODE = {
   defaultArrowStep: 0.05,
   // Bounds unused: 0–1 is the browser's own range, so the write clamp is
   // already the number the slider would send.
-  increase: (amount) => ({ type: "INCREASE_VOLUME", value: amount }),
-  decrease: (amount) => ({ type: "DECREASE_VOLUME", value: amount }),
+  step: (controls, delta) => controls.adjustVolume(delta),
+  commit: (controls, value) => controls.setVolume(value),
   defaultBounds: { minValue: 0, maxValue: 1 },
 } satisfies SliderModeConfig;
 
@@ -141,8 +139,8 @@ export const RATE_MODE = {
   // Already rounded: it is handed the quantized value.
   ariaValueText: ({ value }) => `${value}x`,
   defaultArrowStep: 0.1,
-  increase: (amount) => ({ type: "INCREASE_PLAYBACK_RATE", value: amount }),
-  decrease: (amount) => ({ type: "DECREASE_PLAYBACK_RATE", value: amount }),
+  step: (controls, delta) => controls.adjustRate(delta),
+  commit: (controls, value) => controls.setRate(value),
 } satisfies SliderModeConfig;
 
 /**

@@ -24,6 +24,7 @@ export { useTimeToggleProps } from "./TimeDisplay/TimeDisplay";
 export { usePlaybackRateSetProps } from "./PlaybackRate/SetPlaybackRate";
 export { usePlaybackRateChangeProps } from "./PlaybackRate/ChangePlaybackRate";
 export {
+  useAudioControls,
   useAudioPlayer,
   useCurrentSecond,
   useCurrentTime,
@@ -46,8 +47,7 @@ export { formatTime } from "./Shared/formatTime";
 export type { Track } from "./Player/PlayerConfigContext";
 export type { PlayerLabels, TimePart } from "./Shared/playerLabels";
 export type { SliderAriaState } from "./Slider/sliderModes";
-export type { KeyboardAction } from "./AudioElement/sideEffectActions";
-export type { KeyToActionMap } from "./KeyboardControls/handleMediaKeys";
+export type { Shortcut, Shortcuts } from "./KeyboardControls/handleMediaKeys";
 
 export type {
   AudioPlayerState,

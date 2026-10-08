@@ -215,7 +215,7 @@ The root. Creates the store and renders the `<audio>` element.
 | `track`      | `Track`                 | The track: `src`, plus `live`, `title`, `artist`, `album` and `artwork`. A new `src` swaps the track. Required.                                                  |
 | `onEnded`    | `() => void`            | Called once when the track plays to its end. Change `track` here to advance a playlist.                                                                          |
 | `labels`     | `PlayerLabels`          | Your own strings for every name and readout. See [Labels and localisation](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/localisation.md). |
-| `shortcuts`  | `KeyToActionMap`        | Merged over the default [shortcuts](#keyboard-shortcuts); `null` unbinds a key.                                                                                  |
+| `shortcuts`  | `Shortcuts`             | Merged over the default [shortcuts](#keyboard-shortcuts); `null` unbinds a key.                                                                                  |
 | `rateRange`  | `[number, number]`      | The slowest and fastest rate any control can reach; the rate slider spans it. Default `[0.5, 4]`, kept within `0.125`–`8`.                                       |
 | `audioProps` | `AudioHTMLAttributes`   | Forwarded to the `<audio>` element. Excludes `src` and `onEnded`.                                                                                                |
 | `audioRef`   | `Ref<HTMLAudioElement>` | A ref to the `<audio>` element.                                                                                                                                  |
@@ -254,7 +254,8 @@ Every hook must be called inside an `<AudioPlayer>`, except
 
 | Hook                     | Returns                                                                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useAudioPlayer()`       | The state and the controls: `play`, `pause`, `seek`, `setVolume`, `setRate` and the rest.                                                      |
+| `useAudioPlayer()`       | The state and the controls: `play`, `pause`, `seek`, `setVolume`, `setRate`, `reload` and the rest.                                            |
+| `useAudioControls()`     | The controls alone, which never re-render.                                                                                                     |
 | `useCurrentSecond()`     | The position in whole seconds, re-rendering once a second. For a clock.                                                                        |
 | `useCurrentTime()`       | The raw position, about four times a second. For a waveform.                                                                                   |
 | `useTimeDisplay()`       | `elapsed` and `remaining` in whole seconds, for a readout of your own.                                                                         |

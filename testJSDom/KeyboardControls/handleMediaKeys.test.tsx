@@ -1,23 +1,50 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   handleMediaKeys,
-  KeyToActionMap,
+  type Shortcuts,
   useHandleMediaKeys,
 } from "../../src/KeyboardControls/handleMediaKeys";
 import { renderHook } from "@testing-library/react";
 import React from "react";
-import type { SideEffectAction } from "../../src/AudioElement/sideEffectActions";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
 import { createTestStore } from "../store/createTestStore";
 import type { MediaFields } from "../store/mediaElementFake";
 
-const mockHandleSideEffect = vi.fn();
+type KeyInit = {
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+};
+
+function keyEvent(key: string, init: KeyInit = {}) {
+  return {
+    key,
+    ...init,
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+  } as unknown as React.KeyboardEvent<HTMLButtonElement>;
+}
 
 /**
- * `useHandleMediaKeys` dispatches through `store.send`, so the hook's own tests
- * assert on the attached element rather than on a mocked hook.
+ * The handler against a loaded store, asserting on the attached element rather
+ * than on what the shortcut was handed.
  */
+function setup(element: Partial<MediaFields> = {}, shortcuts?: Shortcuts) {
+  const harness = createTestStore({ readyState: 1, ...element });
+  const press = (key: string, init?: KeyInit) => {
+    const event = keyEvent(key, init);
+    const handled = handleMediaKeys({
+      event,
+      player: () => harness.store.read(),
+      shortcuts,
+    });
+    return { handled, event };
+  };
+  return { press, ...harness };
+}
+
 function renderMediaKeys(element: Partial<MediaFields> = {}) {
   const harness = createTestStore({ readyState: 1, ...element });
   const { result } = renderHook(() => useHandleMediaKeys(), {
@@ -36,270 +63,252 @@ function renderMediaKeys(element: Partial<MediaFields> = {}) {
   return { handle: result.current, ...harness };
 }
 
-function keyEvent(key: string) {
-  return {
-    key,
-    preventDefault: vi.fn(),
-    stopPropagation: vi.fn(),
-  } as unknown as React.KeyboardEvent<HTMLButtonElement>;
-}
-
 describe("handleMediaKeys", () => {
-  let defaultArgs: {
-    event: React.KeyboardEvent<HTMLButtonElement>;
-    handleSideEffect: (action: SideEffectAction) => void;
-    shortcuts: KeyToActionMap;
-  };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    defaultArgs = {
-      event: {
-        key: "",
-        preventDefault: vi.fn(),
-      } as unknown as React.KeyboardEvent<HTMLButtonElement>,
-      handleSideEffect: mockHandleSideEffect,
-      shortcuts: {
-        "`": { type: "TOGGLE_PLAY" },
-      },
-    };
-  });
-
   describe("Playback control keys", () => {
-    it("should handle play/pause keys (p, k, MediaPlayPause)", () => {
-      const playPauseKeys = ["p", "P", "k", "K", "MediaPlayPause"];
+    it.each(["p", "k", "MediaPlayPause"])("%s plays and pauses", (key) => {
+      const { press, element } = setup({ paused: true });
 
-      playPauseKeys.forEach((key) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "TOGGLE_PLAY",
-        });
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.play).toHaveBeenCalledTimes(1);
+
+      element.paused = false;
+      element.emit("play");
+      press(key);
+      expect(element.pause).toHaveBeenCalledTimes(1);
     });
 
-    it("should handle stop key (s, MediaStop)", () => {
-      const stopKeys = ["s", "S", "MediaStop"];
+    it.each(["s", "MediaStop"])("%s stops", (key) => {
+      const { press, element } = setup({ paused: false, currentTime: 40 });
 
-      stopKeys.forEach((key) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "STOP_AUDIO",
-        });
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.pause).toHaveBeenCalled();
+      expect(element.currentTime).toBe(0);
     });
   });
 
   describe("Volume control keys", () => {
-    it("should handle mute toggle key (m, MediaMute)", () => {
-      const muteKeys = ["m", "M", "MediaMute"];
+    it.each(["m", "MediaMute"])("%s toggles mute", (key) => {
+      const { press, element } = setup();
 
-      muteKeys.forEach((key) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.muted).toBe(true);
 
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "TOGGLE_MUTE",
-        });
-      });
+      press(key);
+      expect(element.muted).toBe(false);
     });
 
-    it("should handle volume up key (ArrowUp, MediaVolumeUp)", () => {
-      const volumeUpKeys = ["ArrowUp", "MediaVolumeUp"];
+    it.each(["ArrowUp", "MediaVolumeUp"])("%s raises the volume", (key) => {
+      const { press, element } = setup({ volume: 0.5 });
 
-      volumeUpKeys.forEach((key) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "INCREASE_VOLUME",
-          value: 0.025,
-        });
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.volume).toBeCloseTo(0.525);
     });
 
-    it("should handle volume down key (ArrowDown, MediaVolumeDown)", () => {
-      const volumeDownKeys = ["ArrowDown", "MediaVolumeDown"];
+    it.each(["ArrowDown", "MediaVolumeDown"])("%s lowers the volume", (key) => {
+      const { press, element } = setup({ volume: 0.5 });
 
-      volumeDownKeys.forEach((key) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.volume).toBeCloseTo(0.475);
+    });
 
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "DECREASE_VOLUME",
-          value: 0.025,
-        });
-      });
+    it("mutes when ArrowDown reaches zero", () => {
+      const { press, element } = setup({ volume: 0.025 });
+
+      press("ArrowDown");
+
+      expect(element.muted).toBe(true);
     });
   });
 
   describe("Seeking keys", () => {
-    it("should handle seek forward (ArrowRight, l)", () => {
-      const seekForwardTests = [
-        { key: "ArrowRight", value: 5 },
-        { key: "l", value: 10 },
-        { key: "L", value: 10 },
-      ];
+    it.each([
+      { key: "ArrowRight", expected: 15 },
+      { key: "l", expected: 20 },
+      { key: "ArrowLeft", expected: 5 },
+      { key: "j", expected: 0 },
+    ])("$key seeks from 10 to $expected", ({ key, expected }) => {
+      const { press, element } = setup({ currentTime: 10 });
 
-      seekForwardTests.forEach(({ key, value }) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "SET_TIME_FORWARD",
-          value,
-        });
-      });
-    });
-
-    it("should handle seek backward (ArrowLeft, j)", () => {
-      const seekBackwardTests = [
-        { key: "ArrowLeft", value: 5 },
-        { key: "j", value: 10 },
-        { key: "J", value: 10 },
-      ];
-
-      seekBackwardTests.forEach(({ key, value }) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
-
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "SET_TIME_BACKWARD",
-          value,
-        });
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.currentTime).toBe(expected);
     });
   });
 
   describe("Numeric seek keys", () => {
-    it("should handle numeric keys to seek to percentage of duration", () => {
-      const numericTests = [
-        { key: "0", expected: { type: "SET_TIME_TO_START" } },
-        { key: "1", expected: { type: "SET_TIME_TO_PERCENT", percent: 0.1 } },
-        { key: "5", expected: { type: "SET_TIME_TO_PERCENT", percent: 0.5 } },
-        { key: "9", expected: { type: "SET_TIME_TO_PERCENT", percent: 0.9 } },
-      ];
+    it.each([
+      { key: "0", expected: 0 },
+      { key: "1", expected: 20 },
+      { key: "5", expected: 100 },
+      { key: "9", expected: 180 },
+    ])("$key seeks to $expected of 200", ({ key, expected }) => {
+      const { press, element } = setup({ duration: 200, currentTime: 50 });
 
-      numericTests.forEach((test) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = test.key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith(test.expected);
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.currentTime).toBe(expected);
     });
   });
 
   describe("Playback rate keys", () => {
-    it("should handle increase playback rate keys (>, ])", () => {
-      const increaseKeys = [">", "]"];
-      increaseKeys.forEach((key) => {
-        mockHandleSideEffect.mockClear();
-        defaultArgs.event.key = key;
+    it.each([">", "]"])("%s steps the rate up", (key) => {
+      const { press, element } = setup();
 
-        const result = handleMediaKeys(defaultArgs);
+      const { handled, event } = press(key);
 
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "INCREASE_PLAYBACK_RATE",
-          value: 0.05,
-        });
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.playbackRate).toBeCloseTo(1.05);
     });
 
-    it("should handle decrease playback rate keys (<, [)", () => {
-      const decreaseKeys = ["<", "["];
+    it.each(["<", "["])("%s steps the rate down", (key) => {
+      const { press, element } = setup();
 
-      decreaseKeys.forEach((key) => {
-        defaultArgs.event.key = key;
+      const { handled, event } = press(key);
 
-        const result = handleMediaKeys(defaultArgs);
-
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith({
-          type: "DECREASE_PLAYBACK_RATE",
-          value: 0.05,
-        });
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.playbackRate).toBeCloseTo(0.95);
     });
 
-    it("should handle reset playback rate key (Backspace)", () => {
-      defaultArgs.event.key = "Backspace";
+    it("Backspace resets the rate", () => {
+      const { press, element } = setup({ playbackRate: 2 });
 
-      const result = handleMediaKeys(defaultArgs);
+      const { handled, event } = press("Backspace");
 
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "RESET_PLAYBACK_RATE",
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.playbackRate).toBe(1);
+    });
+  });
+
+  describe("Modifier keys", () => {
+    it.each(["ctrlKey", "metaKey", "altKey"] as const)(
+      "leaves %s combinations to the browser",
+      (modifier) => {
+        const { press, element } = setup({ paused: true });
+
+        const { handled, event } = press("p", { [modifier]: true });
+
+        expect(handled).toBe(false);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(element.play).not.toHaveBeenCalled();
+      },
+    );
+
+    // `<` and `>` are shifted keys.
+    it("does not block Shift", () => {
+      const { press, element } = setup();
+
+      const { handled } = press(">", { shiftKey: true });
+
+      expect(handled).toBe(true);
+      expect(element.playbackRate).toBeCloseTo(1.05);
+    });
+  });
+
+  describe("Letter case", () => {
+    it.each(["P", "K"])("%s plays, as Shift or Caps Lock sends it", (key) => {
+      const { press, element } = setup({ paused: true });
+
+      const { handled } = press(key, { shiftKey: true });
+
+      expect(handled).toBe(true);
+      expect(element.play).toHaveBeenCalledTimes(1);
+    });
+
+    it("S stops", () => {
+      const { press, element } = setup({ paused: false });
+
+      press("S");
+
+      expect(element.pause).toHaveBeenCalled();
+    });
+
+    it("M mutes", () => {
+      const { press, element } = setup();
+
+      press("M");
+
+      expect(element.muted).toBe(true);
+    });
+
+    it.each([
+      { key: "L", expected: 20 },
+      { key: "J", expected: 0 },
+    ])("$key seeks like its lowercase default", ({ key, expected }) => {
+      const { press, element } = setup({ currentTime: 10 });
+
+      press(key);
+
+      expect(element.currentTime).toBe(expected);
+    });
+
+    it("unbinds both cases with a lowercase null", () => {
+      const { press, element } = setup({ paused: true }, { p: null });
+
+      const { handled, event } = press("P");
+
+      expect(handled).toBe(false);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(element.play).not.toHaveBeenCalled();
+    });
+
+    it("applies an uppercase binding to the lowercase key", () => {
+      const { press, element } = setup(
+        { currentTime: 10 },
+        { L: ({ seekBy }) => seekBy(30) },
+      );
+
+      press("l");
+
+      expect(element.currentTime).toBe(40);
     });
   });
 
   describe("Custom keyboard shortcuts", () => {
-    it("should handle custom shortcuts that override default ones while preserving other defaults", () => {
-      defaultArgs.shortcuts = {
-        x: { type: "TOGGLE_PLAY" },
-      };
+    it("merges over the defaults", () => {
+      const { press, element } = setup(
+        { paused: true },
+        { x: ({ toggleMute }) => toggleMute() },
+      );
 
-      defaultArgs.event.key = "x";
-      let result = handleMediaKeys(defaultArgs);
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
-      });
+      expect(press("x").handled).toBe(true);
+      expect(element.muted).toBe(true);
 
-      vi.clearAllMocks();
-      defaultArgs.event.key = "p";
-      result = handleMediaKeys(defaultArgs);
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
-      });
+      expect(press("p").handled).toBe(true);
+      expect(element.play).toHaveBeenCalledTimes(1);
+    });
 
-      vi.clearAllMocks();
-      defaultArgs.event.key = "s";
-      result = handleMediaKeys(defaultArgs);
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({ type: "STOP_AUDIO" });
+    it("replaces a default", () => {
+      const { press, element } = setup(
+        { paused: true },
+        { p: ({ toggleMute }) => toggleMute() },
+      );
+
+      press("p");
+
+      expect(element.play).not.toHaveBeenCalled();
+      expect(element.muted).toBe(true);
     });
 
     /**
@@ -308,98 +317,89 @@ describe("handleMediaKeys", () => {
      * way left to turn a shortcut off.
      */
     it("unbinds a default and lets the key through", () => {
-      defaultArgs.shortcuts = { p: null };
+      const { press, element } = setup({ paused: true }, { p: null });
 
-      defaultArgs.event.key = "p";
-      const result = handleMediaKeys(defaultArgs);
+      const { handled, event } = press("p");
 
-      expect(result).toBe(false);
-      expect(mockHandleSideEffect).not.toHaveBeenCalled();
-      // Neither call is made, so the key reaches the browser untouched.
-      expect(defaultArgs.event.preventDefault).not.toHaveBeenCalled();
+      expect(handled).toBe(false);
+      expect(element.play).not.toHaveBeenCalled();
+      expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
     it("unbinds one key without disturbing its neighbours", () => {
-      defaultArgs.shortcuts = { p: null };
+      const { press, element } = setup({ paused: true }, { p: null });
 
-      defaultArgs.event.key = "k";
-      const result = handleMediaKeys(defaultArgs);
-
-      expect(result).toBe(true);
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
-      });
+      expect(press("k").handled).toBe(true);
+      expect(element.play).toHaveBeenCalledTimes(1);
     });
 
-    it("should handle custom shortcuts with different actions", () => {
-      defaultArgs.shortcuts = {
-        z: { type: "SET_TIME_FORWARD", value: 30 },
-      };
+    it("hands the shortcut the player's state", () => {
+      const { press, element } = setup(
+        { duration: 200 },
+        { x: ({ seek, duration }) => seek(duration / 2) },
+      );
 
-      defaultArgs.event.key = "z";
-      const result = handleMediaKeys(defaultArgs);
+      const { handled, event } = press("x");
 
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "SET_TIME_FORWARD",
-        value: 30,
-      });
+      expect(handled).toBe(true);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(element.currentTime).toBe(100);
     });
 
-    it("should handle a custom shortcut", () => {
-      defaultArgs.event.key = "`";
-      const result = handleMediaKeys(defaultArgs);
+    it("reads the player when the key is pressed, and only then", () => {
+      const harness = createTestStore({ readyState: 1 });
+      const player = vi.fn(() => harness.store.read());
 
-      expect(result).toBe(true);
-      expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-      expect(mockHandleSideEffect).toHaveBeenCalledWith({
-        type: "TOGGLE_PLAY",
-      });
+      handleMediaKeys({ event: keyEvent("a"), player, shortcuts: undefined });
+      expect(player).not.toHaveBeenCalled();
+
+      handleMediaKeys({ event: keyEvent("m"), player, shortcuts: undefined });
+      expect(player).toHaveBeenCalledTimes(1);
     });
 
-    it("should handle multiple custom shortcuts", () => {
-      defaultArgs.shortcuts = {
-        x: { type: "TOGGLE_PLAY" },
-        y: { type: "STOP_AUDIO" },
-        z: { type: "SET_TIME_FORWARD", value: 30 },
-      };
+    it("handles multiple custom shortcuts", () => {
+      const { press, element } = setup(
+        { paused: true, currentTime: 10 },
+        {
+          x: ({ toggle }) => toggle(),
+          y: ({ toggleMute }) => toggleMute(),
+          z: ({ seekBy }) => seekBy(30),
+        },
+      );
 
-      const shortcuts = [
-        { key: "x", action: { type: "TOGGLE_PLAY" } },
-        { key: "y", action: { type: "STOP_AUDIO" } },
-        { key: "z", action: { type: "SET_TIME_FORWARD", value: 30 } },
-      ];
+      press("x");
+      press("y");
+      press("z");
 
-      shortcuts.forEach(({ key, action }) => {
-        vi.clearAllMocks();
-        defaultArgs.event.key = key;
-
-        const result = handleMediaKeys(defaultArgs);
-        expect(result).toBe(true);
-        expect(defaultArgs.event.preventDefault).toHaveBeenCalled();
-        expect(mockHandleSideEffect).toHaveBeenCalledWith(action);
-      });
+      expect(element.play).toHaveBeenCalledTimes(1);
+      expect(element.muted).toBe(true);
+      expect(element.currentTime).toBe(40);
     });
   });
 
-  it("should return false for unhandled keys", () => {
-    mockHandleSideEffect.mockClear();
-    defaultArgs.event.key = "a";
+  // A1: Space presses the focused button; `<PlayerRoot>` binds it itself.
+  it("leaves Space unbound", () => {
+    const { press, element } = setup({ paused: true });
 
-    const result = handleMediaKeys(defaultArgs);
+    const { handled, event } = press(" ");
 
-    expect(result).toBe(false);
-    expect(defaultArgs.event.preventDefault).not.toHaveBeenCalled();
-    expect(mockHandleSideEffect).not.toHaveBeenCalled();
+    expect(handled).toBe(false);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(element.play).not.toHaveBeenCalled();
+  });
+
+  it("returns false for unhandled keys", () => {
+    const { press, element } = setup({ paused: true });
+
+    const { handled, event } = press("a");
+
+    expect(handled).toBe(false);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(element.play).not.toHaveBeenCalled();
   });
 });
 
 describe("useHandleMediaKeys", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("should handle key events correctly", () => {
     const { handle, element } = renderMediaKeys({ paused: true });
     const event = keyEvent("p");
@@ -426,28 +426,26 @@ describe("useHandleMediaKeys", () => {
 });
 
 /**
- * S15. A type, so the assertions are compile-time: `@ts-expect-error` fails the
- * build if the error stops happening — which is what a widened `KeyToActionMap`
- * would do.
+ * S15, carried over to functions. A type, so the assertions are compile-time:
+ * `@ts-expect-error` fails the build if the error stops happening.
  */
 describe("what a key can be bound to", () => {
-  it("accepts the actions a key should reach", () => {
-    const map: KeyToActionMap = {
-      a: { type: "TOGGLE_PLAY" },
-      b: { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
-      c: { type: "INCREASE_PLAYBACK_RATE", value: 0.1 },
-      d: { type: "STOP_AUDIO" },
-      // `null` unbinds — see `KeyToActionMap`.
-      e: null,
+  it("accepts a function of the player, or null", () => {
+    const map: Shortcuts = {
+      a: ({ toggle }) => toggle(),
+      b: ({ seek, duration }) => seek(duration / 2),
+      c: ({ adjustRate }) => adjustRate(0.1),
+      // `null` unbinds — see `Shortcuts`.
+      d: null,
     };
 
-    expect(Object.keys(map)).toHaveLength(5);
+    expect(Object.keys(map)).toHaveLength(4);
   });
 
-  it("rejects the slider commit", () => {
-    const map: KeyToActionMap = {
-      // @ts-expect-error the slider commit path — see `KeyboardAction`
-      a: { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
+  it("rejects the old action objects", () => {
+    const map: Shortcuts = {
+      // @ts-expect-error an action, not a function
+      a: { type: "TOGGLE_PLAY" },
     };
 
     expect(Object.keys(map)).toHaveLength(1);

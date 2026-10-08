@@ -108,9 +108,16 @@ const MEDIA_ERROR_REASONS: Record<number, MediaErrorReason> = {
 /** The last failure, or `null`. A media error wins when both kinds are set. */
 export function useAudioError(): AudioError | null {
   const store = usePlayerStore();
-  const code = useStore(store.mediaErrorCode);
-  const playbackError = useStore(store.playbackError);
+  return audioErrorOf(
+    useStore(store.mediaErrorCode),
+    useStore(store.playbackError),
+  );
+}
 
+export function audioErrorOf(
+  code: number | null,
+  playbackError: string | null,
+): AudioError | null {
   if (code !== null) {
     return { kind: "media", reason: MEDIA_ERROR_REASONS[code] ?? "unknown" };
   }

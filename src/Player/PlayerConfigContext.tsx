@@ -2,7 +2,7 @@
    The provider and its hook are one unit, and the context object stays private
    so the null-default guard below cannot be bypassed. */
 import { createContext, useContext } from "react";
-import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
+import type { Shortcuts } from "../KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../Shared/playerLabels";
 
 /** The track `<AudioPlayer>` plays. A new `src` swaps the track. */
@@ -33,7 +33,7 @@ export type Track = {
  */
 export type PlayerConfig = {
   track: Track;
-  shortcuts: KeyToActionMap | undefined;
+  shortcuts: Shortcuts | undefined;
   labels: PlayerLabels | undefined;
 };
 

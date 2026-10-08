@@ -1185,7 +1185,7 @@ describe("a drag ended by touch", () => {
 
   it("commits once when pointerup and touchend both fire", () => {
     const harness = renderSlider({ mode: "seek" }, { currentTime: 10 });
-    const send = vi.spyOn(harness.store.store, "send");
+    const seek = vi.spyOn(harness.store.store.controls, "seek");
 
     act(() => harness.result.current.onThumbPointerDown(thumbPointer(120, 0)));
     pointerMove(TRACK_START + TRACK_LENGTH * 0.75);
@@ -1197,9 +1197,7 @@ describe("a drag ended by touch", () => {
       window.dispatchEvent(touchEvent("touchend", at));
     });
 
-    expect(
-      send.mock.calls.filter(([action]) => action.type === "CHANGE_VALUE"),
-    ).toHaveLength(1);
+    expect(seek).toHaveBeenCalledTimes(1);
   });
 });
 

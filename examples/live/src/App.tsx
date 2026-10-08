@@ -1,5 +1,5 @@
 import "./App.css";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect } from "react";
 import {
   AudioPlayer,
   ErrorMessage,
@@ -9,6 +9,7 @@ import {
   PlayerRoot,
   Time,
   Volume,
+  useAudioControls,
   useAudioPlayer,
   useIsBuffering,
 } from "react-headless-audio-player";
@@ -25,36 +26,23 @@ const STATION = {
 };
 
 export default function App() {
-  const audioRef = useRef<HTMLAudioElement>(null);
   return (
     // `preload: "none"`: a stream never ends, so without it every visit
     // downloads radio until the tab closes, whether anyone listens or not.
-    <AudioPlayer
-      track={STATION}
-      audioProps={{ preload: "none" }}
-      audioRef={audioRef}
-    >
-      <Station audioRef={audioRef} />
+    <AudioPlayer track={STATION} audioProps={{ preload: "none" }}>
+      <Station />
     </AudioPlayer>
   );
 }
 
 // Its own component because the hooks work only inside the player.
-function Station({
-  audioRef,
-}: {
-  audioRef: React.RefObject<HTMLAudioElement | null>;
-}) {
+function Station() {
   const buffering = useIsBuffering();
-  const { play } = useAudioPlayer();
+  const { reload, play } = useAudioControls();
 
   // The library reports a dropped stream; reconnecting is the app's call.
-  // `load()` starts the stream afresh, which for a station means live again.
-  const reconnect = useCallback(() => {
-    audioRef.current?.load();
-    play();
-  }, [audioRef, play]);
-  useReconnectOnStall(buffering, reconnect);
+  // `reload()` starts the stream afresh, which for a station means live again.
+  useReconnectOnStall(buffering, reload);
 
   return (
     <PlayerRoot className="live">
@@ -128,7 +116,15 @@ function Station({
 
       <ErrorMessage className="live-error">
         The station is not answering.{" "}
-        <button className="live-retry" onClick={reconnect}>
+        {/* `play()` too: the failure stopped playback, so `reload()` alone
+            would leave it stopped. */}
+        <button
+          className="live-retry"
+          onClick={() => {
+            reload();
+            play();
+          }}
+        >
           Try again
         </button>
       </ErrorMessage>

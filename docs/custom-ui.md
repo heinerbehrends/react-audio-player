@@ -23,22 +23,27 @@ function TrackInfo() {
 }
 ```
 
-| Returns                                           |                                                                                                     |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `duration`, `paused`, `volume`, `muted`, `rate`   | Read straight off the element.                                                                      |
-| `playerState`                                     | `"loading" \| "error" \| "paused" \| "playing"`                                                     |
-| `volumeState`                                     | `"muted" \| "low" \| "high"`                                                                        |
-| `isDisabled`                                      | The track is errored. Loading does not disable.                                                     |
-| `isSeekable`                                      | The duration is known. See `useIsSeekable()`.                                                       |
-| `isLive`                                          | The track is a live stream. See `useIsLive()`.                                                      |
-| `isBuffering`                                     | Playback wants to advance and cannot. See `useIsBuffering()`.                                       |
-| `error`                                           | The last failure, or `null`. See `useAudioError()`.                                                 |
-| `play`, `pause`, `toggle`                         |                                                                                                     |
-| `seek(seconds)`, `seekBy(seconds)`                | Absolute and relative. `seekBy` takes negatives.                                                    |
-| `setVolume(0–1)`, `toggleMute()`, `setRate(rate)` | `setVolume(0)` mutes, exactly as dragging the slider to zero does. `setRate` clamps to `rateRange`. |
+| Returns                                         |                                                                                               |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `duration`, `paused`, `volume`, `muted`, `rate` | Read straight off the element.                                                                |
+| `playerState`                                   | `"loading" \| "error" \| "paused" \| "playing"`                                               |
+| `volumeState`                                   | `"muted" \| "low" \| "high"`                                                                  |
+| `isDisabled`                                    | The track is errored. Loading does not disable.                                               |
+| `isSeekable`                                    | The duration is known. See `useIsSeekable()`.                                                 |
+| `isLive`                                        | The track is a live stream. See `useIsLive()`.                                                |
+| `isBuffering`                                   | Playback wants to advance and cannot. See `useIsBuffering()`.                                 |
+| `error`                                         | The last failure, or `null`. See `useAudioError()`.                                           |
+| `play`, `pause`, `toggle`, `stop`               | `stop` pauses and returns to the start.                                                       |
+| `seek(seconds)`, `seekBy(seconds)`              | Absolute and relative; `seekBy` takes negatives. Both do nothing until the duration is known. |
+| `setVolume(0–1)`, `adjustVolume(delta)`         | `setVolume(0)` mutes, exactly as dragging the slider to zero does.                            |
+| `setMuted(muted)`, `toggleMute()`               | Unmuting restores the last audible volume.                                                    |
+| `setRate(rate)`, `adjustRate(delta)`            | Clamped to `rateRange`.                                                                       |
+| `reload()`                                      | Loads the track afresh, playing again if playback was still wanted.                           |
 
 The control methods keep their identity for the lifetime of the player, so they
-are safe in a dependency array.
+are safe in a dependency array. They are also what a [shortcut](keyboard.md#rebinding-and-unbinding)
+receives. A component that only acts can take them from `useAudioControls()`,
+which returns the controls alone and never re-renders.
 
 ## The position: `useCurrentSecond()` and `useCurrentTime()`
 

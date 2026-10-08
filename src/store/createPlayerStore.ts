@@ -1,9 +1,7 @@
-import { handleSideEffect } from "../AudioElement/handleSideEffect";
-import {
-  normalizeRateRange,
-  type RateRange,
-  type SideEffectAction,
-} from "../AudioElement/sideEffectActions";
+import { normalizeRateRange, type RateRange } from "../AudioElement/rateRange";
+import { createControls, type AudioPlayerControls } from "./createControls";
+import { derivePlayerState, type AudioPlayerState } from "./playerState";
+import { audioErrorOf } from "./derived";
 import { atom, readable, type ReadableAtom } from "./atom";
 import {
   HANDLERS,
@@ -50,7 +48,10 @@ export type PlayerStore = {
   /** Replaces `rateRange` from the prop. A no-op when both ends are unchanged. */
   setRateRange: (range: readonly [number, number] | undefined) => void;
 
-  send: (action: SideEffectAction) => void;
+  /** The control methods, built once: every write to the element goes through them. */
+  controls: AudioPlayerControls;
+  /** `useAudioPlayer()`'s object, read once outside a render: what a shortcut receives. */
+  read: () => AudioPlayerState & AudioPlayerControls;
   /**
    * Freezes `lastAudibleVolume` for the duration of a volume drag and returns
    * its release. Holds are counted, so overlapping ones are safe, and each
@@ -164,51 +165,43 @@ export function createPlayerStore({
     // Now, not at the next write: the slider would draw it past its end.
     const rate = element?.playbackRate;
     if (rate !== undefined && (rate < next.minValue || rate > next.maxValue)) {
-      send({ type: "SET_PLAYBACK_RATE", playbackRate: rate });
+      controls.setRate(rate);
     }
   };
 
-  const send = (action: SideEffectAction) => {
-    if (action.type === "PLAY") playWanted = true;
-    if (action.type === "PAUSE" || action.type === "STOP_AUDIO") {
-      playWanted = false;
-    }
-    if (action.type === "TOGGLE_PLAY" && element) {
-      playWanted = element.paused;
-    }
-
-    const started = handleSideEffect(action, element, {
-      lastAudibleVolume: atoms.lastAudibleVolume.get(),
-      isSeekable: atoms.duration.get() > 0,
-      rateRange: rateRange.get(),
-    });
-    // Volume and rate read back at once, while their events arrive a task
-    // later. Projecting now lands in the same render as the caller's own
-    // update, and the echo then changes nothing: one render per drag move,
-    // not two.
-    if (element) {
+  const controls = createControls({
+    element: () => element,
+    isSeekable: () => atoms.duration.get() > 0,
+    lastAudibleVolume: () => atoms.lastAudibleVolume.get(),
+    rateRange: () => rateRange.get(),
+    project: () => {
+      if (!element) return;
       HANDLERS.volumechange(element, atoms, audibleVolumeHolds > 0);
       HANDLERS.ratechange(element, atoms);
-    }
-    if (!started) return;
-
-    started.then(
-      () => playbackError.set(null),
-      (rejection: unknown) => {
-        const name =
-          (rejection as { name?: string } | null | undefined)?.name ??
-          "UnknownError";
-        // A `pause()` or `src` change overtook the request — a double-click or a
-        // held key. The user's intent was honoured, so there is nothing to
-        // report.
-        if (name === "AbortError") return;
-        // An autoplay refusal would only be repeated by the next swap. Any other —
-        // a 404's `NotSupportedError` — is the track's, so the next one plays.
-        if (name === "NotAllowedError") playWanted = false;
-        playbackError.set(name);
-      },
-    );
-  };
+    },
+    playWanted: () => playWanted,
+    setPlayWanted: (wanted) => {
+      playWanted = wanted;
+    },
+    settlePlay: (started) =>
+      started.then(
+        () => playbackError.set(null),
+        (rejection: unknown) => {
+          const name =
+            (rejection as { name?: string } | null | undefined)?.name ??
+            "UnknownError";
+          // A `pause()` or `src` change overtook the request — a
+          // double-click or a held key. The user's intent was honoured, so
+          // there is nothing to report.
+          if (name === "AbortError") return;
+          // An autoplay refusal would only be repeated by the next swap. Any
+          // other — a 404's `NotSupportedError` — is the track's, so the
+          // next one plays.
+          if (name === "NotAllowedError") playWanted = false;
+          playbackError.set(name);
+        },
+      ),
+  });
 
   return {
     currentTime: readable(atoms.currentTime),
@@ -227,11 +220,25 @@ export function createPlayerStore({
     element: readable(elementAtom),
     rateRange: readable(rateRange),
     setRateRange,
-    send,
+    controls,
+    read: () => ({
+      ...derivePlayerState({
+        duration: atoms.duration.get(),
+        isLive: atoms.isLive.get(),
+        paused: atoms.paused.get(),
+        volume: atoms.volume.get(),
+        muted: atoms.muted.get(),
+        rate: atoms.rate.get(),
+        loadState: atoms.loadState.get(),
+        readyState: atoms.readyState.get(),
+        error: audioErrorOf(atoms.mediaErrorCode.get(), playbackError.get()),
+      }),
+      ...controls,
+    }),
     holdAudibleVolume,
     attach,
     continuePlayback: () => {
-      if (playWanted) send({ type: "PLAY" });
+      if (playWanted) controls.play();
     },
   };
 }

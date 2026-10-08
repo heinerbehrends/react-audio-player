@@ -1,4 +1,4 @@
-import type { SliderComponent } from "../AudioElement/sideEffectActions";
+import type { SliderComponent } from "./sliderModes";
 import type { SliderValue } from "./useSlider";
 
 export type SliderRootAttributes = {

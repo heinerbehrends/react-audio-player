@@ -96,7 +96,7 @@ describe("useAudioError — refused playback (F4)", () => {
     const { result, harness } = setup();
     refuse(harness, "NotAllowedError");
 
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
 
     await waitFor(() =>
       expect(result.current).toEqual({
@@ -114,7 +114,7 @@ describe("useAudioError — refused playback (F4)", () => {
     const { result, harness } = setup();
     refuse(harness, "AbortError");
 
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
     await act(() => Promise.resolve());
 
     expect(result.current).toBeNull();
@@ -124,7 +124,7 @@ describe("useAudioError — refused playback (F4)", () => {
     const { result, harness } = setup({ paused: true });
     refuse(harness, "NotAllowedError");
 
-    act(() => harness.store.send({ type: "TOGGLE_PLAY" }));
+    act(() => harness.store.controls.toggle());
 
     await waitFor(() => expect(result.current).not.toBeNull());
   });
@@ -133,11 +133,11 @@ describe("useAudioError — refused playback (F4)", () => {
     const { result, harness } = setup();
     refuse(harness, "NotAllowedError");
 
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
     await waitFor(() => expect(result.current).not.toBeNull());
 
     harness.element.play.mockReturnValue(Promise.resolve());
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
 
     await waitFor(() => expect(result.current).toBeNull());
   });
@@ -146,7 +146,7 @@ describe("useAudioError — refused playback (F4)", () => {
     const { result, harness } = setup();
     harness.element.play.mockReturnValue(Promise.reject(undefined));
 
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
 
     await waitFor(() =>
       expect(result.current).toEqual({
@@ -162,7 +162,7 @@ describe("useAudioError — refused playback (F4)", () => {
     const { harness } = setup();
     refuse(harness, "NotAllowedError");
 
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
     await act(() => Promise.resolve());
 
     process.off("unhandledRejection", unhandled);
@@ -179,7 +179,7 @@ describe("useAudioError — precedence", () => {
       ),
     );
 
-    act(() => harness.store.send({ type: "PLAY" }));
+    act(() => harness.store.controls.play());
     await waitFor(() => expect(result.current?.kind).toBe("playback"));
 
     act(() => {

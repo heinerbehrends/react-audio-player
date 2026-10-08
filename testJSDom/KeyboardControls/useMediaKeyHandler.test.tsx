@@ -87,7 +87,7 @@ describe("useMediaKeyHandler", () => {
   it("follows shortcuts", () => {
     const { element } = renderWithStore(<Player />, {
       ...loaded,
-      shortcuts: { k: null, x: { type: "TOGGLE_PLAY" } },
+      shortcuts: { k: null, x: ({ toggle }) => toggle() },
     });
 
     fireEvent.keyDown(screen.getByText("custom"), { key: "k" });
@@ -248,7 +248,7 @@ describe("<PlayerRoot>", () => {
     it("gives way to a binding of the caller's", () => {
       const { element } = renderWithStore(<Root />, {
         ...loaded,
-        shortcuts: { " ": { type: "TOGGLE_MUTE" } },
+        shortcuts: { " ": ({ toggleMute }) => toggleMute() },
       });
 
       fireEvent.keyDown(screen.getByRole("region"), { key: " " });

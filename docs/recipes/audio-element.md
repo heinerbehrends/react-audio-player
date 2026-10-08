@@ -23,7 +23,7 @@ not model goes through `audioProps`, and `<track>` captions through its
 are `track.src` and the `onEnded` prop.
 
 Use `audioRef` for anything that needs the element itself: Web Audio,
-HLS.js or dash.js, a retry through `load()`, or every `buffered` range. Prefer
+HLS.js or dash.js, or every `buffered` range. Prefer
 a stable ref; an inline callback re-runs the forwarding effect on every render.
 
 ## One format per track

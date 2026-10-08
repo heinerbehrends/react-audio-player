@@ -1,7 +1,7 @@
 import { AudioElement } from "../AudioElement/AudioElement";
 import { PlayerStoreProvider } from "../store/PlayerStoreContext";
 import { PlayerConfigProvider, type Track } from "./PlayerConfigContext";
-import type { KeyToActionMap } from "../KeyboardControls/handleMediaKeys";
+import type { Shortcuts } from "../KeyboardControls/handleMediaKeys";
 import type { PlayerLabels } from "../Shared/playerLabels";
 
 type AudioPlayerProps = {
@@ -16,7 +16,7 @@ type AudioPlayerProps = {
    * Shortcuts merged over the defaults. They work on the focused library
    * control, or anywhere inside `<PlayerRoot>`; never page-wide.
    */
-  shortcuts?: KeyToActionMap;
+  shortcuts?: Shortcuts;
   /**
    * The playback rates the player can reach, as `[slowest, fastest]`. Every
    * rate control clamps to it, and `<PlaybackRateSlider>` spans it. Each end

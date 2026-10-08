@@ -23,8 +23,8 @@ describe("Seek", () => {
     });
   });
 
-  // The assertions land on the element, not on a mocked hook: `send` writes
-  // through `handleSideEffect` to the attached fake.
+  // The assertions land on the element, not on a mocked hook: a click writes
+  // through the store's controls to the attached fake.
   describe("Click behavior", () => {
     it("seeks forward by specified amount", () => {
       const { element } = renderSeek(10, { currentTime: 30 });

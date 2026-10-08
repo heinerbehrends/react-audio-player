@@ -1,182 +1,212 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-  handleSideEffect as handleSideEffectWithContext,
-  type SideEffectContext,
-} from "../../src/AudioElement/handleSideEffect";
-import {
-  RATE_LIMITS,
-  type SideEffectAction,
-} from "../../src/AudioElement/sideEffectActions";
-import { createMediaElementFake } from "../store/mediaElementFake";
+import { describe, it, expect } from "vitest";
+import { createTestStore } from "./createTestStore";
+import type { MediaFields } from "./mediaElementFake";
 
 /**
- * The write path takes the store snapshot as an argument, so these need no
- * mock. The default is a loaded, seekable track with the widest `rateRange`,
- * so the engine-limit rows below stay about the engines.
+ * Driven through a real store, so the context the controls read — seekable,
+ * `lastAudibleVolume`, `rateRange` — comes from the fake's fields as it would
+ * from a real element. The default is a loaded, seekable track with the widest
+ * `rateRange`, so the engine-limit rows below stay about the engines.
  */
-const defaultContext: SideEffectContext = {
-  lastAudibleVolume: 1,
-  isSeekable: true,
-  rateRange: RATE_LIMITS,
-};
-/** Before metadata, or a live stream: the store's duration is 0. */
-const unseekable: SideEffectContext = { ...defaultContext, isSeekable: false };
+const WIDEST: readonly [number, number] = [0.125, 8];
 /** A player whose `rateRange` is narrower than the engines allow. */
-const narrow: SideEffectContext = {
-  ...defaultContext,
-  rateRange: { minValue: 1, maxValue: 2 },
+const NARROW: readonly [number, number] = [1, 2];
+
+const setup = (
+  fields: Partial<MediaFields> = {},
+  rateRange: readonly [number, number] = WIDEST,
+) => {
+  const { store, element } = createTestStore(fields, { rateRange });
+  return { controls: store.controls, element, store };
 };
 
-const handleSideEffect = (
-  action: SideEffectAction,
-  audioElement: HTMLAudioElement | null,
-  context: SideEffectContext = defaultContext,
-) => handleSideEffectWithContext(action, audioElement, context);
+describe("createControls", () => {
+  it("does nothing without an element", () => {
+    const { store, detach } = createTestStore();
+    detach();
+    const { controls } = store;
 
-describe("handleSideEffect", () => {
-  let audioElement: HTMLAudioElement;
-
-  beforeEach(() => {
-    audioElement = createMediaElementFake();
+    expect(() => {
+      controls.play();
+      controls.pause();
+      controls.toggle();
+      controls.stop();
+      controls.seek(10);
+      controls.seekBy(5);
+      controls.setVolume(0.5);
+      controls.adjustVolume(0.1);
+      controls.setMuted(true);
+      controls.toggleMute();
+      controls.setRate(2);
+      controls.adjustRate(0.25);
+      controls.reload();
+    }).not.toThrow();
   });
 
-  it("should do nothing if audio element is null", () => {
-    expect(() => handleSideEffect({ type: "TOGGLE_PLAY" }, null)).not.toThrow();
+  it("plays and pauses", () => {
+    const { controls, element } = setup();
+
+    controls.play();
+    expect(element.play).toHaveBeenCalled();
+
+    controls.pause();
+    expect(element.pause).toHaveBeenCalled();
   });
 
-  it("should handle PLAY and PAUSE action", () => {
-    handleSideEffect({ type: "PLAY" }, audioElement);
-    expect(audioElement.play).toHaveBeenCalled();
+  it("toggles on the element's paused state", () => {
+    const { controls, element } = setup();
 
-    audioElement = {
-      ...audioElement,
-      paused: false,
-    } as HTMLAudioElement;
-    handleSideEffect({ type: "PAUSE" }, audioElement);
-    expect(audioElement.pause).toHaveBeenCalled();
+    controls.toggle();
+    expect(element.play).toHaveBeenCalledTimes(1);
+
+    element.paused = false;
+    controls.toggle();
+    expect(element.pause).toHaveBeenCalledTimes(1);
+    expect(element.play).toHaveBeenCalledTimes(1);
   });
 
-  it("should handle STOP_AUDIO action", () => {
-    handleSideEffect({ type: "STOP_AUDIO" }, audioElement);
-    expect(audioElement.currentTime).toBe(0);
-    expect(audioElement.pause).toHaveBeenCalled();
+  // jsdom and older browsers return `undefined` from `play()`.
+  it("survives a play() that returns no promise", async () => {
+    const { controls, element, store } = setup();
+    element.play.mockReturnValue(undefined as unknown as Promise<void>);
+
+    expect(() => controls.play()).not.toThrow();
+    await Promise.resolve();
+
+    expect(store.playbackError.get()).toBeNull();
   });
 
-  it("should handle TOGGLE_MUTE action", () => {
-    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
-    expect(audioElement.muted).toBe(true);
+  it("stops: rewinds and pauses", () => {
+    const { controls, element } = setup({ currentTime: 42 });
 
-    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement);
-    expect(audioElement.muted).toBe(false);
-    expect(audioElement.volume).toBe(1);
+    controls.stop();
+
+    expect(element.currentTime).toBe(0);
+    expect(element.pause).toHaveBeenCalled();
+  });
+
+  it("toggles mute", () => {
+    const { controls, element } = setup();
+
+    controls.toggleMute();
+    expect(element.muted).toBe(true);
+
+    controls.toggleMute();
+    expect(element.muted).toBe(false);
+    expect(element.volume).toBe(1);
+  });
+
+  it("mutes on setMuted(true) and leaves the volume alone", () => {
+    const { controls, element } = setup({ volume: 0.4 });
+
+    controls.setMuted(true);
+
+    expect(element.muted).toBe(true);
+    expect(element.volume).toBe(0.4);
+  });
+
+  it("unmutes on setMuted(false)", () => {
+    const { controls, element } = setup({ muted: true });
+
+    controls.setMuted(false);
+
+    expect(element.muted).toBe(false);
   });
 
   it("leaves an audible volume alone when unmuting", () => {
-    audioElement.muted = true;
-    audioElement.volume = 0.3;
+    const { controls, element } = setup({ volume: 0.8 });
+    element.muted = true;
+    element.volume = 0.3;
 
-    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement, {
-      ...defaultContext,
-      lastAudibleVolume: 0.8,
-    });
+    controls.toggleMute();
 
-    expect(audioElement.muted).toBe(false);
-    expect(audioElement.volume).toBe(0.3);
+    expect(element.muted).toBe(false);
+    expect(element.volume).toBe(0.3);
   });
 
   // The dead end `lastAudibleVolume` exists to prevent: reaching zero by any
   // path — drag, click, keyboard — and having no way back to an audible volume.
   it("restores the last audible volume when unmuting a silent player", () => {
-    audioElement.muted = true;
-    audioElement.volume = 0;
+    const { controls, element } = setup({ volume: 0.8 });
+    element.muted = true;
+    element.volume = 0;
 
-    handleSideEffect({ type: "TOGGLE_MUTE" }, audioElement, {
-      ...defaultContext,
-      lastAudibleVolume: 0.8,
+    controls.toggleMute();
+
+    expect(element.muted).toBe(false);
+    expect(element.volume).toBe(0.8);
+  });
+
+  it("restores the last audible volume on setMuted(false) too", () => {
+    const { controls, element } = setup({ volume: 0.6 });
+    controls.setVolume(0);
+    expect(element.muted).toBe(true);
+
+    controls.setMuted(false);
+
+    expect(element.muted).toBe(false);
+    expect(element.volume).toBe(0.6);
+  });
+
+  it("unmutes when the volume is set above 0", () => {
+    const { controls, element } = setup({ muted: true });
+
+    controls.setVolume(0.5);
+
+    expect(element.muted).toBe(false);
+    expect(element.volume).toBe(0.5);
+  });
+
+  it("sets the volume", () => {
+    const { controls, element } = setup();
+    controls.setVolume(0.7);
+    expect(element.volume).toBe(0.7);
+  });
+
+  it("seeks", () => {
+    const { controls, element } = setup();
+    controls.seek(10);
+    expect(element.currentTime).toBe(10);
+  });
+
+  it("sets the rate", () => {
+    const { controls, element } = setup();
+    controls.setRate(1.5);
+    expect(element.playbackRate).toBe(1.5);
+  });
+
+  describe("reload", () => {
+    it("reloads and plays again after play()", () => {
+      const { controls, element } = setup();
+      controls.play();
+
+      controls.reload();
+
+      expect(element.load).toHaveBeenCalledTimes(1);
+      expect(element.play).toHaveBeenCalledTimes(2);
     });
 
-    expect(audioElement.muted).toBe(false);
-    expect(audioElement.volume).toBe(0.8);
-  });
+    it("plays again when playback was observed rather than sent", () => {
+      const { controls, element } = setup({ paused: false });
 
-  it("should handle UNMUTE action", () => {
-    audioElement.muted = true;
-    handleSideEffect({ type: "UNMUTE" }, audioElement);
-    expect(audioElement.muted).toBe(false);
-  });
+      controls.reload();
 
-  it("restores the last audible volume on UNMUTE too", () => {
-    audioElement.muted = true;
-    audioElement.volume = 0;
-
-    handleSideEffect({ type: "UNMUTE" }, audioElement, {
-      ...defaultContext,
-      lastAudibleVolume: 0.6,
+      expect(element.load).toHaveBeenCalledTimes(1);
+      expect(element.play).toHaveBeenCalledTimes(1);
     });
 
-    expect(audioElement.muted).toBe(false);
-    expect(audioElement.volume).toBe(0.6);
+    it("stays paused after pause()", () => {
+      const { controls, element } = setup();
+      controls.play();
+      controls.pause();
+
+      controls.reload();
+
+      expect(element.load).toHaveBeenCalledTimes(1);
+      expect(element.play).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it("should unmute if muted and volume is set above 0 on CHANGE_VALUE", () => {
-    audioElement.muted = true;
-    handleSideEffect(
-      { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
-      audioElement,
-    );
-    expect(audioElement.muted).toBe(false);
-    expect(audioElement.volume).toBe(0.5);
-  });
-
-  it("should handle CHANGE_VALUE action for volume", () => {
-    handleSideEffect(
-      {
-        type: "CHANGE_VALUE",
-        component: "volume",
-        value: 0.7,
-      },
-      audioElement,
-    );
-    expect(audioElement.volume).toBe(0.7);
-  });
-
-  it("should change the current time on CHANGE_VALUE action for timeline", () => {
-    handleSideEffect(
-      { type: "CHANGE_VALUE", component: "timeline", value: 10 },
-      audioElement,
-    );
-    expect(audioElement.currentTime).toBe(10);
-  });
-
-  it("should change the volume on CHANGE_VALUE action for volume", () => {
-    handleSideEffect(
-      { type: "CHANGE_VALUE", component: "volume", value: 0.5 },
-      audioElement,
-    );
-    expect(audioElement.volume).toBe(0.5);
-  });
-
-  it("should change the playback rate on CHANGE_VALUE action for playback rate", () => {
-    handleSideEffect(
-      { type: "CHANGE_VALUE", component: "rate", value: 1.5 },
-      audioElement,
-    );
-    expect(audioElement.playbackRate).toBe(1.5);
-  });
-
-  it("should handle SET_PLAYBACK_RATE action", () => {
-    handleSideEffect(
-      { type: "SET_PLAYBACK_RATE", playbackRate: 1.5 },
-      audioElement,
-    );
-    expect(audioElement.playbackRate).toBe(1.5);
-  });
-
-  /**
-   * The ten keyboard actions. `handleMediaKeys.test` covers key → action; this
-   * covers action → element. Every clamp here is what stands between a held-down
-   * arrow key and an out-of-range media property.
-   */
   /**
    * Browsers throw on out-of-range media writes rather than clamping. Measured
    * in Chromium: `volume` outside [0, 1] raises IndexSizeError, `playbackRate`
@@ -184,25 +214,20 @@ describe("handleSideEffect", () => {
    * `currentTime` raises TypeError. Firefox clamps the rate silently (G2), and
    * cuts the sound outside 0.125–8 (C14).
    *
-   * The sliders clamp by construction, so this was unreachable until
-   * `useAudioPlayer` exposed `setVolume`, `setRate` and `seek` to arbitrary
-   * consumer input. These rows are the guard against it coming back.
+   * The sliders clamp by construction; `setVolume`, `setRate` and `seek` take
+   * arbitrary consumer input. These rows are the guard against it.
    */
   describe("out-of-range writes", () => {
     it("clamps a volume above 1 instead of throwing", () => {
-      handleSideEffect(
-        { type: "CHANGE_VALUE", component: "volume", value: 1.5 },
-        audioElement,
-      );
-      expect(audioElement.volume).toBe(1);
+      const { controls, element } = setup();
+      controls.setVolume(1.5);
+      expect(element.volume).toBe(1);
     });
 
     it("clamps a volume below 0", () => {
-      handleSideEffect(
-        { type: "CHANGE_VALUE", component: "volume", value: -0.5 },
-        audioElement,
-      );
-      expect(audioElement.volume).toBe(0);
+      const { controls, element } = setup();
+      controls.setVolume(-0.5);
+      expect(element.volume).toBe(0);
     });
 
     /**
@@ -215,37 +240,24 @@ describe("handleSideEffect", () => {
       ["0, which pause replaces", 0, 0.125],
       ["Chromium's throwing 0.01", 0.01, 0.125],
       ["Firefox's silent 0.1", 0.1, 0.125],
+      ["a slider commit's 0.05", 0.05, 0.125],
       ["Firefox's silent 9", 9, 8],
       ["Chromium's throwing 16.01", 16.01, 8],
       ["100", 100, 8],
     ])("clamps %s into 0.125–8", (_name, rate, expected) => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: rate },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(expected);
+      const { controls, element } = setup();
+      controls.setRate(rate);
+      expect(element.playbackRate).toBe(expected);
     });
 
     it("passes the floor and the ceiling through unchanged", () => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 0.125 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(0.125);
+      const { controls, element } = setup();
 
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 8 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(8);
-    });
+      controls.setRate(0.125);
+      expect(element.playbackRate).toBe(0.125);
 
-    it("clamps a slider commit below the floor too", () => {
-      handleSideEffect(
-        { type: "CHANGE_VALUE", component: "rate", value: 0.05 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(0.125);
+      controls.setRate(8);
+      expect(element.playbackRate).toBe(8);
     });
 
     /**
@@ -254,130 +266,130 @@ describe("handleSideEffect", () => {
      * reaches a rate the slider cannot show.
      */
     it("clamps an explicit rate to the player's rateRange", () => {
-      handleSideEffect(
-        { type: "SET_PLAYBACK_RATE", playbackRate: 8 },
-        audioElement,
-        narrow,
-      );
-      expect(audioElement.playbackRate).toBe(2);
+      const { controls, element } = setup({}, NARROW);
 
-      handleSideEffect(
-        { type: "CHANGE_VALUE", component: "rate", value: 0.5 },
-        audioElement,
-        narrow,
-      );
-      expect(audioElement.playbackRate).toBe(1);
+      controls.setRate(8);
+      expect(element.playbackRate).toBe(2);
+
+      controls.setRate(0.5);
+      expect(element.playbackRate).toBe(1);
+    });
+
+    it("drops a non-finite rate", () => {
+      const { controls, element } = setup({ playbackRate: 1.5 });
+      controls.setRate(NaN);
+      expect(element.playbackRate).toBe(1.5);
+    });
+
+    it("drops a non-finite volume", () => {
+      const { controls, element } = setup({ volume: 0.4 });
+      controls.setVolume(NaN);
+      expect(element.volume).toBe(0.4);
     });
 
     it("drops a non-finite seek rather than throwing", () => {
-      audioElement.currentTime = 10;
-
-      handleSideEffect(
-        { type: "CHANGE_VALUE", component: "timeline", value: NaN },
-        audioElement,
-      );
-
-      expect(audioElement.currentTime).toBe(10);
+      const { controls, element } = setup({ currentTime: 10 });
+      controls.seek(NaN);
+      expect(element.currentTime).toBe(10);
     });
 
     /**
-     * `duration` is `NaN` before metadata, so both of these compute `NaN` and
-     * would have thrown `TypeError` on a real element.
+     * `duration` is `NaN` before metadata, so a seek to a fraction of it, or a
+     * step clamped to it, computes `NaN` and would throw `TypeError` on a real
+     * element.
      */
-    it("survives SET_TIME_TO_PERCENT before metadata", () => {
-      const beforeMetadata = createMediaElementFake({
-        duration: NaN,
-        currentTime: 5,
-      }) as unknown as HTMLAudioElement;
-
-      handleSideEffect(
-        { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
-        beforeMetadata,
-        unseekable,
-      );
-
-      expect(beforeMetadata.currentTime).toBe(5);
+    it("survives a seek to a fraction of the duration before metadata", () => {
+      const { controls, element } = setup({ duration: NaN, currentTime: 5 });
+      controls.seek(element.duration * 0.5);
+      expect(element.currentTime).toBe(5);
     });
 
-    it("survives SET_TIME_FORWARD before metadata", () => {
-      const beforeMetadata = createMediaElementFake({
-        duration: NaN,
-        currentTime: 5,
-      }) as unknown as HTMLAudioElement;
+    it("survives seekBy before metadata", () => {
+      const { controls, element } = setup({ duration: NaN, currentTime: 5 });
+      controls.seekBy(10);
+      expect(element.currentTime).toBe(5);
+    });
 
-      handleSideEffect(
-        { type: "SET_TIME_FORWARD", value: 10 },
-        beforeMetadata,
-        unseekable,
-      );
-
-      expect(beforeMetadata.currentTime).toBe(5);
+    // A live stream's `Infinity` would let `Math.min(currentTime + 10, duration)`
+    // through, so the gate has to come before the sum.
+    it.each([
+      ["seek", (c: ReturnType<typeof setup>["controls"]) => c.seek(0)],
+      [
+        "seekBy forward",
+        (c: ReturnType<typeof setup>["controls"]) => c.seekBy(10),
+      ],
+      [
+        "seekBy back",
+        (c: ReturnType<typeof setup>["controls"]) => c.seekBy(-10),
+      ],
+    ])("leaves a live stream where it is on %s", (_name, act) => {
+      const { controls, element } = setup({
+        duration: Infinity,
+        currentTime: 30,
+      });
+      act(controls);
+      expect(element.currentTime).toBe(30);
     });
 
     // `seek()` and the `s` key reach these too, not only the timeline.
-    it("leaves an unseekable source where it is on a timeline write", () => {
-      audioElement.currentTime = 10;
-
-      handleSideEffect(
-        { type: "CHANGE_VALUE", component: "timeline", value: 0 },
-        audioElement,
-        unseekable,
-      );
-
-      expect(audioElement.currentTime).toBe(10);
+    it("leaves an unseekable source where it is on a seek", () => {
+      const { controls, element } = setup({ duration: NaN, currentTime: 10 });
+      controls.seek(0);
+      expect(element.currentTime).toBe(10);
     });
 
-    it("pauses an unseekable source on STOP_AUDIO without a rewind", () => {
-      audioElement.currentTime = 10;
+    it("pauses an unseekable source on stop without a rewind", () => {
+      const { controls, element } = setup({ duration: NaN, currentTime: 10 });
 
-      handleSideEffect({ type: "STOP_AUDIO" }, audioElement, unseekable);
+      controls.stop();
 
-      expect(audioElement.currentTime).toBe(10);
-      expect(audioElement.pause).toHaveBeenCalled();
+      expect(element.currentTime).toBe(10);
+      expect(element.pause).toHaveBeenCalled();
     });
 
-    it("clamps a volume nudged past 1 by the keyboard", () => {
-      audioElement.volume = 0.95;
-
-      handleSideEffect({ type: "INCREASE_VOLUME", value: 0.5 }, audioElement);
-
-      expect(audioElement.volume).toBe(1);
+    it("clamps a volume nudged past 1", () => {
+      const { controls, element } = setup({ volume: 0.95 });
+      controls.adjustVolume(0.5);
+      expect(element.volume).toBe(1);
     });
   });
 
-  describe("the keyboard actions", () => {
-    it("clamps INCREASE_VOLUME at 1", () => {
-      audioElement.volume = 0.99;
-      handleSideEffect({ type: "INCREASE_VOLUME", value: 0.025 }, audioElement);
-      expect(audioElement.volume).toBe(1);
+  describe("the step verbs", () => {
+    it("clamps adjustVolume at 1", () => {
+      const { controls, element } = setup({ volume: 0.99 });
+      controls.adjustVolume(0.025);
+      expect(element.volume).toBe(1);
     });
 
-    // The case returns before assigning, so the volume is left where it was and
-    // only `muted` changes. Unmuting restores through `lastAudibleVolume`, not
+    // Returns before assigning, so the volume is left where it was and only
+    // `muted` changes. Unmuting restores through `lastAudibleVolume`, not
     // through this leftover value.
-    it("mutes on DECREASE_VOLUME to near-zero and leaves volume untouched", () => {
-      audioElement.volume = 0.02;
-      handleSideEffect({ type: "DECREASE_VOLUME", value: 0.025 }, audioElement);
-      expect(audioElement.muted).toBe(true);
-      expect(audioElement.volume).toBe(0.02);
+    it("mutes on a decrease to near-zero and leaves volume untouched", () => {
+      const { controls, element } = setup({ volume: 0.02 });
+      controls.adjustVolume(-0.025);
+      expect(element.muted).toBe(true);
+      expect(element.volume).toBe(0.02);
     });
 
-    it("clamps INCREASE_PLAYBACK_RATE at 8", () => {
-      audioElement.playbackRate = 7.99;
-      handleSideEffect(
-        { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(8);
+    // Only `setVolume` and the mute verbs unmute; a nudge up changes the level
+    // the player will return to.
+    it("does not unmute on an increase", () => {
+      const { controls, element } = setup({ volume: 0.5, muted: true });
+      controls.adjustVolume(0.1);
+      expect(element.muted).toBe(true);
+      expect(element.volume).toBeCloseTo(0.6);
     });
 
-    it("clamps DECREASE_PLAYBACK_RATE at 0.125", () => {
-      audioElement.playbackRate = 0.15;
-      handleSideEffect(
-        { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(0.125);
+    it("clamps adjustRate at 8", () => {
+      const { controls, element } = setup({ playbackRate: 7.99 });
+      controls.adjustRate(0.05);
+      expect(element.playbackRate).toBe(8);
+    });
+
+    it("clamps adjustRate at 0.125", () => {
+      const { controls, element } = setup({ playbackRate: 0.15 });
+      controls.adjustRate(-0.05);
+      expect(element.playbackRate).toBe(0.125);
     });
 
     /**
@@ -388,104 +400,72 @@ describe("handleSideEffect", () => {
      * direction rule existed for.
      */
     it.each([
-      ["an increase past the ceiling", "INCREASE", 3, narrow, 2],
-      ["a decrease below the floor", "DECREASE", 0.75, narrow, 1],
-      ["an increase from above the limits", "INCREASE", 16, defaultContext, 8],
-      [
-        "a decrease from below the limits",
-        "DECREASE",
-        0.0625,
-        defaultContext,
-        0.125,
-      ],
+      ["an increase past the ceiling", 0.25, 3, NARROW, 2],
+      ["a decrease below the floor", -0.25, 0.75, NARROW, 1],
+      ["an increase from above the limits", 0.25, 16, WIDEST, 8],
+      ["a decrease from below the limits", -0.25, 0.0625, WIDEST, 0.125],
     ] as const)(
       "pulls %s back into the range",
-      (_name, direction, from, context, expected) => {
-        audioElement.playbackRate = from;
-        handleSideEffect(
-          { type: `${direction}_PLAYBACK_RATE`, value: 0.25 },
-          audioElement,
-          context,
-        );
-        expect(audioElement.playbackRate).toBe(expected);
+      (_name, delta, from, rateRange, expected) => {
+        const { controls, element } = setup({}, rateRange);
+        element.playbackRate = from;
+        controls.adjustRate(delta);
+        expect(element.playbackRate).toBe(expected);
       },
     );
 
     it("does nothing on a step of 0", () => {
-      audioElement.playbackRate = 8;
-      handleSideEffect(
-        { type: "INCREASE_PLAYBACK_RATE", value: 0 },
-        audioElement,
-      );
-      expect(audioElement.playbackRate).toBe(8);
+      const { controls, element } = setup({ playbackRate: 8 });
+      controls.adjustRate(0);
+      expect(element.playbackRate).toBe(8);
     });
 
     it("stops a step at the player's rateRange", () => {
-      audioElement.playbackRate = 1.99;
-      handleSideEffect(
-        { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
-        audioElement,
-        narrow,
-      );
-      expect(audioElement.playbackRate).toBe(2);
+      const { controls, element } = setup({}, NARROW);
 
-      audioElement.playbackRate = 1.01;
-      handleSideEffect(
-        { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
-        audioElement,
-        narrow,
-      );
-      expect(audioElement.playbackRate).toBe(1);
+      element.playbackRate = 1.99;
+      controls.adjustRate(0.05);
+      expect(element.playbackRate).toBe(2);
+
+      element.playbackRate = 1.01;
+      controls.adjustRate(-0.05);
+      expect(element.playbackRate).toBe(1);
     });
 
-    it("resets the rate to 1 on RESET_PLAYBACK_RATE", () => {
-      audioElement.playbackRate = 2.5;
-      handleSideEffect({ type: "RESET_PLAYBACK_RATE" }, audioElement);
-      expect(audioElement.playbackRate).toBe(1);
+    it("resets the rate to 1", () => {
+      const { controls, element } = setup({ playbackRate: 2.5 });
+      controls.setRate(1);
+      expect(element.playbackRate).toBe(1);
     });
 
     it("resets to the nearest end of a range that excludes 1x", () => {
-      audioElement.playbackRate = 2;
-      handleSideEffect({ type: "RESET_PLAYBACK_RATE" }, audioElement, {
-        ...defaultContext,
-        rateRange: { minValue: 1.5, maxValue: 3 },
-      });
-      expect(audioElement.playbackRate).toBe(1.5);
+      const { controls, element } = setup({ playbackRate: 2 }, [1.5, 3]);
+      controls.setRate(1);
+      expect(element.playbackRate).toBe(1.5);
     });
 
-    it("clamps SET_TIME_FORWARD at the duration", () => {
-      audioElement.currentTime = 95;
-      handleSideEffect({ type: "SET_TIME_FORWARD", value: 10 }, audioElement);
-      expect(audioElement.currentTime).toBe(100);
+    it("clamps a forward seekBy at the duration", () => {
+      const { controls, element } = setup({ currentTime: 95 });
+      controls.seekBy(10);
+      expect(element.currentTime).toBe(100);
     });
 
-    // `<SeekButton amount={-10}>` routes a negative value through `SET_TIME_FORWARD`,
-    // which has no lower clamp of its own, so the browser's clamp on a negative
-    // `currentTime` is what catches it.
-    it("has no lower clamp for a negative SET_TIME_FORWARD", () => {
-      audioElement.currentTime = 5;
-      handleSideEffect({ type: "SET_TIME_FORWARD", value: -10 }, audioElement);
-      expect(audioElement.currentTime).toBe(-5);
+    it("clamps a backward seekBy at 0", () => {
+      const { controls, element } = setup({ currentTime: 3 });
+      controls.seekBy(-10);
+      expect(element.currentTime).toBe(0);
     });
 
-    it("clamps SET_TIME_BACKWARD at 0", () => {
-      audioElement.currentTime = 3;
-      handleSideEffect({ type: "SET_TIME_BACKWARD", value: 10 }, audioElement);
-      expect(audioElement.currentTime).toBe(0);
+    it("goes to the start on seek(0)", () => {
+      const { controls, element } = setup({ currentTime: 42 });
+      controls.seek(0);
+      expect(element.currentTime).toBe(0);
     });
 
-    it("goes to 0 on SET_TIME_TO_START", () => {
-      audioElement.currentTime = 42;
-      handleSideEffect({ type: "SET_TIME_TO_START" }, audioElement);
-      expect(audioElement.currentTime).toBe(0);
-    });
-
-    it("goes to a fraction of the duration on SET_TIME_TO_PERCENT", () => {
-      handleSideEffect(
-        { type: "SET_TIME_TO_PERCENT", percent: 0.3 },
-        audioElement,
-      );
-      expect(audioElement.currentTime).toBe(30);
+    it("goes to a fraction of the duration", () => {
+      const { controls, element } = setup();
+      controls.seek(element.duration * 0.3);
+      expect(element.currentTime).toBe(30);
     });
   });
 });

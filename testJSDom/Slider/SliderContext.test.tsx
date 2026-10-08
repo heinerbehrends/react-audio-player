@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
+import type { Shortcut } from "../../src/KeyboardControls/handleMediaKeys";
 import {
   SliderProvider,
   useSliderContext,
@@ -64,11 +65,12 @@ describe("usePlayerConfig", () => {
   });
 
   it("returns the config inside a provider", () => {
+    const toggle: Shortcut = (player) => player.toggle();
     const { result } = renderHook(() => usePlayerConfig(), {
       wrapper: ({ children }) => (
         <PlayerConfigProvider
           track={{ src: "test-audio.mp3" }}
-          shortcuts={{ x: { type: "TOGGLE_PLAY" } }}
+          shortcuts={{ x: toggle }}
           labels={undefined}
         >
           {children}
@@ -77,8 +79,6 @@ describe("usePlayerConfig", () => {
     });
 
     expect(result.current.track).toEqual({ src: "test-audio.mp3" });
-    expect(result.current.shortcuts).toEqual({
-      x: { type: "TOGGLE_PLAY" },
-    });
+    expect(result.current.shortcuts).toEqual({ x: toggle });
   });
 });

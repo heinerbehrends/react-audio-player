@@ -2,7 +2,7 @@
 id: S36
 title: "Two vocabularies for one set of operations"
 epic: surface
-status: open
+status: resolved
 severity: P2
 origin: assessment
 breaking: true
@@ -145,3 +145,44 @@ only" has little headroom, so measure rather than assume.
 - `pnpm size` passes, with any raised ceiling named in `scripts/bundle-size.mjs`.
 - README, `docs/keyboard.md`, `docs/custom-ui.md` and the custom-components
   example's `shortcuts.ts` use the function form.
+
+## Resolution (2026-10-08)
+
+Thirteen verbs, not twelve: `reload` joined from the pre-beta review, for the
+retry that needed `audioRef`. Decided while building:
+
+- `reload()` calls `load()` and plays again only if playback was wanted, the
+  rule a track swap follows. `load()` pauses without a `pause` event, so the
+  intent is read before it. A failure stops playback, so a retry button calls
+  `play()` after it; a reconnect after a stall does not need to.
+- Letters match either case: `p` covers Shift+P and Caps Lock, and `p: null`
+  unbinds both. The default map lost its upper-case duplicates.
+- A shortcut receives `useAudioPlayer()`'s object, read from the atoms only
+  when a key matches.
+- `useAudioControls()` returns the controls alone, with no subscription.
+- The types are `Shortcut` and `Shortcuts`; `KeyboardAction` and
+  `KeyToActionMap` are gone.
+
+What changed:
+
+- `src/store/createControls.ts`, moved from `handleSideEffect.ts`, builds
+  the controls once per store: one function per verb, the same guards, and the
+  re-projection on the six volume and rate controls. `send` and its
+  type-sniffing are gone; the play intent is recorded by `play`, `pause`,
+  `stop` and `toggle` themselves.
+- `sideEffectActions.ts` became `src/AudioElement/rateRange.ts`, keeping only
+  the range.
+- The slider modes carry `step` and `commit` functions of the controls in
+  place of action builders. Buttons, `<PlayerRoot>` and `<MediaSession>` call
+  the controls.
+- `seekBy` now clamps both ways: a negative step stops at 0 and a positive one
+  at the duration, where the old forward and backward actions each clamped one
+  side only.
+- The live example and the reconnect recipe use `reload()` and no longer need
+  `audioRef`.
+
+**Verified by** — `createControls.test.ts` (moved from
+`handleSideEffects.test.ts`) drives a real store against the fake element,
+including `reload` with and without playback wanted. The keyboard tests now
+assert on the element rather than a mocked dispatcher, and cover case folding
+and a shortcut reading `duration`.

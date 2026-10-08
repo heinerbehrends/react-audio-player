@@ -7,7 +7,7 @@ import { vi, type Mock } from "vitest";
  */
 export type MediaElementFake = Omit<
   HTMLAudioElement,
-  keyof MediaFields | "play" | "pause"
+  keyof MediaFields | "play" | "pause" | "load"
 > &
   MediaFields & {
     /**
@@ -16,6 +16,7 @@ export type MediaElementFake = Omit<
      */
     play: Mock<() => Promise<void>>;
     pause: Mock<() => void>;
+    load: Mock<() => void>;
     /** Fires every listener registered for `event`, in registration order. */
     emit: (event: string) => void;
     /** How many listeners are currently registered for `event`. */
@@ -85,6 +86,7 @@ export function createMediaElementFake(
     // the result anyway, but a test cannot exercise a refusal without one.
     play: vi.fn(() => Promise.resolve()),
     pause: vi.fn(),
+    load: vi.fn(),
     addEventListener: (event: string, listener: () => void) => {
       const forEvent = listeners.get(event) ?? [];
       forEvent.push(listener);

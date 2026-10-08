@@ -169,24 +169,15 @@ function useMediaSession(props: MediaSessionProps) {
     const write = () => {
       if (owner !== self) return;
       // Two handlers, not a toggle: the OS says which it wants.
-      setHandler("play", () => store.send({ type: "PLAY" }));
-      setHandler("pause", () => store.send({ type: "PAUSE" }));
-      setHandler("seekbackward", (details) =>
-        store.send({ type: "SET_TIME_BACKWARD", value: offset(details) }),
-      );
-      setHandler("seekforward", (details) =>
-        store.send({ type: "SET_TIME_FORWARD", value: offset(details) }),
-      );
+      const { play, pause, seek, seekBy } = store.controls;
+      setHandler("play", play);
+      setHandler("pause", pause);
+      setHandler("seekbackward", (details) => seekBy(-offset(details)));
+      setHandler("seekforward", (details) => seekBy(offset(details)));
+      // `seek` is gated on a known duration, which matters here: Android shows
+      // a seek bar from this handler's presence alone.
       setHandler("seekto", ({ seekTime }) => {
-        // `CHANGE_VALUE` has no seekable gate, because the slider sending it is
-        // disabled without a duration. The OS has no such guard: Android shows a
-        // seek bar from this handler's presence alone.
-        if (seekTime === undefined || !(store.duration.get() > 0)) return;
-        store.send({
-          type: "CHANGE_VALUE",
-          component: "timeline",
-          value: seekTime,
-        });
+        if (seekTime !== undefined) seek(seekTime);
       });
       // Registered only when passed: a handler is what makes the button appear,
       // and the library has no playlist to derive one from (B2).

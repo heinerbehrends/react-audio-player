@@ -61,8 +61,7 @@ type MutedProps = {
 };
 
 function useToggleMute() {
-  const { send } = usePlayerStore();
-  return () => send({ type: "TOGGLE_MUTE" });
+  return usePlayerStore().controls.toggleMute;
 }
 
 /** Renders `children` while muted, or while the volume is within 0.001 of zero. */

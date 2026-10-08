@@ -30,8 +30,8 @@ raises an error and still holds a buffer keeps playing, so that error is
 ignored. A connection that drops part-way through reports `"network"` once
 playback stops on it.
 
-Nothing retries for you: `load()` on the element through `audioRef` starts the
-source afresh, and the error clears with it. See
+Nothing retries for you: `reload()` loads the source afresh, and the error
+clears with it. See
 [Reconnecting](live-stream.md#reconnecting).
 
 ## The browser refused to play: `kind: "playback"`

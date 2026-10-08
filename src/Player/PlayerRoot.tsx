@@ -31,7 +31,7 @@ export function usePlayerRootProps<P extends React.HTMLAttributes<HTMLElement>>(
 ) {
   const labels = useLabels();
   const { track, shortcuts } = usePlayerConfig();
-  const { send } = usePlayerStore();
+  const { toggle } = usePlayerStore().controls;
   const onKeyDown = useMediaKeyHandler();
   return {
     "data-part": "player",
@@ -51,7 +51,7 @@ export function usePlayerRootProps<P extends React.HTMLAttributes<HTMLElement>>(
           !(shortcuts && " " in shortcuts) &&
           !(event.ctrlKey || event.metaKey || event.altKey)
         ) {
-          send({ type: "TOGGLE_PLAY" });
+          toggle();
           event.preventDefault();
           return;
         }

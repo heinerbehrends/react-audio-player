@@ -6,7 +6,7 @@ import {
 import { act } from "@testing-library/react";
 import { PlayerStoreProvider } from "../../src/store/PlayerStoreContext";
 import { PlayerConfigProvider } from "../../src/Player/PlayerConfigContext";
-import type { KeyToActionMap } from "../../src/KeyboardControls/handleMediaKeys";
+import type { Shortcuts } from "../../src/KeyboardControls/handleMediaKeys";
 import type { Track } from "../../src/Player/PlayerConfigContext";
 import type { PlayerLabels } from "../../src/Shared/playerLabels";
 import { createTestStore, type TestStore } from "./createTestStore";
@@ -18,7 +18,7 @@ type RenderWithStoreOptions = Omit<RenderOptions, "wrapper"> & {
   /** Otherwise: the element fields to prime from. */
   element?: Partial<MediaFields> | undefined;
   track?: Track | undefined;
-  shortcuts?: KeyToActionMap | undefined;
+  shortcuts?: Shortcuts | undefined;
   labels?: PlayerLabels | undefined;
 };
 

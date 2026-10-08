@@ -1,71 +1,81 @@
 import { usePlayerConfig } from "../Player/PlayerConfigContext";
-import type {
-  KeyboardAction,
-  SideEffectAction,
-} from "../AudioElement/sideEffectActions";
 import { usePlayerStore } from "../store/PlayerStoreContext";
+import type {
+  AudioPlayerControls,
+  AudioPlayerState,
+} from "../store/useAudioPlayer";
+
+/**
+ * What a shortcut does, given `useAudioPlayer()`'s object as it is when the key
+ * is pressed: `({ seekBy }) => seekBy(30)`.
+ */
+export type Shortcut = (player: AudioPlayerState & AudioPlayerControls) => void;
+
+/**
+ * Keys, as `KeyboardEvent.key` values, to what each does. Merged over the
+ * default bindings, so a key you leave out keeps its default; `null` unbinds a
+ * key and lets it reach the browser. Letters match either case.
+ */
+export type Shortcuts = {
+  [key: string]: Shortcut | null;
+};
 
 export type HandleMediaKeysArgs = {
   event: React.KeyboardEvent<HTMLButtonElement>;
-  handleSideEffect: (action: SideEffectAction) => void;
-  shortcuts: KeyToActionMap | undefined;
+  /** The player as the shortcut sees it, read only when a key matches. */
+  player: () => AudioPlayerState & AudioPlayerControls;
+  shortcuts: Shortcuts | undefined;
 };
 
-/**
- * Keys, as `KeyboardEvent.key` values, to the action each performs. Merged over
- * the default bindings, so a key you leave out keeps its default; `null`
- * unbinds a key and lets it reach the browser.
- */
-export type KeyToActionMap = {
-  [key: string]: KeyboardAction | null;
-};
+// Shift+P arrives as `P`: folding letters to one case lets `p: null` unbind
+// both, and Caps Lock change nothing. Non-letters, `<` included, are unchanged.
+const keyOf = (key: string) => (key.length === 1 ? key.toLowerCase() : key);
 
-export const defaultKeyToActionMap: KeyToActionMap = {
-  p: { type: "TOGGLE_PLAY" },
-  P: { type: "TOGGLE_PLAY" },
-  k: { type: "TOGGLE_PLAY" },
-  K: { type: "TOGGLE_PLAY" },
-  MediaPlayPause: { type: "TOGGLE_PLAY" },
+const seekToTenth =
+  (tenths: number): Shortcut =>
+  ({ seek, duration }) =>
+    seek((duration * tenths) / 10);
+
+export const defaultShortcuts: Shortcuts = {
+  p: ({ toggle }) => toggle(),
+  k: ({ toggle }) => toggle(),
+  MediaPlayPause: ({ toggle }) => toggle(),
   // Space is deliberately absent. Every control this handler is attached to is
   // a <button>, and mapping Space here would `preventDefault()` its native
   // activation, so Space would start playback instead of pressing the focused
   // button. `p` and `k` cover play/pause, and a consumer who wants Space can
   // add it through `shortcuts`.
-  s: { type: "STOP_AUDIO" },
-  S: { type: "STOP_AUDIO" },
-  MediaStop: { type: "STOP_AUDIO" },
-  m: { type: "TOGGLE_MUTE" },
-  M: { type: "TOGGLE_MUTE" },
-  MediaMute: { type: "TOGGLE_MUTE" },
-  l: { type: "SET_TIME_FORWARD", value: 10 },
-  L: { type: "SET_TIME_FORWARD", value: 10 },
-  ArrowRight: { type: "SET_TIME_FORWARD", value: 5 },
-  ArrowLeft: { type: "SET_TIME_BACKWARD", value: 5 },
-  MediaVolumeUp: { type: "INCREASE_VOLUME", value: 0.025 },
-  ArrowUp: { type: "INCREASE_VOLUME", value: 0.025 },
-  ArrowDown: { type: "DECREASE_VOLUME", value: 0.025 },
-  MediaVolumeDown: { type: "DECREASE_VOLUME", value: 0.025 },
-  j: { type: "SET_TIME_BACKWARD", value: 10 },
-  J: { type: "SET_TIME_BACKWARD", value: 10 },
-  ">": { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
-  "<": { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
-  "]": { type: "INCREASE_PLAYBACK_RATE", value: 0.05 },
-  "[": { type: "DECREASE_PLAYBACK_RATE", value: 0.05 },
-  Backspace: { type: "RESET_PLAYBACK_RATE" },
-  "0": { type: "SET_TIME_TO_START" },
-  "1": { type: "SET_TIME_TO_PERCENT", percent: 0.1 },
-  "2": { type: "SET_TIME_TO_PERCENT", percent: 0.2 },
-  "3": { type: "SET_TIME_TO_PERCENT", percent: 0.3 },
-  "4": { type: "SET_TIME_TO_PERCENT", percent: 0.4 },
-  "5": { type: "SET_TIME_TO_PERCENT", percent: 0.5 },
-  "6": { type: "SET_TIME_TO_PERCENT", percent: 0.6 },
-  "7": { type: "SET_TIME_TO_PERCENT", percent: 0.7 },
-  "8": { type: "SET_TIME_TO_PERCENT", percent: 0.8 },
-  "9": { type: "SET_TIME_TO_PERCENT", percent: 0.9 },
+  s: ({ stop }) => stop(),
+  MediaStop: ({ stop }) => stop(),
+  m: ({ toggleMute }) => toggleMute(),
+  MediaMute: ({ toggleMute }) => toggleMute(),
+  l: ({ seekBy }) => seekBy(10),
+  j: ({ seekBy }) => seekBy(-10),
+  ArrowRight: ({ seekBy }) => seekBy(5),
+  ArrowLeft: ({ seekBy }) => seekBy(-5),
+  ArrowUp: ({ adjustVolume }) => adjustVolume(0.025),
+  ArrowDown: ({ adjustVolume }) => adjustVolume(-0.025),
+  MediaVolumeUp: ({ adjustVolume }) => adjustVolume(0.025),
+  MediaVolumeDown: ({ adjustVolume }) => adjustVolume(-0.025),
+  ">": ({ adjustRate }) => adjustRate(0.05),
+  "<": ({ adjustRate }) => adjustRate(-0.05),
+  "]": ({ adjustRate }) => adjustRate(0.05),
+  "[": ({ adjustRate }) => adjustRate(-0.05),
+  Backspace: ({ setRate }) => setRate(1),
+  "0": ({ seek }) => seek(0),
+  "1": seekToTenth(1),
+  "2": seekToTenth(2),
+  "3": seekToTenth(3),
+  "4": seekToTenth(4),
+  "5": seekToTenth(5),
+  "6": seekToTenth(6),
+  "7": seekToTenth(7),
+  "8": seekToTenth(8),
+  "9": seekToTenth(9),
 };
 
 export function handleMediaKeys(args: HandleMediaKeysArgs) {
-  const { event, handleSideEffect, shortcuts } = args;
+  const { event, player, shortcuts } = args;
 
   // Modifier combinations belong to the browser and to assistive technology:
   // `Ctrl+Option+Arrow` is VoiceOver's own navigation, and swallowing it makes
@@ -75,29 +85,27 @@ export function handleMediaKeys(args: HandleMediaKeysArgs) {
     return false;
   }
 
-  const keyToActionMap = {
-    ...defaultKeyToActionMap,
-    ...shortcuts,
-  };
-  const action = keyToActionMap[event.key];
+  const key = keyOf(event.key);
+  let shortcut = defaultShortcuts[key];
+  for (const [bound, own] of Object.entries(shortcuts ?? {})) {
+    if (keyOf(bound) === key) shortcut = own;
+  }
 
-  if (!action) return false;
+  if (!shortcut) return false;
 
-  handleSideEffect(action);
+  shortcut(player());
   event.preventDefault();
   return true;
 }
 
-// `store.send` has a permanent identity, so the returned handler needs no
-// `useCallback`.
 export function useHandleMediaKeys() {
   const { shortcuts } = usePlayerConfig();
-  const { send } = usePlayerStore();
+  const store = usePlayerStore();
 
   return (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const result = handleMediaKeys({
       event,
-      handleSideEffect: send,
+      player: store.read,
       shortcuts,
     });
 

@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { AudioPlayer, useIsLive } from "../../src/index";
+import {
+  AudioPlayer,
+  useIsLive,
+  type AudioPlayerControls,
+} from "../../src/index";
 import { createTestStore } from "./createTestStore";
 
 function Badge() {
@@ -51,11 +55,11 @@ describe("track.live", () => {
   // there too. It reads the store's projection, which takes the mark at
   // `durationchange`, so the timeline and the keys cannot disagree.
   it.each([
-    [{ type: "SET_TIME_FORWARD", value: 10 }],
-    [{ type: "SET_TIME_BACKWARD", value: 10 }],
-    [{ type: "SET_TIME_TO_START" }],
-    [{ type: "SET_TIME_TO_PERCENT", percent: 0.5 }],
-  ] as const)("ignores %o on a stream with a finite duration", (action) => {
+    ["seekBy(10)", (c: AudioPlayerControls) => c.seekBy(10)],
+    ["seekBy(-10)", (c: AudioPlayerControls) => c.seekBy(-10)],
+    ["seek(0)", (c: AudioPlayerControls) => c.seek(0)],
+    ["seek(6)", (c: AudioPlayerControls) => c.seek(6)],
+  ])("ignores %s on a stream with a finite duration", (_, control) => {
     const { store, element } = createTestStore({
       duration: 12,
       currentTime: 4,
@@ -64,7 +68,7 @@ describe("track.live", () => {
     element.dataset["live"] = "";
     element.emit("durationchange");
 
-    store.send(action);
+    control(store.controls);
 
     expect(element.currentTime).toBe(4);
   });

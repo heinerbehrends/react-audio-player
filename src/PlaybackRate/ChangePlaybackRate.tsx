@@ -64,19 +64,12 @@ export function usePlaybackRateChangeProps<
   } as ButtonPropsBag<P>;
 }
 
-// The same two actions the `<` and `>` keys send. They read the rate off the
-// element when the click lands, so there is nothing to subscribe to — a
-// subscription to `rate` re-rendered the button on every `ratechange` — and
-// they stop at the player's `rateRange`, so the button, the keys and the
-// slider share the same two ends (C8, F15).
+// What the `<` and `>` keys do. `adjustRate` reads the rate off the element
+// when the click lands, so there is nothing to subscribe to — a subscription
+// to `rate` re-rendered the button on every `ratechange` — and it stops at the
+// player's `rateRange`, so the button, the keys and the slider share the same
+// two ends (C8, F15).
 function useChangePlaybackRate(amount: number) {
-  const { send } = usePlayerStore();
-  const value = Math.abs(amount);
-
-  return () =>
-    send(
-      amount >= 0
-        ? { type: "INCREASE_PLAYBACK_RATE", value }
-        : { type: "DECREASE_PLAYBACK_RATE", value },
-    );
+  const { adjustRate } = usePlayerStore().controls;
+  return () => adjustRate(amount);
 }

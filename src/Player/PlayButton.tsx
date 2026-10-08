@@ -61,12 +61,11 @@ const PlayButtonRoot = /* @__PURE__ */ forwardRef<
 });
 
 /**
- * Reads no state: `TOGGLE_PLAY` already branches on `el.paused`, so a
+ * Reads no state: `toggle` already branches on `el.paused`, so a
  * `playerState` check here would be a second, staler copy of that decision.
  */
 function useHandleClick() {
-  const { send } = usePlayerStore();
-  return () => send({ type: "TOGGLE_PLAY" });
+  return usePlayerStore().controls.toggle;
 }
 
 /** Renders `children` while playing. */

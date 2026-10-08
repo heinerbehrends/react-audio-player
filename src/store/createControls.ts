@@ -1,5 +1,5 @@
 import { areNumbersClose } from "../Shared/areNumbersClose";
-import type { RateRange, SideEffectAction } from "./sideEffectActions";
+import type { RateRange } from "../AudioElement/rateRange";
 
 /*
  * Media properties throw on an out-of-range write rather than clamping, so each
@@ -48,182 +48,167 @@ function writeTime(audioElement: HTMLAudioElement, value: number) {
 }
 
 /**
- * The store state the write path needs, as a snapshot rather than an accessor.
+ * The control methods of `useAudioPlayer()`, and what a shortcut receives.
+ * Each keeps its identity for the lifetime of the player, so it is safe in a
+ * dependency array.
  */
-export type SideEffectContext = {
-  /** For `TOGGLE_MUTE` and `UNMUTE`. */
-  lastAudibleVolume: number;
-  /** The store's `useIsSeekable()`, so a seek and the timeline always agree. */
-  isSeekable: boolean;
-  /** The player's `rateRange`, which every rate write clamps to. */
-  rateRange: RateRange;
+export type AudioPlayerControls = {
+  /** Starts playback. */
+  play: () => void;
+  /** Pauses playback. */
+  pause: () => void;
+  /** Plays when paused, pauses when playing. */
+  toggle: () => void;
+  /** Pauses and returns to the start. */
+  stop: () => void;
+  /** Seeks to a position in seconds. Does nothing until the duration is known. */
+  seek: (seconds: number) => void;
+  /** Seeks relative to the position, in seconds. Negative rewinds. */
+  seekBy: (seconds: number) => void;
+  /** Sets the volume, `0`–`1`. Zero mutes; a value above zero unmutes. */
+  setVolume: (volume: number) => void;
+  /** Changes the volume by `delta`. Reaching zero mutes; a rise does not unmute. */
+  adjustVolume: (delta: number) => void;
+  /** Mutes, or unmutes to the last audible volume. */
+  setMuted: (muted: boolean) => void;
+  /** Mutes, or unmutes to the last audible volume, whichever it is not. */
+  toggleMute: () => void;
+  /** Sets the playback rate, clamped to `rateRange`; `0` becomes its slowest, so pause instead. */
+  setRate: (rate: number) => void;
+  /** Changes the playback rate by `delta`, stopping at the ends of `rateRange`. */
+  adjustRate: (delta: number) => void;
+  /** Reloads the track, playing again if playback was still wanted: after a stall, not after an error. */
+  reload: () => void;
 };
 
-/**
- * `play()` resolves once playback starts and rejects when the browser refuses —
- * `NotAllowedError` under autoplay policy, `AbortError` when a `pause()` or a
- * `src` change interrupts it. It returns `undefined` rather than a promise in
- * jsdom and in browsers predating the promise form, so the result is normalised
- * before being handed to the caller.
- */
-function play(audioElement: HTMLAudioElement): Promise<void> {
-  return Promise.resolve(audioElement.play());
-}
+/** What the controls read from the store, each at call time. */
+export type ControlsContext = {
+  element: () => HTMLAudioElement | null;
+  /** The store's `useIsSeekable()`, so a seek and the timeline always agree. */
+  isSeekable: () => boolean;
+  lastAudibleVolume: () => number;
+  rateRange: () => RateRange;
+  /** Re-reads volume and rate off the element, a task ahead of their events. */
+  project: () => void;
+  playWanted: () => boolean;
+  setPlayWanted: (wanted: boolean) => void;
+  /** Records the outcome of a `play()`: a refusal, or a start that clears one. */
+  settlePlay: (started: Promise<void>) => void;
+};
 
-/**
- * Returns the pending `play()` promise for the two actions that start playback,
- * so the store can record a refusal. Every other action returns `undefined`.
- */
-export function handleSideEffect(
-  action: SideEffectAction,
-  audioElement: HTMLAudioElement | null,
-  context: SideEffectContext,
-): Promise<void> | undefined {
-  if (!audioElement) return undefined;
-  switch (action.type) {
-    case "PLAY": {
-      return play(audioElement);
+export function createControls(context: ControlsContext): AudioPlayerControls {
+  const { element } = context;
+
+  // `play()` resolves once playback starts and rejects when the browser
+  // refuses. It returns `undefined` rather than a promise in jsdom and in
+  // browsers predating the promise form, hence the normalising.
+  const play = () => {
+    context.setPlayWanted(true);
+    const audioElement = element();
+    if (!audioElement) return;
+    context.settlePlay(Promise.resolve(audioElement.play()));
+  };
+
+  const pause = () => {
+    context.setPlayWanted(false);
+    element()?.pause();
+  };
+
+  // Unmuting a player whose volume is zero has to restore a volume too, or it
+  // stays silent. `lastAudibleVolume` covers every path that got it there.
+  const unmute = (audioElement: HTMLAudioElement) => {
+    if (areNumbersClose(audioElement.volume, 0)) {
+      writeVolume(audioElement, context.lastAudibleVolume());
     }
-    case "PAUSE": {
+    audioElement.muted = false;
+  };
+
+  // Volume and rate read back at once, while their events arrive a task later.
+  // Projecting now lands in the same render as the caller's own update, and
+  // the echo then changes nothing: one render per drag move, not two.
+  const projected =
+    <A extends unknown[]>(
+      write: (audioElement: HTMLAudioElement, ...args: A) => void,
+    ) =>
+    (...args: A) => {
+      const audioElement = element();
+      if (!audioElement) return;
+      write(audioElement, ...args);
+      context.project();
+    };
+
+  const setRate = projected((audioElement, rate: number) =>
+    writeRate(audioElement, rate, context.rateRange()),
+  );
+
+  return {
+    play,
+    pause,
+    toggle: () => {
+      const audioElement = element();
+      if (!audioElement) return;
+      if (audioElement.paused) play();
+      else pause();
+    },
+    stop: () => {
+      context.setPlayWanted(false);
+      const audioElement = element();
+      if (!audioElement) return;
+      if (context.isSeekable()) audioElement.currentTime = 0;
       audioElement.pause();
-      break;
-    }
-    case "TOGGLE_PLAY": {
-      if (audioElement.paused) {
-        return play(audioElement);
-      }
-      audioElement.pause();
-      break;
-    }
-    case "STOP_AUDIO": {
-      if (context.isSeekable) audioElement.currentTime = 0;
-      audioElement.pause();
-      break;
-    }
-    case "TOGGLE_MUTE": {
-      if (audioElement.muted) {
-        unmute(audioElement, context);
-        break;
-      }
-      audioElement.muted = true;
-      break;
-    }
-    case "UNMUTE": {
-      unmute(audioElement, context);
-      break;
-    }
-    case "CHANGE_VALUE": {
-      switch (action.component) {
-        case "timeline": {
-          if (!context.isSeekable) break;
-          writeTime(audioElement, action.value);
-          break;
-        }
-        case "volume": {
-          const isCloseToZero = areNumbersClose(action.value, 0);
-          if (audioElement.muted && !isCloseToZero) {
-            audioElement.muted = false;
-          }
-          if (isCloseToZero) {
-            audioElement.muted = true;
-          }
-          writeVolume(audioElement, action.value);
-          break;
-        }
-        case "rate": {
-          writeRate(audioElement, action.value, context.rateRange);
-          break;
-        }
-      }
-      break;
-    }
-    case "SET_PLAYBACK_RATE": {
-      writeRate(audioElement, action.playbackRate, context.rateRange);
-      break;
-    }
-    case "INCREASE_VOLUME": {
-      writeVolume(audioElement, audioElement.volume + action.value);
-      break;
-    }
-    case "DECREASE_VOLUME": {
-      const newVolume = Math.max(audioElement.volume - action.value, 0);
-      if (areNumbersClose(newVolume, 0)) {
+    },
+    seek: (seconds) => {
+      const audioElement = element();
+      if (!audioElement || !context.isSeekable()) return;
+      writeTime(audioElement, seconds);
+    },
+    // Gated before the sum: `Math.min(currentTime + 5, Infinity)` is finite,
+    // so `writeTime` alone would let a live stream seek.
+    seekBy: (seconds) => {
+      const audioElement = element();
+      if (!audioElement || !context.isSeekable()) return;
+      const target = audioElement.currentTime + seconds;
+      writeTime(
+        audioElement,
+        seconds >= 0
+          ? Math.min(target, audioElement.duration)
+          : Math.max(target, 0),
+      );
+    },
+    setVolume: projected((audioElement, volume: number) => {
+      const isCloseToZero = areNumbersClose(volume, 0);
+      if (audioElement.muted && !isCloseToZero) audioElement.muted = false;
+      if (isCloseToZero) audioElement.muted = true;
+      writeVolume(audioElement, volume);
+    }),
+    adjustVolume: projected((audioElement, delta: number) => {
+      const volume = Math.max(audioElement.volume + delta, 0);
+      if (delta < 0 && areNumbersClose(volume, 0)) {
         audioElement.muted = true;
-        return undefined;
+        return;
       }
-      writeVolume(audioElement, newVolume);
-      break;
-    }
-    case "INCREASE_PLAYBACK_RATE": {
-      writeRate(
-        audioElement,
-        audioElement.playbackRate + action.value,
-        context.rateRange,
-      );
-      break;
-    }
-    case "DECREASE_PLAYBACK_RATE": {
-      writeRate(
-        audioElement,
-        audioElement.playbackRate - action.value,
-        context.rateRange,
-      );
-      break;
-    }
-    case "RESET_PLAYBACK_RATE": {
-      // Clamped like any other write: a range that excludes 1x resets to its
-      // nearest end.
-      writeRate(audioElement, 1, context.rateRange);
-      break;
-    }
-    case "SET_TIME_FORWARD": {
-      // Guarding the result is not enough: `Math.min(currentTime + 5, Infinity)`
-      // is finite, so `writeTime` would let a live stream seek.
-      if (!context.isSeekable) break;
-      writeTime(
-        audioElement,
-        Math.min(
-          audioElement.currentTime + action.value,
-          audioElement.duration,
-        ),
-      );
-      break;
-    }
-    case "SET_TIME_BACKWARD": {
-      // A rewind names a position on the track just as much as a jump forward,
-      // and `SeekButton` is disabled in both directions for that reason.
-      if (!context.isSeekable) break;
-      writeTime(
-        audioElement,
-        Math.max(audioElement.currentTime - action.value, 0),
-      );
-      break;
-    }
-    case "SET_TIME_TO_START": {
-      if (!context.isSeekable) break;
-      audioElement.currentTime = 0;
-      break;
-    }
-    case "SET_TIME_TO_PERCENT": {
-      if (!context.isSeekable) break;
-      writeTime(audioElement, audioElement.duration * action.percent);
-      break;
-    }
-  }
-  return undefined;
-}
-
-/**
- * Unmuting a player whose volume is zero has to restore a volume too, or it
- * stays silent. `lastAudibleVolume` covers every path that got it there: drag,
- * click, keyboard, or a consumer's `CHANGE_VALUE`.
- */
-function unmute(
-  audioElement: HTMLAudioElement,
-  { lastAudibleVolume }: SideEffectContext,
-) {
-  if (areNumbersClose(audioElement.volume, 0)) {
-    writeVolume(audioElement, lastAudibleVolume);
-  }
-  audioElement.muted = false;
+      writeVolume(audioElement, volume);
+    }),
+    setMuted: projected((audioElement, muted: boolean) => {
+      if (muted) audioElement.muted = true;
+      else unmute(audioElement);
+    }),
+    toggleMute: projected((audioElement) => {
+      if (audioElement.muted) unmute(audioElement);
+      else audioElement.muted = true;
+    }),
+    setRate,
+    adjustRate: (delta) => {
+      const audioElement = element();
+      if (audioElement) setRate(audioElement.playbackRate + delta);
+    },
+    // `load()` pauses without a `pause` event, so the intent is read first.
+    reload: () => {
+      const audioElement = element();
+      if (!audioElement) return;
+      const wanted = context.playWanted();
+      audioElement.load();
+      if (wanted) play();
+    },
+  };
 }
