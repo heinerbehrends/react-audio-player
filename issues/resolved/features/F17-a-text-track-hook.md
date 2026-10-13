@@ -57,8 +57,12 @@ All four phases of the plan shipped:
   built by `scripts/build-transcript.mjs`: the Gutenberg text, timed against
   speech recognition of each chapter's excerpt.
 - 739 B gzipped, above the plan's estimate; "AudioPlayer only" unchanged.
+- Fixed in review the same day: a track that leaves the list and returns
+  keeps its cues, a new `<track src>` is `"loading"` with no cues until it
+  lands, and a cue without text reads as `""`. Now 857 B gzipped. The plan
+  has the details.
 
-**Verified by** — `testJSDom/TextTrack/useTextTrack.test.tsx`, 18 cases over a
+**Verified by** — `testJSDom/TextTrack/useTextTrack.test.tsx`, 21 cases over a
 fake `TextTrack` (`testJSDom/store/textTrackFake.ts`). The E2E test "a
 sentence in the transcript seeks there, and is marked while it plays" in
 `testE2E/demo/examples.spec.ts`, which found the active-cue rule. `pnpm

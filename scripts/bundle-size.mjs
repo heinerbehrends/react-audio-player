@@ -72,7 +72,7 @@ const BUDGETS = [
     imports: "{ AudioPlayer, MediaSession }",
     max: 4050,
   },
-  // The transcript hook, opt-in the same way (F17): about 740 B of its own.
+  // The transcript hook, opt-in the same way (F17): about 860 B of its own.
   {
     name: "AudioPlayer + useTextTrack",
     imports: "{ AudioPlayer, useTextTrack }",

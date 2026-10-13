@@ -34,6 +34,15 @@ Changed while building:
 - **The sentences are buttons**, not spans with a click handler, so the
   transcript seeks from the keyboard too. A sentence clicked before the
   duration is known waits for it, as a chapter does.
+- **Found in review, the same day.** A track that left the list and returned,
+  as a `<track>` React moves among its siblings does, came back `"ready"`
+  with no cues: the cached cue list was not reset. A new `src` on the
+  `<track>`, the next episode, now reads `"loading"` with no cues until that
+  file lands, through a `MutationObserver` on the attribute, since the
+  browser fires nothing for the change itself and may keep the old cues
+  until then. And a cue without `getCueAsHTML`, Safari's `DataCue` on a
+  metadata track, reads as `""` rather than throwing. With these the hook is
+  857 B gzipped, still inside its row's 4300 B.
 
 ---
 

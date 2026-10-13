@@ -22,7 +22,13 @@ function createListeners() {
 
 type Listeners = ReturnType<typeof createListeners>;
 
-export type CueInit = { id?: string; start: number; end: number; text: string };
+/** A cue; without `text`, one that has no `getCueAsHTML`, like a `DataCue`. */
+export type CueInit = {
+  id?: string;
+  start: number;
+  end: number;
+  text?: string;
+};
 
 export type TextTrackInit = {
   kind?: TextTrackKind;
@@ -40,7 +46,9 @@ export type TextTrackInit = {
 
 /**
  * A `TextTrack` and the `<track>` element behind it, as the browser has them
- * before the file arrives: `cues` is `null` and the element is `LOADING`.
+ * before the file arrives: `cues` is `null` and the element is `LOADING`. The
+ * element is a real `<track>`, so its `src` can be observed, with the
+ * listeners replaced by the registry.
  */
 export type TextTrackFake = {
   track: TextTrack & Listeners;
@@ -65,14 +73,17 @@ export function createTextTrackFake({
     id,
     startTime: start,
     endTime: end,
-    text,
-    // Parsed as HTML, which strips the VTT tags and decodes the entities as
-    // the browser's own cue parser does for these cases.
-    getCueAsHTML: () => {
-      const template = document.createElement("template");
-      template.innerHTML = text;
-      return template.content;
-    },
+    ...(text === undefined
+      ? {}
+      : {
+          // Parsed as HTML, which strips the VTT tags and decodes the entities
+          // as the browser's own cue parser does for these cases.
+          getCueAsHTML: () => {
+            const template = document.createElement("template");
+            template.innerHTML = text;
+            return template.content;
+          },
+        }),
   }));
   const track = {
     ...createListeners(),
@@ -84,13 +95,16 @@ export function createTextTrackFake({
   };
   const element = scripted
     ? null
-    : {
-        ...createListeners(),
-        tagName: "TRACK",
-        track,
-        default: isDefault,
-        readyState: 1,
-      };
+    : Object.defineProperties(
+        Object.assign(document.createElement("track"), {
+          ...createListeners(),
+          default: isDefault,
+        }),
+        {
+          track: { value: track },
+          readyState: { value: 1, writable: true },
+        },
+      );
 
   return {
     track: track as unknown as TextTrackFake["track"],
@@ -98,12 +112,12 @@ export function createTextTrackFake({
     load: () => {
       track.cues = cueObjects;
       if (!element) return;
-      element.readyState = 2;
+      Object.assign(element, { readyState: 2 });
       element.emit("load");
     },
     fail: () => {
       if (!element) return;
-      element.readyState = 3;
+      Object.assign(element, { readyState: 3 });
       element.emit("error");
     },
     play: (...indices) => {
@@ -118,6 +132,8 @@ export function createTextTrackFake({
 export type TextTrackListFake = Listeners & {
   /** Adds a track as a `<track>` child would, and fires `addtrack`. */
   add: (fake: TextTrackFake) => void;
+  /** Takes a track out as removing the `<track>` would, and fires `removetrack`. */
+  remove: (fake: TextTrackFake) => void;
 };
 
 /**
@@ -132,23 +148,28 @@ export function withTextTracks(
   // Defined, not assigned: `Object.assign` would copy `length` once, as 0.
   const list = Object.defineProperty(createListeners(), "length", {
     get: () => items.length,
-  }) as Listeners & { add?: TextTrackListFake["add"] };
+  }) as Listeners & Partial<TextTrackListFake>;
+  // Index `i` reads whatever is at that position now.
+  const defineIndex = (i: number) =>
+    Object.defineProperty(list, i, {
+      get: () => items[i]?.track,
+      configurable: true,
+    });
+  items.forEach((_, i) => defineIndex(i));
   Object.assign(list, {
     add: (fake: TextTrackFake) => {
       items.push(fake);
-      Object.defineProperty(list, items.length - 1, {
-        get: () => fake.track,
-        configurable: true,
-      });
+      defineIndex(items.length - 1);
       list.emit("addtrack");
     },
+    remove: (fake: TextTrackFake) => {
+      const at = items.indexOf(fake);
+      if (at === -1) return;
+      items.splice(at, 1);
+      delete (list as Record<number, unknown>)[items.length];
+      list.emit("removetrack");
+    },
   });
-  items.forEach((fake, i) =>
-    Object.defineProperty(list, i, {
-      get: () => fake.track,
-      configurable: true,
-    }),
-  );
 
   Object.assign(media, {
     textTracks: list,

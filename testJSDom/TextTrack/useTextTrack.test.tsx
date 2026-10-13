@@ -154,6 +154,21 @@ describe("useTextTrack", () => {
       expect(result.current.cues[0]!.text).toBe("Curiouser & curiouser<!>");
     });
 
+    // Safari's `DataCue` on a metadata track has no `getCueAsHTML`.
+    it("reads a cue without text as empty", () => {
+      const metadata = track({
+        kind: "metadata",
+        cues: [{ start: 0, end: 1 }],
+      });
+      const { result } = setup([metadata], { kind: "metadata" });
+
+      act(() => metadata.load());
+
+      expect(result.current.cues).toEqual([
+        { id: "", start: 0, end: 1, text: "" },
+      ]);
+    });
+
     it("picks up a track added after it mounted", () => {
       const { result, list } = setup([]);
       expect(result.current.status).toBe("none");
@@ -164,6 +179,40 @@ describe("useTextTrack", () => {
 
       expect(late.track.mode).toBe("hidden");
       expect(result.current.status).toBe("ready");
+    });
+
+    // A `<track>` React moves among its siblings leaves the list and returns.
+    it("keeps the cues of a track that leaves the list and returns", () => {
+      const subtitles = track();
+      const { result, list } = setup([subtitles]);
+      act(() => subtitles.load());
+
+      act(() => list.remove(subtitles));
+      expect(result.current.status).toBe("none");
+      act(() => list.add(subtitles));
+
+      expect(result.current.status).toBe("ready");
+      expect(result.current.cues).toHaveLength(2);
+    });
+
+    // The browser fires nothing for the change itself, and may keep the old
+    // cues and `LOADED` until the new file lands.
+    it("is loading again, without cues, while a new src arrives", async () => {
+      const subtitles = track();
+      const { result } = setup([subtitles]);
+      act(() => subtitles.load());
+      expect(result.current.cues).toHaveLength(2);
+
+      await act(async () => {
+        subtitles.element!.src = "next-episode.vtt";
+      });
+      expect(result.current.status).toBe("loading");
+      expect(result.current.cues).toEqual([]);
+
+      act(() => subtitles.load());
+
+      expect(result.current.status).toBe("ready");
+      expect(result.current.cues).toHaveLength(2);
     });
 
     it("picks up an element that attaches after it mounted", () => {

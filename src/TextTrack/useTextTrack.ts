@@ -10,7 +10,7 @@ export type Cue = {
   start: number;
   /** Where it ends, in seconds. */
   end: number;
-  /** The cue's text, with VTT markup stripped. */
+  /** The cue's text, with VTT markup stripped; `""` for a cue without one. */
   text: string;
 };
 
@@ -62,9 +62,12 @@ function findTrack(
   return null;
 }
 
-// The browser's own parse of the cue: VTT tags stripped, entities decoded.
+// The browser's own parse of the cue: VTT tags stripped, entities decoded. A
+// cue without text, such as a `DataCue` on a metadata track, reads as `""`.
 const plainText = (cue: TextTrackCue) =>
-  (cue as VTTCue).getCueAsHTML().textContent ?? "";
+  "getCueAsHTML" in cue
+    ? ((cue as VTTCue).getCueAsHTML().textContent ?? "")
+    : "";
 
 /**
  * One subscription's view of the element's text tracks. The snapshot is a
@@ -77,9 +80,26 @@ function createSource(audio: HTMLMediaElement, options: TextTrackOptions) {
   // identity and to tell a reload from a `cuechange`.
   let raw: TextTrackCue[] = [];
 
-  const read = (found: Found): TextTrackState => {
-    if (!found) return NONE;
+  const read = (found: Found, reloading: boolean): TextTrackState => {
+    if (!found) {
+      raw = [];
+      return NONE;
+    }
     const { track, element } = found;
+    const status = reloading
+      ? "loading"
+      : element
+        ? (STATUS[element.readyState] ?? "loading")
+        : // A track added from script has no `<track>` behind it to report on.
+          track.cues
+          ? "ready"
+          : "loading";
+    // No cues until the file has loaded, whatever the browser still holds of
+    // the previous one while a new `src` is on its way.
+    if (status !== "ready") {
+      raw = [];
+      return { cues: NONE.cues, activeIndex: -1, status };
+    }
     const list = Array.from(track.cues ?? []);
     const changed =
       list.length !== raw.length || list.some((cue, i) => cue !== raw[i]);
@@ -97,23 +117,17 @@ function createSource(audio: HTMLMediaElement, options: TextTrackOptions) {
     // and the one it hands over to are both active at the boundary.
     const activeCues = track.activeCues;
     const active = activeCues?.[activeCues.length - 1];
-    return {
-      cues,
-      activeIndex: active ? raw.indexOf(active) : -1,
-      // A track added from script has no `<track>` behind it to report on.
-      status: element
-        ? (STATUS[element.readyState] ?? "loading")
-        : track.cues
-          ? "ready"
-          : "loading",
-    };
+    return { cues, activeIndex: active ? raw.indexOf(active) : -1, status };
   };
 
   const subscribe = (notify: () => void) => {
     let found: Found = null;
+    // A new `src` on the `<track>` makes the browser fetch again, with no
+    // event until the file lands or fails.
+    let reloading = false;
 
     const update = () => {
-      const next = read(found);
+      const next = read(found, reloading);
       if (
         next.cues === state.cues &&
         next.activeIndex === state.activeIndex &&
@@ -125,10 +139,21 @@ function createSource(audio: HTMLMediaElement, options: TextTrackOptions) {
       notify();
     };
 
+    const settled = () => {
+      reloading = false;
+      update();
+    };
+    const sourceChanged = () => {
+      reloading = true;
+      update();
+    };
+    const observer = new MutationObserver(sourceChanged);
+
     const unbind = () => {
       found?.track.removeEventListener("cuechange", update);
-      found?.element?.removeEventListener("load", update);
-      found?.element?.removeEventListener("error", update);
+      found?.element?.removeEventListener("load", settled);
+      found?.element?.removeEventListener("error", settled);
+      observer.disconnect();
     };
 
     // Run again on every change to the list: a `<track>` added after mount,
@@ -138,9 +163,13 @@ function createSource(audio: HTMLMediaElement, options: TextTrackOptions) {
       if (next?.track !== found?.track) {
         unbind();
         found = next;
+        reloading = false;
         found?.track.addEventListener("cuechange", update);
-        found?.element?.addEventListener("load", update);
-        found?.element?.addEventListener("error", update);
+        found?.element?.addEventListener("load", settled);
+        found?.element?.addEventListener("error", settled);
+        if (found?.element) {
+          observer.observe(found.element, { attributeFilter: ["src"] });
+        }
       }
       // A `<track>` without `default` stays disabled and never fetches.
       // `"hidden"` loads it; on `<audio>` it draws nothing either way.

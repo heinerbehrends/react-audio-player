@@ -139,6 +139,11 @@ It is a statement about position, not history: dragging to the end reports
 `onEnded` for the moment the track finishes, and this for the state. It stays
 `false` under `audioProps={{ loop: true }}`, where the element wraps to `0`.
 
+## `useTextTrack()`
+
+A `<track>` child's cues, the one playing now and whether the file has loaded,
+for a transcript from a WebVTT file. See [A transcript](recipes/transcript.md).
+
 ## `useIsVolumeAvailable()`
 
 Whether this browser lets a page set the volume. `false` on iOS, where the

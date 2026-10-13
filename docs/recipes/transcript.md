@@ -87,8 +87,9 @@ browser's `cuechange`, so the transcript re-renders once a sentence rather than
 once a second, and is `-1` between cues.
 
 `status` is `"loading"` until the file arrives, then `"ready"`, or `"error"`
-for a missing or unparseable file; `"none"` means no matching `<track>`. The
-hook reads `"subtitles"`, else `"captions"`: pass `{ kind }` for another kind,
+for a missing or unparseable file; `"none"` means no matching `<track>`. A new
+`src` on the `<track>`, for the next episode, is `"loading"` again, with no
+cues until that file arrives. The hook reads `"subtitles"`, else `"captions"`: pass `{ kind }` for another kind,
 such as `"chapters"`, and `{ language }` to choose between several tracks.
 Without `language` it reads the one marked `default`, else the first.
 
