@@ -8,7 +8,7 @@ Until 1.0 every release is published under the `beta` dist-tag, and the API can
 change between betas. Anything that breaks a consumer is listed under
 **Changed** or **Removed** in the release that does it.
 
-## [0.1.0-beta.0] — unreleased
+## [0.1.0-beta.0] — 2026-10-13
 
 The first publish. Nothing was released before this version, so there is
 nothing to migrate from.
