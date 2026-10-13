@@ -271,12 +271,22 @@ and the checklist below fold `reload` into it. Make the ticket thirteen.
 - **Renamed (finding 5):** `audioFile` to `track`, the `AudioFile` type to
   `Track`, and `customKeyboardShortcuts` to `shortcuts`. `KeyToActionMap`
   keeps its name until S36 replaces it. No aliases: nothing is published.
+- **No `startTime` (finding 2, 2026-10-13).** The browser's media fragment,
+  `src#t=2530`, already does it: applied as the initial position of every
+  load of that URL, before playback and whatever `preload` is, clamped past
+  the end, and needing no once-per-`src` rule for swaps or `reload()`. A JS
+  seek on `loadedmetadata` would have reinvented each of those for about 80
+  B. `docs/recipes/resume.md` carries the recipe and the podcast example
+  remembers its position in `localStorage`. If a typed `startTime` is ever
+  wanted for discoverability, it is sugar that appends the fragment, not a
+  seek.
 
 ## Before tagging beta.0
 
 1. Fix the captions sentence in the recipe and the README table (finding 3).
-2. Add `startTime` or the media-fragment recipe (finding 2). The seek gate is
-   documented on `seek` now (finding 7).
+2. ~~Add `startTime` or the media-fragment recipe (finding 2)~~ — done: the
+   recipe, with the podcast example resuming from `localStorage`. The seek
+   gate is documented on `seek` (finding 7).
 3. Renames in finding 5: `track` and `shortcuts` done. Slider prop parity
    still open.
 4. ~~Land S36~~ — done: thirteen verbs with `reload`, function shortcuts that

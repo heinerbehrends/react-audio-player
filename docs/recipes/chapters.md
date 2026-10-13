@@ -1,7 +1,8 @@
 # Chapters and the playhead
 
 The [podcast example](../../examples/podcast) has a chapter list, chapter
-gaps in the timeline, a buffered bar and an end card.
+gaps in the timeline, a buffered bar and an end card. It also starts where the
+last visit stopped; see [Resume](resume.md).
 
 ## The current chapter
 
@@ -26,6 +27,11 @@ const { seek } = useAudioPlayer();
 
 <button onClick={() => seek(chapter.start)}>{chapter.title}</button>;
 ```
+
+`seek()` does nothing until the duration is known, which under `preload="none"`
+is until the first press. The example holds a chapter chosen before then and
+seeks once `isSeekable` turns true. For a position known before the track
+loads, put it on the URL instead; see [Resume](resume.md).
 
 Markers placed along the timeline need the duration, which is `0` until
 metadata arrives; read it from `useAudioPlayer()`.

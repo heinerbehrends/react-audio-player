@@ -290,6 +290,44 @@ test.describe("Podcast", () => {
     await expect.poll(() => position(example)).toBeGreaterThan(236);
   });
 
+  // `#t=` on the URL: the browser starts the track where the last visit
+  // stopped, as soon as its metadata arrives and before anything plays.
+  test("a return visit starts where the last one stopped", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Podcast" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+    await expect(timeline).not.toHaveAttribute("aria-disabled", "true");
+    await chapter(example, "Alice's Evidence").click();
+    await expect.poll(() => position(example)).toBeGreaterThan(236);
+    // Saved once a second, in whole seconds, from the readout's own render.
+    const saved = () =>
+      page.evaluate(() =>
+        Number(
+          Object.entries(localStorage).find(([key]) =>
+            key.startsWith("position:"),
+          )?.[1],
+        ),
+      );
+    await expect.poll(saved).toBeGreaterThanOrEqual(236);
+    const stoppedAt = await saved();
+
+    await page.reload();
+
+    const again = page.getByRole("region", { name: "Podcast" });
+    await expect(
+      again.getByRole("slider", { name: labels.timeline }),
+    ).not.toHaveAttribute("aria-disabled", "true");
+    // Within a second: the fragment names a whole second, and an MP3 seek can
+    // land a frame off it.
+    await expect
+      .poll(async () => Math.abs((await position(again)) - stoppedAt))
+      .toBeLessThanOrEqual(1);
+    await expect(chapter(again, "Alice's Evidence")).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+  });
+
   test("the end card offers to listen again", async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name: "Podcast" });

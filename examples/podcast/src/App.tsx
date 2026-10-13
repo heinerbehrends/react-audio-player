@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AudioPlayer,
   MediaSession,
@@ -15,6 +15,7 @@ import {
   useAudioPlayer,
   useCurrentSecond,
   useIsAtEnd,
+  useIsSeekable,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
 // Where each chapter starts, in seconds: written by the script that joins
@@ -37,12 +38,60 @@ const EPISODE = {
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
 
+// The position is remembered per episode, so a return visit starts where the
+// last one stopped. `#t=` on the URL is the browser's own way to start a
+// track part-way through: it needs no seek, and no waiting for the duration.
+const POSITION_KEY = `position:${EPISODE.src}`;
+
+function savedPosition(): number {
+  try {
+    return Number(localStorage.getItem(POSITION_KEY)) || 0;
+  } catch {
+    // Storage can be unavailable, as in some private windows.
+    return 0;
+  }
+}
+
+function savePosition(seconds: number) {
+  try {
+    localStorage.setItem(POSITION_KEY, String(seconds));
+  } catch {
+    // Nothing to do: the next visit starts from the beginning.
+  }
+}
+
 export default function App() {
+  // Read once: a new `src` is a track change, so the saved position must not
+  // reach the URL again while the episode plays.
+  const [track] = useState(() => {
+    const start = savedPosition();
+    return start > 0
+      ? { ...EPISODE, src: `${EPISODE.src}#t=${start}` }
+      : EPISODE;
+  });
+
   return (
-    <AudioPlayer track={EPISODE}>
+    <AudioPlayer track={track}>
+      <RememberPosition />
       <Episode />
     </AudioPlayer>
   );
+}
+
+// Writes the position once a second as it moves, and 0 at the end so the next
+// visit starts over. Only once the duration is known: before that the position
+// reads 0 and would wipe what was saved. A write a second is cheap, and no
+// unload event fires reliably on a phone.
+function RememberPosition() {
+  const second = useCurrentSecond();
+  const seekable = useIsSeekable();
+  const atEnd = useIsAtEnd();
+
+  useEffect(() => {
+    if (seekable) savePosition(atEnd ? 0 : second);
+  }, [seekable, second, atEnd]);
+
+  return null;
 }
 
 // Its own component because the hooks work only inside the player.
