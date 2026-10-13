@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**13 open · 0 part-done · 117 resolved · 6 rejected**
+**11 open · 0 part-done · 119 resolved · 6 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -13,15 +13,15 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Beta release
 
-1 open of 7.
+0 open of 7.
 
-- [ ] [G6](release/G6-the-readme-has-no-badges.md) The README has no badges — P3
 - [x] [G0](resolved/release/G0-beta-release-checklist.md) Beta release checklist — P0
 - [x] [G1](resolved/release/G1-nothing-stops-a-stale-or-unversioned-publish.md) Nothing stops a stale or unversioned publish — P0
 - [x] [G4](resolved/release/G4-the-readme-is-a-reference-dump-not-documentation.md) The README is a reference dump, not documentation — P0
 - [x] [G2](resolved/release/G2-the-playback-rate-write-throws-in-chromium.md) The playback-rate write throws in Chromium below 0.0625 — P1
 - [x] [G3](resolved/release/G3-four-readme-sentences-the-code-contradicts.md) Four README sentences the code contradicts — P1
 - [x] [G5](resolved/release/G5-review-every-public-doc-comment.md) Review every public doc comment — P1
+- [x] [G6](resolved/release/G6-the-readme-has-no-badges.md) The README has no badges — P3
 
 ## Accessibility
 
@@ -88,12 +88,11 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-6 open of 36.
+5 open of 36.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
 - [ ] [D7](features/D7-an-hls-dash-js-recipe-in-the.md) An HLS/dash.js recipe, in the docs, not in the library
-- [ ] [D8](features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [ ] [D9](features/D9-publish-the-refusals.md) Publish the refusals
 - [ ] [F16](features/F16-headless-controls-that-also-drive-a-video.md) Headless controls that also drive a `<video>`
 - [x] [F1](resolved/features/F1-no-way-to-read-player-state.md) No way to read player state — P0
@@ -122,6 +121,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [D3](resolved/features/D3-volume-is-inert-on-ios-and-nothing.md) `volume` is inert on iOS, and nothing says so
 - [x] [D4](resolved/features/D4-live-streams-are-a-supported-case-documented.md) Live streams are a supported case documented as an unsupported one
 - [x] [D5](resolved/features/D5-let-timeline-host-a-waveform-rather-than.md) Let `Timeline` host a waveform rather than drawing one
+- [x] [D8](resolved/features/D8-there-is-no-docs-site-no-deployed.md) There is no docs site, no deployed demo and no sandbox link
 - [-] [F11](features/F11-no-persistence.md) No persistence — P3, rejected
 - [-] [B8](features/B8-codec-fallback-via-source.md) Codec fallback via `<source>` — rejected
 - [-] [D6](features/D6-the-podcast-surface-chapters-and-markers-first.md) The podcast surface: chapters and markers first, transcript sync second — rejected

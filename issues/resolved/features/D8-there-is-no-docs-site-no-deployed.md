@@ -2,7 +2,7 @@
 id: D8
 title: "There is no docs site, no deployed demo and no sandbox link"
 epic: features
-status: open
+status: resolved
 severity: none
 origin: demand
 breaking: false
@@ -39,6 +39,20 @@ The beta is on npm and every example on the demo page has an "Open in
 StackBlitz" link, verified on the basic example. What is left of this ticket
 is the README linking the demo from the top and from each section the
 examples cover.
+
+## Resolution (2026-10-13)
+
+**Closed.** The three gaps in the title are filled: the demo page on GitHub
+Pages runs all six examples from `examples/` with their source, a link to
+each folder and an "Open in StackBlitz" link that installs the published
+beta; and the README links the demo from the top, from every example cell in
+the guides table, and from the components and hooks sections. A docs site
+beyond the README and the demo page is not planned; the guides in `docs/`
+and the demo page carry it.
+
+**Verified by** — `testE2E/demo/examples.spec.ts` runs every example on the
+demo page in CI; the StackBlitz import of `examples/basic` was opened and
+played on 2026-10-13.
 
 ## Added (2026-10-06): a multi-player example
 

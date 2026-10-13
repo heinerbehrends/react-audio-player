@@ -2,7 +2,7 @@
 id: G6
 title: "The README has no badges"
 epic: release
-status: open
+status: resolved
 severity: P3
 origin: backlog
 breaking: false
@@ -34,8 +34,9 @@ Each badge links somewhere useful: the npm page, `LICENSE`, the workflow runs,
 and the bundlejs page for the package.
 
 The version badge must name the `beta` tag. Without it shields.io reads
-`latest`, which G1 leaves unset until 1.0, and the badge shows "not found" on
-a published package.
+`latest`, which G1 meant to leave unset until 1.0. (The registry set `latest`
+on the first publish anyway, see G1; the badge still names `beta`, which is
+the tag the README tells people to install.)
 
 The size badge is optional. `pnpm size` already measures the bundle locally,
 so the badge only matters if the number is a selling point; check it against
@@ -47,3 +48,19 @@ that script's output before adding it, and drop it if the two disagree.
 - Each badge links to its target.
 - `pnpm format:check` passes; Prettier leaves a line of image links alone, but
   the row must not break the heading's anchor in the contents list.
+
+## Resolution (2026-10-13)
+
+**Shipped** — three badges under the title: the npm version under the `beta`
+tag, linking to the npm page; the license, linking to `LICENSE`; and the
+Tests workflow, linking to its runs. Each was fetched before adding it: the
+version badge reads `v0.1.0-beta.0`, the license `MIT`, and the workflow
+badge serves.
+
+**No size badge.** bundlejs measures the published package at 13.9 kB gzipped
+where `pnpm size` has the full surface with every opt-in at 10.8 kB, and the
+shields.io bundlejs badge timed out when fetched. The two disagree, so per
+the note above it is left out; the budget script remains the measurement.
+
+**Verified by** — `pnpm format:check` on the README; the contents list's
+anchors are for the `##` headings and are untouched by a row under the title.

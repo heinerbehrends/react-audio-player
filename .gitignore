@@ -31,3 +31,6 @@ dist/
 
 # Local-only Playwright config (points e2e at a system-installed browser)
 playwright.local.config.ts
+
+# The Playwright MCP browser writes its snapshots here.
+.playwright-mcp/

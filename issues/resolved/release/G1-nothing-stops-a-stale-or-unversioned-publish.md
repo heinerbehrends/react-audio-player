@@ -50,6 +50,13 @@ the resolved tickets.
 The publish itself is a manual step: `pnpm publish --tag beta`, so `latest`
 stays unset until 1.0.
 
+**Corrected after the publish (2026-10-13):** the registry sets `latest` on a
+package's first publish whatever tag is passed, and `latest` cannot be
+removed, only moved. So `latest` and `beta` both point at `0.1.0-beta.0`, and
+a bare `npm install react-headless-audio-player` installs the beta. The
+README's `@beta` install line stays, so the intent is visible; from 1.0 on,
+`latest` moves with each stable release and `beta` with each beta.
+
 **Verified by** — `pnpm pack --dry-run` on the new version lists the same 7
 files plus `CHANGELOG.md`, which is in `files` because npm does not include it
 on its own. `pack` does not run `prepublishOnly`; `pnpm publish` does.

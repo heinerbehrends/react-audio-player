@@ -1,5 +1,9 @@
 # React Headless Audio Player
 
+[![npm version](https://img.shields.io/npm/v/react-headless-audio-player/beta)](https://www.npmjs.com/package/react-headless-audio-player)
+[![license](https://img.shields.io/npm/l/react-headless-audio-player)](https://github.com/heinerbehrends/react-audio-player/blob/main/LICENSE)
+[![tests](https://github.com/heinerbehrends/react-audio-player/actions/workflows/test.yml/badge.svg)](https://github.com/heinerbehrends/react-audio-player/actions/workflows/test.yml)
+
 A headless, accessible audio player for React. Compound components give you
 the behaviour, the semantics and the state; you supply all of the markup and
 styling. Where you would rather use a button of your own, each button also
@@ -172,32 +176,33 @@ carries a `data-part` attribute to select on:
 ```
 
 That is a working, styled player. The
-[basic example](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/basic)
+[basic example](https://heinerbehrends.github.io/react-audio-player/#basic)
 is the same player with icons and a volume slider that opens on hover; the
 [styling guide](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/styling.md)
 lists every selector, state attribute and custom property.
 
 ## Guides
 
-Each guide covers one task. The examples are runnable projects, and all of them
-run on the [demo page](https://heinerbehrends.github.io/react-audio-player/).
+Each guide covers one task. Each example cell opens the example on the
+[demo page](https://heinerbehrends.github.io/react-audio-player/), running, with its source,
+its folder in the repo and an "Open in StackBlitz" link.
 
-| Task                                      | Guide                                                                                                                 | Example                                                                                                        |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Style the parts                           | [Styling](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/styling.md)                             | [basic](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/basic)                         |
-| Play a list of tracks                     | [A playlist](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/playlist.md)                 | [playlist](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/playlist)                   |
-| Play a radio station                      | [A live stream](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/live-stream.md)           | [live](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/live)                           |
-| Show chapters, the buffer and an end card | [Chapters and the playhead](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/chapters.md)  | [podcast](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/podcast)                     |
-| Resume where the listener left off        | [Resume](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/resume.md)                       | [podcast](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/podcast)                     |
-| Handle load errors and autoplay           | [Errors and autoplay](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/errors.md)          | [live](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/live)                           |
-| Show the track on the lock screen         | [The lock screen](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/lock-screen.md)         | [playlist](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/playlist)                   |
-| Translate the names and readouts          | [Labels and localisation](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/localisation.md)        | [custom-components](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/custom-components) |
-| Change the keyboard shortcuts             | [Keyboard](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/keyboard.md)                           | [custom-components](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/custom-components) |
-| Use a design system's buttons             | [Your own buttons](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/your-own-buttons.md)           | [custom-components](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/custom-components) |
-| Build UI the parts do not cover           | [Custom UI with hooks](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/custom-ui.md)              | [waveform](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/waveform)                   |
-| Show a transcript                         | [A transcript](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/transcript.md)             | [podcast](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/podcast)                     |
-| Add Web Audio or HLS                      | [The `<audio>` element](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/audio-element.md) |                                                                                                                |
-| Know what is announced, and what is yours | [Accessibility](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/accessibility.md)                 |                                                                                                                |
+| Task                                      | Guide                                                                                                                 | Example                                                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Style the parts                           | [Styling](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/styling.md)                             | [basic](https://heinerbehrends.github.io/react-audio-player/#basic)                         |
+| Play a list of tracks                     | [A playlist](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/playlist.md)                 | [playlist](https://heinerbehrends.github.io/react-audio-player/#playlist)                   |
+| Play a radio station                      | [A live stream](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/live-stream.md)           | [live](https://heinerbehrends.github.io/react-audio-player/#live)                           |
+| Show chapters, the buffer and an end card | [Chapters and the playhead](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/chapters.md)  | [podcast](https://heinerbehrends.github.io/react-audio-player/#podcast)                     |
+| Resume where the listener left off        | [Resume](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/resume.md)                       | [podcast](https://heinerbehrends.github.io/react-audio-player/#podcast)                     |
+| Handle load errors and autoplay           | [Errors and autoplay](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/errors.md)          | [live](https://heinerbehrends.github.io/react-audio-player/#live)                           |
+| Show the track on the lock screen         | [The lock screen](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/lock-screen.md)         | [playlist](https://heinerbehrends.github.io/react-audio-player/#playlist)                   |
+| Translate the names and readouts          | [Labels and localisation](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/localisation.md)        | [custom-components](https://heinerbehrends.github.io/react-audio-player/#custom-components) |
+| Change the keyboard shortcuts             | [Keyboard](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/keyboard.md)                           | [custom-components](https://heinerbehrends.github.io/react-audio-player/#custom-components) |
+| Use a design system's buttons             | [Your own buttons](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/your-own-buttons.md)           | [custom-components](https://heinerbehrends.github.io/react-audio-player/#custom-components) |
+| Build UI the parts do not cover           | [Custom UI with hooks](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/custom-ui.md)              | [waveform](https://heinerbehrends.github.io/react-audio-player/#waveform)                   |
+| Show a transcript                         | [A transcript](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/transcript.md)             | [podcast](https://heinerbehrends.github.io/react-audio-player/#podcast)                     |
+| Add Web Audio or HLS                      | [The `<audio>` element](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/audio-element.md) |                                                                                             |
+| Know what is announced, and what is yours | [Accessibility](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/accessibility.md)                 |                                                                                             |
 
 Where the example cell is empty, the guide carries its own code; an example for
 each of those is planned.
@@ -206,7 +211,8 @@ each of those is planned.
 
 Every part takes `className`, `style` and a `ref` to its own element, and
 carries a `data-part`. Each one's tooltip in your editor gives its element,
-attributes, units and defaults.
+attributes, units and defaults. The [demo page](https://heinerbehrends.github.io/react-audio-player/) shows
+the parts in use, with the source beside each player.
 
 ### `<AudioPlayer>`
 
@@ -252,7 +258,9 @@ The root. Creates the store and renders the `<audio>` element.
 
 Every hook must be called inside an `<AudioPlayer>`, except
 `useIsVolumeAvailable()`. See
-[Custom UI with hooks](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/custom-ui.md).
+[Custom UI with hooks](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/custom-ui.md);
+the [waveform](https://heinerbehrends.github.io/react-audio-player/#waveform) and
+[podcast](https://heinerbehrends.github.io/react-audio-player/#podcast) examples on the demo page are built on them.
 
 | Hook                     | Returns                                                                                                                                                                         |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
