@@ -316,12 +316,6 @@ A focused slider takes the arrow keys, `Home` and `End` for itself. To rebind
 or unbind a key, see
 [Keyboard](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/keyboard.md).
 
-## Roadmap
-
-Additive, in the order they are likely to land. None changes what ships today.
-
-- Playlist components, skip and loop
-
 ## Development
 
 ```bash
