@@ -30,7 +30,6 @@ export function useMuteButtonProps<
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
-    type: "button",
     "data-part": "mute",
     "data-state": volumeState,
     // No `aria-pressed` beside this: with both, a screen reader announced
@@ -99,8 +98,11 @@ function HighVolume({ children }: HighVolumeProps): React.ReactElement | null {
 type MuteButtonComponent = React.ForwardRefExoticComponent<
   MuteButtonComponentProps & React.RefAttributes<HTMLButtonElement>
 > & {
+  /** Renders its children while muted. */
   Muted: typeof Muted;
+  /** Renders its children below half volume. */
   LowVolume: typeof LowVolume;
+  /** Renders its children at half volume or above. */
   HighVolume: typeof HighVolume;
 };
 

@@ -27,8 +27,18 @@ export type MediaErrorReason =
  * `DOMException` name; the controls stay enabled, since a user gesture lifts it.
  */
 export type AudioError =
-  | { kind: "media"; reason: MediaErrorReason }
-  | { kind: "playback"; reason: string };
+  | {
+      /** The track failed to load or decode. */
+      kind: "media";
+      /** Why, from `MediaError.code`. */
+      reason: MediaErrorReason;
+    }
+  | {
+      /** The browser refused `play()`. */
+      kind: "playback";
+      /** The `DOMException` name, usually `"NotAllowedError"`. */
+      reason: string;
+    };
 
 /**
  * Which icon a mute button should show. `"muted"` covers a muted element and a

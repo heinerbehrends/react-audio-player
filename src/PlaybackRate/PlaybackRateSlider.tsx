@@ -62,9 +62,13 @@ const PlaybackRateSliderRoot = /* @__PURE__ */ forwardRef<
 type PlaybackRateSliderComponent = React.ForwardRefExoticComponent<
   PlaybackRateSliderProps & React.RefAttributes<HTMLDivElement>
 > & {
+  /** The track behind the fill. */
   Background: typeof SliderBackground;
+  /** The fill, from the start of the track to the value. */
   Progress: typeof SliderProgress;
+  /** The slider itself: the tab stop, the keys and the pointer. Required. */
   Control: typeof SliderControl;
+  /** The drag handle, hidden from assistive technology. */
   Thumb: typeof SliderThumb;
 };
 

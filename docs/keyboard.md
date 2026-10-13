@@ -8,9 +8,11 @@ your own included, such as a playlist's previous and next buttons, and work
 after a click anywhere on the player.
 
 They work only while focus is inside the player; they are never page-wide. Keys
-pressed in an `<input>` (a checkbox included), `<textarea>`, `<select>` or
-`contenteditable` are left alone, and a key a library control already handled
-stops there, so nothing runs twice.
+typed into a text field, `<textarea>`, `<select>` or `contenteditable` are
+left alone. A range slider, checkbox or other input that takes no text keeps
+its arrows, `Home`, `End`, the Page keys and Space, and passes letters and
+digits on. A key a library control already handled stops there, so nothing runs
+twice.
 
 ## Default bindings
 

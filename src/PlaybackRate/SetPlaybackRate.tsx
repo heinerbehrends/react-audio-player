@@ -56,7 +56,6 @@ export function usePlaybackRateSetProps<
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
-    type: "button",
     "data-part": "rate-set",
     "aria-label":
       labels?.rateSet?.({ rate }) ?? `Set playback rate to ${rate}x`,

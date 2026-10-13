@@ -61,3 +61,12 @@ out of that rule; its fields are return values, not parts.
 **Verified by** — 44 exports pass on the current build. A copy of the
 `.d.ts` with the doc stripped from `PlayButton` and from `Time.Elapsed` fails
 with both named.
+
+## Follow-up (2026-10-13): compounds typed through an alias
+
+The pre-beta code review found the member check matched only
+`declare const X: {`. Six compounds are typed through an alias
+(`declare const Timeline: TimelineComponent;`), so their 21 members went
+unchecked and had no JSDoc. The check now follows the alias, and also checks
+the members of exported object types, which found `AudioError`'s `kind` and
+`reason`. All 25 are documented; the check failed on each before.

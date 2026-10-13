@@ -10,7 +10,8 @@
  *   own `const`.
  *
  * So it checks every name in the final `export { … }` list, and every member of
- * an exported object type. Run after `pnpm build`.
+ * an exported object, written inline or through a type alias. Run after
+ * `pnpm build`.
  *
  *   node scripts/check-docs.mjs
  */
@@ -54,13 +55,34 @@ for (const name of names) {
   }
   if (!documented(index)) missing.push(name);
 
-  // An exported object of parts: each member is public API too. A function's
-  // object return type ends in `: {` as well, and its fields are not parts.
-  if (/^declare const \w+: \{$/.test(lines[index])) {
-    for (let i = index + 1; lines[i] !== "};"; i++) {
-      const member = lines[i].match(/^ {4}(\w+): /);
-      if (member && !documented(i)) missing.push(`${name}.${member[1]}`);
-    }
+  // An exported object of parts, or an exported object type: each member is
+  // public API too. A function's object return type ends in `: {` as well, and
+  // its fields are not parts, so only a `const` or a `type` counts.
+  const open = objectBody(lines[index]);
+  if (open !== -1) checkMembers(name, open);
+}
+
+/**
+ * The line opening the object type behind a declaration, or `-1`: its own `{`,
+ * or the `{` ending the alias it names. The hover on `Timeline.Progress` reads
+ * the alias's member, not the part's own comment.
+ */
+function objectBody(line) {
+  if (/^(declare const \w+: |type \w+(<[^=]*>)? = )\{$/.test(line)) {
+    return lines.indexOf(line);
+  }
+  const alias = line.match(/^declare const \w+: (\w+);$/)?.[1];
+  if (!alias) return -1;
+  return lines.findIndex(
+    (candidate) =>
+      candidate.startsWith(`type ${alias} = `) && candidate.endsWith("{"),
+  );
+}
+
+function checkMembers(name, open) {
+  for (let i = open + 1; lines[i] !== "};"; i++) {
+    const member = lines[i].match(/^ {4}(?:readonly )?(\w+)\??: /);
+    if (member && !documented(i)) missing.push(`${name}.${member[1]}`);
   }
 }
 

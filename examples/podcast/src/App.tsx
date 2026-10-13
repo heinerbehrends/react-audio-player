@@ -1,4 +1,5 @@
 import "./App.css";
+import { useEffect, useRef } from "react";
 import {
   AudioPlayer,
   MediaSession,
@@ -10,8 +11,10 @@ import {
   Timeline,
   TimelineBuffered,
   formatTime,
+  useAudioControls,
   useAudioPlayer,
   useCurrentSecond,
+  useIsAtEnd,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
 // Where each chapter starts, in seconds: written by the script that joins
@@ -116,6 +119,8 @@ function Episode() {
         <Time.Remaining className="podcast-time" />
       </div>
 
+      <EndCard />
+
       <PlaybackRate className="podcast-rates">
         {RATES.map((rate) => (
           <PlaybackRate.Set key={rate} className="podcast-rate" rate={rate}>
@@ -145,10 +150,45 @@ function ChapterMarks() {
   ));
 }
 
+// Always rendered, so the live region exists before its text arrives and the
+// end is announced.
+function EndCard() {
+  const { seek, play } = useAudioControls();
+  const atEnd = useIsAtEnd();
+
+  return (
+    <div className="podcast-end" role="status">
+      {atEnd && (
+        <>
+          <p>That was chapters 10–12.</p>
+          <button
+            type="button"
+            onClick={() => {
+              seek(0);
+              play();
+            }}
+          >
+            Listen again
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Chapters in userland: a sorted list, the current second and `seek()`.
 function Chapters() {
-  const { seek, play } = useAudioPlayer();
+  const { seek, play, isSeekable } = useAudioPlayer();
   const second = useCurrentSecond();
+  // `seek()` does nothing before the duration is known, which under the
+  // default `preload` on iOS is until the first press. A chapter chosen then
+  // waits here, and the play the click starts brings the duration.
+  const pending = useRef<number | null>(null);
+  useEffect(() => {
+    if (!isSeekable || pending.current === null) return;
+    seek(pending.current);
+    pending.current = null;
+  }, [isSeekable, seek]);
   // Floored, because the second is: a seek to 115.75 reads as 115, and would
   // otherwise still mark the chapter before.
   const current = CHAPTERS.reduce(
@@ -164,7 +204,8 @@ function Chapters() {
             type="button"
             aria-current={i === current ? "true" : undefined}
             onClick={() => {
-              seek(chapter.start);
+              if (isSeekable) seek(chapter.start);
+              else pending.current = chapter.start;
               play();
             }}
           >

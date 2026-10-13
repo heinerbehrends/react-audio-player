@@ -88,7 +88,6 @@ function useTimeToggle<P extends React.ButtonHTMLAttributes<HTMLButtonElement>>(
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   const bag = {
-    type: "button",
     "data-part": "time-toggle",
     "data-state": timeDisplay,
     // Starts with the text on screen, so a voice-control user can say it (WCAG

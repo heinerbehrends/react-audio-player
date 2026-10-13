@@ -117,19 +117,33 @@ export function useHandleMediaKeys() {
   };
 }
 
+// Inputs that take no typed characters. A range slider or a checkbox lets
+// letters and digits through to the shortcuts, but keeps the keys it moves or
+// toggles with: ArrowRight on a native scrubber would otherwise seek twice.
+const UNTYPED_INPUTS =
+  /^(range|checkbox|radio|button|submit|reset|color|file|image)$/;
+const NAVIGATION_KEYS =
+  /^(Arrow(Up|Down|Left|Right)|Home|End|PageUp|PageDown| )$/;
+
+/** Whether the focused element keeps this key for itself. */
+function ownsKey(target: HTMLElement, key: string) {
+  if (target.isContentEditable) return true;
+  if (target instanceof HTMLInputElement) {
+    return !UNTYPED_INPUTS.test(target.type) || NAVIGATION_KEYS.test(key);
+  }
+  return target.tagName === "TEXTAREA" || target.tagName === "SELECT";
+}
+
 /**
  * The shortcuts as an `onKeyDown` for a container, which `usePlayerRootProps`
- * builds on. Keys typed into a text field, `<select>` or `contenteditable`
- * are left alone; no library control is editable, so they skip the check.
+ * builds on. Keys typed into a text field, `<select>` or `contenteditable` are
+ * left alone, and so are the arrow keys on a range or a checkbox; no library
+ * control is an input, so they skip the check.
  */
 export function useMediaKeyHandler() {
   const handleMediaKeys = useHandleMediaKeys();
   return (event: React.KeyboardEvent) => {
-    const target = event.target as HTMLElement;
-    if (
-      !target.isContentEditable &&
-      !/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)
-    ) {
+    if (!ownsKey(event.target as HTMLElement, event.key)) {
       handleMediaKeys(event as React.KeyboardEvent<HTMLButtonElement>);
     }
   };

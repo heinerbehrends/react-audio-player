@@ -267,6 +267,45 @@ test.describe("Podcast", () => {
       "true",
     );
   });
+
+  // As on iOS, where nothing loads before the first press: `seek()` is a no-op
+  // until the duration is known, so the example holds the chapter until then.
+  test("a chapter clicked before the duration is known still lands there", async ({
+    page,
+  }) => {
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/alice-podcast.mp3", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Podcast" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+    await expect(timeline).toHaveAttribute("aria-disabled", "true");
+
+    await chapter(example, "Alice's Evidence").click();
+    release();
+
+    await expect.poll(() => position(example)).toBeGreaterThan(236);
+  });
+
+  test("the end card offers to listen again", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Podcast" });
+    const timeline = example.getByRole("slider", { name: labels.timeline });
+    await expect(timeline).not.toHaveAttribute("aria-disabled", "true");
+
+    await timeline.focus();
+    await page.keyboard.press("End");
+    const end = example.getByRole("status");
+    await expect(end).toContainText("That was chapters 10–12.");
+
+    await end.getByRole("button", { name: "Listen again" }).click();
+
+    await expect(end).toBeEmpty();
+    await expect.poll(() => position(example)).toBeLessThan(5);
+  });
 });
 
 test.describe("Waveform", () => {
@@ -422,6 +461,20 @@ test.describe("Custom components", () => {
     ).toBeEnabled();
 
     await example.getByRole("button", { name: /1,5/ }).focus();
+    await page.keyboard.press("k");
+
+    await expect(example.getByRole("button", { name: pause })).toBeVisible();
+  });
+
+  // The slider is a native range input: it keeps its arrows, and lets letters
+  // through. The test above pins that ArrowRight seeks once.
+  test("the shortcuts work from its own slider", async ({ page }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Custom components" });
+    const position = example.getByRole("slider", { name: "Position" });
+    await expect(position).toBeEnabled();
+
+    await position.focus();
     await page.keyboard.press("k");
 
     await expect(example.getByRole("button", { name: pause })).toBeVisible();

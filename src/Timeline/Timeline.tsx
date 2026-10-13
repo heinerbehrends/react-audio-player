@@ -57,9 +57,13 @@ const TimelineRoot = /* @__PURE__ */ forwardRef<HTMLDivElement, TimelineProps>(
 type TimelineComponent = React.ForwardRefExoticComponent<
   TimelineProps & React.RefAttributes<HTMLDivElement>
 > & {
+  /** The fill, from the start of the track to the value. */
   Progress: typeof SliderProgress;
+  /** The track behind the fill. */
   Background: typeof SliderBackground;
+  /** The slider itself: the tab stop, the keys and the pointer. Required. */
   Control: typeof SliderControl;
+  /** The drag handle, hidden from assistive technology. */
   Thumb: typeof SliderThumb;
 };
 

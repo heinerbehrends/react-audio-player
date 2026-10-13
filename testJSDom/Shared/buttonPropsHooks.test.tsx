@@ -82,6 +82,35 @@ describe.each(hooks)("$name", ({ use, part }) => {
  * The three hooks left out are the point of the rule — `PlaybackRate.Set`
  * already says it with `aria-pressed`, and the other two have no state.
  */
+// A caller's `type="submit"` would make every press submit an enclosing form,
+// so `type` sits with the gate, after the caller's props.
+const submits: [string, () => ButtonBagBase][] = [
+  ["usePlayButtonProps", () => usePlayButtonProps({ type: "submit" })],
+  ["useMuteButtonProps", () => useMuteButtonProps({ type: "submit" })],
+  ["useSeekButtonProps", () => useSeekButtonProps(10, { type: "submit" })],
+  [
+    "useTimeToggleProps",
+    () => useTimeToggleProps(undefined, { type: "submit" }),
+  ],
+  [
+    "usePlaybackRateSetProps",
+    () => usePlaybackRateSetProps(1.5, { type: "submit" }),
+  ],
+  [
+    "usePlaybackRateChangeProps",
+    () => usePlaybackRateChangeProps(0.25, { type: "submit" }),
+  ],
+];
+
+describe("type", () => {
+  it.each(submits)('%s keeps type="button" over the caller\'s', (_, use) => {
+    const harness = createTestStore({ readyState: 1, duration: 100 });
+    const { result } = renderHook(use, { wrapper: wrapper(harness) });
+
+    expect(result.current.type).toBe("button");
+  });
+});
+
 describe("data-state", () => {
   it("reports the player state on usePlayButtonProps", () => {
     const harness = createTestStore({ readyState: 1, duration: 100 });

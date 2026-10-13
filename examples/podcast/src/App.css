@@ -227,6 +227,32 @@
   font-weight: 600;
 }
 
+.podcast-end:not(:empty) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.podcast-end button {
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.podcast-end button:hover {
+  background: var(--hover);
+}
+
 .podcast-chapters {
   margin: 18px 0 0;
   padding: 0;

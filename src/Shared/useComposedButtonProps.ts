@@ -6,6 +6,8 @@ type ClickHandler = React.MouseEventHandler<HTMLButtonElement>;
 type KeyDownHandler = React.KeyboardEventHandler<HTMLButtonElement>;
 
 export type ComposedButtonProps = {
+  /** Always `"button"`, so the element never submits a form. */
+  readonly type: "button";
   readonly "aria-disabled": true | undefined;
   readonly onClick: ClickHandler | undefined;
   readonly onKeyDown: KeyDownHandler;
@@ -20,9 +22,9 @@ type ComposedOptions = {
 };
 
 /**
- * The three props every button in this library controls: the availability gate,
- * the click that performs its action, and the media-key shortcuts. Spread the
- * result after the consumer's props, or the gate can be spread away.
+ * The props every button in this library controls: `type`, the availability
+ * gate, the click that performs its action, and the media-key shortcuts. Spread
+ * the result after the consumer's props, or the gate can be spread away.
  *
  * Unavailability is `aria-disabled`, not the native `disabled` attribute, which
  * takes the element out of the tab order and so drops focus to `<body>` on a
@@ -45,6 +47,7 @@ export function useComposedButtonProps(
   const handleMediaKeys = useHandleMediaKeys();
 
   return {
+    type: "button",
     "aria-disabled": isDisabled || undefined,
     onClick: isDisabled ? undefined : composeEventHandlers(props.onClick, ours),
     onKeyDown: composeEventHandlers(props.onKeyDown, handleMediaKeys),
@@ -53,8 +56,6 @@ export function useComposedButtonProps(
 
 /** The props every button hook returns, on top of the caller's own. */
 export type ButtonBagBase = ComposedButtonProps & {
-  /** Always `"button"`, so the element never submits a form. */
-  readonly type: React.ButtonHTMLAttributes<HTMLButtonElement>["type"];
   /** The accessible name, from `labels` or the English default. */
   readonly "aria-label": string;
   /** A stable selector for the control; `aria-label` is translatable, so it is not one. */

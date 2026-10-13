@@ -114,6 +114,20 @@ cannot fail, and example and doc drift.
 
 ### Before beta
 
+All four fixed on 2026-10-13, with items 5–7 below:
+
+- **1:** `check-docs` follows a `declare const X: Alias` to the alias and
+  checks exported object types too. It found 25 gaps: the 21 compound members
+  and `AudioError`'s `kind` and `reason`, now one sentence each.
+- **2:** `type: "button"` moved into the composed props every hook spreads
+  last; a test pins it against a caller's `type="submit"` on all six.
+- **3:** the container handler skips only text entry. A range, checkbox or
+  other untyped input passes letters and digits to the shortcuts and keeps
+  the arrows, Home, End, the Page keys and Space. The example's panel text
+  was corrected with S36.
+- **4:** the buffering spec asserts past the stall position; the refs test
+  seeks with a pointer, and fails when `.Control` drops its own ref.
+
 1. **`check-docs` skips the members of six compound parts.** The member loop
    runs only on a line matching `declare const X: {`. `Timeline`, `Volume`,
    `PlaybackRate`, `PlaybackRateSlider`, `PlayButton` and `MuteButton` are
@@ -145,6 +159,11 @@ type="submit">` is a submit button and submits an enclosing form on every
      `getBoundingClientRect` instead.
 
 ### Before beta, smaller
+
+5–7 fixed on 2026-10-13: a chapter clicked before the duration is known waits
+for `isSeekable` and lands there; the podcast example has an end card with
+"Listen again", in a live region; and `TimeToggle` builds its text from the
+same `labels.time` entry as its name. Each of 5 and 6 has an E2E test.
 
 5. **A chapter click before metadata plays from 0:00.** The podcast example
    calls `seek(start); play()`, and the seek is dropped while the duration is
@@ -264,9 +283,8 @@ and the checklist below fold `reload` into it. Make the ticket thirteen.
    match letters in either case, and `useAudioControls()` (findings 1, 4, 6
    and code-review 9).
 5. ~~Add `useAudioControls()`~~ — done with S36.
-6. Fix the "Before beta" items of the code review: the `check-docs` member
-   gap, the button `type`, the custom-components shortcuts, and the two tests
-   that cannot fail.
+6. ~~Fix the "Before beta" items of the code review~~ — done, with items 5–7
+   of the smaller list.
 7. ~~Before committing F15~~ — done: the five F15 findings below are fixed.
 
 ## After the beta

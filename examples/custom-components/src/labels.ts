@@ -16,7 +16,7 @@ export const formatRate = (rate: number) => `${number.format(rate)}×`;
 /** "80 %", with the non-breaking space German puts before the sign. */
 export const formatPercent = (fraction: number) => percent.format(fraction);
 
-export const german: PlayerLabels = {
+export const german = {
   player: "Audioplayer",
 
   // One name per state. The state says what is; the name says what pressing
@@ -67,4 +67,4 @@ export const german: PlayerLabels = {
       ? `-${formatTime(seconds)}`
       : formatTime(seconds),
   rateDisplay: ({ rate }) => formatRate(rate),
-};
+} satisfies PlayerLabels;

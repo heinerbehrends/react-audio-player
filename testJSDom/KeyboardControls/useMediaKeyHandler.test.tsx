@@ -21,6 +21,8 @@ function Player() {
       <button>custom</button>
       <LibraryButton />
       <input aria-label="search" />
+      <input aria-label="scrubber" type="range" />
+      <input aria-label="loop" type="checkbox" />
       <textarea aria-label="notes" />
       <div aria-label="editor" contentEditable suppressContentEditableWarning />
     </div>
@@ -72,6 +74,38 @@ describe("useMediaKeyHandler", () => {
       });
 
       expect(element.play).not.toHaveBeenCalled();
+      expect(notPrevented).toBe(true);
+    },
+  );
+
+  // A native scrubber in a custom UI: `k` should still play from it.
+  it.each(["scrubber", "loop"])(
+    "runs a letter from the %s input, which takes no typed text",
+    (name) => {
+      const { element } = renderWithStore(<Player />, loaded);
+
+      fireEvent.keyDown(screen.getByLabelText(name), { key: "k" });
+
+      expect(element.play).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  // The range moves itself on the arrows; a shortcut too would seek twice.
+  it.each(["ArrowRight", "ArrowUp", "Home", "PageDown"])(
+    "leaves %s to the range input",
+    (key) => {
+      const { element } = renderWithStore(<Player />, {
+        element: { ...loaded.element, currentTime: 10, duration: 100 },
+      });
+
+      const notPrevented = fireEvent.keyDown(
+        screen.getByLabelText("scrubber"),
+        {
+          key,
+        },
+      );
+
+      expect(element.currentTime).toBe(10);
       expect(notPrevented).toBe(true);
     },
   );

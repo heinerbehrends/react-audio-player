@@ -15,6 +15,9 @@ const WAV = readFileSync("public/test-tone.wav");
 // Chromium has not read the metadata when the connection goes.
 const HOLD_AT = 44 + 8 * 44100;
 
+const currentTime = (page: Page) =>
+  page.locator("audio").evaluate((a: HTMLAudioElement) => a.currentTime);
+
 /** `<TimelineBuffered>`'s fraction, from the custom property it sets. */
 const buffered = (page: Page) =>
   page
@@ -62,15 +65,14 @@ test("a stall reads as buffering, and playing again once data arrives", async ({
     page.getByRole("button", { name: labels.pauseAudio }),
   ).toBeVisible();
 
+  // Relative to the stall, which sits near 8 s: a fixed threshold below it
+  // holds before the rest of the file arrives.
+  const stalledAt = await currentTime(page);
   held?.end(WAV.subarray(HOLD_AT));
 
   await expect(page.getByText("Buffering: false")).toBeVisible({
     timeout: 10000,
   });
   await expect.poll(() => buffered(page)).toBe(1);
-  await expect
-    .poll(() =>
-      page.locator("audio").evaluate((a: HTMLAudioElement) => a.currentTime),
-    )
-    .toBeGreaterThan(2.5);
+  await expect.poll(() => currentTime(page)).toBeGreaterThan(stalledAt + 0.5);
 });

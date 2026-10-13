@@ -92,25 +92,19 @@ function SeekButton({ amount }: { amount: number }) {
   );
 }
 
-// Starts on the time left; a press switches to the time played.
+// Starts on the time left; a press switches to the time played. The text comes
+// from the same `labels.time` entry the hook names the button with, so the two
+// cannot drift apart.
 function TimeToggle() {
   const props = useTimeToggleProps("remaining", {
     className: "custom-components-time",
   });
   const { elapsed, remaining } = useTimeDisplay();
-  // `remaining` is fractional; rounded as the built-in readout does, so the
-  // text matches the name the hook gives the button.
-  const seconds = Math.round(remaining);
+  const part = props["data-state"];
+  // Whole seconds, as the hook hands the entry.
+  const seconds = Math.round(part === "elapsed" ? elapsed : remaining);
 
-  return (
-    <Button {...props}>
-      {props["data-state"] === "elapsed"
-        ? formatTime(elapsed)
-        : seconds === 0
-          ? formatTime(0)
-          : `-${formatTime(seconds)}`}
-    </Button>
-  );
+  return <Button {...props}>{german.time({ seconds, part })}</Button>;
 }
 
 function RateButton({ rate }: { rate: number }) {

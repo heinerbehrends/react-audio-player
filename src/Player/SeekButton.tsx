@@ -51,7 +51,6 @@ export function useSeekButtonProps<
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
-    type: "button",
     "data-part": "seek",
     // The entry gets the signed `amount`, not "forward"/"backward": German puts
     // the verb last, which no slot in an English sentence can produce.

@@ -1,4 +1,5 @@
 import { createRef, type ReactElement, type Ref } from "react";
+import { fireEvent } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   ErrorMessage,
@@ -14,6 +15,12 @@ import {
   Volume,
 } from "../../src/index";
 import { renderWithStore } from "../store/renderWithStore";
+import {
+  alongTrack,
+  pointerEventAt,
+  stubElementRects,
+  stubResizeObserver,
+} from "../testUtils";
 
 type Case = [
   name: string,
@@ -163,16 +170,23 @@ describe("refs", () => {
     expect(ref.current).toHaveAttribute("data-part", "error");
   });
 
-  // `.Control` measures its own element through a ref, and still has to.
+  // `.Control` measures its own element through a ref, and still has to: a
+  // slider that lost its measurement renders normally and ignores clicks.
   it("Timeline.Control keeps measuring with a ref of the caller's", () => {
+    stubResizeObserver();
+    const restoreRects = stubElementRects();
     const ref = createRef<HTMLButtonElement>();
-    const { container } = renderWithStore(
+    const { container, element } = renderWithStore(
       <Timeline>
         <Timeline.Control ref={ref} />
       </Timeline>,
+      { element: { readyState: 1, duration: 100 } },
     );
 
+    fireEvent(ref.current!, pointerEventAt("pointerdown", alongTrack(0.5)));
+    restoreRects();
+
     expect(ref.current).toBe(container.querySelector('[role="slider"]'));
-    expect(ref.current).toHaveAttribute("aria-valuemax", "100");
+    expect(element.currentTime).toBeCloseTo(50, 5);
   });
 });

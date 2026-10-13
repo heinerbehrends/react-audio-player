@@ -39,7 +39,6 @@ export function usePlayButtonProps<
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
-    type: "button",
     "data-part": "play",
     "data-state": playerState,
     "aria-label": labels?.play?.[playerState] ?? ariaLabelMap[playerState],
@@ -101,7 +100,9 @@ function Paused({
 type PlayButtonComponent = React.ForwardRefExoticComponent<
   PlayButtonProps & React.RefAttributes<HTMLButtonElement>
 > & {
+  /** Renders its children while playing. */
   Playing: typeof Playing;
+  /** Renders its children while not playing. */
   Paused: typeof Paused;
 };
 

@@ -39,9 +39,13 @@ const PlaybackRateRoot = /* @__PURE__ */ forwardRef<
 type PlaybackRateComponent = React.ForwardRefExoticComponent<
   PlaybackRateProps & React.RefAttributes<HTMLSpanElement>
 > & {
+  /** A button that sets one rate. */
   Set: typeof SetPlaybackRate;
+  /** A button that steps the rate by an amount. */
   Change: typeof ChangePlaybackRate;
+  /** Marks one rate while it is in effect. */
   Current: typeof CurrentIndicator;
+  /** The current rate as text, such as "1.5x". */
   Display: typeof RateDisplay;
 };
 

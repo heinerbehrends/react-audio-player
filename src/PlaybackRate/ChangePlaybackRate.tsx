@@ -50,7 +50,6 @@ export function usePlaybackRateChangeProps<
 
   // Cast: TypeScript cannot prove a spread of generic `P` is the bag.
   return {
-    type: "button",
     "data-part": "rate-change",
     // The entry gets the signed `amount`, and decides the direction wording.
     "aria-label":
