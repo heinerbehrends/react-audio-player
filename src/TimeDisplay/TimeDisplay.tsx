@@ -136,19 +136,16 @@ function useReadoutText(part: TimeDisplayState) {
   // The loading branch picks the number, not the format: the entry still runs,
   // with `seconds: 0`, so a locale with its own digits gets them.
   //
-  // A magnitude, never a negative, and **whole seconds**: `duration -
-  // currentSecond` is fractional on most tracks, and `formatTime` rounds — so
-  // handing the entry the float made an entry that floors render a second below
-  // the fallback, and turned the last half-second into the `-0:00` this
-  // component exists to avoid. What the entry is given is what the fallback
-  // would render, the same rule the sliders and `rateDisplay` follow.
+  // Whole seconds and never negative, as `useTimeDisplay` hands them: what
+  // the entry is given is what the fallback would render, the same rule the
+  // sliders and `rateDisplay` follow. A float here once made an entry that
+  // floors render a second below the fallback, and turned the last
+  // half-second into the `-0:00` this component exists to avoid.
   //
   // Zero both before the duration is known and once the track has finished — the
   // entry sees which case it is and can skip its own "-".
   const seconds =
-    playerState === "loading"
-      ? 0
-      : Math.round(part === "elapsed" ? elapsed : remaining);
+    playerState === "loading" ? 0 : part === "elapsed" ? elapsed : remaining;
   const custom = labels?.time?.({ seconds, part });
   if (custom !== undefined) return custom;
   if (part === "elapsed" || seconds === 0) return formatTime(seconds);

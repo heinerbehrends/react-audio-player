@@ -175,7 +175,7 @@ export function useIsAtEnd(): boolean {
 export function useTimeDisplay(): {
   /** The position. */
   elapsed: number;
-  /** The time left, as a magnitude clamped at `0`. Write the `-` yourself. */
+  /** The time left in whole seconds, clamped at `0`. Write the `-` yourself. */
   remaining: number;
 } {
   const store = usePlayerStore();
@@ -184,6 +184,9 @@ export function useTimeDisplay(): {
 
   return {
     elapsed: currentSecond,
-    remaining: Math.max(duration - currentSecond, 0),
+    // Whole seconds, like `elapsed`: the duration rounded, as `Time.Duration`
+    // shows it, so the two halves sum to that readout. `duration` is `0`
+    // before metadata, so `remaining` is `0` then, and again past the end.
+    remaining: Math.max(Math.round(duration) - currentSecond, 0),
   };
 }

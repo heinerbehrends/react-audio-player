@@ -82,8 +82,8 @@ export type PlayerLabels = {
    */
   rateSlider?: string;
   /**
-   * The timeline's `aria-valuetext`. `value` is the position and `maxValue` the
-   * duration, in whole seconds. `labels.time` does not reach here.
+   * The timeline's `aria-valuetext`. `value` is the position in whole seconds
+   * and `maxValue` the duration. `labels.time` does not reach here.
    */
   timelineValue?: (state: SliderAriaState) => string;
   /**

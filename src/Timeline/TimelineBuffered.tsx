@@ -49,7 +49,11 @@ export const TimelineBuffered = /* @__PURE__ */ forwardRef<
   const [end, setEnd] = useState(0);
 
   useEffect(() => {
-    if (!element) return;
+    // Nothing is buffered without an element, rather than the last reading.
+    if (!element) {
+      setEnd(0);
+      return;
+    }
     // A new number only when the range grows: `timeupdate` and the rest
     // usually find the same end, and React skips the render.
     const update = () => setEnd(bufferedEnd(element));

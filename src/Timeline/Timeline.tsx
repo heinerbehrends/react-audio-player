@@ -20,8 +20,8 @@ type TimelineProps = HTMLAttributes<HTMLDivElement> & {
   /** The slider parts: `.Control`, and any of `.Background`, `.Progress` and `.Thumb`. */
   children?: React.ReactNode;
   /**
-   * Snaps seeks and arrow-key steps to a multiple of this many seconds. `0`
-   * seeks continuously, with a 5-second arrow step.
+   * Snaps pointer seeks to a multiple of this many seconds, and moves the
+   * arrow keys by it. `0` seeks continuously, with a 5-second arrow step.
    *
    * @defaultValue 0
    */

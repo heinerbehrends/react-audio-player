@@ -165,6 +165,13 @@ for `isSeekable` and lands there; the podcast example has an end card with
 "Listen again", in a live region; and `TimeToggle` builds its text from the
 same `labels.time` entry as its name. Each of 5 and 6 has an E2E test.
 
+8 and 10 fixed on 2026-10-13: the scrubber announces the dragged value and
+clears it on `pointercancel`; `step`'s comment says pointer seeks snap and
+the arrows move by it; `useTimeDisplay` rounds `remaining` as `Time.Duration`
+rounds, so it is the whole seconds the docs promised and the readout no
+longer rounds it again; and the `maxValue` comments say the duration. 9 was
+settled by S36.
+
 5. **A chapter click before metadata plays from 0:00.** The podcast example
    calls `seek(start); play()`, and the seek is dropped while the duration is
    unknown. Likely on iOS, where `preload` defaults to `none`. The same gate as
@@ -195,8 +202,8 @@ same `labels.time` entry as its name. Each of 5 and 6 has an E2E test.
 
 ### Low
 
-- `TimelineBuffered` keeps its last fraction when the element detaches; the
-  effect returns without clearing `end`.
+- ~~`TimelineBuffered` keeps its last fraction when the element detaches; the
+  effect returns without clearing `end`.~~ Fixed 2026-10-13.
 - Stale comments: `shortcuts.ts` says "the arrows seek 5 seconds", but Up and
   Down change the volume; `examples/playlist/src/App.tsx:70` still describes
   the removed `aria-labelledby` naming.
@@ -283,7 +290,7 @@ and the checklist below fold `reload` into it. Make the ticket thirteen.
 
 ## Before tagging beta.0
 
-1. Fix the captions sentence in the recipe and the README table (finding 3).
+1. ~~Fix the captions sentence in the recipe and the README table (finding 3)~~ — done with F17, which shipped the hook itself.
 2. ~~Add `startTime` or the media-fragment recipe (finding 2)~~ — done: the
    recipe, with the podcast example resuming from `localStorage`. The seek
    gate is documented on `seek` (finding 7).

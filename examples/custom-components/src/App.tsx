@@ -130,12 +130,13 @@ function Scrubber() {
       max={duration}
       step="any"
       disabled={!isSeekable}
-      valueText={`${formatTime(time)} von ${formatTime(duration)}`}
+      valueText={`${formatTime(dragged ?? time)} von ${formatTime(duration)}`}
       onValueChange={(value) => {
         setDragged(value);
         seek(value);
       }}
       onPointerUp={() => setDragged(null)}
+      onPointerCancel={() => setDragged(null)}
       // Home, End and Page Up/Down reach `onValueChange` too.
       onKeyUp={() => setDragged(null)}
       onBlur={() => setDragged(null)}

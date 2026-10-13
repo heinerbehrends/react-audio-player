@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { act } from "@testing-library/react";
 import { TimelineBuffered } from "../../src/index";
 import { renderWithStore } from "../store/renderWithStore";
 import { timeRanges } from "../store/mediaElementFake";
@@ -73,6 +74,17 @@ describe("TimelineBuffered", () => {
         buffered: timeRanges([[0, 30]]),
       },
     });
+
+    expect(fraction(container)).toBe("0");
+  });
+
+  it("is empty once the element detaches, not its last reading", () => {
+    const { container, detach } = renderWithStore(<TimelineBuffered />, {
+      element: { duration: 100, buffered: timeRanges([[0, 30]]) },
+    });
+    expect(fraction(container)).toBe("0.3");
+
+    act(() => detach());
 
     expect(fraction(container)).toBe("0");
   });

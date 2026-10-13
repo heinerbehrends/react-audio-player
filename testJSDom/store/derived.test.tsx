@@ -391,6 +391,16 @@ describe("useTimeDisplay", () => {
     expect(result.current).toEqual({ elapsed: 30, remaining: 70 });
   });
 
+  // Rounded as `Time.Duration` rounds, so the halves sum to what it shows.
+  it("hands remaining as whole seconds of the rounded duration", () => {
+    const { result } = renderDerived(useTimeDisplay, {
+      currentTime: 30,
+      duration: 100.7,
+    });
+
+    expect(result.current).toEqual({ elapsed: 30, remaining: 71 });
+  });
+
   it("follows a timeupdate", () => {
     const { result, ...harness } = renderDerived(useTimeDisplay, {
       currentTime: 0,

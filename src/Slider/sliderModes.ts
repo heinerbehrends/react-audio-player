@@ -5,8 +5,8 @@ export type SliderMode = "seek" | "volume" | "rate";
 export type SliderComponent = "timeline" | "volume" | "rate";
 /**
  * What a slider's `aria-valuetext` entry receives. The same payload for all
- * three sliders: the timeline reads `value` and `maxValue` as whole seconds,
- * the volume slider reads `value` as `0`–`1` and `muted`, and the rate slider
+ * three sliders: the timeline reads `value` as whole seconds and `maxValue` as
+ * the duration, the volume slider reads `value` as `0`–`1` and `muted`, and the rate slider
  * reads `value` alone.
  */
 export type SliderAriaState = {
