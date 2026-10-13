@@ -288,3 +288,54 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+.podcast-transcript {
+  margin-top: 18px;
+}
+
+.podcast-transcript-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.podcast-transcript-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Scrolls on its own, so following along moves this box, not the page. */
+.podcast-transcript-text {
+  max-height: 16rem;
+  overflow-y: auto;
+  padding-right: 4px;
+  line-height: 1.6;
+}
+
+.podcast-transcript-text p {
+  margin: 0 0 0.8em;
+}
+
+/* Sentences read as prose: a button only on hover, focus and while playing. */
+.podcast-transcript-text button {
+  display: inline;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.podcast-transcript-text button:hover {
+  background: var(--hover);
+}
+
+.podcast-transcript-text button[aria-current="true"] {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}

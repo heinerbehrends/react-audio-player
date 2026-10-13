@@ -61,7 +61,7 @@ const EXAMPLES: Example[] = [
     id: "podcast",
     title: "Podcast",
     summary:
-      "One episode in three chapters: a chapter list built from useCurrentSecond() and seek(), skips of 15 and 30 seconds, rate options, and the cover on the lock screen.",
+      "One episode in three chapters: a chapter list built from useCurrentSecond() and seek(), skips of 15 and 30 seconds, rate options, the cover on the lock screen, and a transcript from a <track> read by useTextTrack().",
     App: PodcastApp,
     files: [
       { name: "App.tsx", code: podcastApp },

@@ -195,7 +195,8 @@ run on the [demo page](https://heinerbehrends.github.io/react-audio-player/).
 | Change the keyboard shortcuts             | [Keyboard](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/keyboard.md)                           | [custom-components](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/custom-components) |
 | Use a design system's buttons             | [Your own buttons](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/your-own-buttons.md)           | [custom-components](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/custom-components) |
 | Build UI the parts do not cover           | [Custom UI with hooks](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/custom-ui.md)              | [waveform](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/waveform)                   |
-| Add captions, Web Audio or HLS            | [The `<audio>` element](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/audio-element.md) |                                                                                                                |
+| Show a transcript                         | [A transcript](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/transcript.md)             | [podcast](https://github.com/heinerbehrends/react-audio-player/tree/main/examples/podcast)                     |
+| Add Web Audio or HLS                      | [The `<audio>` element](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/audio-element.md) |                                                                                                                |
 | Know what is announced, and what is yours | [Accessibility](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/accessibility.md)                 |                                                                                                                |
 
 Where the example cell is empty, the guide carries its own code; an example for
@@ -253,19 +254,20 @@ Every hook must be called inside an `<AudioPlayer>`, except
 `useIsVolumeAvailable()`. See
 [Custom UI with hooks](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/custom-ui.md).
 
-| Hook                     | Returns                                                                                                                                        |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useAudioPlayer()`       | The state and the controls: `play`, `pause`, `seek`, `setVolume`, `setRate`, `reload` and the rest.                                            |
-| `useAudioControls()`     | The controls alone, which never re-render.                                                                                                     |
-| `useCurrentSecond()`     | The position in whole seconds, re-rendering once a second. For a clock.                                                                        |
-| `useCurrentTime()`       | The raw position, about four times a second. For a waveform.                                                                                   |
-| `useTimeDisplay()`       | `elapsed` and `remaining` in whole seconds, for a readout of your own.                                                                         |
-| `useIsSeekable()`        | Whether the duration is known. False before metadata and on a live stream.                                                                     |
-| `useIsLive()`            | Whether the track is a live stream.                                                                                                            |
-| `useIsBuffering()`       | Whether playback is waiting for data.                                                                                                          |
-| `useIsAtEnd()`           | Whether the position is the end of the track.                                                                                                  |
-| `useIsVolumeAvailable()` | Whether the browser lets a page set the volume. `false` on iOS.                                                                                |
-| `useAudioError()`        | The last failure, or `null`. See [Errors and autoplay](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/errors.md). |
+| Hook                     | Returns                                                                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useAudioPlayer()`       | The state and the controls: `play`, `pause`, `seek`, `setVolume`, `setRate`, `reload` and the rest.                                                                             |
+| `useAudioControls()`     | The controls alone, which never re-render.                                                                                                                                      |
+| `useCurrentSecond()`     | The position in whole seconds, re-rendering once a second. For a clock.                                                                                                         |
+| `useCurrentTime()`       | The raw position, about four times a second. For a waveform.                                                                                                                    |
+| `useTimeDisplay()`       | `elapsed` and `remaining` in whole seconds, for a readout of your own.                                                                                                          |
+| `useIsSeekable()`        | Whether the duration is known. False before metadata and on a live stream.                                                                                                      |
+| `useIsLive()`            | Whether the track is a live stream.                                                                                                                                             |
+| `useIsBuffering()`       | Whether playback is waiting for data.                                                                                                                                           |
+| `useIsAtEnd()`           | Whether the position is the end of the track.                                                                                                                                   |
+| `useTextTrack()`         | A `<track>` child's cues and the one playing, for a [transcript](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/transcript.md). A separate import. |
+| `useIsVolumeAvailable()` | Whether the browser lets a page set the volume. `false` on iOS.                                                                                                                 |
+| `useAudioError()`        | The last failure, or `null`. See [Errors and autoplay](https://github.com/heinerbehrends/react-audio-player/blob/main/docs/recipes/errors.md).                                  |
 
 Not a hook, so it works anywhere: `formatTime(seconds)` formats a time the way
 the readouts do, `M:SS`, or `H:MM:SS` from an hour up.
@@ -311,7 +313,6 @@ or unbind a key, see
 Additive, in the order they are likely to land. None changes what ships today.
 
 - Playlist components, skip and loop
-- Caption and subtitle support
 
 ## Development
 

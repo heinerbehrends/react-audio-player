@@ -328,6 +328,23 @@ test.describe("Podcast", () => {
     );
   });
 
+  // The transcript is the `<track>` child, read by `useTextTrack()`. A long
+  // sentence, 26.7 s to 51.8 s, so the mark cannot move on before it is read.
+  test("a sentence in the transcript seeks there, and is marked while it plays", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const example = page.getByRole("region", { name: "Podcast" });
+    const sentence = example
+      .getByRole("region", { name: "Transcript" })
+      .getByRole("button", { name: /^“You may not have lived much/ });
+
+    await sentence.click();
+
+    await expect.poll(() => position(example)).toBeGreaterThan(26.7);
+    await expect(sentence).toHaveAttribute("aria-current", "true");
+  });
+
   test("the end card offers to listen again", async ({ page }) => {
     await page.goto("/");
     const example = page.getByRole("region", { name: "Podcast" });

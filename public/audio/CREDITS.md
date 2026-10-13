@@ -14,6 +14,11 @@ chapters 10–12 of the same recording.
 - Cut by `scripts/cut-excerpts.mjs`, at pauses and without re-encoding; the
   spoken LibriVox preamble at the start of each chapter is left out.
 
+`alice-podcast.vtt` is its transcript: the text of those chapters from Project
+Gutenberg's edition, <https://www.gutenberg.org/ebooks/11>, which the reading
+follows, timed against speech recognition of the excerpts by
+`scripts/build-transcript.mjs`.
+
 `alice-cover.jpg` is the recording's cover from LibriVox's CD cover art
 collection, <https://archive.org/details/LibrivoxCdCoverArt>, marked public
 domain.

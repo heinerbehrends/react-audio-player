@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   AudioPlayer,
   MediaSession,
@@ -16,6 +16,8 @@ import {
   useCurrentSecond,
   useIsAtEnd,
   useIsSeekable,
+  useTextTrack,
+  type Cue,
 } from "react-headless-audio-player";
 import { AUDIO_BASE } from "./audio";
 // Where each chapter starts, in seconds: written by the script that joins
@@ -71,7 +73,22 @@ export default function App() {
   });
 
   return (
-    <AudioPlayer track={track}>
+    <AudioPlayer
+      track={track}
+      audioProps={{
+        // The transcript. `crossOrigin` because a sandbox reads it from the
+        // deployed demo, another origin; GitHub Pages sends the CORS header.
+        crossOrigin: "anonymous",
+        children: (
+          <track
+            kind="subtitles"
+            src={`${AUDIO_BASE}audio/alice-podcast.vtt`}
+            srcLang="en"
+            default
+          />
+        ),
+      }}
+    >
       <RememberPosition />
       <Episode />
     </AudioPlayer>
@@ -179,6 +196,7 @@ function Episode() {
       </PlaybackRate>
 
       <Chapters />
+      <Transcript />
     </PlayerRoot>
   );
 }
@@ -226,18 +244,29 @@ function EndCard() {
 }
 
 // Chapters in userland: a sorted list, the current second and `seek()`.
-function Chapters() {
+// Seeks there and plays, for a chapter or a sentence. `seek()` does nothing
+// before the duration is known, which under the default `preload` on iOS is
+// until the first press. A position chosen then waits here, and the play the
+// click starts brings the duration.
+function useJumpTo() {
   const { seek, play, isSeekable } = useAudioPlayer();
-  const second = useCurrentSecond();
-  // `seek()` does nothing before the duration is known, which under the
-  // default `preload` on iOS is until the first press. A chapter chosen then
-  // waits here, and the play the click starts brings the duration.
   const pending = useRef<number | null>(null);
   useEffect(() => {
     if (!isSeekable || pending.current === null) return;
     seek(pending.current);
     pending.current = null;
   }, [isSeekable, seek]);
+
+  return (seconds: number) => {
+    if (isSeekable) seek(seconds);
+    else pending.current = seconds;
+    play();
+  };
+}
+
+function Chapters() {
+  const jumpTo = useJumpTo();
+  const second = useCurrentSecond();
   // Floored, because the second is: a seek to 115.75 reads as 115, and would
   // otherwise still mark the chapter before.
   const current = CHAPTERS.reduce(
@@ -252,11 +281,7 @@ function Chapters() {
           <button
             type="button"
             aria-current={i === current ? "true" : undefined}
-            onClick={() => {
-              if (isSeekable) seek(chapter.start);
-              else pending.current = chapter.start;
-              play();
-            }}
+            onClick={() => jumpTo(chapter.start)}
           >
             <span className="podcast-chapter-time">
               {/* Floored like `useCurrentSecond()`, so the label agrees with
@@ -268,5 +293,65 @@ function Chapters() {
         </li>
       ))}
     </ol>
+  );
+}
+
+// The transcript, read from the `<track>` child: a paragraph wherever a cue
+// has an id, a button per sentence, and the one playing marked.
+function Transcript() {
+  const { cues, activeIndex, status } = useTextTrack();
+  const jumpTo = useJumpTo();
+  // Off by default: scrolling under someone reading ahead loses their place.
+  const [follow, setFollow] = useState(false);
+  const active = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (follow) active.current?.scrollIntoView({ block: "nearest" });
+  }, [follow, activeIndex]);
+
+  if (status !== "ready") return null;
+
+  const paragraphs: { cue: Cue; index: number }[][] = [];
+  cues.forEach((cue, index) => {
+    if (cue.id || paragraphs.length === 0) paragraphs.push([]);
+    paragraphs.at(-1)!.push({ cue, index });
+  });
+
+  return (
+    <section
+      className="podcast-transcript"
+      aria-labelledby="podcast-transcript"
+    >
+      <div className="podcast-transcript-head">
+        <p id="podcast-transcript" className="podcast-transcript-title">
+          Transcript
+        </p>
+        <label>
+          <input
+            type="checkbox"
+            checked={follow}
+            onChange={(event) => setFollow(event.target.checked)}
+          />{" "}
+          Follow along
+        </label>
+      </div>
+      <div className="podcast-transcript-text">
+        {paragraphs.map((sentences) => (
+          <p key={sentences[0]!.cue.start}>
+            {sentences.map(({ cue, index }) => (
+              <Fragment key={cue.start}>
+                <button
+                  type="button"
+                  aria-current={index === activeIndex ? "true" : undefined}
+                  ref={index === activeIndex ? active : undefined}
+                  onClick={() => jumpTo(cue.start)}
+                >
+                  {cue.text}
+                </button>{" "}
+              </Fragment>
+            ))}
+          </p>
+        ))}
+      </div>
+    </section>
   );
 }

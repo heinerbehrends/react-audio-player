@@ -24,6 +24,8 @@ nothing to migrate from.
 - `useAudioPlayer()`, `useAudioError()`, `useIsSeekable()`, `useIsLive()`,
   `useIsBuffering()`, `useIsAtEnd()`, `useCurrentSecond()` and
   `useCurrentTime()`
+- `useTextTrack()`: a `<track>` child as React data, its cues, the one playing
+  and whether it loaded, for a transcript from a WebVTT file. A separate import
 - `useIsVolumeAvailable()`, and a volume slider that disables itself where the
   browser ignores `volume` writes
 - Keyboard shortcuts bound to every focused control. `shortcuts` rebinds or

@@ -1,8 +1,9 @@
 # The `<audio>` element
 
 `<AudioPlayer>` renders the `<audio>` element itself. Anything the library does
-not model goes through `audioProps`, and `<track>` captions through its
-`children`:
+not model goes through `audioProps`, `<track>` children included. On
+`<audio>` a `<track>` draws nothing: read it with `useTextTrack()`, as
+[A transcript](transcript.md) shows.
 
 ```jsx
 <AudioPlayer
@@ -11,7 +12,7 @@ not model goes through `audioProps`, and `<track>` captions through its
     preload: "none",
     // Required for Web Audio: without it `createMediaElementSource` taints.
     crossOrigin: "anonymous",
-    children: <track kind="captions" src="captions.vtt" srcLang="en" default />,
+    children: <track kind="subtitles" src="episode.vtt" srcLang="en" default />,
   }}
   audioRef={audioRef}
 >

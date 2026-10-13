@@ -5,7 +5,7 @@
 Every open question, defect and improvement, one file each. The frontmatter is
 the contract: `id`, `title`, `epic`, `status`, `severity`, `origin`, `breaking`.
 
-**13 open · 0 part-done · 116 resolved · 6 rejected**
+**13 open · 0 part-done · 117 resolved · 6 rejected**
 
 `origin` says where a ticket came from: `review` is the pre-1.0 review, `demand`
 is the post-publish scan, `assessment` is the pre-beta release assessment of
@@ -88,7 +88,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 
 ## Features
 
-6 open of 35.
+6 open of 36.
 
 - [ ] [F10](features/F10-keyboard-shortcuts-only-fire-when-a-library.md) Keyboard shortcuts only fire when a library button has focus — P2
 - [ ] [B2](features/B2-only-one-player-at-a-time-is.md) '"Only one player at a time" is a consumer concern'
@@ -112,6 +112,7 @@ is the post-publish scan, `assessment` is the pre-beta release assessment of
 - [x] [D10](resolved/features/D10-example-and-excerpt-script-fixes.md) The examples lose focus and reach, and the excerpt script cuts into tags — P3
 - [x] [F12](resolved/features/F12-getoffset-lacks-the-range-0-guard-its.md) `getOffset` lacks the `range === 0` guard its sibling has — P3
 - [x] [F15](resolved/features/F15-no-player-wide-playback-rate-range.md) No player-wide playback-rate range — P3, **breaking**
+- [x] [F17](resolved/features/F17-a-text-track-hook.md) A text track hook, for a transcript from a `<track>` child — P3
 - [x] [B1](resolved/features/B1-playlist-resumption-is-undocumented-and-now-more.md) Playlist resumption is undocumented, and now more visible
 - [x] [B3](resolved/features/B3-firefox-has-never-run.md) Firefox has never run
 - [x] [B4](resolved/features/B4-firefox-does-diverge-on-ended-measured-on.md) Firefox **does** diverge on `ended`, measured on a bare element with no pointer simulation

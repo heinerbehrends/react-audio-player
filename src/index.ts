@@ -14,6 +14,13 @@ export { Time } from "./TimeDisplay/TimeDisplay";
 // A part, not root behaviour: every consumer imports `AudioPlayer`, and only
 // those who render this pay for the lock screen (F6).
 export { MediaSession } from "./MediaSession/MediaSession";
+// Opt-in the same way: only a player with a `<track>` child pays for it.
+export { useTextTrack } from "./TextTrack/useTextTrack";
+export type {
+  Cue,
+  TextTrackOptions,
+  TextTrackState,
+} from "./TextTrack/useTextTrack";
 // Individually, not through a barrel: a module importing from every part is the
 // aggregated surface that cost 4,025 B → 1,137 B gzipped in P1-a.
 export { usePlayerRootProps } from "./Player/PlayerRoot";

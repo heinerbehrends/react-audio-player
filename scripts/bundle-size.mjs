@@ -33,7 +33,7 @@ if (!existsSync(DIST)) {
 
 // Parts a consumer opts into by rendering them. "Full surface" leaves them out,
 // so it stays what everyone else pays, and each gets a row of its own (F6).
-const OPT_IN = ["MediaSession", "TimelineBuffered"];
+const OPT_IN = ["MediaSession", "TimelineBuffered", "useTextTrack"];
 const SURFACE = Object.keys(await import(pathToFileURL(DIST).href)).filter(
   (name) => !OPT_IN.includes(name),
 );
@@ -72,11 +72,18 @@ const BUDGETS = [
     imports: "{ AudioPlayer, MediaSession }",
     max: 4050,
   },
+  // The transcript hook, opt-in the same way (F17): about 740 B of its own.
+  {
+    name: "AudioPlayer + useTextTrack",
+    imports: "{ AudioPlayer, useTextTrack }",
+    max: 4300,
+  },
   // Raised from 8500 for `<PlayerRoot>` and `usePlayerRootProps`, and from
   // 8700 for a `ref` on every part: new public API, each part paying only for
   // its own.
   { name: "Full surface", imports: `{ ${SURFACE.join(", ")} }`, max: 9200 },
-  { name: "Full surface + opt-ins", imports: "* as all", max: 10200 },
+  // Raised from 10200 for `useTextTrack` (F17).
+  { name: "Full surface + opt-ins", imports: "* as all", max: 11000 },
 ];
 
 /**
