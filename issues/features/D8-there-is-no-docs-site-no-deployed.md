@@ -33,6 +33,13 @@ there is one copy of each example and CI covers it. The lineup is basic (on
 `styles.css`), playlist, podcast and waveform; the waveform needs no library
 change, spiked the same day. Sandbox links wait for the beta publish.
 
+## Sandbox links (2026-10-13)
+
+The beta is on npm and every example on the demo page has an "Open in
+StackBlitz" link, verified on the basic example. What is left of this ticket
+is the README linking the demo from the top and from each section the
+examples cover.
+
 ## Added (2026-10-06): a multi-player example
 
 A fifth example, several players on one page. Planned with the others in

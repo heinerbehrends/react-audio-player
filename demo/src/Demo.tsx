@@ -23,6 +23,10 @@ import customComponentsCss from "../../examples/custom-components/src/App.css?ra
 import customComponentsUiCss from "../../examples/custom-components/src/ui.css?raw";
 
 const REPO = "https://github.com/heinerbehrends/react-audio-player";
+// StackBlitz imports the example's folder straight from GitHub, installs
+// `react-headless-audio-player@beta` and runs `dev`. One copy of each example.
+const SANDBOX =
+  "https://stackblitz.com/github/heinerbehrends/react-audio-player";
 
 type Example = {
   id: string;
@@ -190,6 +194,12 @@ function ExampleSection({ example }: { example: Example }) {
             href={`${REPO}/tree/main/examples/${example.id}`}
           >
             examples/{example.id}
+          </a>
+          <a
+            className="demo-folder"
+            href={`${SANDBOX}/tree/main/examples/${example.id}?file=src/App.tsx`}
+          >
+            Open in StackBlitz
           </a>
         </div>
         <pre

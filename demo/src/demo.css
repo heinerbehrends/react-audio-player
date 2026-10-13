@@ -134,6 +134,11 @@ body {
   font-size: 0.8rem;
 }
 
+/* The two links sit together at the right; only the first pushes. */
+.demo-folder + .demo-folder {
+  margin-left: 12px;
+}
+
 .demo-source pre {
   max-height: 420px;
   margin: 0;

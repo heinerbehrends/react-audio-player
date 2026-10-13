@@ -281,10 +281,15 @@ Each phase is one commit with its checks, in this order.
 
 ### Phase 6 — sandboxes and links
 
-- After `0.1.0-beta.0` is on npm: until then `react-headless-audio-player@beta`
-  does not resolve and every sandbox fails to install.
-- "Open in StackBlitz" on each example; the README links the demo from the top
-  and from each component section the examples cover.
+- ~~After `0.1.0-beta.0` is on npm: until then `react-headless-audio-player@beta`
+  does not resolve and every sandbox fails to install.~~ Published
+  2026-10-13.
+- ~~"Open in StackBlitz" on each example~~ — done 2026-10-13, beside the
+  folder link, opening on `src/App.tsx`. Tried on the basic example first:
+  the first import of the repo takes a minute or so, since StackBlitz clones
+  all 14 MB of it, audio included, then Vite starts and the player loads its
+  track from the deployed demo. The README links the demo from the top and
+  from each component section the examples cover: still to do.
 - Resolve **D8**.
 
 The order of publishing is: demo live, beta published, sandbox links, then the

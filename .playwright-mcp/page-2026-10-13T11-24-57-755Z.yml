@@ -1,0 +1,12 @@
+- generic [ref=e11]:
+  - heading "Importing from GitHub" [level=2] [ref=e12]
+  - heading "heinerbehrends/ react-audio-player/ tree/ main/ examples/ basic" [level=3] [ref=e13]:
+    - generic [ref=e16]: heinerbehrends/
+    - generic [ref=e17]: react-audio-player/
+    - generic [ref=e18]: tree/
+    - generic [ref=e19]: main/
+    - generic [ref=e20]: examples/
+    - generic [ref=e21]: basic
+  - list [ref=e22]:
+    - listitem [ref=e23]: Cloning repo from GitHub
+    - listitem [ref=e26]: Mounting environment in StackBlitz
